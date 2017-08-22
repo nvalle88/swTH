@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
-using bd.sw.externos;
 using bd.swth.entidades.Negocio;
 
 namespace bd.swth.web.Controllers.API
@@ -24,9 +23,7 @@ namespace bd.swth.web.Controllers.API
         [HttpGet]
         public async Task<IEnumerable<AccionPersonal>> GetAccionPersonalAsync()
         {
-            var a = new Class1();
-            var pais = new entidades.EntidadesServicios.Pais { Nombre="PrimerPais" };
-            await a.EjemploAsync(pais);
+           
 
             return _context.AccionPersonal;
         }
