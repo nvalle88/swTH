@@ -178,14 +178,6 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Módelo inválido"
-                    };
-                }
 
                 var respuesta = Existe(proceso.Nombre);
                 if (!respuesta.IsSuccess)
