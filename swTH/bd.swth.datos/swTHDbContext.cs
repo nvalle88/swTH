@@ -67,7 +67,7 @@ namespace bd.swth.datos
         public virtual DbSet<EscalaGrados> EscalaGrados { get; set; }
         public virtual DbSet<EspecificidadExperiencia> EspecificidadExperiencia { get; set; }
         public virtual DbSet<Estado> Estado { get; set; }
-        public virtual DbSet<EstadoCivil> EstadoCivil { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.EstadoCivil> EstadoCivil { get; set; }
         public virtual DbSet<Estudio> Estudio { get; set; }
         public virtual DbSet<Etnia> Etnia { get; set; }
         public virtual DbSet<Eval001> Eval001 { get; set; }
