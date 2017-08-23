@@ -30,11 +30,11 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<SolicitudAnticipo> SolicitudAnticipo { get; set; }
 
-        public virtual ICollection<RecepcionActivoFijoDetalle> RecepcionActivoFijoDetalle { get; set; }
+     
 
         public virtual ICollection<SolicitudCertificadoPersonal> SolicitudCertificadoPersonal { get; set; }
 
-        public virtual ICollection<SolicitudProveduriaDetalle> SolicitudProveduriaDetalle { get; set; }
+        
 
         public virtual ICollection<SolicitudPlanificacionVacaciones> SolicitudPlanificacionVacaciones { get; set; }
 

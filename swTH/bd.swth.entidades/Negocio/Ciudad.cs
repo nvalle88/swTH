@@ -23,7 +23,7 @@ namespace bd.swth.entidades.Negocio
         public int IdProvincia { get; set; }
         public virtual Provincia Provincia { get; set; }
 
-        public virtual ICollection<ActivoFijo> ActivoFijo { get; set; }
+       
 
         public virtual ICollection<Sucursal> Sucursal { get; set; }
 

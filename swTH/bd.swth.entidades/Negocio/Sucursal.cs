@@ -23,8 +23,6 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<Dependencia> Dependencia { get; set; }
 
-        public virtual ICollection<LibroActivoFijo> LibroActivoFijo { get; set; }
-
-        public virtual ICollection<MaestroArticuloSucursal> MaestroArticuloSucursal { get; set; }
+       
     }
 }

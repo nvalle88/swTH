@@ -6,7 +6,7 @@ namespace bd.swth.entidades.Negocio
     public partial class ConfiguracionContabilidad
     {
         [Key]
-        public int idConfiguracionContabilidad { get; set; }
+        public int IdConfiguracionContabilidad { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "Cuenta Debe:")]
@@ -20,15 +20,7 @@ namespace bd.swth.entidades.Negocio
 
         //Propiedades Virtuales Referencias a otras clases
 
-        [Display(Name = "Cuenta Haber")]
-        [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
-        public int IdCatalogoCuentaH { get; set; }
-        public virtual CatalogoCuenta CatalogoCuentaH { get; set; }
-
-        [Display(Name = "Cuenta debe:")]
-        [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
-        public int IdCatalogoCuentaD { get; set; }
-        public virtual CatalogoCuenta CatalogoCuentaD { get; set; }
+        
 
         public virtual ICollection<MotivoAsiento> MotivoAsiento { get; set; }
     }

@@ -113,11 +113,7 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<EmpleadoImpuestoRenta> EmpleadoImpuestoRenta { get; set; }
 
-        public virtual ICollection<EmpleadoActivoFijo> EmpleadoActivoFijo { get; set; }
-
-        public virtual ICollection<MantenimientoActivoFijo> MantenimientoActivoFijo { get; set; }
-
-        public virtual ICollection<SolicitudProveduria> SolicitudProveduria { get; set; }
+       
 
         public virtual ICollection<SolicitudCertificadoPersonal> SolicitudCertificadoPersonal { get; set; }
 
@@ -133,10 +129,7 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<SolicitudLiquidacionHaberes> SolicitudLiquidacionHaberes { get; set; }
 
-        public virtual ICollection<RecepcionActivoFijo> RecepcionActivoFijo { get; set; }
-
-        public virtual ICollection<TransferenciaActivoFijo> TransferenciaActivoFijo { get; set; }
-
+       
         //public virtual ICollection<TransferenciaActivoFijo> TransferenciaActivoFijo1 { get; set; }
 
         //public virtual ICollection<TransferenciaActivoFijo> TransferenciaActivoFijo2 { get; set; }
@@ -149,11 +142,7 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
 
-        public virtual ICollection<RecepcionArticulos> RecepcionArticulos { get; set; }
 
-        public virtual ICollection<TranferenciaArticulo> TranferenciaArticulo { get; set; }
-
-        public virtual ICollection<TranferenciaArticulo> TranferenciaArticulo1 { get; set; }
 
         public virtual ICollection<Evaluador> Evaluador { get; set; }
 
