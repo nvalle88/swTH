@@ -150,7 +150,7 @@ namespace bd.swth.datos
         public virtual DbSet<Provincia> Provincia { get; set; }
         public virtual DbSet<Provisiones> Provisiones { get; set; }
         public virtual DbSet<RealizaExamenInduccion> RealizaExamenInduccion { get; set; }
-        public virtual DbSet<RegimenLaboral> RegimenLaboral { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.RegimenLaboral> RegimenLaboral { get; set; }
         public virtual DbSet<RegistroEntradaSalida> RegistroEntradaSalida { get; set; }
         public virtual DbSet<RelacionLaboral> RelacionLaboral { get; set; }
         public virtual DbSet<RelacionesInternasExternas> RelacionesInternasExternas { get; set; }
@@ -164,7 +164,7 @@ namespace bd.swth.datos
         public virtual DbSet<RolPuesto> RolPuesto { get; set; }
         public virtual DbSet<Rubro> Rubro { get; set; }
         public virtual DbSet<RubroLiquidacion> RubroLiquidacion { get; set; }
-        public virtual DbSet<Sexo> Sexo { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Sexo> Sexo { get; set; }
         public virtual DbSet<SituacionPropuesta> SituacionPropuesta { get; set; }
         public virtual DbSet<SolicitudAcumulacionDecimos> SolicitudAcumulacionDecimos { get; set; }
         public virtual DbSet<SolicitudAnticipo> SolicitudAnticipo { get; set; }
