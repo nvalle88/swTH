@@ -23,7 +23,6 @@ namespace bd.swth.datos
         public virtual DbSet<AnoExperiencia> AnoExperiencia { get; set; }
         public virtual DbSet<AprobacionViatico> AprobacionViatico { get; set; }
         public virtual DbSet<AreaConocimiento> AreaConocimiento { get; set; }
-    
         public virtual DbSet<AvanceGestionCambio> AvanceGestionCambio { get; set; }
         public virtual DbSet<BrigadaSSO> BrigadaSSO { get; set; }
         public virtual DbSet<BrigadaSSORol> BrigadaSsorol { get; set; }
@@ -146,7 +145,7 @@ namespace bd.swth.datos
         public virtual DbSet<PlanificacionHE> PlanificacionHE { get; set; }
         public virtual DbSet<Pregunta> Pregunta { get; set; }
         public virtual DbSet<PreguntaRespuesta> PreguntaRespuesta { get; set; }
-        public virtual DbSet<Proceso> Proceso { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Proceso> Proceso { get; set; }
         public virtual DbSet<ProcesoDetalle> ProcesoDetalle { get; set; }
         public virtual DbSet<Provincia> Provincia { get; set; }
         public virtual DbSet<Provisiones> Provisiones { get; set; }
