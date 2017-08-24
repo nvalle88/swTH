@@ -8,9 +8,10 @@ using bd.swth.datos;
 namespace bd.swth.datos.Migrations
 {
     [DbContext(typeof(SwTHDbContext))]
-    partial class SwTHDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170824210940_actualizar_db_final")]
+    partial class actualizar_db_final
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
