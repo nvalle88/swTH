@@ -8,9 +8,10 @@ using bd.swth.datos;
 namespace bd.swth.datos.Migrations
 {
     [DbContext(typeof(SwTHDbContext))]
-    partial class SwTHDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170824210329_actualizar_db")]
+    partial class actualizar_db
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -836,22 +837,6 @@ namespace bd.swth.datos.Migrations
                         .HasName("IX_DetalleExamenInduccion_RespuestaId");
 
                     b.ToTable("DetalleExamenInduccion");
-                });
-
-            modelBuilder.Entity("bd.swth.entidades.Negocio.DocumentoInformacionInstitucional", b =>
-                {
-                    b.Property<int>("IdDocumentoInformacionInstitucional")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(250);
-
-                    b.Property<string>("Url");
-
-                    b.HasKey("IdDocumentoInformacionInstitucional");
-
-                    b.ToTable("DocumentoInformacionInstitucional");
                 });
 
             modelBuilder.Entity("bd.swth.entidades.Negocio.DocumentosParentescodos", b =>

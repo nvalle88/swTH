@@ -16,41 +16,42 @@ namespace bd.swth.datos
 
 
         public virtual DbSet<bd.swth.entidades.Negocio.AccionPersonal> AccionPersonal { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.DocumentoInformacionInstitucional> DocumentoInformacionInstitucional { get; set; }
         public virtual DbSet<ActividadesAnalisisOcupacional> ActividadesAnalisisOcupacional { get; set; }
-        public virtual DbSet<ActividadesEsenciales> ActividadesEsenciales { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ActividadesEsenciales> ActividadesEsenciales { get; set; }
         public virtual DbSet<ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
         public virtual DbSet<AdministracionTalentoHumano> AdministracionTalentoHumano { get; set; }
-        public virtual DbSet<AnoExperiencia> AnoExperiencia { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.AnoExperiencia> AnoExperiencia { get; set; }
         public virtual DbSet<AprobacionViatico> AprobacionViatico { get; set; }
-        public virtual DbSet<AreaConocimiento> AreaConocimiento { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.AreaConocimiento> AreaConocimiento { get; set; }
         public virtual DbSet<AvanceGestionCambio> AvanceGestionCambio { get; set; }
-        public virtual DbSet<BrigadaSSO> BrigadaSSO { get; set; }
-        public virtual DbSet<BrigadaSSORol> BrigadaSsorol { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSO> BrigadaSSO { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSORol> BrigadaSsorol { get; set; }
         public virtual DbSet<CandidatoConcurso> CandidatoConcurso { get; set; }
         public virtual DbSet<Canditato> Canditato { get; set; }
-        public virtual DbSet<Capacitacion> Capacitacion { get; set; }
-        public virtual DbSet<CapacitacionAreaConocimiento> CapacitacionAreaConocimiento { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Capacitacion> Capacitacion { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionAreaConocimiento> CapacitacionAreaConocimiento { get; set; }
         public virtual DbSet<CapacitacionEncuesta> CapacitacionEncuesta { get; set; }
-        public virtual DbSet<CapacitacionModalidad> CapacitacionModalidad { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionModalidad> CapacitacionModalidad { get; set; }
         public virtual DbSet<CapacitacionPlanificacion> CapacitacionPlanificacion { get; set; }
         public virtual DbSet<CapacitacionPregunta> CapacitacionPregunta { get; set; }
         public virtual DbSet<CapacitacionProveedor> CapacitacionProveedor { get; set; }
         public virtual DbSet<CapacitacionRecibida> CapacitacionRecibida { get; set; }
         public virtual DbSet<CapacitacionRespuesta> CapacitacionRespuesta { get; set; }
-        public virtual DbSet<CapacitacionTemario> CapacitacionTemario { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionTemario> CapacitacionTemario { get; set; }
         public virtual DbSet<CapacitacionTemarioProveedor> CapacitacionTemarioProveedor { get; set; }
-        public virtual DbSet<CapacitacionTipoPregunta> CapacitacionTipoPregunta { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionTipoPregunta> CapacitacionTipoPregunta { get; set; }
         public virtual DbSet<Ciudad> Ciudad { get; set; }
         public virtual DbSet<ComportamientoObservable> ComportamientoObservable { get; set; }
-        public virtual DbSet<ConfiguracionViatico> ConfiguracionViatico { get; set; }
-        public virtual DbSet<ConfirmacionLectura> ConfirmacionLectura { get; set; }
-        public virtual DbSet<ConocimientosAdicionales> ConocimientosAdicionales { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ConfiguracionViatico> ConfiguracionViatico { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ConfirmacionLectura> ConfirmacionLectura { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ConocimientosAdicionales> ConocimientosAdicionales { get; set; }
         public virtual DbSet<DatosBancarios> DatosBancarios { get; set; }
         public virtual DbSet<DeclaracionPatrimonioPersonal> DeclaracionPatrimonioPersonal { get; set; }
-        public virtual DbSet<DenominacionCompetencia> DenominacionCompetencia { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.DenominacionCompetencia> DenominacionCompetencia { get; set; }
         public virtual DbSet<Dependencia> Dependencia { get; set; }
         public virtual DbSet<DependenciaDocumento> DependenciaDocumento { get; set; }
-        public virtual DbSet<Destreza> Destreza { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Destreza> Destreza { get; set; }
         public virtual DbSet<DetalleExamenInduccion> DetalleExamenInduccion { get; set; }
         public virtual DbSet<DocumentosParentescodos> DocumentosParentescodos { get; set; }
         public virtual DbSet<Empleado> Empleado { get; set; }
@@ -63,13 +64,13 @@ namespace bd.swth.datos
         public virtual DbSet<EmpleadoNepotismo> EmpleadoNepotismo { get; set; }
         public virtual DbSet<EmpleadoSaldoVacaciones> EmpleadoSaldoVacaciones { get; set; }
         public virtual DbSet<EmpleadosFormularioDevengacion> EmpleadosFormularioDevengacion { get; set; }
-        public virtual DbSet<EscalaEvaluacionTotal> EscalaEvaluacionTotal { get; set; }
-        public virtual DbSet<EscalaGrados> EscalaGrados { get; set; }
-        public virtual DbSet<EspecificidadExperiencia> EspecificidadExperiencia { get; set; }
-        public virtual DbSet<Estado> Estado { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.EscalaEvaluacionTotal> EscalaEvaluacionTotal { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.EscalaGrados> EscalaGrados { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.EspecificidadExperiencia> EspecificidadExperiencia { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Estado> Estado { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.EstadoCivil> EstadoCivil { get; set; }
-        public virtual DbSet<Estudio> Estudio { get; set; }
-        public virtual DbSet<Etnia> Etnia { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Estudio> Estudio { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Etnia> Etnia { get; set; }
         public virtual DbSet<Eval001> Eval001 { get; set; }
         public virtual DbSet<EvaluacionActividadesPuestoTrabajo> EvaluacionActividadesPuestoTrabajo { get; set; }
         public virtual DbSet<EvaluacionActividadesPuestoTrabajoDetalle> EvaluacionActividadesPuestoTrabajoDetalle { get; set; }
@@ -83,7 +84,7 @@ namespace bd.swth.datos
         public virtual DbSet<EvaluacionConocimiento> EvaluacionConocimiento { get; set; }
         public virtual DbSet<EvaluacionConocimientoDetalle> EvaluacionConocimientoDetalle { get; set; }
         public virtual DbSet<EvaluacionConocimientoFactor> EvaluacionConocimientoFactor { get; set; }
-        public virtual DbSet<EvaluacionInducion> EvaluacionInducion { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.EvaluacionInducion> EvaluacionInducion { get; set; }
         public virtual DbSet<EvaluacionTrabajoEquipoIniciativaLiderazgo> EvaluacionTrabajoEquipoIniciativaLiderazgo { get; set; }
         public virtual DbSet<EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle> EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle { get; set; }
         public virtual DbSet<EvaluacionTrabajoEquipoIniciativaLiderazgoFactor> EvaluacionTrabajoEquipoIniciativaLiderazgoFactor { get; set; }
