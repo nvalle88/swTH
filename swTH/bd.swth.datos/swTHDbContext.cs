@@ -65,7 +65,7 @@ namespace bd.swth.datos
         public virtual DbSet<EmpleadoSaldoVacaciones> EmpleadoSaldoVacaciones { get; set; }
         public virtual DbSet<EmpleadosFormularioDevengacion> EmpleadosFormularioDevengacion { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.EscalaEvaluacionTotal> EscalaEvaluacionTotal { get; set; }
-        public virtual DbSet<EscalaGrados> EscalaGrados { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.EscalaGrados> EscalaGrados { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.EspecificidadExperiencia> EspecificidadExperiencia { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Estado> Estado { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.EstadoCivil> EstadoCivil { get; set; }
