@@ -177,7 +177,6 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-
                 var respuesta = Existe(Sexo.Nombre);
                 if (!respuesta.IsSuccess)
                 {
