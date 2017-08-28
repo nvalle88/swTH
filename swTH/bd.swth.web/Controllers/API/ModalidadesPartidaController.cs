@@ -7,33 +7,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Servicios;
+using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/NivelesDesarrollo")]
-    public class NivelesDesarrolloController : Controller
+    [Route("api/ModalidadPartidas")]
+    public class ModalidadesPartidaController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public NivelesDesarrolloController(SwTHDbContext db)
+        public ModalidadesPartidaController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/NivelDesarrollos
+        // GET: api/ModalidadPartidas
         [HttpGet]
-        [Route("ListarNivelesDesarrollo")]
-        public async Task<List<NivelDesarrollo>> GetNivelDesarrollo()
+        [Route("ListarModalidadesPartida")]
+        public async Task<List<ModalidadPartida>> GetModalidadPartida()
         {
             try
             {
-                return await db.NivelDesarrollo.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.ModalidadPartida.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<NivelDesarrollo>();
+                return new List<ModalidadPartida>();
             }
         }
 
-        // GET: api/NivelDesarrollos/5
+        // GET: api/ModalidadPartidas/5
         [HttpGet("{id}")]
-        public async Task<Response> GetNivelDesarrollo([FromRoute] int id)
+        public async Task<Response> GetModalidadPartida([FromRoute] int id)
         {
             try
             {
@@ -66,7 +66,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
+                var adscbdd = await db.ModalidadPartida.SingleOrDefaultAsync(m => m.IdModalidadPartida == id);
 
                 if (adscbdd == null)
                 {
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/NivelDesarrollos/5
+        // PUT: api/ModalidadPartidas/5
         [HttpPut("{id}")]
-        public async Task<Response> PutNivelDesarrollo([FromRoute] int id, [FromBody] NivelDesarrollo nivelDesarrollo)
+        public async Task<Response> PutModalidadPartida([FromRoute] int id, [FromBody] ModalidadPartida ModalidadPartida)
         {
             try
             {
@@ -122,22 +122,23 @@ namespace bd.swth.web.Controllers.API
 
                 try
                 {
-                    var entidad = await db.NivelDesarrollo.Where(x => x.IdNivelDesarrollo == id).FirstOrDefaultAsync();
+                    var entidad = await db.ModalidadPartida.Where(x => x.IdModalidadPartida == id).FirstOrDefaultAsync();
 
                     if (entidad == null)
                     {
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = "No existe información acerca del Nive de Desarrollo ",
+                            Message = "No existe información acerca del Grupo Ocupacional ",
                         };
 
                     }
                     else
                     {
 
-                        entidad.Nombre = nivelDesarrollo.Nombre;
-                        db.NivelDesarrollo.Update(entidad);
+                        entidad.Nombre = ModalidadPartida.Nombre;
+                        entidad.IdRelacionLaboral = ModalidadPartida.IdRelacionLaboral;
+                        db.ModalidadPartida.Update(entidad);
                         await db.SaveChangesAsync();
                         return new Response
                         {
@@ -179,18 +180,18 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/NivelDesarrollos
+        // POST: api/ModalidadPartidas
         [HttpPost]
-        [Route("InsertarNivelDesarrollo")]
-        public async Task<Response> PostNivelDesarrollo([FromBody] NivelDesarrollo nivelDesarrollo)
+        [Route("InsertarModalidadPartida")]
+        public async Task<Response> PostModalidadPartida([FromBody] ModalidadPartida ModalidadPartida)
         {
             try
             {
 
-                var respuesta = Existe(nivelDesarrollo.Nombre);
+                var respuesta = Existe(ModalidadPartida.Nombre);
                 if (!respuesta.IsSuccess)
                 {
-                    db.NivelDesarrollo.Add(nivelDesarrollo);
+                    db.ModalidadPartida.Add(ModalidadPartida);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -226,9 +227,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/NivelDesarrollos/5
+        // DELETE: api/ModalidadPartidas/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteNivelDesarrollo([FromRoute] int id)
+        public async Task<Response> DeleteModalidadPartida([FromRoute] int id)
         {
             try
             {
@@ -241,7 +242,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
+                var respuesta = await db.ModalidadPartida.SingleOrDefaultAsync(m => m.IdModalidadPartida == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -250,7 +251,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.NivelDesarrollo.Remove(respuesta);
+                db.ModalidadPartida.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -279,16 +280,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool NivelDesarrolloExists(int id)
+        private bool ModalidadPartidaExists(int id)
         {
-            return db.NivelDesarrollo.Any(e => e.IdNivelDesarrollo == id);
+            return db.ModalidadPartida.Any(e => e.IdModalidadPartida == id);
         }
 
 
-        public Response Existe(string nombreNivelDesarrollo)
+        public Response Existe(string nombreModalidadPartida)
         {
 
-            var loglevelrespuesta = db.NivelDesarrollo.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreNivelDesarrollo).FirstOrDefault();
+            var loglevelrespuesta = db.ModalidadPartida.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreModalidadPartida).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response

@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -14,113 +19,292 @@ namespace bd.swth.web.Controllers.API
     [Route("api/Parentescos")]
     public class ParentescosController : Controller
     {
-        private readonly SwTHDbContext _context;
+        private readonly SwTHDbContext db;
 
-        public ParentescosController(SwTHDbContext context)
+        public ParentescosController(SwTHDbContext db)
         {
-            _context = context;
+            this.db = db;
         }
 
         // GET: api/Parentescos
         [HttpGet]
-        public IEnumerable<Parentesco> GetParentesco()
+        [Route("ListarParentescos")]
+        public async Task<List<Parentesco>> GetParentesco()
         {
-            return _context.Parentesco;
+            try
+            {
+                return await db.Parentesco.OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<Parentesco>();
+            }
         }
 
         // GET: api/Parentescos/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetParentesco([FromRoute] int id)
+        public async Task<Response> GetParentesco([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido",
+                    };
+                }
+
+                var adscbdd = await db.Parentesco.SingleOrDefaultAsync(m => m.IdParentesco == id);
+
+                if (adscbdd == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No encontrado",
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Ok",
+                    Resultado = adscbdd,
+                };
             }
-
-            var parentesco = await _context.Parentesco.SingleOrDefaultAsync(m => m.IdParentesco == id);
-
-            if (parentesco == null)
+            catch (Exception ex)
             {
-                return NotFound();
-            }
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            return Ok(parentesco);
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
+            }
         }
 
         // PUT: api/Parentescos/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutParentesco([FromRoute] int id, [FromBody] Parentesco parentesco)
+        public async Task<Response> PutParentesco([FromRoute] int id, [FromBody] Parentesco Parentesco)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != parentesco.IdParentesco)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(parentesco).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ParentescoExists(id))
+                if (!ModelState.IsValid)
                 {
-                    return NotFound();
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+
+                try
+                {
+                    var entidad = await db.Parentesco.Where(x => x.IdParentesco == id).FirstOrDefaultAsync();
+
+                    if (entidad == null)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "No existe información acerca del  Paarentesco ",
+                        };
+
+                    }
+                    else
+                    {
+
+                        entidad.Nombre = Parentesco.Nombre;
+                        db.Parentesco.Update(entidad);
+                        await db.SaveChangesAsync();
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    {
+                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                        ExceptionTrace = ex,
+                        Message = "Se ha producido una exepción",
+                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                        UserName = "",
+
+                    });
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Error ",
+                    };
+                }
+
+
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Excepción"
+                };
+            }
         }
 
         // POST: api/Parentescos
         [HttpPost]
-        public async Task<IActionResult> PostParentesco([FromBody] Parentesco parentesco)
+        [Route("InsertarParentesco")]
+        public async Task<Response> PostParentesco([FromBody] Parentesco Parentesco)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+
+                var respuesta = Existe(Parentesco.Nombre);
+                if (!respuesta.IsSuccess)
+                {
+                    db.Parentesco.Add(Parentesco);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "OK"
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "OK"
+                };
+
             }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            _context.Parentesco.Add(parentesco);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetParentesco", new { id = parentesco.IdParentesco }, parentesco);
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
+            }
         }
 
         // DELETE: api/Parentescos/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteParentesco([FromRoute] int id)
+        public async Task<Response> DeleteParentesco([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido ",
+                    };
+                }
 
-            var parentesco = await _context.Parentesco.SingleOrDefaultAsync(m => m.IdParentesco == id);
-            if (parentesco == null)
+                var respuesta = await db.Parentesco.SingleOrDefaultAsync(m => m.IdParentesco == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No existe ",
+                    };
+                }
+                db.Parentesco.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Eliminado ",
+                };
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
             }
-
-            _context.Parentesco.Remove(parentesco);
-            await _context.SaveChangesAsync();
-
-            return Ok(parentesco);
         }
 
         private bool ParentescoExists(int id)
         {
-            return _context.Parentesco.Any(e => e.IdParentesco == id);
+            return db.Parentesco.Any(e => e.IdParentesco == id);
+        }
+
+
+        public Response Existe(string nombreParentesco)
+        {
+
+            var loglevelrespuesta = db.Parentesco.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreParentesco).FirstOrDefault();
+            if (loglevelrespuesta != null)
+            {
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Existe un sistema de igual nombre",
+                    Resultado = null,
+                };
+
+            }
+
+            return new Response
+            {
+                IsSuccess = false,
+                Resultado = loglevelrespuesta,
+            };
         }
     }
 }

@@ -19,7 +19,7 @@ namespace bd.swth.web.Controllers.API
     [Route("api/Procesos")]
     public class ProcesosController : Controller
     {
-        private readonly SwTHDbContext db;
+         private readonly SwTHDbContext db;
 
         public ProcesosController(SwTHDbContext db)
         {

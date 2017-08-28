@@ -3,7 +3,7 @@ namespace bd.swth.entidades.Negocio
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
-     
+
     public partial class ProcesoDetalle
     {
         [Key]

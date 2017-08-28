@@ -7,33 +7,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.ObjectTranfer;
-using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/NivelesDesarrollo")]
-    public class NivelesDesarrolloController : Controller
+    [Route("api/Factores")]
+    public class FactoresController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public NivelesDesarrolloController(SwTHDbContext db)
+        public FactoresController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/NivelDesarrollos
+        // GET: api/Factores
         [HttpGet]
-        [Route("ListarNivelesDesarrollo")]
-        public async Task<List<NivelDesarrollo>> GetNivelDesarrollo()
+        [Route("ListarFactores")]
+        public async Task<List<Factor>> GetFactor()
         {
             try
             {
-                return await db.NivelDesarrollo.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Factor.OrderBy(x => x.Porciento).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<NivelDesarrollo>();
+                return new List<Factor>();
             }
         }
 
-        // GET: api/NivelDesarrollos/5
+        // GET: api/Factores/5
         [HttpGet("{id}")]
-        public async Task<Response> GetNivelDesarrollo([FromRoute] int id)
+        public async Task<Response> GetFactor([FromRoute] int id)
         {
             try
             {
@@ -66,7 +66,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
+                var adscbdd = await db.Factor.SingleOrDefaultAsync(m => m.IdFactor == id);
 
                 if (adscbdd == null)
                 {
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/NivelDesarrollos/5
+        // PUT: api/Factores/5
         [HttpPut("{id}")]
-        public async Task<Response> PutNivelDesarrollo([FromRoute] int id, [FromBody] NivelDesarrollo nivelDesarrollo)
+        public async Task<Response> PutFactor([FromRoute] int id, [FromBody] Factor factor)
         {
             try
             {
@@ -119,33 +119,25 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
+                var existeFactor = Existe((decimal)factor.Porciento);
+                if (existeFactor.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Existe un factor de igual porciento",
+                    };
+                }
                 try
                 {
-                    var entidad = await db.NivelDesarrollo.Where(x => x.IdNivelDesarrollo == id).FirstOrDefaultAsync();
+                    db.Factor.Update(factor);
+                    await db.SaveChangesAsync();
 
-                    if (entidad == null)
+                    return new Response
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del Nive de Desarrollo ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.Nombre = nivelDesarrollo.Nombre;
-                        db.NivelDesarrollo.Update(entidad);
-                        await db.SaveChangesAsync();
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = "Ok",
-                        };
-                    }
-
+                        IsSuccess = true,
+                        Message = "Ok",
+                    };
 
                 }
                 catch (Exception ex)
@@ -179,18 +171,18 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/NivelDesarrollos
+        // POST: api/Factores
         [HttpPost]
-        [Route("InsertarNivelDesarrollo")]
-        public async Task<Response> PostNivelDesarrollo([FromBody] NivelDesarrollo nivelDesarrollo)
+        [Route("InsertarFactor")]
+        public async Task<Response> PostFactor([FromBody] Factor factor)
         {
             try
             {
 
-                var respuesta = Existe(nivelDesarrollo.Nombre);
+                var respuesta = Existe((decimal)factor.Porciento);
                 if (!respuesta.IsSuccess)
                 {
-                    db.NivelDesarrollo.Add(nivelDesarrollo);
+                    db.Factor.Add(factor);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -226,9 +218,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/NivelDesarrollos/5
+        // DELETE: api/Factores/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteNivelDesarrollo([FromRoute] int id)
+        public async Task<Response> DeleteFactor([FromRoute] int id)
         {
             try
             {
@@ -241,7 +233,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
+                var respuesta = await db.Factor.SingleOrDefaultAsync(m => m.IdFactor == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -250,7 +242,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.NivelDesarrollo.Remove(respuesta);
+                db.Factor.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -279,22 +271,22 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool NivelDesarrolloExists(int id)
+        private bool FactorExists(int id)
         {
-            return db.NivelDesarrollo.Any(e => e.IdNivelDesarrollo == id);
+            return db.Factor.Any(e => e.IdFactor == id);
         }
 
 
-        public Response Existe(string nombreNivelDesarrollo)
+        public Response Existe(decimal porciento)
         {
 
-            var loglevelrespuesta = db.NivelDesarrollo.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreNivelDesarrollo).FirstOrDefault();
+            var loglevelrespuesta = db.Factor.Where(p => p.Porciento == porciento).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe un sistema de igual porciento",
                     Resultado = null,
                 };
 

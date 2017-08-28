@@ -7,33 +7,34 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.Negocio;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/NivelesDesarrollo")]
-    public class NivelesDesarrolloController : Controller
+    [Route("api/ImpuestoRentaParametros")]
+    public class ImpuestoRentaParametrosController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public NivelesDesarrolloController(SwTHDbContext db)
+        public ImpuestoRentaParametrosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/NivelDesarrollos
+        // GET: api/ImpuestoRentaParametross
         [HttpGet]
-        [Route("ListarNivelesDesarrollo")]
-        public async Task<List<NivelDesarrollo>> GetNivelDesarrollo()
+        [Route("ListarImpuestoRentaParametros")]
+        public async Task<List<ImpuestoRentaParametros>> GetImpuestoRentaParametros()
         {
             try
             {
-                return await db.NivelDesarrollo.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.ImpuestoRentaParametros.OrderBy(x => x.FraccionBasica).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +48,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<NivelDesarrollo>();
+                return new List<ImpuestoRentaParametros>();
             }
         }
 
-        // GET: api/NivelDesarrollos/5
+        // GET: api/ImpuestoRentaParametross/5
         [HttpGet("{id}")]
-        public async Task<Response> GetNivelDesarrollo([FromRoute] int id)
+        public async Task<Response> GetImpuestoRentaParametros([FromRoute] int id)
         {
             try
             {
@@ -66,7 +67,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
+                var adscbdd = await db.ImpuestoRentaParametros.SingleOrDefaultAsync(m => m.IdImpuestoRentaParametros == id);
 
                 if (adscbdd == null)
                 {
@@ -104,9 +105,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/NivelDesarrollos/5
+        // PUT: api/ImpuestoRentaParametross/5
         [HttpPut("{id}")]
-        public async Task<Response> PutNivelDesarrollo([FromRoute] int id, [FromBody] NivelDesarrollo nivelDesarrollo)
+        public async Task<Response> PutImpuestoRentaParametros([FromRoute] int id, [FromBody] ImpuestoRentaParametros ImpuestoRentaParametros)
         {
             try
             {
@@ -122,22 +123,25 @@ namespace bd.swth.web.Controllers.API
 
                 try
                 {
-                    var entidad = await db.NivelDesarrollo.Where(x => x.IdNivelDesarrollo == id).FirstOrDefaultAsync();
+                    var entidad = await db.ImpuestoRentaParametros.Where(x => x.IdImpuestoRentaParametros == id).FirstOrDefaultAsync();
 
                     if (entidad == null)
                     {
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = "No existe información acerca del Nive de Desarrollo ",
+                            Message = "No existe información acerca del ImpuestoRentaParametros ",
                         };
 
                     }
                     else
                     {
 
-                        entidad.Nombre = nivelDesarrollo.Nombre;
-                        db.NivelDesarrollo.Update(entidad);
+                        entidad.FraccionBasica = ImpuestoRentaParametros.FraccionBasica;
+                        entidad.ExcesoHasta = ImpuestoRentaParametros.ExcesoHasta;
+                        entidad.ImpuestoFraccionBasica = ImpuestoRentaParametros.ImpuestoFraccionBasica;
+                        entidad.PorcentajeImpuestoFraccionExcedente = ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente;
+                        db.ImpuestoRentaParametros.Update(entidad);
                         await db.SaveChangesAsync();
                         return new Response
                         {
@@ -179,18 +183,18 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/NivelDesarrollos
+        // POST: api/ImpuestoRentaParametross
         [HttpPost]
-        [Route("InsertarNivelDesarrollo")]
-        public async Task<Response> PostNivelDesarrollo([FromBody] NivelDesarrollo nivelDesarrollo)
+        [Route("InsertarImpuestoRentaParametros")]
+        public async Task<Response> PostImpuestoRentaParametros([FromBody] ImpuestoRentaParametros ImpuestoRentaParametros)
         {
             try
             {
 
-                var respuesta = Existe(nivelDesarrollo.Nombre);
+                var respuesta = Existe(ImpuestoRentaParametros.FraccionBasica);
                 if (!respuesta.IsSuccess)
                 {
-                    db.NivelDesarrollo.Add(nivelDesarrollo);
+                    db.ImpuestoRentaParametros.Add(ImpuestoRentaParametros);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -226,9 +230,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/NivelDesarrollos/5
+        // DELETE: api/ImpuestoRentaParametross/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteNivelDesarrollo([FromRoute] int id)
+        public async Task<Response> DeleteImpuestoRentaParametros([FromRoute] int id)
         {
             try
             {
@@ -241,7 +245,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
+                var respuesta = await db.ImpuestoRentaParametros.SingleOrDefaultAsync(m => m.IdImpuestoRentaParametros == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -250,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.NivelDesarrollo.Remove(respuesta);
+                db.ImpuestoRentaParametros.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -279,16 +283,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool NivelDesarrolloExists(int id)
+        private bool ImpuestoRentaParametrosExists(int id)
         {
-            return db.NivelDesarrollo.Any(e => e.IdNivelDesarrollo == id);
+            return db.ImpuestoRentaParametros.Any(e => e.IdImpuestoRentaParametros == id);
         }
 
 
-        public Response Existe(string nombreNivelDesarrollo)
+        public Response Existe(decimal fraccionbasica)
         {
 
-            var loglevelrespuesta = db.NivelDesarrollo.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreNivelDesarrollo).FirstOrDefault();
+            var loglevelrespuesta = db.ImpuestoRentaParametros.Where(p => p.FraccionBasica == fraccionbasica).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response

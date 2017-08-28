@@ -1,4 +1,4 @@
-namespace bd.swth.entidades.Negocio.Negocio
+namespace bd.swth.entidades.Negocio
 {
     using System.ComponentModel.DataAnnotations;
 

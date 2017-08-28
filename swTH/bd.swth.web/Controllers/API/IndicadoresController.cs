@@ -7,33 +7,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/NivelesDesarrollo")]
-    public class NivelesDesarrolloController : Controller
+    [Route("api/Indicadores")]
+    public class IndicadoresController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public NivelesDesarrolloController(SwTHDbContext db)
+        public IndicadoresController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/NivelDesarrollos
+        // GET: api/Indicadors
         [HttpGet]
-        [Route("ListarNivelesDesarrollo")]
-        public async Task<List<NivelDesarrollo>> GetNivelDesarrollo()
+        [Route("ListarIndicadores")]
+        public async Task<List<Indicador>> GetIndicador()
         {
             try
             {
-                return await db.NivelDesarrollo.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Indicador.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<NivelDesarrollo>();
+                return new List<Indicador>();
             }
         }
 
-        // GET: api/NivelDesarrollos/5
+        // GET: api/Indicadors/5
         [HttpGet("{id}")]
-        public async Task<Response> GetNivelDesarrollo([FromRoute] int id)
+        public async Task<Response> GetIndicador([FromRoute] int id)
         {
             try
             {
@@ -66,7 +66,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
+                var adscbdd = await db.Indicador.SingleOrDefaultAsync(m => m.IdIndicador == id);
 
                 if (adscbdd == null)
                 {
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/NivelDesarrollos/5
+        // PUT: api/Indicadors/5
         [HttpPut("{id}")]
-        public async Task<Response> PutNivelDesarrollo([FromRoute] int id, [FromBody] NivelDesarrollo nivelDesarrollo)
+        public async Task<Response> PutIndicador([FromRoute] int id, [FromBody] Indicador Indicador)
         {
             try
             {
@@ -122,22 +122,22 @@ namespace bd.swth.web.Controllers.API
 
                 try
                 {
-                    var entidad = await db.NivelDesarrollo.Where(x => x.IdNivelDesarrollo == id).FirstOrDefaultAsync();
+                    var entidad = await db.Indicador.Where(x => x.IdIndicador == id).FirstOrDefaultAsync();
 
                     if (entidad == null)
                     {
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = "No existe información acerca del Nive de Desarrollo ",
+                            Message = "No existe información acerca del Indicador ",
                         };
 
                     }
                     else
                     {
 
-                        entidad.Nombre = nivelDesarrollo.Nombre;
-                        db.NivelDesarrollo.Update(entidad);
+                        entidad.Nombre = Indicador.Nombre;
+                        db.Indicador.Update(entidad);
                         await db.SaveChangesAsync();
                         return new Response
                         {
@@ -179,18 +179,18 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/NivelDesarrollos
+        // POST: api/Indicadors
         [HttpPost]
-        [Route("InsertarNivelDesarrollo")]
-        public async Task<Response> PostNivelDesarrollo([FromBody] NivelDesarrollo nivelDesarrollo)
+        [Route("InsertarIndicadores")]
+        public async Task<Response> PostIndicador([FromBody] Indicador Indicador)
         {
             try
             {
 
-                var respuesta = Existe(nivelDesarrollo.Nombre);
+                var respuesta = Existe(Indicador.Nombre);
                 if (!respuesta.IsSuccess)
                 {
-                    db.NivelDesarrollo.Add(nivelDesarrollo);
+                    db.Indicador.Add(Indicador);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -226,9 +226,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/NivelDesarrollos/5
+        // DELETE: api/Indicadors/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteNivelDesarrollo([FromRoute] int id)
+        public async Task<Response> DeleteIndicador([FromRoute] int id)
         {
             try
             {
@@ -241,7 +241,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
+                var respuesta = await db.Indicador.SingleOrDefaultAsync(m => m.IdIndicador == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -250,7 +250,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.NivelDesarrollo.Remove(respuesta);
+                db.Indicador.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -279,16 +279,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool NivelDesarrolloExists(int id)
+        private bool IndicadorExists(int id)
         {
-            return db.NivelDesarrollo.Any(e => e.IdNivelDesarrollo == id);
+            return db.Indicador.Any(e => e.IdIndicador == id);
         }
 
 
-        public Response Existe(string nombreNivelDesarrollo)
+        public Response Existe(string nombreIndicador)
         {
 
-            var loglevelrespuesta = db.NivelDesarrollo.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreNivelDesarrollo).FirstOrDefault();
+            var loglevelrespuesta = db.Indicador.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreIndicador).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response

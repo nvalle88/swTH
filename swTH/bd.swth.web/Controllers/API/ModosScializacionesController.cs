@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -14,113 +19,292 @@ namespace bd.swth.web.Controllers.API
     [Route("api/ModosScializaciones")]
     public class ModosScializacionesController : Controller
     {
-        private readonly SwTHDbContext _context;
+        private readonly SwTHDbContext db;
 
-        public ModosScializacionesController(SwTHDbContext context)
+        public ModosScializacionesController(SwTHDbContext db)
         {
-            _context = context;
+            this.db = db;
         }
 
-        // GET: api/ModosScializaciones
+        // GET: api/ModosScializacions
         [HttpGet]
-        public IEnumerable<ModosScializacion> GetModosScializacion()
+        [Route("ListarModosScializacions")]
+        public async Task<List<ModosScializacion>> GetModosScializacion()
         {
-            return _context.ModosScializacion;
-        }
-
-        // GET: api/ModosScializaciones/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetModosScializacion([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var modosScializacion = await _context.ModosScializacion.SingleOrDefaultAsync(m => m.IdModosScializacion == id);
-
-            if (modosScializacion == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(modosScializacion);
-        }
-
-        // PUT: api/ModosScializaciones/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutModosScializacion([FromRoute] int id, [FromBody] ModosScializacion modosScializacion)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != modosScializacion.IdModosScializacion)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(modosScializacion).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                return await db.ModosScializacion.OrderBy(x => x.Descripcion).ToListAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!ModosScializacionExists(id))
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            return NoContent();
+                });
+                return new List<ModosScializacion>();
+            }
         }
 
-        // POST: api/ModosScializaciones
+        // GET: api/ModosScializacions/5
+        [HttpGet("{id}")]
+        public async Task<Response> GetModosScializacion([FromRoute] int id)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido",
+                    };
+                }
+
+                var adscbdd = await db.ModosScializacion.SingleOrDefaultAsync(m => m.IdModosScializacion == id);
+
+                if (adscbdd == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No encontrado",
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Ok",
+                    Resultado = adscbdd,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
+            }
+        }
+
+        // PUT: api/ModosScializacions/5
+        [HttpPut("{id}")]
+        public async Task<Response> PutModosScializacion([FromRoute] int id, [FromBody] ModosScializacion ModosScializacion)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
+
+
+                try
+                {
+                    var entidad = await db.ModosScializacion.Where(x => x.IdModosScializacion == id).FirstOrDefaultAsync();
+
+                    if (entidad == null)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "No existe información acerca del Grupo Ocupacional ",
+                        };
+
+                    }
+                    else
+                    {
+
+                        entidad.Descripcion = ModosScializacion.Descripcion;
+                        db.ModosScializacion.Update(entidad);
+                        await db.SaveChangesAsync();
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    {
+                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                        ExceptionTrace = ex,
+                        Message = "Se ha producido una exepción",
+                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                        UserName = "",
+
+                    });
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Error ",
+                    };
+                }
+
+
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Excepción"
+                };
+            }
+        }
+
+        // POST: api/ModosScializacions
         [HttpPost]
-        public async Task<IActionResult> PostModosScializacion([FromBody] ModosScializacion modosScializacion)
+        [Route("InsertarModosScializacion")]
+        public async Task<Response> PostModosScializacion([FromBody] ModosScializacion ModosScializacion)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+
+                var respuesta = Existe(ModosScializacion.Descripcion);
+                if (!respuesta.IsSuccess)
+                {
+                    db.ModosScializacion.Add(ModosScializacion);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "OK"
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "OK"
+                };
+
             }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            _context.ModosScializacion.Add(modosScializacion);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetModosScializacion", new { id = modosScializacion.IdModosScializacion }, modosScializacion);
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
+            }
         }
 
-        // DELETE: api/ModosScializaciones/5
+        // DELETE: api/ModosScializacions/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteModosScializacion([FromRoute] int id)
+        public async Task<Response> DeleteModosScializacion([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido ",
+                    };
+                }
 
-            var modosScializacion = await _context.ModosScializacion.SingleOrDefaultAsync(m => m.IdModosScializacion == id);
-            if (modosScializacion == null)
+                var respuesta = await db.ModosScializacion.SingleOrDefaultAsync(m => m.IdModosScializacion == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No existe ",
+                    };
+                }
+                db.ModosScializacion.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Eliminado ",
+                };
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
             }
-
-            _context.ModosScializacion.Remove(modosScializacion);
-            await _context.SaveChangesAsync();
-
-            return Ok(modosScializacion);
         }
 
         private bool ModosScializacionExists(int id)
         {
-            return _context.ModosScializacion.Any(e => e.IdModosScializacion == id);
+            return db.ModosScializacion.Any(e => e.IdModosScializacion == id);
+        }
+
+
+        public Response Existe(string descripcionModosScializacion)
+        {
+
+            var loglevelrespuesta = db.ModosScializacion.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == descripcionModosScializacion).FirstOrDefault();
+            if (loglevelrespuesta != null)
+            {
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Existe un sistema de igual descripción",
+                    Resultado = null,
+                };
+
+            }
+
+            return new Response
+            {
+                IsSuccess = false,
+                Resultado = loglevelrespuesta,
+            };
         }
     }
 }
