@@ -195,7 +195,7 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(sucursal);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoCertificado.Add(sucursal);
+                    db.Sucursal.Add(sucursal);
                     await db.SaveChangesAsync();
                     return new Response
                     {
