@@ -134,6 +134,8 @@ namespace bd.swth.datos
         public virtual DbSet<NivelDesarrollo> NivelDesarrollo { get; set; }
         public virtual DbSet<Pais> Pais { get; set; }
         public virtual DbSet<PaquetesInformaticos> PaquetesInformaticos { get; set; }
+        public virtual DbSet<ParametrosGenerales> ParametrosGenerales { get; set; }
+        public virtual DbSet<TipoDiscapacidadSustituto> TipoDiscapacidadSustituto { get; set; }
         public virtual DbSet<Parentesco> Parentesco { get; set; }
         public virtual DbSet<Parroquia> Parroquia { get; set; }
         public virtual DbSet<PartidasFase> PartidasFase { get; set; }
