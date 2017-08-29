@@ -285,7 +285,7 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(TipoConcurso TipoConcurso)
         {
             var bdd = TipoConcurso.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoConcursorespuesta = db.EvaluacionInducion.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var TipoConcursorespuesta = db.TipoConcurso.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
             if (TipoConcursorespuesta != null)
             {
                 return new Response
