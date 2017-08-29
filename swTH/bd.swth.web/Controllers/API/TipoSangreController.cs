@@ -126,7 +126,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        TipoSangre.Nombre = TipoSangre.Nombre;
+                        TipoSangreActualizar.Nombre = TipoSangre.Nombre;
                         db.TipoSangre.Update(TipoSangreActualizar);
                         await db.SaveChangesAsync();
 

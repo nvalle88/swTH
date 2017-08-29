@@ -126,7 +126,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        TipoAccionPersonal.Descripcion = TipoAccionPersonal.Descripcion;
+                        TipoAccionPersonalActualizar.Descripcion = TipoAccionPersonal.Descripcion;
                         db.TipoAccionPersonal.Update(TipoAccionPersonalActualizar);
                         await db.SaveChangesAsync();
 

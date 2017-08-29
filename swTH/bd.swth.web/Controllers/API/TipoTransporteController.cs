@@ -126,7 +126,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        TipoTransporte.Descripcion = TipoTransporte.Descripcion;
+                        TipoTransporteActualizar.Descripcion = TipoTransporte.Descripcion;
                         db.TipoTransporte.Update(TipoTransporteActualizar);
                         await db.SaveChangesAsync();
 
