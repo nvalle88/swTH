@@ -81,7 +81,7 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
+                    Message = Mensaje.Satisfactorio,
                     Resultado = ciudad,
                 };
             }

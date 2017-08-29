@@ -4,7 +4,7 @@ using System.Text;
 
 namespace bd.swth.entidades.Utils
 {
-  public static  class Mensaje
+  public static class Mensaje
     {
         public static string Excepcion { get { return "Ha ocurrido una Excepción"; } }
         public static string ExisteRegistro { get { return "Existe un registro de igual información"; } }
