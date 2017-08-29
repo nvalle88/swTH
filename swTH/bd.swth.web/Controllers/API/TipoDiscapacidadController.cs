@@ -28,7 +28,7 @@ namespace bd.swth.web.Controllers.API
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoDiscapacidadController")]
+        [Route("ListarTipoDiscapacidad")]
         public async Task<List<TipoDiscapacidad>> GetTipoDiscapacidad()
         {
             try
