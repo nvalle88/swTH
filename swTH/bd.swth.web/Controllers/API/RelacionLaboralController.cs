@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.RelacionLaboral.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.RelacionLaboral.Include(x => x.RegimenLaboral).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {

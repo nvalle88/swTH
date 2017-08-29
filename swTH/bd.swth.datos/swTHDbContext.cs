@@ -3026,6 +3026,8 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdRelacionesInternasExternas)
                     .HasName("PK_RelacionesInternasExternas");
 
+                entity.Property(e => e.IdRelacionesInternasExternas).HasColumnName("RelacionesInternasExternasId");
+
                 entity.Property(e => e.Descripcion)
                     .IsRequired()
                     .HasMaxLength(50);
@@ -3089,6 +3091,8 @@ namespace bd.swth.datos
             {
                 entity.HasKey(e => e.IdRespuesta)
                     .HasName("PK_Respuesta");
+
+                entity.Property(c => c.IdRespuesta).HasColumnName("RespuestaId");
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
