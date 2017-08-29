@@ -10,12 +10,12 @@ namespace bd.swth.entidades.Negocio
         public int IdFormularioAnalisisOcupacional { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
-        [Display(Name = "¿Misión del proceso?")]
-        public bool? InternoMismoProceso { get; set; }
+        [Display(Name = "¿Misión del InstitucionFinanciera?")]
+        public bool? InternoMismoInstitucionFinanciera { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "¿Otro porceso?")]
-        public bool? InternoOtroProceso { get; set; }
+        public bool? InternoOtroInstitucionFinanciera { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "¿externos ckiudadanía?")]

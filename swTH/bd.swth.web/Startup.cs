@@ -26,7 +26,7 @@ namespace bd.swth.web
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc().AddJsonOptions(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<SwTHDbContext>(options =>
               options.UseSqlServer(Configuration.GetConnectionString("SwTHConnection")));
         }
@@ -48,8 +48,8 @@ namespace bd.swth.web
                 using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
                 .CreateScope())
                 {
-                    serviceScope.ServiceProvider.GetService<SwTHDbContext>()
-                             .Database.Migrate();
+                    //serviceScope.ServiceProvider.GetService<SwTHDbContext>()
+                    //         .Database.Migrate();
 
                     //serviceScope.ServiceProvider.GetService<SwCompartidoDbContext>().EnsureSeedData();
                 }

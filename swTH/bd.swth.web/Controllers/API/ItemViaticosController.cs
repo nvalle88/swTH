@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.swth.entidades.Enumeradores;
+using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -14,113 +19,292 @@ namespace bd.swth.web.Controllers.API
     [Route("api/ItemViaticos")]
     public class ItemViaticosController : Controller
     {
-        private readonly SwTHDbContext _context;
+        private readonly SwTHDbContext db;
 
-        public ItemViaticosController(SwTHDbContext context)
+        public ItemViaticosController(SwTHDbContext db)
         {
-            _context = context;
+            this.db = db;
         }
 
         // GET: api/ItemViaticos
         [HttpGet]
-        public IEnumerable<ItemViatico> GetItemViatico()
+        [Route("ListarItemViaticos")]
+        public async Task<List<ItemViatico>> GetItemViatico()
         {
-            return _context.ItemViatico;
+            try
+            {
+                return await db.ItemViatico.OrderBy(x => x.Descipcion).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<ItemViatico>();
+            }
         }
 
         // GET: api/ItemViaticos/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetItemViatico([FromRoute] int id)
+        public async Task<Response> GetItemViatico([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido",
+                    };
+                }
+
+                var adscbdd = await db.ItemViatico.SingleOrDefaultAsync(m => m.IdItemViatico == id);
+
+                if (adscbdd == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No encontrado",
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Ok",
+                    Resultado = adscbdd,
+                };
             }
-
-            var itemViatico = await _context.ItemViatico.SingleOrDefaultAsync(m => m.IdItemViatico == id);
-
-            if (itemViatico == null)
+            catch (Exception ex)
             {
-                return NotFound();
-            }
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            return Ok(itemViatico);
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
+            }
         }
 
         // PUT: api/ItemViaticos/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutItemViatico([FromRoute] int id, [FromBody] ItemViatico itemViatico)
+        public async Task<Response> PutItemViatico([FromRoute] int id, [FromBody] ItemViatico ItemViatico)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != itemViatico.IdItemViatico)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(itemViatico).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ItemViaticoExists(id))
+                if (!ModelState.IsValid)
                 {
-                    return NotFound();
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+
+                try
+                {
+                    var entidad = await db.ItemViatico.Where(x => x.IdItemViatico == id).FirstOrDefaultAsync();
+
+                    if (entidad == null)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "No existe información acerca del item viatico ",
+                        };
+
+                    }
+                    else
+                    {
+
+                        entidad.Descipcion = ItemViatico.Descipcion;
+                        db.ItemViatico.Update(entidad);
+                        await db.SaveChangesAsync();
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    {
+                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                        ExceptionTrace = ex,
+                        Message = "Se ha producido una exepción",
+                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                        UserName = "",
+
+                    });
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Error ",
+                    };
+                }
+
+
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Excepción"
+                };
+            }
         }
 
         // POST: api/ItemViaticos
         [HttpPost]
-        public async Task<IActionResult> PostItemViatico([FromBody] ItemViatico itemViatico)
+        [Route("InsertarItemViatico")]
+        public async Task<Response> PostItemViatico([FromBody] ItemViatico ItemViatico)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+
+                var respuesta = Existe(ItemViatico.Descipcion);
+                if (!respuesta.IsSuccess)
+                {
+                    db.ItemViatico.Add(ItemViatico);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "OK"
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "OK"
+                };
+
             }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            _context.ItemViatico.Add(itemViatico);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetItemViatico", new { id = itemViatico.IdItemViatico }, itemViatico);
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
+            }
         }
 
         // DELETE: api/ItemViaticos/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteItemViatico([FromRoute] int id)
+        public async Task<Response> DeleteItemViatico([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido ",
+                    };
+                }
 
-            var itemViatico = await _context.ItemViatico.SingleOrDefaultAsync(m => m.IdItemViatico == id);
-            if (itemViatico == null)
+                var respuesta = await db.ItemViatico.SingleOrDefaultAsync(m => m.IdItemViatico == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No existe ",
+                    };
+                }
+                db.ItemViatico.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Eliminado ",
+                };
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
             }
-
-            _context.ItemViatico.Remove(itemViatico);
-            await _context.SaveChangesAsync();
-
-            return Ok(itemViatico);
         }
 
         private bool ItemViaticoExists(int id)
         {
-            return _context.ItemViatico.Any(e => e.IdItemViatico == id);
+            return db.ItemViatico.Any(e => e.IdItemViatico == id);
+        }
+
+
+        public Response Existe(string nombreItemViatico)
+        {
+
+            var loglevelrespuesta = db.ItemViatico.Where(p => p.Descipcion.ToUpper().TrimStart().TrimEnd() == nombreItemViatico).FirstOrDefault();
+            if (loglevelrespuesta != null)
+            {
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Existe un sistema de igual descripcion",
+                    Resultado = null,
+                };
+
+            }
+
+            return new Response
+            {
+                IsSuccess = false,
+                Resultado = loglevelrespuesta,
+            };
         }
     }
 }

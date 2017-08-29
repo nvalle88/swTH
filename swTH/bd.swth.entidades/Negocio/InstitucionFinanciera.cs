@@ -8,8 +8,6 @@ namespace bd.swth.entidades.Negocio
         [Key]
         public int IdInstitucionFinanciera { get; set; }
 
-
-
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "Institución financiera:")]
         [StringLength(200, MinimumLength = 2, ErrorMessage = "El {0} no puede tener más de {1} y menos de {2}")]

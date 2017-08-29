@@ -60,17 +60,18 @@ namespace bd.swth.datos
         public virtual DbSet<EmpleadoFormularioCapacitacion> EmpleadoFormularioCapacitacion { get; set; }
         public virtual DbSet<EmpleadoIE> EmpleadoIE { get; set; }
         public virtual DbSet<EmpleadoImpuestoRenta> EmpleadoImpuestoRenta { get; set; }
+       public virtual DbSet<bd.swth.entidades.Negocio.ImpuestoRentaParametros> ImpuestoRentaParametros { get; set; }
         public virtual DbSet<EmpleadoMovimiento> EmpleadoMovimiento { get; set; }
         public virtual DbSet<EmpleadoNepotismo> EmpleadoNepotismo { get; set; }
         public virtual DbSet<EmpleadoSaldoVacaciones> EmpleadoSaldoVacaciones { get; set; }
         public virtual DbSet<EmpleadosFormularioDevengacion> EmpleadosFormularioDevengacion { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.EscalaEvaluacionTotal> EscalaEvaluacionTotal { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.EscalaGrados> EscalaGrados { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.EspecificidadExperiencia> EspecificidadExperiencia { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.Estado> Estado { get; set; }
+        public virtual DbSet<EscalaEvaluacionTotal> EscalaEvaluacionTotal { get; set; }
+        public virtual DbSet<EscalaGrados> EscalaGrados { get; set; }
+        public virtual DbSet<EspecificidadExperiencia> EspecificidadExperiencia { get; set; }
+        public virtual DbSet<Estado> Estado { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.EstadoCivil> EstadoCivil { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.Estudio> Estudio { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.Etnia> Etnia { get; set; }
+        public virtual DbSet<Estudio> Estudio { get; set; }
+        public virtual DbSet<Etnia> Etnia { get; set; }
         public virtual DbSet<Eval001> Eval001 { get; set; }
         public virtual DbSet<EvaluacionActividadesPuestoTrabajo> EvaluacionActividadesPuestoTrabajo { get; set; }
         public virtual DbSet<EvaluacionActividadesPuestoTrabajoDetalle> EvaluacionActividadesPuestoTrabajoDetalle { get; set; }
@@ -102,7 +103,8 @@ namespace bd.swth.datos
         public virtual DbSet<FrecuenciaAplicacion> FrecuenciaAplicacion { get; set; }
         public virtual DbSet<GastoRubro> GastoRubro { get; set; }
         public virtual DbSet<Genero> Genero { get; set; }
-        public virtual DbSet<GrupoOcupacional> GrupoOcupacional { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.GrupoOcupacional> GrupoOcupacional { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.InstruccionFormal> InstruccionFormal { get; set; }
         public virtual DbSet<Indicador> Indicador { get; set; }
         public virtual DbSet<IndiceOcupacional> IndiceOcupacional { get; set; }
         public virtual DbSet<IndiceOcupacionalActividadesEsenciales> IndiceOcupacionalActividadesEsenciales { get; set; }
@@ -115,7 +117,7 @@ namespace bd.swth.datos
         public virtual DbSet<InformeUATH> InformeUATH { get; set; }
         public virtual DbSet<InformeViatico> InformeViatico { get; set; }
         public virtual DbSet<IngresoEgresoRMU> IngresoEgresoRMU { get; set; }
-        public virtual DbSet<InstitucionFinanciera> InstitucionFinanciera { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.InstitucionFinanciera> InstitucionFinanciera { get; set; }
         public virtual DbSet<ItemViatico> ItemViatico { get; set; }
         public virtual DbSet<ItinerarioViatico> ItinerarioViatico { get; set; }
         public virtual DbSet<Liquidacion> Liquidacion { get; set; }
@@ -132,6 +134,8 @@ namespace bd.swth.datos
         public virtual DbSet<NivelDesarrollo> NivelDesarrollo { get; set; }
         public virtual DbSet<Pais> Pais { get; set; }
         public virtual DbSet<PaquetesInformaticos> PaquetesInformaticos { get; set; }
+        public virtual DbSet<ParametrosGenerales> ParametrosGenerales { get; set; }
+        public virtual DbSet<TipoDiscapacidadSustituto> TipoDiscapacidadSustituto { get; set; }
         public virtual DbSet<Parentesco> Parentesco { get; set; }
         public virtual DbSet<Parroquia> Parroquia { get; set; }
         public virtual DbSet<PartidasFase> PartidasFase { get; set; }
@@ -321,7 +325,7 @@ namespace bd.swth.datos
 
                 entity.HasIndex(e => e.IdSolicitudViatico)
                     .HasName("IX_AprobacionViatico_IdSolicitudViatico");
-                                       
+
                 entity.Property(e => e.ValorADescontar)
                     .HasColumnName("ValorADescontar")
                     .HasColumnType("decimal");
@@ -2250,7 +2254,7 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasMaxLength(50);
 
-              
+
 
                 entity.Property(e => e.IdFormulaRMU).HasColumnName("IdFormulaRMU");
 
@@ -2267,6 +2271,9 @@ namespace bd.swth.datos
                 entity.Property(e => e.Nombre)
                     .IsRequired()
                     .HasMaxLength(200);
+
+                entity.Property(e => e.SPI)
+                    .IsRequired();
             });
 
             modelBuilder.Entity<ItemViatico>(entity =>
@@ -2851,7 +2858,7 @@ namespace bd.swth.datos
                 entity.Property(e => e.Nombre)
                     .IsRequired()
                     .HasMaxLength(250);
-                                     
+
                 entity.HasOne(d => d.EvaluacionInducion)
                     .WithMany(p => p.Pregunta)
                     .HasForeignKey(d => d.IdEvaluacionInduccion)
@@ -3026,6 +3033,8 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdRelacionesInternasExternas)
                     .HasName("PK_RelacionesInternasExternas");
 
+                entity.Property(e => e.IdRelacionesInternasExternas).HasColumnName("RelacionesInternasExternasId");
+
                 entity.Property(e => e.Descripcion)
                     .IsRequired()
                     .HasMaxLength(50);
@@ -3089,6 +3098,8 @@ namespace bd.swth.datos
             {
                 entity.HasKey(e => e.IdRespuesta)
                     .HasName("PK_Respuesta");
+
+                entity.Property(c => c.IdRespuesta).HasColumnName("RespuestaId");
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
@@ -3768,7 +3779,7 @@ namespace bd.swth.datos
 
         }
 
-      
+
     }
 
 }

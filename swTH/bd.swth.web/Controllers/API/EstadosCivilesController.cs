@@ -106,7 +106,7 @@ namespace bd.swth.web.Controllers.API
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutEstadoCivil([FromRoute] int id, [FromBody] EstadoCivil EstadoCivil)
+        public async Task<Response> PutEstadoCivil([FromRoute] int id, [FromBody] EstadoCivil estadoCivil)
         {
             try
             {
@@ -118,16 +118,25 @@ namespace bd.swth.web.Controllers.API
                         Message = "Módelo inválido"
                     };
                 }
-                var respuesta = Existe(EstadoCivil);
+
+                var existe = Existe(estadoCivil);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess=false,
+                        Message="Existe un registro de igual nombre",
+                    };
+                }
+
                 var estadoCivilActualizar = await db.EstadoCivil.Where(x => x.IdEstadoCivil == id).FirstOrDefaultAsync();
-                if (estadoCivilActualizar != null && !respuesta.IsSuccess)
+
+                if (estadoCivilActualizar != null)
                 {
                     try
                     {
-
-                        estadoCivilActualizar.Nombre = EstadoCivil.Nombre;
-                        db.EstadoCivil.Update(estadoCivilActualizar);
-                        await db.SaveChangesAsync();
+                        estadoCivilActualizar.Nombre = estadoCivil.Nombre;
+                         await db.SaveChangesAsync();
 
                         return new Response
                         {
@@ -155,12 +164,15 @@ namespace bd.swth.web.Controllers.API
                         };
                     }
                 }
+
+
+
+
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un estado civil con igual nombre"
+                    Message = "Existe"
                 };
-
             }
             catch (Exception)
             {
@@ -184,7 +196,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = ""
+                        Message = "Módelo inválido"
                     };
                 }
 
@@ -203,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un registro con igual información"
+                    Message = "Existe un registro de igual nombre..."
                 };
 
             }

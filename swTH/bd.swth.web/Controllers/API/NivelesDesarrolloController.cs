@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
+using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.ObjectTranfer;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -14,113 +19,292 @@ namespace bd.swth.web.Controllers.API
     [Route("api/NivelesDesarrollo")]
     public class NivelesDesarrolloController : Controller
     {
-        private readonly SwTHDbContext _context;
+        private readonly SwTHDbContext db;
 
-        public NivelesDesarrolloController(SwTHDbContext context)
+        public NivelesDesarrolloController(SwTHDbContext db)
         {
-            _context = context;
+            this.db = db;
         }
 
-        // GET: api/NivelesDesarrollo
+        // GET: api/NivelDesarrollos
         [HttpGet]
-        public IEnumerable<NivelDesarrollo> GetNivelDesarrollo()
+        [Route("ListarNivelesDesarrollo")]
+        public async Task<List<NivelDesarrollo>> GetNivelDesarrollo()
         {
-            return _context.NivelDesarrollo;
-        }
-
-        // GET: api/NivelesDesarrollo/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetNivelDesarrollo([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var nivelDesarrollo = await _context.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
-
-            if (nivelDesarrollo == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(nivelDesarrollo);
-        }
-
-        // PUT: api/NivelesDesarrollo/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutNivelDesarrollo([FromRoute] int id, [FromBody] NivelDesarrollo nivelDesarrollo)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != nivelDesarrollo.IdNivelDesarrollo)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(nivelDesarrollo).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                return await db.NivelDesarrollo.OrderBy(x => x.Nombre).ToListAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!NivelDesarrolloExists(id))
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            return NoContent();
+                });
+                return new List<NivelDesarrollo>();
+            }
         }
 
-        // POST: api/NivelesDesarrollo
+        // GET: api/NivelDesarrollos/5
+        [HttpGet("{id}")]
+        public async Task<Response> GetNivelDesarrollo([FromRoute] int id)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido",
+                    };
+                }
+
+                var adscbdd = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
+
+                if (adscbdd == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No encontrado",
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Ok",
+                    Resultado = adscbdd,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
+            }
+        }
+
+        // PUT: api/NivelDesarrollos/5
+        [HttpPut("{id}")]
+        public async Task<Response> PutNivelDesarrollo([FromRoute] int id, [FromBody] NivelDesarrollo nivelDesarrollo)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
+
+
+                try
+                {
+                    var entidad = await db.NivelDesarrollo.Where(x => x.IdNivelDesarrollo == id).FirstOrDefaultAsync();
+
+                    if (entidad == null)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "No existe información acerca del Nive de Desarrollo ",
+                        };
+
+                    }
+                    else
+                    {
+
+                        entidad.Nombre = nivelDesarrollo.Nombre;
+                        db.NivelDesarrollo.Update(entidad);
+                        await db.SaveChangesAsync();
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    {
+                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                        ExceptionTrace = ex,
+                        Message = "Se ha producido una exepción",
+                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                        UserName = "",
+
+                    });
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Error ",
+                    };
+                }
+
+
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Excepción"
+                };
+            }
+        }
+
+        // POST: api/NivelDesarrollos
         [HttpPost]
-        public async Task<IActionResult> PostNivelDesarrollo([FromBody] NivelDesarrollo nivelDesarrollo)
+        [Route("InsertarNivelDesarrollo")]
+        public async Task<Response> PostNivelDesarrollo([FromBody] NivelDesarrollo nivelDesarrollo)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+
+                var respuesta = Existe(nivelDesarrollo.Nombre);
+                if (!respuesta.IsSuccess)
+                {
+                    db.NivelDesarrollo.Add(nivelDesarrollo);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "OK"
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "OK"
+                };
+
             }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            _context.NivelDesarrollo.Add(nivelDesarrollo);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetNivelDesarrollo", new { id = nivelDesarrollo.IdNivelDesarrollo }, nivelDesarrollo);
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
+            }
         }
 
-        // DELETE: api/NivelesDesarrollo/5
+        // DELETE: api/NivelDesarrollos/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteNivelDesarrollo([FromRoute] int id)
+        public async Task<Response> DeleteNivelDesarrollo([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido ",
+                    };
+                }
 
-            var nivelDesarrollo = await _context.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
-            if (nivelDesarrollo == null)
+                var respuesta = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No existe ",
+                    };
+                }
+                db.NivelDesarrollo.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Eliminado ",
+                };
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
             }
-
-            _context.NivelDesarrollo.Remove(nivelDesarrollo);
-            await _context.SaveChangesAsync();
-
-            return Ok(nivelDesarrollo);
         }
 
         private bool NivelDesarrolloExists(int id)
         {
-            return _context.NivelDesarrollo.Any(e => e.IdNivelDesarrollo == id);
+            return db.NivelDesarrollo.Any(e => e.IdNivelDesarrollo == id);
+        }
+
+
+        public Response Existe(string nombreNivelDesarrollo)
+        {
+
+            var loglevelrespuesta = db.NivelDesarrollo.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreNivelDesarrollo).FirstOrDefault();
+            if (loglevelrespuesta != null)
+            {
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Existe un sistema de igual nombre",
+                    Resultado = null,
+                };
+
+            }
+
+            return new Response
+            {
+                IsSuccess = false,
+                Resultado = loglevelrespuesta,
+            };
         }
     }
 }

@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
+using bd.swth.entidades.Utils;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -14,113 +19,293 @@ namespace bd.swth.web.Controllers.API
     [Route("api/ManualPuestos")]
     public class ManualPuestosController : Controller
     {
-        private readonly SwTHDbContext _context;
+        private readonly SwTHDbContext db;
 
-        public ManualPuestosController(SwTHDbContext context)
+        public ManualPuestosController(SwTHDbContext db)
         {
-            _context = context;
+            this.db = db;
         }
 
         // GET: api/ManualPuestos
         [HttpGet]
-        public IEnumerable<ManualPuesto> GetManualPuesto()
+        [Route("ListarManualPuestos")]
+        public async Task<List<ManualPuesto>> GetManualPuesto()
         {
-            return _context.ManualPuesto;
+            try
+            {
+                return await db.ManualPuesto.OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<ManualPuesto>();
+            }
         }
 
         // GET: api/ManualPuestos/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetManualPuesto([FromRoute] int id)
+        public async Task<Response> GetManualPuesto([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido",
+                    };
+                }
+
+                var adscbdd = await db.ManualPuesto.SingleOrDefaultAsync(m => m.IdManualPuesto == id);
+
+                if (adscbdd == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No encontrado",
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Ok",
+                    Resultado = adscbdd,
+                };
             }
-
-            var manualPuesto = await _context.ManualPuesto.SingleOrDefaultAsync(m => m.IdManualPuesto == id);
-
-            if (manualPuesto == null)
+            catch (Exception ex)
             {
-                return NotFound();
-            }
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            return Ok(manualPuesto);
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
+            }
         }
 
         // PUT: api/ManualPuestos/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutManualPuesto([FromRoute] int id, [FromBody] ManualPuesto manualPuesto)
+        public async Task<Response> PutManualPuesto([FromRoute] int id, [FromBody] ManualPuesto ManualPuesto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != manualPuesto.IdManualPuesto)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(manualPuesto).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ManualPuestoExists(id))
+                if (!ModelState.IsValid)
                 {
-                    return NotFound();
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+
+                try
+                {
+                    var entidad = await db.ManualPuesto.Where(x => x.IdManualPuesto == id).FirstOrDefaultAsync();
+
+                    if (entidad == null)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "No existe información acerca del ManualPuesto ",
+                        };
+
+                    }
+                    else
+                    {
+
+                        entidad.Descripcion = ManualPuesto.Descripcion;
+                        entidad.Nombre = ManualPuesto.Nombre;
+                        db.ManualPuesto.Update(entidad);
+                        await db.SaveChangesAsync();
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    {
+                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                        ExceptionTrace = ex,
+                        Message = "Se ha producido una exepción",
+                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                        UserName = "",
+
+                    });
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Error ",
+                    };
+                }
+
+
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Excepción"
+                };
+            }
         }
 
         // POST: api/ManualPuestos
         [HttpPost]
-        public async Task<IActionResult> PostManualPuesto([FromBody] ManualPuesto manualPuesto)
+        [Route("InsertarManualPuesto")]
+        public async Task<Response> PostManualPuesto([FromBody] ManualPuesto ManualPuesto)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+
+                var respuesta = Existe(ManualPuesto.Nombre);
+                if (!respuesta.IsSuccess)
+                {
+                    db.ManualPuesto.Add(ManualPuesto);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "OK"
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "OK"
+                };
+
             }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            _context.ManualPuesto.Add(manualPuesto);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetManualPuesto", new { id = manualPuesto.IdManualPuesto }, manualPuesto);
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
+            }
         }
 
         // DELETE: api/ManualPuestos/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteManualPuesto([FromRoute] int id)
+        public async Task<Response> DeleteManualPuesto([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido ",
+                    };
+                }
 
-            var manualPuesto = await _context.ManualPuesto.SingleOrDefaultAsync(m => m.IdManualPuesto == id);
-            if (manualPuesto == null)
+                var respuesta = await db.ManualPuesto.SingleOrDefaultAsync(m => m.IdManualPuesto == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No existe ",
+                    };
+                }
+                db.ManualPuesto.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Eliminado ",
+                };
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
             }
-
-            _context.ManualPuesto.Remove(manualPuesto);
-            await _context.SaveChangesAsync();
-
-            return Ok(manualPuesto);
         }
 
         private bool ManualPuestoExists(int id)
         {
-            return _context.ManualPuesto.Any(e => e.IdManualPuesto == id);
+            return db.ManualPuesto.Any(e => e.IdManualPuesto == id);
+        }
+
+
+        public Response Existe(string nombreManualPuesto)
+        {
+
+            var loglevelrespuesta = db.ManualPuesto.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreManualPuesto).FirstOrDefault();
+            if (loglevelrespuesta != null)
+            {
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Existe un sistema de igual nombre",
+                    Resultado = null,
+                };
+
+            }
+
+            return new Response
+            {
+                IsSuccess = false,
+                Resultado = loglevelrespuesta,
+            };
         }
     }
 }
