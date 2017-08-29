@@ -26,7 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/FormularioCapacitaciones
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarFormularioCapacitaciones")]
         public async Task<List<FormularioCapacitacion>> GetFormularioCapacitacion()
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/FormularioCapacitaciones/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetFormularioCapacitacion([FromRoute] int id)
         {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.FormularioCapacitacion.SingleOrDefaultAsync(m => m.IdFormularioCapacitacion == id);
+                var FormularioCapacitacion = await db.FormularioCapacitacion.SingleOrDefaultAsync(m => m.IdFormularioCapacitacion == id);
 
-                if (adscbdd == null)
+                if (FormularioCapacitacion == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = FormularioCapacitacion,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/FormularioCapacitaciones/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutFormularioCapacitacion([FromRoute] int id, [FromBody] FormularioCapacitacion formularioCapacitacion)
+        public async Task<Response> PutFormularioCapacitacion([FromRoute] int id, [FromBody] FormularioCapacitacion FormularioCapacitacion)
         {
             try
             {
@@ -119,63 +119,60 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existeFormularioCapacitacion = Existe(formularioCapacitacion.Descripcion);
-                if (existeFormularioCapacitacion.IsSuccess)
+                var existe = Existe(FormularioCapacitacion);
+                if (existe.IsSuccess)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe un FormularioCapacitacion de igual descripción",
+                        Message = "Existe un registro de igual porciento",
                     };
                 }
-                try
+
+                var FormularioCapacitacionActualizar = await db.FormularioCapacitacion.Where(x => x.IdFormularioCapacitacion == id).FirstOrDefaultAsync();
+
+                if (FormularioCapacitacionActualizar != null)
                 {
-                    var entidad = await  db.FormularioCapacitacion.Where(x => x.IdFormularioCapacitacion == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    try
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca de el Formulario de Capcitación ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.Descripcion = formularioCapacitacion.Descripcion;
-                        db.FormularioCapacitacion.Update(entidad);
+                        FormularioCapacitacionActualizar.Descripcion = FormularioCapacitacion.Descripcion;
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
-                   
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -187,18 +184,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/FormularioCapacitaciones
+        // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarFormularioCapacitacion")]
-        public async Task<Response> PostFormularioCapacitacion([FromBody] FormularioCapacitacion formularioCapacitacion)
+        public async Task<Response> PostFormularioCapacitacion([FromBody] FormularioCapacitacion FormularioCapacitacion)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(formularioCapacitacion.Descripcion);
+                var respuesta = Existe(FormularioCapacitacion);
                 if (!respuesta.IsSuccess)
                 {
-                    db.FormularioCapacitacion.Add(formularioCapacitacion);
+                    db.FormularioCapacitacion.Add(FormularioCapacitacion);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -210,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = "Existe un registro de igual porciento..."
                 };
 
             }
@@ -220,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -234,7 +239,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/FormularioCapacitaciones/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteFormularioCapacitacion([FromRoute] int id)
         {
@@ -273,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -287,22 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool FormularioCapacitacionExists(int id)
+        private Response Existe(FormularioCapacitacion FormularioCapacitacion)
         {
-            return db.FormularioCapacitacion.Any(e => e.IdFormularioCapacitacion == id);
-        }
-
-
-        public Response Existe(string nombreFormularioCapacitacion)
-        {
-
-            var loglevelrespuesta = db.FormularioCapacitacion.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == nombreFormularioCapacitacion).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            string bdd = FormularioCapacitacion.Descripcion;
+            var FormularioCapacitacionrespuesta = db.FormularioCapacitacion.Where(p => p.Descripcion.ToUpper()==FormularioCapacitacion.Descripcion.ToUpper()).FirstOrDefault();
+            if (FormularioCapacitacionrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual descripción",
+                    Message = "Existe un porciento de igual nombre",
                     Resultado = null,
                 };
 
@@ -311,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = FormularioCapacitacionrespuesta,
             };
         }
+
     }
 }

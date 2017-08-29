@@ -26,7 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/Factores
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarFactores")]
         public async Task<List<Factor>> GetFactor()
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/Factores/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetFactor([FromRoute] int id)
         {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.Factor.SingleOrDefaultAsync(m => m.IdFactor == id);
+                var Factor = await db.Factor.SingleOrDefaultAsync(m => m.IdFactor == id);
 
-                if (adscbdd == null)
+                if (Factor == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = Factor,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/Factores/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutFactor([FromRoute] int id, [FromBody] Factor factor)
+        public async Task<Response> PutFactor([FromRoute] int id, [FromBody] Factor Factor)
         {
             try
             {
@@ -119,47 +119,60 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existeFactor = Existe((decimal)factor.Porciento);
-                if (existeFactor.IsSuccess)
+                var existe = Existe(Factor);
+                if (existe.IsSuccess)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe un factor de igual porciento",
+                        Message = "Existe un registro de igual porciento",
                     };
                 }
-                try
+
+                var FactorActualizar = await db.Factor.Where(x => x.IdFactor == id).FirstOrDefaultAsync();
+
+                if (FactorActualizar != null)
                 {
-                    db.Factor.Update(factor);
-                    await db.SaveChangesAsync();
-
-                    return new Response
+                    try
                     {
-                        IsSuccess = true,
-                        Message = "Ok",
-                    };
+                        FactorActualizar.Porciento = Factor.Porciento;
+                        await db.SaveChangesAsync();
 
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -171,18 +184,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/Factores
+        // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarFactor")]
-        public async Task<Response> PostFactor([FromBody] Factor factor)
+        public async Task<Response> PostFactor([FromBody] Factor Factor)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe((decimal)factor.Porciento);
+                var respuesta = Existe(Factor);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Factor.Add(factor);
+                    db.Factor.Add(Factor);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -194,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = "Existe un registro de igual porciento..."
                 };
 
             }
@@ -204,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -218,7 +239,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/Factores/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteFactor([FromRoute] int id)
         {
@@ -257,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -271,22 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool FactorExists(int id)
+        private Response Existe(Factor Factor)
         {
-            return db.Factor.Any(e => e.IdFactor == id);
-        }
-
-
-        public Response Existe(decimal porciento)
-        {
-
-            var loglevelrespuesta = db.Factor.Where(p => p.Porciento == porciento).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = Factor.Porciento;
+            var Factorrespuesta = db.Factor.Where(p => p.Porciento == bdd).FirstOrDefault();
+            if (Factorrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual porciento",
+                    Message = "Existe un porciento de igual nombre",
                     Resultado = null,
                 };
 
@@ -295,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = Factorrespuesta,
             };
         }
+
     }
 }

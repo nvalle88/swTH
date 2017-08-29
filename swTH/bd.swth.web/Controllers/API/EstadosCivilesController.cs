@@ -106,7 +106,7 @@ namespace bd.swth.web.Controllers.API
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutEstadoCivil([FromRoute] int id, [FromBody] EstadoCivil EstadoCivil)
+        public async Task<Response> PutEstadoCivil([FromRoute] int id, [FromBody] EstadoCivil estadoCivil)
         {
             try
             {
@@ -119,14 +119,23 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var existe = Existe(estadoCivil);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual nombre",
+                    };
+                }
+
                 var estadoCivilActualizar = await db.EstadoCivil.Where(x => x.IdEstadoCivil == id).FirstOrDefaultAsync();
+
                 if (estadoCivilActualizar != null)
                 {
                     try
                     {
-
-                        estadoCivilActualizar.Nombre = EstadoCivil.Nombre;
-                        db.EstadoCivil.Update(estadoCivilActualizar);
+                        estadoCivilActualizar.Nombre = estadoCivil.Nombre;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -206,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = "Existe un registro de igual nombre..."
                 };
 
             }
