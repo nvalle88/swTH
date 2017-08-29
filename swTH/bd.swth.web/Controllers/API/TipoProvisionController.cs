@@ -4,36 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
-using bd.swth.entidades.Utils;
+using bd.log.guardar.Utiles;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/EstadosCiviles")]
-    public class EstadosCivilesController : Controller
+    [Route("api/TipoProvision")]
+    public class TipoProvisionController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public EstadosCivilesController(SwTHDbContext db)
+        public TipoProvisionController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        // GET: api/ListarTipoProvision
         [HttpGet]
-        [Route("ListarEstadosCiviles")]
-        public async Task<List<EstadoCivil>> GetEstadoCivil()
+        [Route("ListarTipoProvision")]
+        public async Task<List<TipoProvision>> GetTipoProvision()
         {
             try
             {
-                return await db.EstadoCivil.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoProvision.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,20 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una exepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<EstadoCivil>();
+                return new List<TipoProvision>();
             }
         }
 
-        // GET: api/BasesDatos/5
+
+        // GET: api/TipoProvision/5
         [HttpGet("{id}")]
-        public async Task<Response> GetEstadoCivil([FromRoute] int id)
+        public async Task<Response> GetTipoProvision([FromRoute] int id)
         {
             try
             {
@@ -62,26 +63,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido",
                     };
                 }
 
-                var EstadoCivil = await db.EstadoCivil.SingleOrDefaultAsync(m => m.IdEstadoCivil == id);
+                var TipoProvision = await db.TipoProvision.SingleOrDefaultAsync(m => m.IdTipoProvision == id);
 
-                if (EstadoCivil == null)
+                if (TipoProvision == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No encontrado",
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = EstadoCivil,
+                    Message = "Ok",
+                    Resultado = TipoProvision,
                 };
             }
             catch (Exception ex)
@@ -90,7 +91,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una exepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +100,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio,
+                    Message = "Error ",
                 };
             }
         }
 
-        // PUT: api/BasesDatos/5
+
+        // PUT: api/TipoProvision/5
         [HttpPut("{id}")]
-        public async Task<Response> PutEstadoCivil([FromRoute] int id, [FromBody] EstadoCivil estadoCivil)
+        public async Task<Response> PutTipoProvision([FromRoute] int id, [FromBody] TipoProvision TipoProvision)
         {
             try
             {
@@ -115,33 +117,23 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-                var existe = Existe(estadoCivil);
-                if (existe.IsSuccess)
-                {
-                    return new Response
-                    {
-                        IsSuccess=false,
-                        Message=Mensaje.ExisteRegistro,
-                    };
-                }
-
-                var estadoCivilActualizar = await db.EstadoCivil.Where(x => x.IdEstadoCivil == id).FirstOrDefaultAsync();
-
-                if (estadoCivilActualizar != null)
+                var TipoProvisionActualizar = await db.TipoProvision.Where(x => x.IdTipoProvision == id).FirstOrDefaultAsync();
+                if (TipoProvisionActualizar != null)
                 {
                     try
                     {
-                        estadoCivilActualizar.Nombre = estadoCivil.Nombre;
-                         await db.SaveChangesAsync();
+                        TipoProvisionActualizar.Descripcion = TipoProvision.Descripcion;
+                        db.TipoProvision.Update(TipoProvisionActualizar);
+                        await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
+                            Message = "Ok",
                         };
 
                     }
@@ -151,7 +143,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
+                            Message = "Se ha producido una exepción",
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -160,7 +152,7 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = Mensaje.Error,
+                            Message = "Error ",
                         };
                     }
                 }
@@ -171,7 +163,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = "Existe"
                 };
             }
             catch (Exception)
@@ -179,15 +171,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Excepcion
+                    Message = "Excepción"
                 };
             }
         }
 
-        // POST: api/BasesDatos
+        // POST: api/TipoProvision
         [HttpPost]
-        [Route("InsertarEstadoCivil")]
-        public async Task<Response> PostEstadoCivil([FromBody] EstadoCivil EstadoCivil)
+        [Route("InsertarTipoProvision")]
+        public async Task<Response> PostTipoProvision([FromBody] TipoProvision TipoProvision)
         {
             try
             {
@@ -196,26 +188,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-                var respuesta = Existe(EstadoCivil);
+                var respuesta = Existe(TipoProvision);
                 if (!respuesta.IsSuccess)
                 {
-                    db.EstadoCivil.Add(EstadoCivil);
+                    db.TipoProvision.Add(TipoProvision);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = "OK"
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = "OK"
                 };
 
             }
@@ -225,7 +217,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una exepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -234,14 +226,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        // DELETE: api/TipoProvision/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteEstadoCivil([FromRoute] int id)
+        public async Task<Response> DeleteTipoProvision([FromRoute] int id)
         {
             try
             {
@@ -250,26 +242,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido ",
                     };
                 }
 
-                var respuesta = await db.EstadoCivil.SingleOrDefaultAsync(m => m.IdEstadoCivil == id);
+                var respuesta = await db.TipoProvision.SingleOrDefaultAsync(m => m.IdTipoProvision == id);
                 if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No existe ",
                     };
                 }
-                db.EstadoCivil.Remove(respuesta);
+                db.TipoProvision.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = "Eliminado ",
                 };
             }
             catch (Exception ex)
@@ -278,7 +270,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una exepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -287,21 +279,26 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        private Response Existe(EstadoCivil EstadoCivil)
+        private bool TipoProvisionExists(string nombre)
         {
-            var bdd = EstadoCivil.Nombre.ToUpper().TrimEnd().TrimStart();
-            var estadocivilrespuesta = db.EstadoCivil.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (estadocivilrespuesta != null)
+            return db.TipoProvision.Any(e => e.Descripcion == nombre);
+        }
+
+        public Response Existe(TipoProvision TipoProvision)
+        {
+            var bdd = TipoProvision.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var loglevelrespuesta = db.TipoProvision.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (loglevelrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
+                    Message = "Existe un tipo de Provision de igual descripcion",
                     Resultado = null,
                 };
 
@@ -310,7 +307,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = estadocivilrespuesta,
+                Resultado = loglevelrespuesta,
             };
         }
     }

@@ -66,6 +66,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+
                 var BrigadaSSO = await db.BrigadaSSO.SingleOrDefaultAsync(m => m.IdBrigadaSSO == id);
 
                 if (BrigadaSSO == null)
@@ -119,6 +120,15 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var existe = Existe(BrigadaSSO);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual nombre",
+                    };
+                }
                 var BrigadaSSOActualizar = await db.BrigadaSSO.Where(x => x.IdBrigadaSSO == id).FirstOrDefaultAsync();
                 if (BrigadaSSOActualizar != null)
                 {
@@ -187,7 +197,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = ""
                     };
                 }
 

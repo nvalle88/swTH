@@ -4,36 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
-using bd.swth.entidades.Utils;
+using bd.log.guardar.Utiles;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/EstadosCiviles")]
-    public class EstadosCivilesController : Controller
+    [Route("api/TipoSangre")]
+    public class TipoSangreController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public EstadosCivilesController(SwTHDbContext db)
+        public TipoSangreController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        // GET: api/ListarTipoSangre
         [HttpGet]
-        [Route("ListarEstadosCiviles")]
-        public async Task<List<EstadoCivil>> GetEstadoCivil()
+        [Route("ListarTipoSangre")]
+        public async Task<List<TipoSangre>> GetTipoSangre()
         {
             try
             {
-                return await db.EstadoCivil.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoSangre.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,20 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una exepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<EstadoCivil>();
+                return new List<TipoSangre>();
             }
         }
 
-        // GET: api/BasesDatos/5
+
+        // GET: api/TipoSangre/5
         [HttpGet("{id}")]
-        public async Task<Response> GetEstadoCivil([FromRoute] int id)
+        public async Task<Response> GetTipoSangre([FromRoute] int id)
         {
             try
             {
@@ -62,26 +63,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido",
                     };
                 }
 
-                var EstadoCivil = await db.EstadoCivil.SingleOrDefaultAsync(m => m.IdEstadoCivil == id);
+                var TipoSangre = await db.TipoSangre.SingleOrDefaultAsync(m => m.IdTipoSangre == id);
 
-                if (EstadoCivil == null)
+                if (TipoSangre == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No encontrado",
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = EstadoCivil,
+                    Message = "Ok",
+                    Resultado = TipoSangre,
                 };
             }
             catch (Exception ex)
@@ -90,7 +91,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una exepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +100,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio,
+                    Message = "Error ",
                 };
             }
         }
 
-        // PUT: api/BasesDatos/5
+
+        // PUT: api/TipoSangre/5
         [HttpPut("{id}")]
-        public async Task<Response> PutEstadoCivil([FromRoute] int id, [FromBody] EstadoCivil estadoCivil)
+        public async Task<Response> PutTipoSangre([FromRoute] int id, [FromBody] TipoSangre TipoSangre)
         {
             try
             {
@@ -115,33 +117,23 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-                var existe = Existe(estadoCivil);
-                if (existe.IsSuccess)
-                {
-                    return new Response
-                    {
-                        IsSuccess=false,
-                        Message=Mensaje.ExisteRegistro,
-                    };
-                }
-
-                var estadoCivilActualizar = await db.EstadoCivil.Where(x => x.IdEstadoCivil == id).FirstOrDefaultAsync();
-
-                if (estadoCivilActualizar != null)
+                var TipoSangreActualizar = await db.TipoSangre.Where(x => x.IdTipoSangre == id).FirstOrDefaultAsync();
+                if (TipoSangreActualizar != null)
                 {
                     try
                     {
-                        estadoCivilActualizar.Nombre = estadoCivil.Nombre;
-                         await db.SaveChangesAsync();
+                        TipoSangreActualizar.Nombre = TipoSangre.Nombre;
+                        db.TipoSangre.Update(TipoSangreActualizar);
+                        await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
+                            Message = "Ok",
                         };
 
                     }
@@ -151,7 +143,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
+                            Message = "Se ha producido una exepción",
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -160,7 +152,7 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = Mensaje.Error,
+                            Message = "Error ",
                         };
                     }
                 }
@@ -171,7 +163,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = "Existe"
                 };
             }
             catch (Exception)
@@ -179,15 +171,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Excepcion
+                    Message = "Excepción"
                 };
             }
         }
 
-        // POST: api/BasesDatos
+        // POST: api/TipoSangre
         [HttpPost]
-        [Route("InsertarEstadoCivil")]
-        public async Task<Response> PostEstadoCivil([FromBody] EstadoCivil EstadoCivil)
+        [Route("InsertarTipoSangre")]
+        public async Task<Response> PostTipoSangre([FromBody] TipoSangre TipoSangre)
         {
             try
             {
@@ -196,26 +188,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-                var respuesta = Existe(EstadoCivil);
+                var respuesta = Existe(TipoSangre);
                 if (!respuesta.IsSuccess)
                 {
-                    db.EstadoCivil.Add(EstadoCivil);
+                    db.TipoSangre.Add(TipoSangre);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = "OK"
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = "OK"
                 };
 
             }
@@ -225,7 +217,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una exepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -234,14 +226,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        // DELETE: api/TipoSangre/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteEstadoCivil([FromRoute] int id)
+        public async Task<Response> DeleteTipoSangre([FromRoute] int id)
         {
             try
             {
@@ -250,26 +242,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido ",
                     };
                 }
 
-                var respuesta = await db.EstadoCivil.SingleOrDefaultAsync(m => m.IdEstadoCivil == id);
+                var respuesta = await db.TipoSangre.SingleOrDefaultAsync(m => m.IdTipoSangre == id);
                 if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No existe ",
                     };
                 }
-                db.EstadoCivil.Remove(respuesta);
+                db.TipoSangre.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = "Eliminado ",
                 };
             }
             catch (Exception ex)
@@ -278,7 +270,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una exepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -287,21 +279,26 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        private Response Existe(EstadoCivil EstadoCivil)
+        private bool TipoSangreExists(string nombre)
         {
-            var bdd = EstadoCivil.Nombre.ToUpper().TrimEnd().TrimStart();
-            var estadocivilrespuesta = db.EstadoCivil.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (estadocivilrespuesta != null)
+            return db.TipoSangre.Any(e => e.Nombre == nombre);
+        }
+
+        public Response Existe(TipoSangre TipoSangre)
+        {
+            var bdd = TipoSangre.Nombre.ToUpper().TrimEnd().TrimStart();
+            var loglevelrespuesta = db.TipoSangre.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (loglevelrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
+                    Message = "Existe un tipo de sangre de igual nombre",
                     Resultado = null,
                 };
 
@@ -310,7 +307,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = estadocivilrespuesta,
+                Resultado = loglevelrespuesta,
             };
         }
     }
