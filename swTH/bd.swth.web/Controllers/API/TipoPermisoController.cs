@@ -126,7 +126,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        TipoPermiso.Nombre = TipoPermiso.Nombre;
+                        TipoPermisoActualizar.Nombre = TipoPermiso.Nombre;
                         db.TipoPermiso.Update(TipoPermisoActualizar);
                         await db.SaveChangesAsync();
 

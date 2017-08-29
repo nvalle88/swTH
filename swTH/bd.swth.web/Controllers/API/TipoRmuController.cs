@@ -126,7 +126,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        TipoRMU.Descripcion = TipoRMU.Descripcion;
+                        TipoRMUActualizar.Descripcion = TipoRMU.Descripcion;
                         db.TipoRMU.Update(TipoRMUActualizar);
                         await db.SaveChangesAsync();
 
