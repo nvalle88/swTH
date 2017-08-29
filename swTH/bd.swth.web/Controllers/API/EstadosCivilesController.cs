@@ -118,9 +118,9 @@ namespace bd.swth.web.Controllers.API
                         Message = "Módelo inválido"
                     };
                 }
-
+                var respuesta = Existe(EstadoCivil);
                 var estadoCivilActualizar = await db.EstadoCivil.Where(x => x.IdEstadoCivil == id).FirstOrDefaultAsync();
-                if (estadoCivilActualizar != null)
+                if (estadoCivilActualizar != null && !respuesta.IsSuccess)
                 {
                     try
                     {
@@ -155,15 +155,12 @@ namespace bd.swth.web.Controllers.API
                         };
                     }
                 }
-
-
-
-
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe"
+                    Message = "Existe un estado civil con igual nombre"
                 };
+
             }
             catch (Exception)
             {
@@ -187,7 +184,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = ""
                     };
                 }
 
@@ -206,7 +203,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = "Existe un registro con igual información"
                 };
 
             }

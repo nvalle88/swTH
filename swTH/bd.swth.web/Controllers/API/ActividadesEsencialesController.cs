@@ -187,7 +187,7 @@ namespace bd.swth.web.Controllers
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = ""
                     };
                 }
 
@@ -206,7 +206,7 @@ namespace bd.swth.web.Controllers
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = "Existe un registro con igual información"
                 };
 
             }
