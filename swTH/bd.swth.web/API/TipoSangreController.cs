@@ -4,36 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
-using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
+using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.swth.entidades.Utils;
+using bd.log.guardar.Utiles;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/GruposOcupacionales")]
-    public class GruposOcupacionalesController : Controller
+    [Route("api/TipoSangre")]
+    public class TipoSangreController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public GruposOcupacionalesController(SwTHDbContext db)
+        public TipoSangreController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/GrupoOcupacionals
+        // GET: api/ListarTipoSangre
         [HttpGet]
-        [Route("ListarGrupoOcupacionales")]
-        public async Task<List<GrupoOcupacional>> GetGrupoOcupacional()
+        [Route("ListarTipoSangre")]
+        public async Task<List<TipoSangre>> GetTipoSangre()
         {
             try
             {
-                return await db.GrupoOcupacional.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoSangre.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,14 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<GrupoOcupacional>();
+                return new List<TipoSangre>();
             }
         }
 
-        // GET: api/GrupoOcupacionals/5
+
+        // GET: api/TipoSangre/5
         [HttpGet("{id}")]
-        public async Task<Response> GetGrupoOcupacional([FromRoute] int id)
+        public async Task<Response> GetTipoSangre([FromRoute] int id)
         {
             try
             {
@@ -66,9 +67,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.GrupoOcupacional.SingleOrDefaultAsync(m => m.IdGrupoOcupacional == id);
+                var TipoSangre = await db.TipoSangre.SingleOrDefaultAsync(m => m.IdTipoSangre == id);
 
-                if (adscbdd == null)
+                if (TipoSangre == null)
                 {
                     return new Response
                     {
@@ -81,7 +82,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = TipoSangre,
                 };
             }
             catch (Exception ex)
@@ -104,9 +105,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/GrupoOcupacionals/5
+
+        // PUT: api/TipoSangre/5
         [HttpPut("{id}")]
-        public async Task<Response> PutGrupoOcupacional([FromRoute] int id, [FromBody] GrupoOcupacional grupoOcupacional)
+        public async Task<Response> PutTipoSangre([FromRoute] int id, [FromBody] TipoSangre TipoSangre)
         {
             try
             {
@@ -119,55 +121,50 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var TipoSangreActualizar = await db.TipoSangre.Where(x => x.IdTipoSangre == id).FirstOrDefaultAsync();
+                if (TipoSangreActualizar != null)
                 {
-                    var entidad = await db.GrupoOcupacional.Where(x => x.IdGrupoOcupacional == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    try
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del Grupo Ocupacional ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.Nombre = grupoOcupacional.Nombre;
-                        db.GrupoOcupacional.Update(entidad);
+                        TipoSangreActualizar.Nombre = TipoSangre.Nombre;
+                        db.TipoSangre.Update(TipoSangreActualizar);
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una exepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -179,18 +176,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/GrupoOcupacionals
+        // POST: api/TipoSangre
         [HttpPost]
-        [Route("InsertarGrupoOcupacional")]
-        public async Task<Response> PostGrupoOcupacional([FromBody] GrupoOcupacional GrupoOcupacional)
+        [Route("InsertarTipoSangre")]
+        public async Task<Response> PostTipoSangre([FromBody] TipoSangre TipoSangre)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(GrupoOcupacional.Nombre);
+                var respuesta = Existe(TipoSangre);
                 if (!respuesta.IsSuccess)
                 {
-                    db.GrupoOcupacional.Add(GrupoOcupacional);
+                    db.TipoSangre.Add(TipoSangre);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -226,9 +231,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/GrupoOcupacionals/5
+        // DELETE: api/TipoSangre/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteGrupoOcupacional([FromRoute] int id)
+        public async Task<Response> DeleteTipoSangre([FromRoute] int id)
         {
             try
             {
@@ -241,7 +246,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.GrupoOcupacional.SingleOrDefaultAsync(m => m.IdGrupoOcupacional == id);
+                var respuesta = await db.TipoSangre.SingleOrDefaultAsync(m => m.IdTipoSangre == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -250,7 +255,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.GrupoOcupacional.Remove(respuesta);
+                db.TipoSangre.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -279,22 +284,21 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool GrupoOcupacionalExists(int id)
+        private bool TipoSangreExists(string nombre)
         {
-            return db.GrupoOcupacional.Any(e => e.IdGrupoOcupacional == id);
+            return db.TipoSangre.Any(e => e.Nombre == nombre);
         }
 
-
-        public Response Existe(string nombreGrupoOcupacional)
+        public Response Existe(TipoSangre TipoSangre)
         {
-
-            var loglevelrespuesta = db.GrupoOcupacional.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreGrupoOcupacional).FirstOrDefault();
+            var bdd = TipoSangre.Nombre.ToUpper().TrimEnd().TrimStart();
+            var loglevelrespuesta = db.TipoSangre.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe un tipo de sangre de igual nombre",
                     Resultado = null,
                 };
 
@@ -306,6 +310,5 @@ namespace bd.swth.web.Controllers.API
                 Resultado = loglevelrespuesta,
             };
         }
-
     }
 }

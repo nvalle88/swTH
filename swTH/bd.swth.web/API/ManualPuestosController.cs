@@ -7,33 +7,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
+using bd.swth.entidades.Utils;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
-using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/FormulasRMU")]
-    public class FormulasRMUController : Controller
+    [Route("api/ManualPuestos")]
+    public class ManualPuestosController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public FormulasRMUController(SwTHDbContext db)
+        public ManualPuestosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/FormulasRMU
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarFormulasRmu")]
-        public async Task<List<FormulasRMU>> GetFormulasRmu()
+        [Route("ListarManualPuestos")]
+        public async Task<List<ManualPuesto>> GetManualPuesto()
         {
             try
             {
-                return await db.FormulasRMU.OrderBy(x => x.Formula).ToListAsync();
+                return await db.ManualPuesto.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<FormulasRMU>();
+                return new List<ManualPuesto>();
             }
         }
 
-        // GET: api/FormulasRmus/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetFormulasRmu([FromRoute] int id)
+        public async Task<Response> GetManualPuesto([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.FormulasRMU.SingleOrDefaultAsync(m => m.IdFormulaRMU == id);
+                var ManualPuesto = await db.ManualPuesto.SingleOrDefaultAsync(m => m.IdManualPuesto == id);
 
-                if (adscbdd == null)
+                if (ManualPuesto == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = ManualPuesto,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/FormulasRmus/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutFormulasRmu([FromRoute] int id, [FromBody] FormulasRMU formulasRmu)
+        public async Task<Response> PutManualPuesto([FromRoute] int id, [FromBody] ManualPuesto ManualPuesto)
         {
             try
             {
@@ -119,63 +119,61 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existeFormulasRmu = Existe(formulasRmu.Formula);
-                if (existeFormulasRmu.IsSuccess)
+                var existe = Existe(ManualPuesto);
+                if (existe.IsSuccess)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe un FormulasRmu de igual fórmula",
+                        Message = "Existe un registro de igual Nombre",
                     };
                 }
-                try
+
+                var ManualPuestoActualizar = await db.ManualPuesto.Where(x => x.IdManualPuesto == id).FirstOrDefaultAsync();
+
+                if (ManualPuestoActualizar != null)
                 {
-                    var entidad = await db.FormulasRMU.Where(x => x.IdFormulaRMU == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    try
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca de el Formulario RMU ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.Formula = formulasRmu.Formula;
-                        db.FormulasRMU.Update(entidad);
+                        ManualPuestoActualizar.Nombre = ManualPuesto.Nombre;
+                        ManualPuestoActualizar.Descripcion = ManualPuesto.Descripcion;
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -187,18 +185,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // api/FormulasRMU
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarFormulasRmu")]
-        public async Task<Response> PostFormulasRmu([FromBody] FormulasRMU FormulasRmu)
+        [Route("InsertarManualPuestos")]
+        public async Task<Response> PostManualPuesto([FromBody] ManualPuesto ManualPuesto)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(FormulasRmu.Formula);
+                var respuesta = Existe(ManualPuesto);
                 if (!respuesta.IsSuccess)
                 {
-                    db.FormulasRMU.Add(FormulasRmu);
+                    db.ManualPuesto.Add(ManualPuesto);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -210,7 +216,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = "Existe un registro de igual Nombre..."
                 };
 
             }
@@ -220,7 +226,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -234,9 +240,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/FormulasRMU/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteFormulasRmu([FromRoute] int id)
+        public async Task<Response> DeleteManualPuesto([FromRoute] int id)
         {
             try
             {
@@ -249,7 +255,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.FormulasRMU.SingleOrDefaultAsync(m => m.IdFormulaRMU == id);
+                var respuesta = await db.ManualPuesto.SingleOrDefaultAsync(m => m.IdManualPuesto == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -258,7 +264,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.FormulasRMU.Remove(respuesta);
+                db.ManualPuesto.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -273,7 +279,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -287,22 +293,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool FormulasRmuExists(int id)
+        private Response Existe(ManualPuesto ManualPuesto)
         {
-            return db.FormulasRMU.Any(e => e.IdFormulaRMU == id);
-        }
-
-
-        public Response Existe(string nombreFormulasRmu)
-        {
-
-            var loglevelrespuesta = db.FormulasRMU.Where(p => p.Formula.ToUpper().TrimStart().TrimEnd() == nombreFormulasRmu).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = ManualPuesto.Nombre;
+            var ManualPuestorespuesta = db.ManualPuesto.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (ManualPuestorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual formula",
+                    Message = "Existe un Manual Puesto de igual nombre",
                     Resultado = null,
                 };
 
@@ -311,8 +311,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = ManualPuestorespuesta,
             };
         }
+
     }
 }

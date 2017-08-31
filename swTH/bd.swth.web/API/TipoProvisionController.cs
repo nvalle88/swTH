@@ -4,36 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Utils;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
+using bd.log.guardar.Utiles;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/ManualPuestos")]
-    public class ManualPuestosController : Controller
+    [Route("api/TipoProvision")]
+    public class TipoProvisionController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public ManualPuestosController(SwTHDbContext db)
+        public TipoProvisionController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/ManualPuestos
+        // GET: api/ListarTipoProvision
         [HttpGet]
-        [Route("ListarManualPuestos")]
-        public async Task<List<ManualPuesto>> GetManualPuesto()
+        [Route("ListarTipoProvision")]
+        public async Task<List<TipoProvision>> GetTipoProvision()
         {
             try
             {
-                return await db.ManualPuesto.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoProvision.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,14 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<ManualPuesto>();
+                return new List<TipoProvision>();
             }
         }
 
-        // GET: api/ManualPuestos/5
+
+        // GET: api/TipoProvision/5
         [HttpGet("{id}")]
-        public async Task<Response> GetManualPuesto([FromRoute] int id)
+        public async Task<Response> GetTipoProvision([FromRoute] int id)
         {
             try
             {
@@ -66,9 +67,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.ManualPuesto.SingleOrDefaultAsync(m => m.IdManualPuesto == id);
+                var TipoProvision = await db.TipoProvision.SingleOrDefaultAsync(m => m.IdTipoProvision == id);
 
-                if (adscbdd == null)
+                if (TipoProvision == null)
                 {
                     return new Response
                     {
@@ -81,7 +82,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = TipoProvision,
                 };
             }
             catch (Exception ex)
@@ -104,9 +105,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/ManualPuestos/5
+
+        // PUT: api/TipoProvision/5
         [HttpPut("{id}")]
-        public async Task<Response> PutManualPuesto([FromRoute] int id, [FromBody] ManualPuesto ManualPuesto)
+        public async Task<Response> PutTipoProvision([FromRoute] int id, [FromBody] TipoProvision TipoProvision)
         {
             try
             {
@@ -119,56 +121,50 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var TipoProvisionActualizar = await db.TipoProvision.Where(x => x.IdTipoProvision == id).FirstOrDefaultAsync();
+                if (TipoProvisionActualizar != null)
                 {
-                    var entidad = await db.ManualPuesto.Where(x => x.IdManualPuesto == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    try
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del ManualPuesto ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.Descripcion = ManualPuesto.Descripcion;
-                        entidad.Nombre = ManualPuesto.Nombre;
-                        db.ManualPuesto.Update(entidad);
+                        TipoProvisionActualizar.Descripcion = TipoProvision.Descripcion;
+                        db.TipoProvision.Update(TipoProvisionActualizar);
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una exepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -180,18 +176,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/ManualPuestos
+        // POST: api/TipoProvision
         [HttpPost]
-        [Route("InsertarManualPuesto")]
-        public async Task<Response> PostManualPuesto([FromBody] ManualPuesto ManualPuesto)
+        [Route("InsertarTipoProvision")]
+        public async Task<Response> PostTipoProvision([FromBody] TipoProvision TipoProvision)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(ManualPuesto.Nombre);
+                var respuesta = Existe(TipoProvision);
                 if (!respuesta.IsSuccess)
                 {
-                    db.ManualPuesto.Add(ManualPuesto);
+                    db.TipoProvision.Add(TipoProvision);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -227,9 +231,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/ManualPuestos/5
+        // DELETE: api/TipoProvision/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteManualPuesto([FromRoute] int id)
+        public async Task<Response> DeleteTipoProvision([FromRoute] int id)
         {
             try
             {
@@ -242,7 +246,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.ManualPuesto.SingleOrDefaultAsync(m => m.IdManualPuesto == id);
+                var respuesta = await db.TipoProvision.SingleOrDefaultAsync(m => m.IdTipoProvision == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -251,7 +255,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.ManualPuesto.Remove(respuesta);
+                db.TipoProvision.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -280,22 +284,21 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool ManualPuestoExists(int id)
+        private bool TipoProvisionExists(string nombre)
         {
-            return db.ManualPuesto.Any(e => e.IdManualPuesto == id);
+            return db.TipoProvision.Any(e => e.Descripcion == nombre);
         }
 
-
-        public Response Existe(string nombreManualPuesto)
+        public Response Existe(TipoProvision TipoProvision)
         {
-
-            var loglevelrespuesta = db.ManualPuesto.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreManualPuesto).FirstOrDefault();
+            var bdd = TipoProvision.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var loglevelrespuesta = db.TipoProvision.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe un tipo de Provision de igual descripcion",
                     Resultado = null,
                 };
 

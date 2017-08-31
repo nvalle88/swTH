@@ -4,36 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
-using bd.swth.entidades.Utils;
+using bd.log.guardar.Utiles;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Indicadores")]
-    public class IndicadoresController : Controller
+    [Route("api/TipoRMU")]
+    public class TipoRMUController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public IndicadoresController(SwTHDbContext db)
+        public TipoRMUController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/Indicadors
+        // GET: api/ListarTipoRMU
         [HttpGet]
-        [Route("ListarIndicadores")]
-        public async Task<List<Indicador>> GetIndicador()
+        [Route("ListarTipoRMU")]
+        public async Task<List<TipoRMU>> GetTipoRMU()
         {
             try
             {
-                return await db.Indicador.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoRMU.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,14 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Indicador>();
+                return new List<TipoRMU>();
             }
         }
 
-        // GET: api/Indicadors/5
+
+        // GET: api/TipoRMU/5
         [HttpGet("{id}")]
-        public async Task<Response> GetIndicador([FromRoute] int id)
+        public async Task<Response> GetTipoRMU([FromRoute] int id)
         {
             try
             {
@@ -66,9 +67,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.Indicador.SingleOrDefaultAsync(m => m.IdIndicador == id);
+                var TipoRMU = await db.TipoRMU.SingleOrDefaultAsync(m => m.IdTipoRMU == id);
 
-                if (adscbdd == null)
+                if (TipoRMU == null)
                 {
                     return new Response
                     {
@@ -81,7 +82,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = TipoRMU,
                 };
             }
             catch (Exception ex)
@@ -104,9 +105,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/Indicadors/5
+
+        // PUT: api/TipoRMU/5
         [HttpPut("{id}")]
-        public async Task<Response> PutIndicador([FromRoute] int id, [FromBody] Indicador Indicador)
+        public async Task<Response> PutTipoRMU([FromRoute] int id, [FromBody] TipoRMU TipoRMU)
         {
             try
             {
@@ -119,55 +121,50 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var TipoRMUActualizar = await db.TipoRMU.Where(x => x.IdTipoRMU == id).FirstOrDefaultAsync();
+                if (TipoRMUActualizar != null)
                 {
-                    var entidad = await db.Indicador.Where(x => x.IdIndicador == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    try
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del Indicador ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.Nombre = Indicador.Nombre;
-                        db.Indicador.Update(entidad);
+                        TipoRMUActualizar.Descripcion = TipoRMU.Descripcion;
+                        db.TipoRMU.Update(TipoRMUActualizar);
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una exepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -179,18 +176,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/Indicadors
+        // POST: api/TipoRMU
         [HttpPost]
-        [Route("InsertarIndicadores")]
-        public async Task<Response> PostIndicador([FromBody] Indicador Indicador)
+        [Route("InsertarTipoRMU")]
+        public async Task<Response> PostTipoRMU([FromBody] TipoRMU TipoRMU)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(Indicador.Nombre);
+                var respuesta = Existe(TipoRMU);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Indicador.Add(Indicador);
+                    db.TipoRMU.Add(TipoRMU);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -226,9 +231,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/Indicadors/5
+        // DELETE: api/TipoRMU/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteIndicador([FromRoute] int id)
+        public async Task<Response> DeleteTipoRMU([FromRoute] int id)
         {
             try
             {
@@ -241,7 +246,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.Indicador.SingleOrDefaultAsync(m => m.IdIndicador == id);
+                var respuesta = await db.TipoRMU.SingleOrDefaultAsync(m => m.IdTipoRMU == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -250,7 +255,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.Indicador.Remove(respuesta);
+                db.TipoRMU.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -279,22 +284,21 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool IndicadorExists(int id)
+        private bool TipoRMUExists(string nombre)
         {
-            return db.Indicador.Any(e => e.IdIndicador == id);
+            return db.TipoRMU.Any(e => e.Descripcion == nombre);
         }
 
-
-        public Response Existe(string nombreIndicador)
+        public Response Existe(TipoRMU TipoRMU)
         {
-
-            var loglevelrespuesta = db.Indicador.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreIndicador).FirstOrDefault();
+            var bdd = TipoRMU.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var loglevelrespuesta = db.TipoRMU.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe un tipoRMU de igual descripcion",
                     Resultado = null,
                 };
 

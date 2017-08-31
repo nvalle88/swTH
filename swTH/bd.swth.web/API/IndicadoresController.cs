@@ -16,24 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/MaterialesDeApoyo")]
-    public class MaterialesDeApoyoController : Controller
+    [Route("api/Indicadores")]
+    public class IndicadoresController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public MaterialesDeApoyoController(SwTHDbContext db)
+        public IndicadoresController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/MaterialApoyos
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarMaterialesDeApoyo")]
-        public async Task<List<MaterialApoyo>> GetMaterialApoyo()
+        [Route("ListarIndicadores")]
+        public async Task<List<Indicador>> GetIndicador()
         {
             try
             {
-                return await db.MaterialApoyo.OrderBy(x => x.NombreDocumento).ToListAsync();
+                return await db.Indicador.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<MaterialApoyo>();
+                return new List<Indicador>();
             }
         }
 
-        // GET: api/MaterialApoyos/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetMaterialApoyo([FromRoute] int id)
+        public async Task<Response> GetIndicador([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.MaterialApoyo.SingleOrDefaultAsync(m => m.IdMaterialApoyo == id);
+                var Indicador = await db.Indicador.SingleOrDefaultAsync(m => m.IdIndicador == id);
 
-                if (adscbdd == null)
+                if (Indicador == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = Indicador,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/MaterialApoyos/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutMaterialApoyo([FromRoute] int id, [FromBody] MaterialApoyo MaterialApoyo)
+        public async Task<Response> PutIndicador([FromRoute] int id, [FromBody] Indicador Indicador)
         {
             try
             {
@@ -119,58 +119,60 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var existe = Existe(Indicador);
+                if (existe.IsSuccess)
                 {
-                    var entidad = await db.MaterialApoyo.Where(x => x.IdMaterialApoyo == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    return new Response
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del Grupo Ocupacional ",
-                        };
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual Nombre",
+                    };
+                }
 
-                    }
-                    else
+                var IndicadorActualizar = await db.Indicador.Where(x => x.IdIndicador == id).FirstOrDefaultAsync();
+
+                if (IndicadorActualizar != null)
+                {
+                    try
                     {
-
-                        entidad.NombreDocumento = MaterialApoyo.NombreDocumento;
-                        entidad.FormularioDevengacionId = MaterialApoyo.FormularioDevengacionId;
-                        entidad.Ubicacion = MaterialApoyo.Ubicacion;;
-                        entidad.NombreDocumento = MaterialApoyo.NombreDocumento;
-                        db.MaterialApoyo.Update(entidad);
+                        IndicadorActualizar.Nombre = Indicador.Nombre;
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -182,18 +184,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/MaterialApoyos
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarMaterialesDeApoyo")]
-        public async Task<Response> PostMaterialApoyo([FromBody] MaterialApoyo MaterialApoyo)
+        [Route("InsertarIndicador")]
+        public async Task<Response> PostIndicador([FromBody] Indicador Indicador)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(MaterialApoyo.NombreDocumento);
+                var respuesta = Existe(Indicador);
                 if (!respuesta.IsSuccess)
                 {
-                    db.MaterialApoyo.Add(MaterialApoyo);
+                    db.Indicador.Add(Indicador);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -205,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = "Existe un registro de igual Nombre..."
                 };
 
             }
@@ -215,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -229,9 +239,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/MaterialApoyos/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteMaterialApoyo([FromRoute] int id)
+        public async Task<Response> DeleteIndicador([FromRoute] int id)
         {
             try
             {
@@ -244,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.MaterialApoyo.SingleOrDefaultAsync(m => m.IdMaterialApoyo == id);
+                var respuesta = await db.Indicador.SingleOrDefaultAsync(m => m.IdIndicador == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -253,7 +263,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.MaterialApoyo.Remove(respuesta);
+                db.Indicador.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -268,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -282,22 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool MaterialApoyoExists(int id)
+        private Response Existe(Indicador Indicador)
         {
-            return db.MaterialApoyo.Any(e => e.IdMaterialApoyo == id);
-        }
-
-
-        public Response Existe(string nombreMaterialApoyo)
-        {
-
-            var loglevelrespuesta = db.MaterialApoyo.Where(p => p.NombreDocumento.ToUpper().TrimStart().TrimEnd() == nombreMaterialApoyo).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = Indicador.Nombre;
+            var Indicadorrespuesta = db.Indicador.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (Indicadorrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre del documento",
+                    Message = "Existe un Nombre de igual nombre",
                     Resultado = null,
                 };
 
@@ -306,7 +310,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = Indicadorrespuesta,
             };
         }
     }
