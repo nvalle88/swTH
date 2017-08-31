@@ -4,36 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Utils;
 using bd.log.guardar.Servicios;
-using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
+using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Utiles;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Factores")]
-    public class FactoresController : Controller
+    [Route("api/TipoAccionPersonal")]
+    public class TipoAccionPersonalController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public FactoresController(SwTHDbContext db)
+        public TipoAccionPersonalController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/Factores
+        // GET: api/ListarTipoAccionPersonal
         [HttpGet]
-        [Route("ListarFactores")]
-        public async Task<List<Factor>> GetFactor()
+        [Route("ListarTipoAccionPersonal")]
+        public async Task<List<TipoAccionPersonal>> GetTipoAccionPersonal()
         {
             try
             {
-                return await db.Factor.OrderBy(x => x.Porciento).ToListAsync();
+                return await db.TipoAccionPersonal.OrderBy(x => x.AccionPersonal).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,14 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Factor>();
+                return new List<TipoAccionPersonal>();
             }
         }
 
-        // GET: api/Factores/5
+
+        // GET: api/TipoAccionPersonal/5
         [HttpGet("{id}")]
-        public async Task<Response> GetFactor([FromRoute] int id)
+        public async Task<Response> GetTipoAccionPersonal([FromRoute] int id)
         {
             try
             {
@@ -66,9 +67,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.Factor.SingleOrDefaultAsync(m => m.IdFactor == id);
+                var TipoAccionPersonal = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
 
-                if (adscbdd == null)
+                if (TipoAccionPersonal == null)
                 {
                     return new Response
                     {
@@ -81,7 +82,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = TipoAccionPersonal,
                 };
             }
             catch (Exception ex)
@@ -104,9 +105,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/Factores/5
+
+        // PUT: api/TipoAccionPersonal/5
         [HttpPut("{id}")]
-        public async Task<Response> PutFactor([FromRoute] int id, [FromBody] Factor factor)
+        public async Task<Response> PutTipoAccionPersonal([FromRoute] int id, [FromBody] TipoAccionPersonal TipoAccionPersonal)
         {
             try
             {
@@ -119,47 +121,50 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existeFactor = Existe((decimal)factor.Porciento);
-                if (existeFactor.IsSuccess)
+                var TipoAccionPersonalActualizar = await db.TipoAccionPersonal.Where(x => x.IdTipoAccionPersonal == id).FirstOrDefaultAsync();
+                if (TipoAccionPersonalActualizar != null)
                 {
-                    return new Response
+                    try
                     {
-                        IsSuccess = false,
-                        Message = "Existe un factor de igual porciento",
-                    };
-                }
-                try
-                {
-                    db.Factor.Update(factor);
-                    await db.SaveChangesAsync();
+                        TipoAccionPersonalActualizar.Descripcion = TipoAccionPersonal.Descripcion;
+                        db.TipoAccionPersonal.Update(TipoAccionPersonalActualizar);
+                        await db.SaveChangesAsync();
 
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = "Ok",
-                    };
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
 
-                }
-                catch (Exception ex)
-                {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    }
+                    catch (Exception ex)
                     {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una exepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
 
 
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -171,18 +176,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/Factores
+        // POST: api/TipoAccionPersonal
         [HttpPost]
-        [Route("InsertarFactor")]
-        public async Task<Response> PostFactor([FromBody] Factor factor)
+        [Route("InsertarTipoAccionPersonal")]
+        public async Task<Response> PostTipoAccionPersonal([FromBody] TipoAccionPersonal TipoAccionPersonal)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe((decimal)factor.Porciento);
+                var respuesta = Existe(TipoAccionPersonal);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Factor.Add(factor);
+                    db.TipoAccionPersonal.Add(TipoAccionPersonal);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -218,9 +231,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/Factores/5
+        // DELETE: api/TipoAccionPersonal/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteFactor([FromRoute] int id)
+        public async Task<Response> DeleteTipoAccionPersonal([FromRoute] int id)
         {
             try
             {
@@ -233,7 +246,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.Factor.SingleOrDefaultAsync(m => m.IdFactor == id);
+                var respuesta = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -242,7 +255,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.Factor.Remove(respuesta);
+                db.TipoAccionPersonal.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -271,22 +284,21 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool FactorExists(int id)
+        private bool TipoAccionPersonalExists(string nombre)
         {
-            return db.Factor.Any(e => e.IdFactor == id);
+            return db.TipoAccionPersonal.Any(e => e.Descripcion == nombre);
         }
 
-
-        public Response Existe(decimal porciento)
+        public Response Existe(TipoAccionPersonal TipoAccionPersonal)
         {
-
-            var loglevelrespuesta = db.Factor.Where(p => p.Porciento == porciento).FirstOrDefault();
+            var bdd = TipoAccionPersonal.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var loglevelrespuesta = db.TipoAccionPersonal.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual porciento",
+                    Message = "Existe un tipo de accion de igual descripción",
                     Resultado = null,
                 };
 

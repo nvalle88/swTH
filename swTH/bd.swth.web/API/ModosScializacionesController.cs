@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
@@ -16,24 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoMovimientoInterno")]
-    public class TipoMovimientoInternoController : Controller
+    [Route("api/ModosScializaciones")]
+    public class ModosScializacionesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoMovimientoInternoController(SwTHDbContext db)
+        public ModosScializacionesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoMovimientoInterno")]
-        public async Task<List<TipoMovimientoInterno>> GetTipoMovimientoInterno()
+        [Route("ListarModosScializaciones")]
+        public async Task<List<ModosScializacion>> GetModosScializacion()
         {
             try
             {
-                return await db.TipoMovimientoInterno.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.ModosScializacion.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<TipoMovimientoInterno>();
+                return new List<ModosScializacion>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoMovimientoInterno([FromRoute] int id)
+        public async Task<Response> GetModosScializacion([FromRoute] int id)
         {
             try
             {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido",
                     };
                 }
 
-                var TipoMovimientoInterno = await db.TipoMovimientoInterno.SingleOrDefaultAsync(m => m.IdTipoMovimientoInterno == id);
+                var ModosScializacion = await db.ModosScializacion.SingleOrDefaultAsync(m => m.IdModosScializacion == id);
 
-                if (TipoMovimientoInterno == null)
+                if (ModosScializacion == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No encontrado",
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = TipoMovimientoInterno,
+                    Message = "Ok",
+                    Resultado = ModosScializacion,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoMovimientoInterno([FromRoute] int id, [FromBody] TipoMovimientoInterno TipoMovimientoInterno)
+        public async Task<Response> PutModosScializacion([FromRoute] int id, [FromBody] ModosScializacion ModosScializacion)
         {
             try
             {
@@ -115,26 +115,33 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-                var TipoMovimientoInternoActualizar = await db.TipoMovimientoInterno.Where(x => x.IdTipoMovimientoInterno == id).FirstOrDefaultAsync();
-                if (TipoMovimientoInternoActualizar != null)
+                var existe = Existe(ModosScializacion);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual Descripcion",
+                    };
+                }
+
+                var ModosScializacionActualizar = await db.ModosScializacion.Where(x => x.IdModosScializacion == id).FirstOrDefaultAsync();
+
+                if (ModosScializacionActualizar != null)
                 {
                     try
                     {
-
-                        TipoMovimientoInternoActualizar.Nombre = TipoMovimientoInterno.Nombre;
-                        TipoMovimientoInternoActualizar.EmpleadoMovimiento = TipoMovimientoInterno.EmpleadoMovimiento;
-
-                        db.TipoMovimientoInterno.Update(TipoMovimientoInternoActualizar);
+                        ModosScializacionActualizar.Descripcion = ModosScializacion.Descripcion;
                         await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
+                            Message = "Ok",
                         };
 
                     }
@@ -144,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
+                            Message = "Se ha producido una excepción",
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -153,15 +160,18 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = Mensaje.Error,
+                            Message = "Error ",
                         };
                     }
                 }
-                
+
+
+
+
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = "Existe"
                 };
             }
             catch (Exception)
@@ -169,15 +179,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Excepcion
+                    Message = "Excepción"
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoMovimientoInterno")]
-        public async Task<Response> PostTipoMovimientoInterno([FromBody] TipoMovimientoInterno TipoMovimientoInterno)
+        [Route("InsertarModosScializaciones")]
+        public async Task<Response> PostModosScializacion([FromBody] ModosScializacion ModosScializacion)
         {
             try
             {
@@ -186,26 +196,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-                var respuesta = Existe(TipoMovimientoInterno);
+                var respuesta = Existe(ModosScializacion);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoMovimientoInterno.Add(TipoMovimientoInterno);
+                    db.ModosScializacion.Add(ModosScializacion);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = "OK"
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = "Existe un registro de igual Descripcion..."
                 };
 
             }
@@ -215,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -224,14 +234,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoMovimientoInterno([FromRoute] int id)
+        public async Task<Response> DeleteModosScializacion([FromRoute] int id)
         {
             try
             {
@@ -240,26 +250,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido ",
                     };
                 }
 
-                var respuesta = await db.TipoMovimientoInterno.SingleOrDefaultAsync(m => m.IdTipoMovimientoInterno == id);
+                var respuesta = await db.ModosScializacion.SingleOrDefaultAsync(m => m.IdModosScializacion == id);
                 if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No existe ",
                     };
                 }
-                db.TipoMovimientoInterno.Remove(respuesta);
+                db.ModosScializacion.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = "Eliminado ",
                 };
             }
             catch (Exception ex)
@@ -268,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -277,21 +287,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        private Response Existe(TipoMovimientoInterno TipoMovimientoInterno)
+        private Response Existe(ModosScializacion ModosScializacion)
         {
-            var bdd = TipoMovimientoInterno.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoMovimientoInternorespuesta = db.TipoMovimientoInterno.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (TipoMovimientoInternorespuesta != null)
+            var bdd = ModosScializacion.Descripcion;
+            var ModosScializacionrespuesta = db.ModosScializacion.Where(p => p.Descripcion == bdd).FirstOrDefault();
+            if (ModosScializacionrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
+                    Message = "Existe un ModosScializacion de igual nombre",
                     Resultado = null,
                 };
 
@@ -300,7 +310,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoMovimientoInternorespuesta,
+                Resultado = ModosScializacionrespuesta,
             };
         }
     }

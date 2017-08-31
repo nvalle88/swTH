@@ -4,36 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Utils;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
+using bd.log.guardar.Utiles;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/InstruccionesFormales")]
-    public class InstruccionesFormalesController : Controller
+    [Route("api/TipoProvision")]
+    public class TipoProvisionController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public InstruccionesFormalesController(SwTHDbContext db)
+        public TipoProvisionController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/InstruccionesFormales
+        // GET: api/ListarTipoProvision
         [HttpGet]
-        [Route("ListarInstruccionesFormales")]
-        public async Task<List<InstruccionFormal>> GetInstruccionFormal()
+        [Route("ListarTipoProvision")]
+        public async Task<List<TipoProvision>> GetTipoProvision()
         {
             try
             {
-                return await db.InstruccionFormal.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoProvision.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,14 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<InstruccionFormal>();
+                return new List<TipoProvision>();
             }
         }
 
-        // GET: api/InstruccionesFormales/5
+
+        // GET: api/TipoProvision/5
         [HttpGet("{id}")]
-        public async Task<Response> GetInstruccionFormal([FromRoute] int id)
+        public async Task<Response> GetTipoProvision([FromRoute] int id)
         {
             try
             {
@@ -66,9 +67,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.InstruccionFormal.SingleOrDefaultAsync(m => m.IdInstruccionFormal == id);
+                var TipoProvision = await db.TipoProvision.SingleOrDefaultAsync(m => m.IdTipoProvision == id);
 
-                if (adscbdd == null)
+                if (TipoProvision == null)
                 {
                     return new Response
                     {
@@ -81,7 +82,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = TipoProvision,
                 };
             }
             catch (Exception ex)
@@ -104,9 +105,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/InstruccionFormals/5
+
+        // PUT: api/TipoProvision/5
         [HttpPut("{id}")]
-        public async Task<Response> PutInstruccionFormal([FromRoute] int id, [FromBody] InstruccionFormal InstruccionFormal)
+        public async Task<Response> PutTipoProvision([FromRoute] int id, [FromBody] TipoProvision TipoProvision)
         {
             try
             {
@@ -119,55 +121,50 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var TipoProvisionActualizar = await db.TipoProvision.Where(x => x.IdTipoProvision == id).FirstOrDefaultAsync();
+                if (TipoProvisionActualizar != null)
                 {
-                    var entidad = await db.InstruccionFormal.Where(x => x.IdInstruccionFormal == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    try
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca de la Instrucción Formal ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.Nombre = InstruccionFormal.Nombre;
-                        db.InstruccionFormal.Update(entidad);
+                        TipoProvisionActualizar.Descripcion = TipoProvision.Descripcion;
+                        db.TipoProvision.Update(TipoProvisionActualizar);
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una exepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -179,18 +176,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/InstruccionesFormales
+        // POST: api/TipoProvision
         [HttpPost]
-        [Route("InsertarInstruccionesFormales")]
-        public async Task<Response> PostInstruccionFormal([FromBody] InstruccionFormal InstruccionFormal)
+        [Route("InsertarTipoProvision")]
+        public async Task<Response> PostTipoProvision([FromBody] TipoProvision TipoProvision)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(InstruccionFormal.Nombre);
+                var respuesta = Existe(TipoProvision);
                 if (!respuesta.IsSuccess)
                 {
-                    db.InstruccionFormal.Add(InstruccionFormal);
+                    db.TipoProvision.Add(TipoProvision);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -226,9 +231,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/InstruccionesFormales/5
+        // DELETE: api/TipoProvision/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteInstruccionFormal([FromRoute] int id)
+        public async Task<Response> DeleteTipoProvision([FromRoute] int id)
         {
             try
             {
@@ -241,7 +246,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.InstruccionFormal.SingleOrDefaultAsync(m => m.IdInstruccionFormal == id);
+                var respuesta = await db.TipoProvision.SingleOrDefaultAsync(m => m.IdTipoProvision == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -250,7 +255,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.InstruccionFormal.Remove(respuesta);
+                db.TipoProvision.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -279,22 +284,21 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool InstruccionFormalExists(int id)
+        private bool TipoProvisionExists(string nombre)
         {
-            return db.InstruccionFormal.Any(e => e.IdInstruccionFormal == id);
+            return db.TipoProvision.Any(e => e.Descripcion == nombre);
         }
 
-
-        public Response Existe(string nombreInstruccionFormal)
+        public Response Existe(TipoProvision TipoProvision)
         {
-
-            var loglevelrespuesta = db.InstruccionFormal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreInstruccionFormal).FirstOrDefault();
+            var bdd = TipoProvision.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var loglevelrespuesta = db.TipoProvision.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe un tipo de Provision de igual descripcion",
                     Resultado = null,
                 };
 
@@ -306,6 +310,5 @@ namespace bd.swth.web.Controllers.API
                 Resultado = loglevelrespuesta,
             };
         }
-
     }
 }

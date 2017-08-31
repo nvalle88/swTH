@@ -16,24 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/ModosScializaciones")]
-    public class ModosScializacionesController : Controller
+    [Route("api/RubrosLiquidacion")]
+    public class RubroLiquidacionController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public ModosScializacionesController(SwTHDbContext db)
+        public RubroLiquidacionController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/ModosScializacions
+        // GET: api/RubroLiquidacion
         [HttpGet]
-        [Route("ListarModosScializacions")]
-        public async Task<List<ModosScializacion>> GetModosScializacion()
+        [Route("ListarRubrosLiquidacion")]
+        public async Task<List<RubroLiquidacion>> GetRubrosLiquidacion()
         {
             try
             {
-                return await db.ModosScializacion.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.RubroLiquidacion.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<ModosScializacion>();
+                return new List<RubroLiquidacion>();
             }
         }
 
-        // GET: api/ModosScializacions/5
+        // GET: api/RubroLiquidacion/5
         [HttpGet("{id}")]
-        public async Task<Response> GetModosScializacion([FromRoute] int id)
+        public async Task<Response> GetRubroLiquidacion([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.ModosScializacion.SingleOrDefaultAsync(m => m.IdModosScializacion == id);
+                var rubroLiquidacion = await db.RubroLiquidacion.SingleOrDefaultAsync(m => m.IdRubroLiquidacion == id);
 
-                if (adscbdd == null)
+                if (rubroLiquidacion == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = rubroLiquidacion,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/ModosScializacions/5
+        // PUT: api/RubroLiquidacion/5        
         [HttpPut("{id}")]
-        public async Task<Response> PutModosScializacion([FromRoute] int id, [FromBody] ModosScializacion ModosScializacion)
+        public async Task<Response> PutRubroLiquidacion([FromRoute] int id, [FromBody] RubroLiquidacion rubroLiquidacion)
         {
             try
             {
@@ -119,55 +119,51 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var rubroLiquidacionActualizar = await db.RubroLiquidacion.Where(x => x.IdRubroLiquidacion == id).FirstOrDefaultAsync();
+                if (rubroLiquidacionActualizar != null)
                 {
-                    var entidad = await db.ModosScializacion.Where(x => x.IdModosScializacion == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del Grupo Ocupacional ",
-                        };
-
-                    }
-                    else
+                    try
                     {
 
-                        entidad.Descripcion = ModosScializacion.Descripcion;
-                        db.ModosScializacion.Update(entidad);
+                        rubroLiquidacionActualizar.Descripcion = rubroLiquidacion.Descripcion;
+                        db.RubroLiquidacion.Update(rubroLiquidacionActualizar);
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -179,18 +175,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/ModosScializacions
+        // POST: api/RubroLiquidacion
         [HttpPost]
-        [Route("InsertarModosScializacion")]
-        public async Task<Response> PostModosScializacion([FromBody] ModosScializacion ModosScializacion)
+        [Route("InsertarRubroLiquidacion")]
+        public async Task<Response> PostRubroLiquidacion([FromBody] RubroLiquidacion rubroLiquidacion)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(ModosScializacion.Descripcion);
+                var respuesta = Existe(rubroLiquidacion);
                 if (!respuesta.IsSuccess)
                 {
-                    db.ModosScializacion.Add(ModosScializacion);
+                    db.RubroLiquidacion.Add(rubroLiquidacion);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -212,7 +216,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -226,9 +230,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/ModosScializacions/5
+        // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteModosScializacion([FromRoute] int id)
+        public async Task<Response> DeleteRubroLiquidacion([FromRoute] int id)
         {
             try
             {
@@ -241,7 +245,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.ModosScializacion.SingleOrDefaultAsync(m => m.IdModosScializacion == id);
+                var respuesta = await db.RubroLiquidacion.SingleOrDefaultAsync(m => m.IdRubroLiquidacion == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -250,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.ModosScializacion.Remove(respuesta);
+                db.RubroLiquidacion.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -265,7 +269,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -279,22 +283,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool ModosScializacionExists(int id)
+        private Response Existe(RubroLiquidacion rubroLiquidacion)
         {
-            return db.ModosScializacion.Any(e => e.IdModosScializacion == id);
-        }
-
-
-        public Response Existe(string descripcionModosScializacion)
-        {
-
-            var loglevelrespuesta = db.ModosScializacion.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == descripcionModosScializacion).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = rubroLiquidacion.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var RubroLiquidacionrespuesta = db.RubroLiquidacion.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (RubroLiquidacionrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual descripción",
+                    Message = "Existe un rubro de liquidación de igual descripción",
                     Resultado = null,
                 };
 
@@ -303,7 +301,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = RubroLiquidacionrespuesta,
             };
         }
     }

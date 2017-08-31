@@ -11,29 +11,29 @@ using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
-using bd.swth.entidades.Utils;
+using bd.log.guardar.Utiles;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoMovimientoInterno")]
-    public class TipoMovimientoInternoController : Controller
+    [Route("api/TipoDiscapacidad")]
+    public class TipoDiscapacidadController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoMovimientoInternoController(SwTHDbContext db)
+        public TipoDiscapacidadController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoMovimientoInterno")]
-        public async Task<List<TipoMovimientoInterno>> GetTipoMovimientoInterno()
+        [Route("ListarTipoDiscapacidadController")]
+        public async Task<List<TipoDiscapacidad>> GetTipoDiscapacidad()
         {
             try
             {
-                return await db.TipoMovimientoInterno.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoDiscapacidad.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<TipoMovimientoInterno>();
+                return new List<TipoDiscapacidad>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoMovimientoInterno([FromRoute] int id)
+        public async Task<Response> GetTipoDiscapacidad([FromRoute] int id)
         {
             try
             {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido",
                     };
                 }
 
-                var TipoMovimientoInterno = await db.TipoMovimientoInterno.SingleOrDefaultAsync(m => m.IdTipoMovimientoInterno == id);
+                var TipoDiscapacidad = await db.TipoDiscapacidad.SingleOrDefaultAsync(m => m.IdTipoDiscapacidad == id);
 
-                if (TipoMovimientoInterno == null)
+                if (TipoDiscapacidad == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No encontrado",
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = TipoMovimientoInterno,
+                    Message = "Ok",
+                    Resultado = TipoDiscapacidad,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoMovimientoInterno([FromRoute] int id, [FromBody] TipoMovimientoInterno TipoMovimientoInterno)
+        public async Task<Response> PutTipoDiscapacidad([FromRoute] int id, [FromBody] TipoDiscapacidad TipoDiscapacidad)
         {
             try
             {
@@ -115,26 +115,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-                var TipoMovimientoInternoActualizar = await db.TipoMovimientoInterno.Where(x => x.IdTipoMovimientoInterno == id).FirstOrDefaultAsync();
-                if (TipoMovimientoInternoActualizar != null)
+                var TipoDiscapacidadActualizar = await db.TipoDiscapacidad.Where(x => x.IdTipoDiscapacidad == id).FirstOrDefaultAsync();
+                if (TipoDiscapacidadActualizar != null)
                 {
                     try
                     {
 
-                        TipoMovimientoInternoActualizar.Nombre = TipoMovimientoInterno.Nombre;
-                        TipoMovimientoInternoActualizar.EmpleadoMovimiento = TipoMovimientoInterno.EmpleadoMovimiento;
+                        TipoDiscapacidadActualizar.Nombre = TipoDiscapacidad.Nombre;
+                        TipoDiscapacidadActualizar.PersonaDiscapacidad = TipoDiscapacidad.PersonaDiscapacidad;
 
-                        db.TipoMovimientoInterno.Update(TipoMovimientoInternoActualizar);
+                        db.TipoDiscapacidad.Update(TipoDiscapacidadActualizar);
                         await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
+                            Message = "Ok",
                         };
 
                     }
@@ -144,7 +144,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
+                            Message = "Se ha producido una excepción",
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -153,15 +153,15 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = Mensaje.Error,
+                            Message = "Error ",
                         };
                     }
                 }
-                
+
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = "Existe"
                 };
             }
             catch (Exception)
@@ -169,15 +169,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Excepcion
+                    Message = "Excepción"
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoMovimientoInterno")]
-        public async Task<Response> PostTipoMovimientoInterno([FromBody] TipoMovimientoInterno TipoMovimientoInterno)
+        [Route("InsertarTipoDiscapacidad")]
+        public async Task<Response> PostTipoDiscapacidad([FromBody] TipoDiscapacidad TipoDiscapacidad)
         {
             try
             {
@@ -186,26 +186,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-                var respuesta = Existe(TipoMovimientoInterno);
+                var respuesta = Existe(TipoDiscapacidad);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoMovimientoInterno.Add(TipoMovimientoInterno);
+                    db.TipoDiscapacidad.Add(TipoDiscapacidad);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = "OK"
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = "OK"
                 };
 
             }
@@ -215,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -224,14 +224,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoMovimientoInterno([FromRoute] int id)
+        public async Task<Response> DeleteTipoDiscapacidad([FromRoute] int id)
         {
             try
             {
@@ -240,26 +240,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido ",
                     };
                 }
 
-                var respuesta = await db.TipoMovimientoInterno.SingleOrDefaultAsync(m => m.IdTipoMovimientoInterno == id);
+                var respuesta = await db.TipoDiscapacidad.SingleOrDefaultAsync(m => m.IdTipoDiscapacidad == id);
                 if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No existe ",
                     };
                 }
-                db.TipoMovimientoInterno.Remove(respuesta);
+                db.TipoDiscapacidad.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = "Eliminado ",
                 };
             }
             catch (Exception ex)
@@ -268,7 +268,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -277,21 +277,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        private Response Existe(TipoMovimientoInterno TipoMovimientoInterno)
+        private Response Existe(TipoDiscapacidad TipoDiscapacidad)
         {
-            var bdd = TipoMovimientoInterno.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoMovimientoInternorespuesta = db.TipoMovimientoInterno.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (TipoMovimientoInternorespuesta != null)
+            var bdd = TipoDiscapacidad.Nombre.ToUpper().TrimEnd().TrimStart();
+            var TipoDiscapacidadrespuesta = db.TipoDiscapacidad.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (TipoDiscapacidadrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
+                    Message = String.Format("Ya existe un Tipo de Discapacidad con el nombre {0}", TipoDiscapacidad.Nombre),
                     Resultado = null,
                 };
 
@@ -300,7 +300,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoMovimientoInternorespuesta,
+                Resultado = TipoDiscapacidadrespuesta,
             };
         }
     }

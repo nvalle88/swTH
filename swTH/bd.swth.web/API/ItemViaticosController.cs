@@ -10,30 +10,30 @@ using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/InstitucionFinancieras")]
-    public class InstitucionFinancierasController : Controller
+    [Route("api/ItemViaticos")]
+    public class ItemViaticosController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public InstitucionFinancierasController(SwTHDbContext db)
+        public ItemViaticosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/InstitucionFinancieras
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarInstitucionFinancieras")]
-        public async Task<List<InstitucionFinanciera>> GetInstitucionFinanciera()
+        [Route("ListarItemViaticos")]
+        public async Task<List<ItemViatico>> GetItemViatico()
         {
             try
             {
-                return await db.InstitucionFinanciera.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.ItemViatico.OrderBy(x => x.Descipcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<InstitucionFinanciera>();
+                return new List<ItemViatico>();
             }
         }
 
-        // GET: api/InstitucionFinancieras/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetInstitucionFinanciera([FromRoute] int id)
+        public async Task<Response> GetItemViatico([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.InstitucionFinanciera.SingleOrDefaultAsync(m => m.IdInstitucionFinanciera == id);
+                var ItemViatico = await db.ItemViatico.SingleOrDefaultAsync(m => m.IdItemViatico == id);
 
-                if (adscbdd == null)
+                if (ItemViatico == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = ItemViatico,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/InstitucionFinancieras/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutInstitucionFinanciera([FromRoute] int id, [FromBody] InstitucionFinanciera InstitucionFinanciera)
+        public async Task<Response> PutItemViatico([FromRoute] int id, [FromBody] ItemViatico ItemViatico)
         {
             try
             {
@@ -119,55 +119,60 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var existe = Existe(ItemViatico);
+                if (existe.IsSuccess)
                 {
-                    var entidad = await db.InstitucionFinanciera.Where(x => x.IdInstitucionFinanciera == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    return new Response
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del Grupo Ocupacional ",
-                        };
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual Descipcion",
+                    };
+                }
 
-                    }
-                    else
+                var ItemViaticoActualizar = await db.ItemViatico.Where(x => x.IdItemViatico == id).FirstOrDefaultAsync();
+
+                if (ItemViaticoActualizar != null)
+                {
+                    try
                     {
-
-                        entidad.Nombre = InstitucionFinanciera.Nombre;
-                        db.InstitucionFinanciera.Update(entidad);
+                        ItemViaticoActualizar.Descipcion = ItemViatico.Descipcion;
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -179,18 +184,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/InstitucionFinancieras
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarInstitucionFinanciera")]
-        public async Task<Response> PostInstitucionFinanciera([FromBody] InstitucionFinanciera InstitucionFinanciera)
+        [Route("InsertarItemViaticos")]
+        public async Task<Response> PostItemViatico([FromBody] ItemViatico ItemViatico)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(InstitucionFinanciera.Nombre);
+                var respuesta = Existe(ItemViatico);
                 if (!respuesta.IsSuccess)
                 {
-                    db.InstitucionFinanciera.Add(InstitucionFinanciera);
+                    db.ItemViatico.Add(ItemViatico);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -202,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = "Existe un registro de igual Descipcion..."
                 };
 
             }
@@ -212,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -226,9 +239,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/InstitucionFinancieras/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteInstitucionFinanciera([FromRoute] int id)
+        public async Task<Response> DeleteItemViatico([FromRoute] int id)
         {
             try
             {
@@ -241,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.InstitucionFinanciera.SingleOrDefaultAsync(m => m.IdInstitucionFinanciera == id);
+                var respuesta = await db.ItemViatico.SingleOrDefaultAsync(m => m.IdItemViatico == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -250,7 +263,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.InstitucionFinanciera.Remove(respuesta);
+                db.ItemViatico.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -265,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -279,22 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool InstitucionFinancieraExists(int id)
+        private Response Existe(ItemViatico ItemViatico)
         {
-            return db.InstitucionFinanciera.Any(e => e.IdInstitucionFinanciera == id);
-        }
-
-
-        public Response Existe(string nombreInstitucionFinanciera)
-        {
-
-            var loglevelrespuesta = db.InstitucionFinanciera.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreInstitucionFinanciera).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = ItemViatico.Descipcion;
+            var ItemViaticorespuesta = db.ItemViatico.Where(p => p.Descipcion == bdd).FirstOrDefault();
+            if (ItemViaticorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe un Descipcion de igual nombre",
                     Resultado = null,
                 };
 
@@ -303,7 +310,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = ItemViaticorespuesta,
             };
         }
 

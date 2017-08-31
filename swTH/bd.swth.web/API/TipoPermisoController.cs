@@ -4,36 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.swth.entidades.Utils;
-using bd.log.guardar.Enumeradores;
+using bd.log.guardar.Utiles;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/ItemViaticos")]
-    public class ItemViaticosController : Controller
+    [Route("api/TipoPermiso")]
+    public class TipoPermisoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public ItemViaticosController(SwTHDbContext db)
+        public TipoPermisoController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/ItemViaticos
+        // GET: api/ListarTipoPermiso
         [HttpGet]
-        [Route("ListarItemViaticos")]
-        public async Task<List<ItemViatico>> GetItemViatico()
+        [Route("ListarTipoPermiso")]
+        public async Task<List<TipoPermiso>> GetTipoPermiso()
         {
             try
             {
-                return await db.ItemViatico.OrderBy(x => x.Descipcion).ToListAsync();
+                return await db.TipoPermiso.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,14 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<ItemViatico>();
+                return new List<TipoPermiso>();
             }
         }
 
-        // GET: api/ItemViaticos/5
+
+        // GET: api/TipoPermiso/5
         [HttpGet("{id}")]
-        public async Task<Response> GetItemViatico([FromRoute] int id)
+        public async Task<Response> GetTipoPermiso([FromRoute] int id)
         {
             try
             {
@@ -66,9 +67,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.ItemViatico.SingleOrDefaultAsync(m => m.IdItemViatico == id);
+                var TipoPermiso = await db.TipoPermiso.SingleOrDefaultAsync(m => m.IdTipoPermiso == id);
 
-                if (adscbdd == null)
+                if (TipoPermiso == null)
                 {
                     return new Response
                     {
@@ -81,7 +82,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = TipoPermiso,
                 };
             }
             catch (Exception ex)
@@ -104,9 +105,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/ItemViaticos/5
+
+        // PUT: api/TipoPermiso/5
         [HttpPut("{id}")]
-        public async Task<Response> PutItemViatico([FromRoute] int id, [FromBody] ItemViatico ItemViatico)
+        public async Task<Response> PutTipoPermiso([FromRoute] int id, [FromBody] TipoPermiso TipoPermiso)
         {
             try
             {
@@ -119,55 +121,50 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var TipoPermisoActualizar = await db.TipoPermiso.Where(x => x.IdTipoPermiso == id).FirstOrDefaultAsync();
+                if (TipoPermisoActualizar != null)
                 {
-                    var entidad = await db.ItemViatico.Where(x => x.IdItemViatico == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    try
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del item viatico ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.Descipcion = ItemViatico.Descipcion;
-                        db.ItemViatico.Update(entidad);
+                        TipoPermisoActualizar.Nombre = TipoPermiso.Nombre;
+                        db.TipoPermiso.Update(TipoPermisoActualizar);
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una exepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -179,18 +176,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/ItemViaticos
+        // POST: api/TipoPermiso
         [HttpPost]
-        [Route("InsertarItemViatico")]
-        public async Task<Response> PostItemViatico([FromBody] ItemViatico ItemViatico)
+        [Route("InsertarTipoPermiso")]
+        public async Task<Response> PostTipoPermiso([FromBody] TipoPermiso TipoPermiso)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(ItemViatico.Descipcion);
+                var respuesta = Existe(TipoPermiso);
                 if (!respuesta.IsSuccess)
                 {
-                    db.ItemViatico.Add(ItemViatico);
+                    db.TipoPermiso.Add(TipoPermiso);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -226,9 +231,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/ItemViaticos/5
+        // DELETE: api/TipoPermiso/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteItemViatico([FromRoute] int id)
+        public async Task<Response> DeleteTipoPermiso([FromRoute] int id)
         {
             try
             {
@@ -241,7 +246,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.ItemViatico.SingleOrDefaultAsync(m => m.IdItemViatico == id);
+                var respuesta = await db.TipoPermiso.SingleOrDefaultAsync(m => m.IdTipoPermiso == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -250,7 +255,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.ItemViatico.Remove(respuesta);
+                db.TipoPermiso.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -279,22 +284,21 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool ItemViaticoExists(int id)
+        private bool TipoPermisoExists(string nombre)
         {
-            return db.ItemViatico.Any(e => e.IdItemViatico == id);
+            return db.TipoPermiso.Any(e => e.Nombre == nombre);
         }
 
-
-        public Response Existe(string nombreItemViatico)
+        public Response Existe(TipoPermiso TipoPermiso)
         {
-
-            var loglevelrespuesta = db.ItemViatico.Where(p => p.Descipcion.ToUpper().TrimStart().TrimEnd() == nombreItemViatico).FirstOrDefault();
+            var bdd = TipoPermiso.Nombre.ToUpper().TrimEnd().TrimStart();
+            var loglevelrespuesta = db.TipoPermiso.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual descripcion",
+                    Message = "Existe un permiso de igual nombre",
                     Resultado = null,
                 };
 
