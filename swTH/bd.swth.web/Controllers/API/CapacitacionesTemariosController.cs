@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.CapacitacionTemario.ToListAsync();
+                return await db.CapacitacionTemario.Include(x=>x.CapacitacionAreaConocimiento).OrderBy(x => x.Tema).ToListAsync();
             }
             catch (Exception ex)
             {

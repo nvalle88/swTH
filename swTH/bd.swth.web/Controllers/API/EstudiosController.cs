@@ -119,6 +119,16 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var existe = Existe(Estudio);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
                 var EstudioActualizar = await db.Estudio.Where(x => x.IdEstudio == id).FirstOrDefaultAsync();
                 if (EstudioActualizar != null)
                 {

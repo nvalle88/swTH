@@ -66,6 +66,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+
                 var AnoExperiencia = await db.AnoExperiencia.SingleOrDefaultAsync(m => m.IdAnoExperiencia == id);
 
                 if (AnoExperiencia == null)
@@ -116,6 +117,17 @@ namespace bd.swth.web.Controllers.API
                     {
                         IsSuccess = false,
                         Message = "Módelo inválido"
+                    };
+                }
+
+
+                var existe = Existe(AnoExperiencia);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual nombre",
                     };
                 }
 

@@ -119,6 +119,18 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+
+
+                var existe = Existe(AreaConocimiento);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual nombre",
+                    };
+                }
+
                 var AreaConocimientoActualizar = await db.AreaConocimiento.Where(x => x.IdAreaConocimiento == id).FirstOrDefaultAsync();
                 if (AreaConocimientoActualizar != null)
                 {

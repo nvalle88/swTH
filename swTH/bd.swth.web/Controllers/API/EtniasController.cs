@@ -119,6 +119,16 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var existe = Existe(Etnia);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
                 var EtniaActualizar = await db.Etnia.Where(x => x.IdEtnia == id).FirstOrDefaultAsync();
                 if (EtniaActualizar != null)
                 {

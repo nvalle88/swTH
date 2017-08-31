@@ -119,6 +119,26 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+
+                if (EscalaEvaluacionTotal.PorcientoDesde > EscalaEvaluacionTotal.PorcientoHasta)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "El porcentaje desde no puede ser mayor el porcentaje hasta"
+                    };
+                }
+
+                var existe = Existe(EscalaEvaluacionTotal);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
                 var EscalaEvaluacionTotalActualizar = await db.EscalaEvaluacionTotal.Where(x => x.IdEscalaEvaluacionTotal == id).FirstOrDefaultAsync();
                 if (EscalaEvaluacionTotalActualizar != null)
                 {
@@ -185,12 +205,13 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                if (!ModelState.IsValid)
+            
+                if (EscalaEvaluacionTotal.PorcientoDesde> EscalaEvaluacionTotal.PorcientoHasta)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = "El porcentaje desde no puede ser mayor el porcentaje hasta"
                     };
                 }
 
@@ -203,6 +224,15 @@ namespace bd.swth.web.Controllers.API
                     {
                         IsSuccess = true,
                         Message = "OK"
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
                     };
                 }
 

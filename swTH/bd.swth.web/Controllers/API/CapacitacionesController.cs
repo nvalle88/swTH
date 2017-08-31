@@ -119,6 +119,16 @@ namespace bd.swth.web.Controllers
                     };
                 }
 
+                var existe = Existe(Capacitacion);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual nombre",
+                    };
+                }
+
                 var CapacitacionActualizar = await db.Capacitacion.Where(x => x.IdCapacitacion == id).FirstOrDefaultAsync();
                 if (CapacitacionActualizar != null)
                 {
@@ -187,7 +197,7 @@ namespace bd.swth.web.Controllers
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = ""
                     };
                 }
 

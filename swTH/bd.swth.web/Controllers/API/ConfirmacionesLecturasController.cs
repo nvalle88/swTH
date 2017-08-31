@@ -33,7 +33,8 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ConfirmacionLectura.OrderBy(x => x.IdConfirmacionLectura).ToListAsync();
+                return await db.ConfirmacionLectura.Include(x => x.Empleado).OrderBy(x => x.IdEmpleado).ToListAsync();
+
             }
             catch (Exception ex)
             {
@@ -104,76 +105,6 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/BasesDatos/5
-        [HttpPut("{id}")]
-        public async Task<Response> PutConfirmacionLectura([FromRoute] int id, [FromBody] ConfirmacionLectura ConfirmacionLectura)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Módelo inválido"
-                    };
-                }
-
-                var ConfirmacionLecturaActualizar = await db.ConfirmacionLectura.Where(x => x.IdConfirmacionLectura == id).FirstOrDefaultAsync();
-                if (ConfirmacionLecturaActualizar != null)
-                {
-                    try
-                    {
-
-                        ConfirmacionLecturaActualizar.IdEmpleado = ConfirmacionLectura.IdEmpleado;
-                        db.ConfirmacionLectura.Update(ConfirmacionLecturaActualizar);
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = "Ok",
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Error ",
-                        };
-                    }
-                }
-
-
-
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Existe"
-                };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Excepción"
-                };
-            }
-        }
 
         // POST: api/BasesDatos
         [HttpPost]
@@ -230,58 +161,6 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/BasesDatos/5
-        [HttpDelete("{id}")]
-        public async Task<Response> DeleteConfirmacionLectura([FromRoute] int id)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Módelo no válido ",
-                    };
-                }
-
-                var respuesta = await db.ConfirmacionLectura.SingleOrDefaultAsync(m => m.IdConfirmacionLectura == id);
-                if (respuesta == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "No existe ",
-                    };
-                }
-                db.ConfirmacionLectura.Remove(respuesta);
-                await db.SaveChangesAsync();
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = "Eliminado ",
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Error ",
-                };
-            }
-        }
 
         private Response Existe(ConfirmacionLectura ConfirmacionLectura)
         {

@@ -119,6 +119,17 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+
+                var existe = Existe(ConocimientosAdicionales);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
                 var ConocimientosAdicionalesActualizar = await db.ConocimientosAdicionales.Where(x => x.IdConocimientosAdicionales == id).FirstOrDefaultAsync();
                 if (ConocimientosAdicionalesActualizar != null)
                 {

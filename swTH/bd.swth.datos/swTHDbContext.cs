@@ -1593,6 +1593,7 @@ namespace bd.swth.datos
                     .HasName("PK_EvaluacionInducion");
 
                 entity.Property(e => e.MinimoAprobar).HasColumnName("MinimoAprobar");
+                entity.Property(e => e.MaximoPuntos).HasColumnName("MaximoPuntos");
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()

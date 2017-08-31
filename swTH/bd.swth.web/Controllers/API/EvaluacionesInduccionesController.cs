@@ -119,6 +119,16 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var existe = Existe(EvaluacionInducion);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
                 var EvaluacionInducionActualizar = await db.EvaluacionInducion.Where(x => x.IdEvaluacionInduccion == id).FirstOrDefaultAsync();
                 if (EvaluacionInducionActualizar != null)
                 {

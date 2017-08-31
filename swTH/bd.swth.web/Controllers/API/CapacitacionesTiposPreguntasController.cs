@@ -66,6 +66,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+
                 var CapacitacionTipoPregunta = await db.CapacitacionTipoPregunta.SingleOrDefaultAsync(m => m.IdCapacitacionTipoPregunta == id);
 
                 if (CapacitacionTipoPregunta == null)
@@ -118,6 +119,16 @@ namespace bd.swth.web.Controllers.API
                         Message = "Módelo inválido"
                     };
                 }
+                var existe = Existe(CapacitacionTipoPregunta);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
 
                 var CapacitacionTipoPreguntaActualizar = await db.CapacitacionTipoPregunta.Where(x => x.IdCapacitacionTipoPregunta == id).FirstOrDefaultAsync();
                 if (CapacitacionTipoPreguntaActualizar != null)

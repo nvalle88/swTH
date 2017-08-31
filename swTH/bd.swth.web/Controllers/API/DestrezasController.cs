@@ -119,6 +119,16 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var existe = Existe(Destreza);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
                 var DestrezaActualizar = await db.Destreza.Where(x => x.IdDestreza == id).FirstOrDefaultAsync();
                 if (DestrezaActualizar != null)
                 {

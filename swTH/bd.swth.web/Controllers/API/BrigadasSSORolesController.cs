@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.BrigadaSsorol.ToListAsync();
+                return await db.BrigadaSsorol.Include(x => x.BrigadaSSO).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -119,6 +119,16 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var existe = Existe(BrigadaSSORol);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual nombre",
+                    };
+                }
+
                 var BrigadaSSORolActualizar = await db.BrigadaSsorol.Where(x => x.IdBrigadaSSORol == id).FirstOrDefaultAsync();
                 if (BrigadaSSORolActualizar != null)
                 {
@@ -188,7 +198,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = ""
                     };
                 }
 

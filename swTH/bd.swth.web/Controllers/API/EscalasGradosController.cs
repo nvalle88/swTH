@@ -33,7 +33,8 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.EscalaGrados.OrderBy(x => x.Grado).ToListAsync();
+                return await db.EscalaGrados.Include(x => x.GrupoOcupacional).OrderBy(x => x.Grado).ToListAsync();
+
             }
             catch (Exception ex)
             {
@@ -116,6 +117,16 @@ namespace bd.swth.web.Controllers.API
                     {
                         IsSuccess = false,
                         Message = "Módelo inválido"
+                    };
+                }
+
+                var existe = Existe(EscalaGrados);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
 

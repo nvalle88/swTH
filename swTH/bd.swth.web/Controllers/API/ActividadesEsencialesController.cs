@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -62,7 +62,7 @@ namespace bd.swth.web.Controllers
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -73,14 +73,14 @@ namespace bd.swth.web.Controllers
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
+                    Message = Mensaje.Satisfactorio,
                     Resultado = ActividadesEsenciales,
                 };
             }
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,11 +99,13 @@ namespace bd.swth.web.Controllers
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Satisfactorio,
                 };
-            }
-        }
 
+
+            }
+
+        }
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutActividadesEsenciales([FromRoute] int id, [FromBody] ActividadesEsenciales ActividadesEsenciales)
@@ -115,7 +117,18 @@ namespace bd.swth.web.Controllers
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+
+                var existe = Existe(ActividadesEsenciales);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
 
@@ -132,7 +145,7 @@ namespace bd.swth.web.Controllers
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
+                            Message = Mensaje.Satisfactorio,
                         };
 
                     }
@@ -142,7 +155,7 @@ namespace bd.swth.web.Controllers
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -151,7 +164,7 @@ namespace bd.swth.web.Controllers
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = "Error ",
+                            Message = Mensaje.Error,
                         };
                     }
                 }
@@ -162,7 +175,7 @@ namespace bd.swth.web.Controllers
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe"
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -170,7 +183,7 @@ namespace bd.swth.web.Controllers
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Excepción"
+                    Message = Mensaje.Excepcion
                 };
             }
         }
@@ -187,7 +200,7 @@ namespace bd.swth.web.Controllers
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = ""
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
@@ -199,14 +212,14 @@ namespace bd.swth.web.Controllers
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un registro con igual información"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -216,7 +229,7 @@ namespace bd.swth.web.Controllers
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -225,7 +238,7 @@ namespace bd.swth.web.Controllers
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
@@ -241,7 +254,7 @@ namespace bd.swth.web.Controllers
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -251,7 +264,7 @@ namespace bd.swth.web.Controllers
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
                 db.ActividadesEsenciales.Remove(respuesta);
@@ -260,7 +273,7 @@ namespace bd.swth.web.Controllers
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -269,7 +282,7 @@ namespace bd.swth.web.Controllers
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -278,7 +291,7 @@ namespace bd.swth.web.Controllers
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
@@ -292,7 +305,7 @@ namespace bd.swth.web.Controllers
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una actividad esencial de igual nombre",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 

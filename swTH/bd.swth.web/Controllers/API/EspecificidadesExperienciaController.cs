@@ -119,6 +119,16 @@ namespace bd.swth.web.Controllers
                     };
                 }
 
+                var existe = Existe(EspecificidadExperiencia);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
                 var EspecificidadExperienciaActualizar = await db.EspecificidadExperiencia.Where(x => x.IdEspecificidadExperiencia == id).FirstOrDefaultAsync();
                 if (EspecificidadExperienciaActualizar != null)
                 {
