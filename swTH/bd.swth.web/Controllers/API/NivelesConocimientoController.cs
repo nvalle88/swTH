@@ -26,7 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/NivelConocimientos
+        // GET: api/NivelConocimientoes
         [HttpGet]
         [Route("ListarNivelesConocimiento")]
         public async Task<List<NivelConocimiento>> GetNivelConocimiento()
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/NivelConocimientos/5
+        // GET: api/NivelConocimientoes/5
         [HttpGet("{id}")]
         public async Task<Response> GetNivelConocimiento([FromRoute] int id)
         {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.NivelConocimiento.SingleOrDefaultAsync(m => m.IdNivelConocimiento == id);
+                var NivelConocimiento = await db.NivelConocimiento.SingleOrDefaultAsync(m => m.IdNivelConocimiento == id);
 
-                if (adscbdd == null)
+                if (NivelConocimiento == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = NivelConocimiento,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/NivelConocimientos/5
+        // PUT: api/NivelConocimientoes/5
         [HttpPut("{id}")]
-        public async Task<Response> PutNivelConocimiento([FromRoute] int id, [FromBody] NivelConocimiento nivelConocimiento)
+        public async Task<Response> PutNivelConocimiento([FromRoute] int id, [FromBody] NivelConocimiento NivelConocimiento)
         {
             try
             {
@@ -119,55 +119,60 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var existe = Existe(NivelConocimiento);
+                if (existe.IsSuccess)
                 {
-                    var entidad = await db.NivelConocimiento.Where(x => x.IdNivelConocimiento == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    return new Response
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del Grupo Ocupacional ",
-                        };
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual Nombre",
+                    };
+                }
 
-                    }
-                    else
+                var NivelConocimientoActualizar = await db.NivelConocimiento.Where(x => x.IdNivelConocimiento == id).FirstOrDefaultAsync();
+
+                if (NivelConocimientoActualizar != null)
+                {
+                    try
                     {
-
-                        entidad.Nombre = nivelConocimiento.Nombre;
-                        db.NivelConocimiento.Update(entidad);
+                        NivelConocimientoActualizar.Nombre = NivelConocimiento.Nombre;
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -179,18 +184,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/NivelConocimientos
+        // POST: api/NivelConocimientoes
         [HttpPost]
         [Route("InsertarNivelesConocimiento")]
-        public async Task<Response> PostNivelConocimiento([FromBody] NivelConocimiento nivelConocimiento)
+        public async Task<Response> PostNivelConocimiento([FromBody] NivelConocimiento NivelConocimiento)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(nivelConocimiento.Nombre);
+                var respuesta = Existe(NivelConocimiento);
                 if (!respuesta.IsSuccess)
                 {
-                    db.NivelConocimiento.Add(nivelConocimiento);
+                    db.NivelConocimiento.Add(NivelConocimiento);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -202,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = "Existe un registro de igual Nombre..."
                 };
 
             }
@@ -212,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -226,7 +239,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/NivelConocimientos/5
+        // DELETE: api/NivelConocimientoes/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteNivelConocimiento([FromRoute] int id)
         {
@@ -265,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -279,22 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool NivelConocimientoExists(int id)
+        private Response Existe(NivelConocimiento NivelConocimiento)
         {
-            return db.NivelConocimiento.Any(e => e.IdNivelConocimiento == id);
-        }
-
-
-        public Response Existe(string nombreNivelConocimiento)
-        {
-
-            var loglevelrespuesta = db.NivelConocimiento.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreNivelConocimiento).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = NivelConocimiento.Nombre;
+            var NivelConocimientorespuesta = db.NivelConocimiento.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (NivelConocimientorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe un Nombre de igual nombre",
                     Resultado = null,
                 };
 
@@ -303,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = NivelConocimientorespuesta,
             };
         }
+
     }
 }
