@@ -690,7 +690,8 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
-                    .HasMaxLength(50);
+                    .HasMaxLength(50)
+                    .HasColumnName("Name");
 
                 entity.HasOne(d => d.Provincia)
                     .WithMany(p => p.Ciudad)

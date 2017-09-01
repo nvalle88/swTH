@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.Sucursal.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Sucursal.OrderBy(x => x.Nombre).Include(X => X.Ciudad).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -126,8 +126,6 @@ namespace bd.swth.web.Controllers.API
                     {
 
                         sucursalActualizar.Nombre = sucursal.Nombre;
-                        sucursalActualizar.Ciudad = sucursal.Ciudad;
-                        sucursalActualizar.Dependencia = sucursal.Dependencia;
                         sucursalActualizar.IdCiudad = sucursal.IdCiudad;
 
                         db.Sucursal.Update(sucursalActualizar);
