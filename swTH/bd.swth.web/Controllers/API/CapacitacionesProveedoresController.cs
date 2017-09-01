@@ -4,37 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
-using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
-namespace bd.swrm.web.Controllers.API
+namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Ciudad")]
-    public class CiudadController : Controller
+    [Route("api/CapacitacionesProveedores")]
+    public class CapacitacionesProveedoresController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public CiudadController(SwTHDbContext db)
+        public CapacitacionesProveedoresController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/Ciudad
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarCiudad")]
-        public async Task<List<Ciudad>> GetCiudad()
+        [Route("ListarCapacitacionesProveedores")]
+        public async Task<List<CapacitacionProveedor>> GetCapacitacionProveedor()
         {
             try
             {
-                return await db.Ciudad.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.CapacitacionProveedor.Include(x => x.CapacitacionRecibida).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -48,13 +47,13 @@ namespace bd.swrm.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Ciudad>();
+                return new List<CapacitacionProveedor>();
             }
         }
 
-        // GET: api/Ciudad/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetCiudad([FromRoute] int id)
+        public async Task<Response> GetCapacitacionProveedor([FromRoute] int id)
         {
             try
             {
@@ -67,9 +66,9 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var ciudad = await db.Ciudad.SingleOrDefaultAsync(m => m.IdCiudad == id);
+                var CapacitacionProveedor = await db.CapacitacionProveedor.SingleOrDefaultAsync(m => m.IdCapacitacionProveedor == id);
 
-                if (ciudad == null)
+                if (CapacitacionProveedor == null)
                 {
                     return new Response
                     {
@@ -82,7 +81,7 @@ namespace bd.swrm.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = ciudad,
+                    Resultado = CapacitacionProveedor,
                 };
             }
             catch (Exception ex)
@@ -100,14 +99,14 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
         }
 
-        // PUT: api/Ciudad/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutCiudad([FromRoute] int id, [FromBody] Ciudad ciudad)
+        public async Task<Response> PutCapacitacionProveedor([FromRoute] int id, [FromBody] CapacitacionProveedor capacitacionProveedor)
         {
             try
             {
@@ -116,17 +115,27 @@ namespace bd.swrm.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var ciudadActualizar = await db.Ciudad.Where(x => x.IdCiudad == id).FirstOrDefaultAsync();
-                if (ciudadActualizar != null)
+                var existe = Existe(capacitacionProveedor);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var capacitacionProveedorActualizar = await db.CapacitacionProveedor.Where(x => x.IdCapacitacionProveedor == id).FirstOrDefaultAsync();
+
+                if (capacitacionProveedorActualizar != null)
                 {
                     try
                     {
-                        ciudadActualizar.Nombre = ciudad.Nombre;
-                        db.Ciudad.Update(ciudadActualizar);
+                        capacitacionProveedorActualizar.Nombre = capacitacionProveedor.Nombre;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -155,6 +164,10 @@ namespace bd.swrm.web.Controllers.API
                         };
                     }
                 }
+
+
+
+
                 return new Response
                 {
                     IsSuccess = false,
@@ -171,10 +184,10 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // POST: api/Ciudad
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarCiudad")]
-        public async Task<Response> PostCiudad([FromBody] Ciudad ciudad)
+        [Route("InsertarCapacitacionProveedor")]
+        public async Task<Response> PostCapacitacionProveedor([FromBody] CapacitacionProveedor CapacitacionProveedor)
         {
             try
             {
@@ -187,10 +200,10 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(ciudad);
+                var respuesta = Existe(CapacitacionProveedor);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Ciudad.Add(ciudad);
+                    db.CapacitacionProveedor.Add(CapacitacionProveedor);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -202,7 +215,7 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -226,9 +239,9 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // DELETE: api/Ciudad/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteCiudad([FromRoute] int id)
+        public async Task<Response> DeleteCapacitacionProveedor([FromRoute] int id)
         {
             try
             {
@@ -241,7 +254,7 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.Ciudad.SingleOrDefaultAsync(m => m.IdCiudad == id);
+                var respuesta = await db.CapacitacionProveedor.SingleOrDefaultAsync(m => m.IdCapacitacionProveedor == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -250,7 +263,7 @@ namespace bd.swrm.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.Ciudad.Remove(respuesta);
+                db.CapacitacionProveedor.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -279,31 +292,26 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        private bool CiudadExists(string nombre)
+        private Response Existe(CapacitacionProveedor CapacitacionProveedor)
         {
-            return db.Ciudad.Any(e => e.Nombre == nombre);
-        }
-
-        public Response Existe(Ciudad ciudad)
-        {
-            var bdd = ciudad.Nombre.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.Ciudad.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = CapacitacionProveedor.Nombre.ToUpper().TrimEnd().TrimStart();
+            var estadocivilrespuesta = db.CapacitacionProveedor.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (estadocivilrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.BorradoNoSatisfactorio,
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
             }
+
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = estadocivilrespuesta,
             };
         }
-
     }
 }

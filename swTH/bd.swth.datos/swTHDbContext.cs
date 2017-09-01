@@ -17,6 +17,7 @@ namespace bd.swth.datos
 
         public virtual DbSet<bd.swth.entidades.Negocio.AccionPersonal> AccionPersonal { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentoInformacionInstitucional> DocumentoInformacionInstitucional { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionProveedor> CapacitacionProveedor { get; set; }
         public virtual DbSet<ActividadesAnalisisOcupacional> ActividadesAnalisisOcupacional { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ActividadesEsenciales> ActividadesEsenciales { get; set; }
         public virtual DbSet<ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
@@ -35,7 +36,6 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionModalidad> CapacitacionModalidad { get; set; }
         public virtual DbSet<CapacitacionPlanificacion> CapacitacionPlanificacion { get; set; }
         public virtual DbSet<CapacitacionPregunta> CapacitacionPregunta { get; set; }
-        public virtual DbSet<CapacitacionProveedor> CapacitacionProveedor { get; set; }
         public virtual DbSet<CapacitacionRecibida> CapacitacionRecibida { get; set; }
         public virtual DbSet<CapacitacionRespuesta> CapacitacionRespuesta { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionTemario> CapacitacionTemario { get; set; }
