@@ -13,7 +13,7 @@ using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 
-namespace bd.swth.web.Controllers
+namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
     [Route("api/EspecificidadesExperiencia")]
