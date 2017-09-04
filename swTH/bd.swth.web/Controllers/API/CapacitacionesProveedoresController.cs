@@ -10,30 +10,30 @@ using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/EspecificidadesExperiencia")]
-    public class EspecificidadesExperienciaController : Controller
+    [Route("api/CapacitacionesProveedores")]
+    public class CapacitacionesProveedoresController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public EspecificidadesExperienciaController(SwTHDbContext db)
+        public CapacitacionesProveedoresController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarEspecificidadesExperiencia")]
-        public async Task<List<EspecificidadExperiencia>> GetEspecificidadesExperiencia()
+        [Route("ListarCapacitacionesProveedores")]
+        public async Task<List<CapacitacionProveedor>> GetCapacitacionProveedor()
         {
             try
             {
-                return await db.EspecificidadExperiencia.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.CapacitacionProveedor.Include(x => x.CapacitacionRecibida).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<EspecificidadExperiencia>();
+                return new List<CapacitacionProveedor>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetEspecificidadExperiencia([FromRoute] int id)
+        public async Task<Response> GetCapacitacionProveedor([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EspecificidadExperiencia = await db.EspecificidadExperiencia.SingleOrDefaultAsync(m => m.IdEspecificidadExperiencia == id);
+                var CapacitacionProveedor = await db.CapacitacionProveedor.SingleOrDefaultAsync(m => m.IdCapacitacionProveedor == id);
 
-                if (EspecificidadExperiencia == null)
+                if (CapacitacionProveedor == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = EspecificidadExperiencia,
+                    Resultado = CapacitacionProveedor,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
         }
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutEspecificidadExperiencia([FromRoute] int id, [FromBody] EspecificidadExperiencia EspecificidadExperiencia)
+        public async Task<Response> PutCapacitacionProveedor([FromRoute] int id, [FromBody] CapacitacionProveedor capacitacionProveedor)
         {
             try
             {
@@ -119,7 +119,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(EspecificidadExperiencia);
+                var existe = Existe(capacitacionProveedor);
                 if (existe.IsSuccess)
                 {
                     return new Response
@@ -129,14 +129,13 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EspecificidadExperienciaActualizar = await db.EspecificidadExperiencia.Where(x => x.IdEspecificidadExperiencia == id).FirstOrDefaultAsync();
-                if (EspecificidadExperienciaActualizar != null)
+                var capacitacionProveedorActualizar = await db.CapacitacionProveedor.Where(x => x.IdCapacitacionProveedor == id).FirstOrDefaultAsync();
+
+                if (capacitacionProveedorActualizar != null)
                 {
                     try
                     {
-
-                        EspecificidadExperienciaActualizar.Descripcion = EspecificidadExperiencia.Descripcion;
-                        db.EspecificidadExperiencia.Update(EspecificidadExperienciaActualizar);
+                        capacitacionProveedorActualizar.Nombre = capacitacionProveedor.Nombre;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -152,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -180,15 +179,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarEspecificidadExperiencia")]
-        public async Task<Response> PostEspecificidadExperiencia([FromBody] EspecificidadExperiencia EspecificidadExperiencia)
+        [Route("InsertarCapacitacionProveedor")]
+        public async Task<Response> PostCapacitacionProveedor([FromBody] CapacitacionProveedor CapacitacionProveedor)
         {
             try
             {
@@ -201,10 +200,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(EspecificidadExperiencia);
+                var respuesta = Existe(CapacitacionProveedor);
                 if (!respuesta.IsSuccess)
                 {
-                    db.EspecificidadExperiencia.Add(EspecificidadExperiencia);
+                    db.CapacitacionProveedor.Add(CapacitacionProveedor);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -216,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe una especificidad de experiencia con igual descripción"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -226,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -242,7 +241,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteEspecificidadExperiencia([FromRoute] int id)
+        public async Task<Response> DeleteCapacitacionProveedor([FromRoute] int id)
         {
             try
             {
@@ -255,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.EspecificidadExperiencia.SingleOrDefaultAsync(m => m.IdEspecificidadExperiencia == id);
+                var respuesta = await db.CapacitacionProveedor.SingleOrDefaultAsync(m => m.IdCapacitacionProveedor == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -264,7 +263,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.EspecificidadExperiencia.Remove(respuesta);
+                db.CapacitacionProveedor.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -279,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -293,16 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(EspecificidadExperiencia EspecificidadExperiencia)
+        private Response Existe(CapacitacionProveedor CapacitacionProveedor)
         {
-            var bdd = EspecificidadExperiencia.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var EspecificidadExperienciarespuesta = db.EspecificidadExperiencia.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (EspecificidadExperienciarespuesta != null)
+            var bdd = CapacitacionProveedor.Nombre.ToUpper().TrimEnd().TrimStart();
+            var estadocivilrespuesta = db.CapacitacionProveedor.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (estadocivilrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una especificidad de experiencia con igual descripción",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -311,7 +310,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = EspecificidadExperienciarespuesta,
+                Resultado = estadocivilrespuesta,
             };
         }
     }
