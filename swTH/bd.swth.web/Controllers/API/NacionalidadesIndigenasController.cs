@@ -26,9 +26,9 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/NacionalidadIndigenas
+        // GET: api/NacionalidadIndigenaes
         [HttpGet]
-        [Route("ListarNacionalidadIndigenas")]
+        [Route("ListarNacionalidadesIndigenas")]
         public async Task<List<NacionalidadIndigena>> GetNacionalidadIndigena()
         {
             try
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/NacionalidadIndigenas/5
+        // GET: api/NacionalidadIndigenaes/5
         [HttpGet("{id}")]
         public async Task<Response> GetNacionalidadIndigena([FromRoute] int id)
         {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido",
                     };
                 }
 
-                var adscbdd = await db.NacionalidadIndigena.SingleOrDefaultAsync(m => m.IdNacionalidadIndigena == id);
+                var NacionalidadIndigena = await db.NacionalidadIndigena.SingleOrDefaultAsync(m => m.IdNacionalidadIndigena == id);
 
-                if (adscbdd == null)
+                if (NacionalidadIndigena == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No encontrado",
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = adscbdd,
+                    Message = "Ok",
+                    Resultado = NacionalidadIndigena,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        // PUT: api/NacionalidadIndigenas/5
+        // PUT: api/NacionalidadIndigenaes/5
         [HttpPut("{id}")]
-        public async Task<Response> PutNacionalidadIndigena([FromRoute] int id, [FromBody] NacionalidadIndigena nacionalidadIndigena)
+        public async Task<Response> PutNacionalidadIndigena([FromRoute] int id, [FromBody] NacionalidadIndigena NacionalidadIndigena)
         {
             try
             {
@@ -115,95 +115,107 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-
-                try
+                var existe = Existe(NacionalidadIndigena);
+                if (existe.IsSuccess)
                 {
-                    var entidad = await db.NacionalidadIndigena.Where(x => x.IdNacionalidadIndigena == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del NacionalidadIndigena ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.Nombre = nacionalidadIndigena.Nombre;
-                        entidad.IdEtnia = nacionalidadIndigena.IdEtnia;
-                        db.NacionalidadIndigena.Update(entidad);
-                        await db.SaveChangesAsync();
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-                    }
-
-
-                }
-                catch (Exception ex)
-                {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.Error,
+                        Message = "Existe un registro de igual Nombre",
                     };
                 }
 
+                var NacionalidadIndigenaActualizar = await db.NacionalidadIndigena.Where(x => x.IdNacionalidadIndigena == id).FirstOrDefaultAsync();
 
+                if (NacionalidadIndigenaActualizar != null)
+                {
+                    try
+                    {
+                        NacionalidadIndigenaActualizar.Nombre = NacionalidadIndigena.Nombre;
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = "Excepción"
                 };
             }
         }
 
-        // POST: api/NacionalidadIndigenas
+        // POST: api/NacionalidadIndigenaes
         [HttpPost]
         [Route("InsertarNacionalidadesIndigenas")]
-        public async Task<Response> PostNacionalidadIndigena([FromBody] NacionalidadIndigena nacionalidadIndigena)
+        public async Task<Response> PostNacionalidadIndigena([FromBody] NacionalidadIndigena NacionalidadIndigena)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(nacionalidadIndigena.Nombre);
+                var respuesta = Existe(NacionalidadIndigena);
                 if (!respuesta.IsSuccess)
                 {
-                    db.NacionalidadIndigena.Add(nacionalidadIndigena);
+                    db.NacionalidadIndigena.Add(NacionalidadIndigena);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = "OK"
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = "Existe un registro de igual Nombre..."
                 };
 
             }
@@ -213,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -222,12 +234,12 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        // DELETE: api/NacionalidadIndigenas/5
+        // DELETE: api/NacionalidadIndigenaes/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteNacionalidadIndigena([FromRoute] int id)
         {
@@ -238,7 +250,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido ",
                     };
                 }
 
@@ -248,7 +260,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No existe ",
                     };
                 }
                 db.NacionalidadIndigena.Remove(respuesta);
@@ -257,7 +269,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = "Eliminado ",
                 };
             }
             catch (Exception ex)
@@ -266,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -275,27 +287,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        private bool NacionalidadIndigenaExists(int id)
+        private Response Existe(NacionalidadIndigena NacionalidadIndigena)
         {
-            return db.NacionalidadIndigena.Any(e => e.IdNacionalidadIndigena == id);
-        }
-
-
-        public Response Existe(string nombreNacionalidadIndigena)
-        {
-
-            var loglevelrespuesta = db.NacionalidadIndigena.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreNacionalidadIndigena).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = NacionalidadIndigena.Nombre;
+            var NacionalidadIndigenarespuesta = db.NacionalidadIndigena.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (NacionalidadIndigenarespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe un Nacionalidad Indigena de igual nombre",
                     Resultado = null,
                 };
 
@@ -304,7 +310,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = NacionalidadIndigenarespuesta,
             };
         }
     }

@@ -26,7 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/Parentescos
+        // GET: api/Parentescoes
         [HttpGet]
         [Route("ListarParentescos")]
         public async Task<List<Parentesco>> GetParentesco()
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/Parentescos/5
+        // GET: api/Parentescoes/5
         [HttpGet("{id}")]
         public async Task<Response> GetParentesco([FromRoute] int id)
         {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido",
                     };
                 }
 
-                var adscbdd = await db.Parentesco.SingleOrDefaultAsync(m => m.IdParentesco == id);
+                var Parentesco = await db.Parentesco.SingleOrDefaultAsync(m => m.IdParentesco == id);
 
-                if (adscbdd == null)
+                if (Parentesco == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No encontrado",
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = adscbdd,
+                    Message = "Ok",
+                    Resultado = Parentesco,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,12 +99,12 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        // PUT: api/Parentescos/5
+        // PUT: api/Parentescoes/5
         [HttpPut("{id}")]
         public async Task<Response> PutParentesco([FromRoute] int id, [FromBody] Parentesco Parentesco)
         {
@@ -115,79 +115,89 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-
-                try
+                var existe = Existe(Parentesco);
+                if (existe.IsSuccess)
                 {
-                    var entidad = await db.Parentesco.Where(x => x.IdParentesco == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del  Paarentesco ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.Nombre = Parentesco.Nombre;
-                        db.Parentesco.Update(entidad);
-                        await db.SaveChangesAsync();
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-                    }
-
-
-                }
-                catch (Exception ex)
-                {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.Error,
+                        Message = "Existe un registro de igual Nombre",
                     };
                 }
 
+                var ParentescoActualizar = await db.Parentesco.Where(x => x.IdParentesco == id).FirstOrDefaultAsync();
 
+                if (ParentescoActualizar != null)
+                {
+                    try
+                    {
+                        ParentescoActualizar.Nombre = Parentesco.Nombre;
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = "Excepción"
                 };
             }
         }
 
-        // POST: api/Parentescos
+        // POST: api/Parentescoes
         [HttpPost]
-        [Route("InsertarParentesco")]
+        [Route("InsertarParentescos")]
         public async Task<Response> PostParentesco([FromBody] Parentesco Parentesco)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(Parentesco.Nombre);
+                var respuesta = Existe(Parentesco);
                 if (!respuesta.IsSuccess)
                 {
                     db.Parentesco.Add(Parentesco);
@@ -195,14 +205,14 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = "OK"
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = "Existe un registro de igual Nombre..."
                 };
 
             }
@@ -212,7 +222,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -221,12 +231,12 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        // DELETE: api/Parentescos/5
+        // DELETE: api/Parentescoes/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteParentesco([FromRoute] int id)
         {
@@ -237,7 +247,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido ",
                     };
                 }
 
@@ -247,7 +257,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No existe ",
                     };
                 }
                 db.Parentesco.Remove(respuesta);
@@ -256,7 +266,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = "Eliminado ",
                 };
             }
             catch (Exception ex)
@@ -265,7 +275,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -274,27 +284,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        private bool ParentescoExists(int id)
+        private Response Existe(Parentesco Parentesco)
         {
-            return db.Parentesco.Any(e => e.IdParentesco == id);
-        }
-
-
-        public Response Existe(string nombreParentesco)
-        {
-
-            var loglevelrespuesta = db.Parentesco.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreParentesco).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = Parentesco.Nombre;
+            var Parentescorespuesta = db.Parentesco.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (Parentescorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe un Parentesco de igual nombre",
                     Resultado = null,
                 };
 
@@ -303,8 +307,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = Parentescorespuesta,
             };
         }
+
     }
 }

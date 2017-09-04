@@ -11,7 +11,6 @@ using bd.log.guardar.Enumeradores;
 using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-
 using bd.swth.entidades.Utils;
 
 namespace bd.swrm.web.Controllers.API

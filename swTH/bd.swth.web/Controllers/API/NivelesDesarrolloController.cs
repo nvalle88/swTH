@@ -26,7 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/NivelDesarrollos
+        // GET: api/NivelDesarrolloes
         [HttpGet]
         [Route("ListarNivelesDesarrollo")]
         public async Task<List<NivelDesarrollo>> GetNivelDesarrollo()
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/NivelDesarrollos/5
+        // GET: api/NivelDesarrolloes/5
         [HttpGet("{id}")]
         public async Task<Response> GetNivelDesarrollo([FromRoute] int id)
         {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido",
                     };
                 }
 
-                var adscbdd = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
+                var NivelDesarrollo = await db.NivelDesarrollo.SingleOrDefaultAsync(m => m.IdNivelDesarrollo == id);
 
-                if (adscbdd == null)
+                if (NivelDesarrollo == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No encontrado",
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = adscbdd,
+                    Message = "Ok",
+                    Resultado = NivelDesarrollo,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        // PUT: api/NivelDesarrollos/5
+        // PUT: api/NivelDesarrolloes/5
         [HttpPut("{id}")]
-        public async Task<Response> PutNivelDesarrollo([FromRoute] int id, [FromBody] NivelDesarrollo nivelDesarrollo)
+        public async Task<Response> PutNivelDesarrollo([FromRoute] int id, [FromBody] NivelDesarrollo NivelDesarrollo)
         {
             try
             {
@@ -115,94 +115,107 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-
-                try
+                var existe = Existe(NivelDesarrollo);
+                if (existe.IsSuccess)
                 {
-                    var entidad = await db.NivelDesarrollo.Where(x => x.IdNivelDesarrollo == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del Nive de Desarrollo ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.Nombre = nivelDesarrollo.Nombre;
-                        db.NivelDesarrollo.Update(entidad);
-                        await db.SaveChangesAsync();
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-                    }
-
-
-                }
-                catch (Exception ex)
-                {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.Error,
+                        Message = "Existe un registro de igual Nombre",
                     };
                 }
 
+                var NivelDesarrolloActualizar = await db.NivelDesarrollo.Where(x => x.IdNivelDesarrollo == id).FirstOrDefaultAsync();
 
+                if (NivelDesarrolloActualizar != null)
+                {
+                    try
+                    {
+                        NivelDesarrolloActualizar.Nombre = NivelDesarrollo.Nombre;
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = "Excepción"
                 };
             }
         }
 
-        // POST: api/NivelDesarrollos
+        // POST: api/NivelDesarrolloes
         [HttpPost]
-        [Route("InsertarNivelDesarrollo")]
-        public async Task<Response> PostNivelDesarrollo([FromBody] NivelDesarrollo nivelDesarrollo)
+        [Route("InsertarNivelesDesarrollo")]
+        public async Task<Response> PostNivelDesarrollo([FromBody] NivelDesarrollo NivelDesarrollo)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(nivelDesarrollo.Nombre);
+                var respuesta = Existe(NivelDesarrollo);
                 if (!respuesta.IsSuccess)
                 {
-                    db.NivelDesarrollo.Add(nivelDesarrollo);
+                    db.NivelDesarrollo.Add(NivelDesarrollo);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = "OK"
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = "Existe un registro de igual Nombre..."
                 };
 
             }
@@ -212,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -221,12 +234,12 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        // DELETE: api/NivelDesarrollos/5
+        // DELETE: api/NivelDesarrolloes/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteNivelDesarrollo([FromRoute] int id)
         {
@@ -237,7 +250,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido ",
                     };
                 }
 
@@ -247,7 +260,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No existe ",
                     };
                 }
                 db.NivelDesarrollo.Remove(respuesta);
@@ -256,7 +269,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = "Eliminado ",
                 };
             }
             catch (Exception ex)
@@ -265,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -274,27 +287,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        private bool NivelDesarrolloExists(int id)
+        private Response Existe(NivelDesarrollo NivelDesarrollo)
         {
-            return db.NivelDesarrollo.Any(e => e.IdNivelDesarrollo == id);
-        }
-
-
-        public Response Existe(string nombreNivelDesarrollo)
-        {
-
-            var loglevelrespuesta = db.NivelDesarrollo.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreNivelDesarrollo).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = NivelDesarrollo.Nombre;
+            var NivelDesarrollorespuesta = db.NivelDesarrollo.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (NivelDesarrollorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe un Nivel de Desarrollo de igual nombre",
                     Resultado = null,
                 };
 
@@ -303,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = NivelDesarrollorespuesta,
             };
         }
+
     }
 }
