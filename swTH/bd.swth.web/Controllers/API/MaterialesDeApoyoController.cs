@@ -125,7 +125,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe un registro de igual NombreDocumento",
+                        Message = "Existe un registro de igual nombre del documento",
                     };
                 }
 
@@ -164,10 +164,7 @@ namespace bd.swth.web.Controllers.API
                         };
                     }
                 }
-
-
-
-
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -215,7 +212,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un registro de igual NombreDocumento..."
+                    Message = "Existe un registro de igual nombre de documento..."
                 };
 
             }
@@ -301,7 +298,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un NombreDocumento de igual nombre",
+                    Message = "Existe un material de apoyo de igual nombre",
                     Resultado = null,
                 };
 

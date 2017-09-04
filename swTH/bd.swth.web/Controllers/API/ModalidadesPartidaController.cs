@@ -16,7 +16,7 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/ModalidadPartidas")]
+    [Route("api/ModalidadesPartida")]
     public class ModalidadesPartidaController : Controller
     {
         private readonly SwTHDbContext db;
@@ -26,7 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/ModalidadPartidas
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarModalidadesPartida")]
         public async Task<List<ModalidadPartida>> GetModalidadPartida()
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/ModalidadPartidas/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetModalidadPartida([FromRoute] int id)
         {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.ModalidadPartida.SingleOrDefaultAsync(m => m.IdModalidadPartida == id);
+                var ModalidadPartida = await db.ModalidadPartida.SingleOrDefaultAsync(m => m.IdModalidadPartida == id);
 
-                if (adscbdd == null)
+                if (ModalidadPartida == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = ModalidadPartida,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,7 +104,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/ModalidadPartidas/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutModalidadPartida([FromRoute] int id, [FromBody] ModalidadPartida ModalidadPartida)
         {
@@ -119,56 +119,57 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var existe = Existe(ModalidadPartida);
+                if (existe.IsSuccess)
                 {
-                    var entidad = await db.ModalidadPartida.Where(x => x.IdModalidadPartida == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    return new Response
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del Grupo Ocupacional ",
-                        };
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual nombre",
+                    };
+                }
 
-                    }
-                    else
+                var ModalidadPartidaActualizar = await db.ModalidadPartida.Where(x => x.IdModalidadPartida == id).FirstOrDefaultAsync();
+
+                if (ModalidadPartidaActualizar != null)
+                {
+                    try
                     {
-
-                        entidad.Nombre = ModalidadPartida.Nombre;
-                        entidad.IdRelacionLaboral = ModalidadPartida.IdRelacionLaboral;
-                        db.ModalidadPartida.Update(entidad);
+                        ModalidadPartidaActualizar.Nombre = ModalidadPartida.Nombre;
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -180,15 +181,23 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/ModalidadPartidas
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarModalidadPartida")]
+        [Route("InsertarModalidadesPartida")]
         public async Task<Response> PostModalidadPartida([FromBody] ModalidadPartida ModalidadPartida)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(ModalidadPartida.Nombre);
+                var respuesta = Existe(ModalidadPartida);
                 if (!respuesta.IsSuccess)
                 {
                     db.ModalidadPartida.Add(ModalidadPartida);
@@ -203,7 +212,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = "Existe un registro de igual nombre..."
                 };
 
             }
@@ -213,7 +222,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -227,7 +236,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/ModalidadPartidas/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteModalidadPartida([FromRoute] int id)
         {
@@ -266,7 +275,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -280,22 +289,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool ModalidadPartidaExists(int id)
+        private Response Existe(ModalidadPartida ModalidadPartida)
         {
-            return db.ModalidadPartida.Any(e => e.IdModalidadPartida == id);
-        }
-
-
-        public Response Existe(string nombreModalidadPartida)
-        {
-
-            var loglevelrespuesta = db.ModalidadPartida.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreModalidadPartida).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = ModalidadPartida.Nombre;
+            var ModalidadPartidarespuesta = db.ModalidadPartida.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (ModalidadPartidarespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe un modalidad de partida de igual nombre",
                     Resultado = null,
                 };
 
@@ -304,8 +307,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = ModalidadPartidarespuesta,
             };
         }
+
     }
 }

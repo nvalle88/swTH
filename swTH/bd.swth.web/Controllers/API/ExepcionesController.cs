@@ -26,10 +26,10 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/Exepciones
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarExepciones")]
-        public async Task<List<Exepciones>> GetExcepciones()
+        public async Task<List<Exepciones>> GetExepciones()
         {
             try
             {
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,9 +51,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/Exepciones/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetExcepciones([FromRoute] int id)
+        public async Task<Response> GetExepciones([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.Exepciones.SingleOrDefaultAsync(m => m.IdExepciones == id);
+                var Exepciones = await db.Exepciones.SingleOrDefaultAsync(m => m.IdExepciones == id);
 
-                if (adscbdd == null)
+                if (Exepciones == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = adscbdd,
+                    Resultado = Exepciones,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/Exepciones/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutExepciones([FromRoute] int id, [FromBody] Exepciones exepciones)
+        public async Task<Response> PutExepciones([FromRoute] int id, [FromBody] Exepciones Exepciones)
         {
             try
             {
@@ -119,55 +119,60 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var existe = Existe(Exepciones);
+                if (existe.IsSuccess)
                 {
-                    var entidad = await db.Exepciones.Where(x => x.IdExepciones == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    return new Response
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca de la Excepcion ",
-                        };
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual Detalle",
+                    };
+                }
 
-                    }
-                    else
+                var ExepcionesActualizar = await db.Exepciones.Where(x => x.IdExepciones == id).FirstOrDefaultAsync();
+
+                if (ExepcionesActualizar != null)
+                {
+                    try
                     {
-
-                        entidad.Detalle = exepciones.Detalle;
-                        db.Exepciones.Update(entidad);
+                        ExepcionesActualizar.Detalle = Exepciones.Detalle;
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = "Ok",
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
             }
             catch (Exception)
             {
@@ -179,18 +184,26 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/Exepciones
+        // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarExepciones")]
-        public async Task<Response> PostExepciones([FromBody] Exepciones exepciones)
+        public async Task<Response> PostExepciones([FromBody] Exepciones Exepciones)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
 
-                var respuesta = Existe(exepciones.Detalle);
+                var respuesta = Existe(Exepciones);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Exepciones.Add(exepciones);
+                    db.Exepciones.Add(Exepciones);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -202,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = "Existe un registro de igual Detalle..."
                 };
 
             }
@@ -212,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -226,9 +239,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/Exepciones/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteExcepciones([FromRoute] int id)
+        public async Task<Response> DeleteExepciones([FromRoute] int id)
         {
             try
             {
@@ -265,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -279,22 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool ExepcionesExists(int id)
+        private Response Existe(Exepciones Exepciones)
         {
-            return db.Exepciones.Any(e => e.IdExepciones == id);
-        }
-
-
-        public Response Existe(string nombreExepciones)
-        {
-
-            var loglevelrespuesta = db.Exepciones.Where(p => p.Detalle.ToUpper().TrimStart().TrimEnd() == nombreExepciones).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = Exepciones.Detalle;
+            var Exepcionesrespuesta = db.Exepciones.Where(p => p.Detalle == bdd).FirstOrDefault();
+            if (Exepcionesrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = "Existe una exepción de igual nombre",
                     Resultado = null,
                 };
 
@@ -303,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = Exepcionesrespuesta,
             };
         }
+
     }
 }

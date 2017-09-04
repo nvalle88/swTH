@@ -1698,7 +1698,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdExepciones)
                     .HasName("PK_Exepciones");
 
-                entity.HasIndex(e => e.ValidacionJefeId)
+                entity.HasIndex(e => e.IdValidacionJefe)
                     .HasName("IX_Exepciones_ValidacionInmediatoSuperiorIdValidacionJefe");
 
                 entity.Property(e => e.Detalle)
@@ -1707,7 +1707,7 @@ namespace bd.swth.datos
 
                 entity.HasOne(d => d.ValidacionInmediatoSuperior)
                     .WithMany(p => p.Exepciones)
-                    .HasForeignKey(d => d.ValidacionJefeId);
+                    .HasForeignKey(d => d.IdValidacionJefe);
             });
 
             modelBuilder.Entity<ExperienciaLaboralRequerida>(entity =>
@@ -2375,12 +2375,12 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdMaterialApoyo)
                     .HasName("PK_MaterialApoyo");
 
-                entity.HasIndex(e => e.FormularioDevengacionId)
+                entity.HasIndex(e => e.IdFormularioDevengacion)
                     .HasName("IX_MaterialApoyo_FormularioDevengacionId");
 
                 entity.HasOne(d => d.FormularioDevengacion)
                     .WithMany(p => p.MaterialApoyo)
-                    .HasForeignKey(d => d.FormularioDevengacionId)
+                    .HasForeignKey(d => d.IdFormularioDevengacion)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
