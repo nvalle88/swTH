@@ -8,9 +8,10 @@ using bd.swth.datos;
 namespace bd.swth.datos.Migrations
 {
     [DbContext(typeof(SwTHDbContext))]
-    partial class SwTHDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170908142650_migrar_base_tablas_faltantes")]
+    partial class migrar_base_tablas_faltantes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")

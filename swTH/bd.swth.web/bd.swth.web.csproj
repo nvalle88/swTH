@@ -33,12 +33,14 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\MVC\" />
+    <Folder Include="wwwroot\Documentos\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\SalvarLogEntry\bd.guardarlog.servicios\bd.log.guardar.csproj" />
     <ProjectReference Include="..\bd.swcompartidos.servicios.externos\bd.sw.externos.csproj" />
     <ProjectReference Include="..\bd.swth.datos\bd.swth.datos.csproj" />
     <ProjectReference Include="..\bd.swth.entidades\bd.swth.entidades.csproj" />
+    <ProjectReference Include="..\bd.swth.servicios\bd.swth.servicios.csproj" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>
 
