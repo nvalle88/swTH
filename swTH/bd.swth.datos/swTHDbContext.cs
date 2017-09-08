@@ -98,7 +98,7 @@ namespace bd.swth.datos
         public virtual DbSet<FondoFinanciamiento> FondoFinanciamiento { get; set; }
         public virtual DbSet<FormularioAnalisisOcupacional> FormularioAnalisisOcupacional { get; set; }
         public virtual DbSet<FormularioCapacitacion> FormularioCapacitacion { get; set; }
-        public virtual DbSet<FormularioDevengacion> FormularioDevengacion { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.FormularioDevengacion> FormularioDevengacion { get; set; }
         public virtual DbSet<FormulasRMU> FormulasRMU { get; set; }
         public virtual DbSet<FrecuenciaAplicacion> FrecuenciaAplicacion { get; set; }
         public virtual DbSet<GastoRubro> GastoRubro { get; set; }

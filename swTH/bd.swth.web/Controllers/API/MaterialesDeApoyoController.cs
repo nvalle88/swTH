@@ -26,14 +26,14 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        // GET: api/MaterialApoyoes
         [HttpGet]
         [Route("ListarMaterialesDeApoyo")]
         public async Task<List<MaterialApoyo>> GetMaterialApoyo()
         {
             try
             {
-                return await db.MaterialApoyo.OrderBy(x => x.NombreDocumento).ToListAsync();
+                return await db.MaterialApoyo.Include(x => x.FormularioDevengacion).OrderBy(x => x.NombreDocumento).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/BasesDatos/5
+        // GET: api/MaterialApoyoes/5
         [HttpGet("{id}")]
         public async Task<Response> GetMaterialApoyo([FromRoute] int id)
         {
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,7 +104,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/BasesDatos/5
+        // PUT: api/MaterialApoyoes/5
         [HttpPut("{id}")]
         public async Task<Response> PutMaterialApoyo([FromRoute] int id, [FromBody] MaterialApoyo MaterialApoyo)
         {
@@ -125,7 +125,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe un registro de igual nombre del documento",
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
 
@@ -151,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -164,7 +164,10 @@ namespace bd.swth.web.Controllers.API
                         };
                     }
                 }
-                
+
+
+
+
                 return new Response
                 {
                     IsSuccess = false,
@@ -176,12 +179,12 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // POST: api/BasesDatos
+        // POST: api/MaterialApoyoes
         [HttpPost]
         [Route("InsertarMaterialesDeApoyo")]
         public async Task<Response> PostMaterialApoyo([FromBody] MaterialApoyo MaterialApoyo)
@@ -212,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un registro de igual nombre de documento..."
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -222,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -236,7 +239,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        // DELETE: api/MaterialApoyoes/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteMaterialApoyo([FromRoute] int id)
         {
@@ -275,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -298,7 +301,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un material de apoyo de igual nombre",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 

@@ -7,33 +7,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
+using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
-using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/GruposOcupacionales")]
-    public class GruposOcupacionalesController : Controller
+    [Route("api/FormulariosDevengacion")]
+    public class FormulariosDevengacionController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public GruposOcupacionalesController(SwTHDbContext db)
+        public FormulariosDevengacionController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        // GET: api/FormularioDevengaciones
         [HttpGet]
-        [Route("ListarGruposOcupacionales")]
-        public async Task<List<GrupoOcupacional>> GetGrupoOcupacional()
+        [Route("ListarFormulariosDevengacion")]
+        public async Task<List<FormularioDevengacion>> GetFormularioDevengacion()
         {
             try
             {
-                return await db.GrupoOcupacional.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.FormularioDevengacion.Include(x => x.ModosScializacion).Include(x => x.Empleado).Include(x => x.AnalistaDesarrolloInstitucional).Include(x => x.ResponsableArea).OrderBy(x => x.ModoSocial).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<GrupoOcupacional>();
+                return new List<FormularioDevengacion>();
             }
         }
 
-        // GET: api/BasesDatos/5
+        // GET: api/FormularioDevengaciones/5
         [HttpGet("{id}")]
-        public async Task<Response> GetGrupoOcupacional([FromRoute] int id)
+        public async Task<Response> GetFormularioDevengacion([FromRoute] int id)
         {
             try
             {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido",
                     };
                 }
 
-                var GrupoOcupacional = await db.GrupoOcupacional.SingleOrDefaultAsync(m => m.IdGrupoOcupacional == id);
+                var FormularioDevengacion = await db.FormularioDevengacion.SingleOrDefaultAsync(m => m.IdFormularioDevengacion == id);
 
-                if (GrupoOcupacional == null)
+                if (FormularioDevengacion == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No encontrado",
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = GrupoOcupacional,
+                    Message = "Ok",
+                    Resultado = FormularioDevengacion,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        // PUT: api/BasesDatos/5
+        // PUT: api/FormularioDevengaciones/5
         [HttpPut("{id}")]
-        public async Task<Response> PutGrupoOcupacional([FromRoute] int id, [FromBody] GrupoOcupacional GrupoOcupacional)
+        public async Task<Response> PutFormularioDevengacion([FromRoute] int id, [FromBody] FormularioDevengacion FormularioDevengacion)
         {
             try
             {
@@ -115,33 +115,33 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-                var existe = Existe(GrupoOcupacional);
+                var existe = Existe(FormularioDevengacion);
                 if (existe.IsSuccess)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro
+                        Message = "Existe un registro de igual modo social",
                     };
                 }
 
-                var GrupoOcupacionalActualizar = await db.GrupoOcupacional.Where(x => x.IdGrupoOcupacional == id).FirstOrDefaultAsync();
+                var FormularioDevengacionActualizar = await db.FormularioDevengacion.Where(x => x.IdFormularioDevengacion == id).FirstOrDefaultAsync();
 
-                if (GrupoOcupacionalActualizar != null)
+                if (FormularioDevengacionActualizar != null)
                 {
                     try
                     {
-                        GrupoOcupacionalActualizar.Nombre = GrupoOcupacional.Nombre;
+                        FormularioDevengacionActualizar.ModoSocial = FormularioDevengacion.ModoSocial;
                         await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
+                            Message = "Ok",
                         };
 
                     }
@@ -151,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
+                            Message = "Se ha producido una excepción",
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -160,7 +160,7 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = Mensaje.Error,
+                            Message = "Error ",
                         };
                     }
                 }
@@ -171,7 +171,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = "Existe"
                 };
             }
             catch (Exception)
@@ -179,15 +179,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = "Excepción"
                 };
             }
         }
 
-        // POST: api/BasesDatos
+        // POST: api/FormularioDevengaciones
         [HttpPost]
-        [Route("InsertarGruposOcupacionales")]
-        public async Task<Response> PostGrupoOcupacional([FromBody] GrupoOcupacional GrupoOcupacional)
+        [Route("InsertarFormulariosDevengacion")]
+        public async Task<Response> PostFormularioDevengacion([FromBody] FormularioDevengacion FormularioDevengacion)
         {
             try
             {
@@ -196,26 +196,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = "Módelo inválido"
                     };
                 }
 
-                var respuesta = Existe(GrupoOcupacional);
+                var respuesta = Existe(FormularioDevengacion);
                 if (!respuesta.IsSuccess)
                 {
-                    db.GrupoOcupacional.Add(GrupoOcupacional);
+                    db.FormularioDevengacion.Add(FormularioDevengacion);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = "OK"
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = "Existe un registro de igual modo social..."
                 };
 
             }
@@ -225,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -234,14 +234,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        // DELETE: api/FormularioDevengaciones/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteGrupoOcupacional([FromRoute] int id)
+        public async Task<Response> DeleteFormularioDevengacion([FromRoute] int id)
         {
             try
             {
@@ -250,26 +250,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        Message = "Módelo no válido ",
                     };
                 }
 
-                var respuesta = await db.GrupoOcupacional.SingleOrDefaultAsync(m => m.IdGrupoOcupacional == id);
+                var respuesta = await db.FormularioDevengacion.SingleOrDefaultAsync(m => m.IdFormularioDevengacion == id);
                 if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = "No existe ",
                     };
                 }
-                db.GrupoOcupacional.Remove(respuesta);
+                db.FormularioDevengacion.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = "Eliminado ",
                 };
             }
             catch (Exception ex)
@@ -278,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
+                    Message = "Se ha producido una excepción",
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -287,21 +287,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = "Error ",
                 };
             }
         }
 
-        private Response Existe(GrupoOcupacional GrupoOcupacional)
+        private Response Existe(FormularioDevengacion FormularioDevengacion)
         {
-            var bdd = GrupoOcupacional.Nombre;
-            var GrupoOcupacionalrespuesta = db.GrupoOcupacional.Where(p => p.Nombre == bdd).FirstOrDefault();
-            if (GrupoOcupacionalrespuesta != null)
+            var bdd = FormularioDevengacion.ModoSocial;
+            var FormularioDevengacionrespuesta = db.FormularioDevengacion.Where(p => p.ModoSocial == bdd).FirstOrDefault();
+            if (FormularioDevengacionrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
+                    Message = "Existe un formulario devengación de igual modo social",
                     Resultado = null,
                 };
 
@@ -310,7 +310,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = GrupoOcupacionalrespuesta,
+                Resultado = FormularioDevengacionrespuesta,
             };
         }
 

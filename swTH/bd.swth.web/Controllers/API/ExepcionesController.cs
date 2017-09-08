@@ -26,14 +26,14 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        // GET: api/Exepcioneses
         [HttpGet]
         [Route("ListarExepciones")]
         public async Task<List<Exepciones>> GetExepciones()
         {
             try
             {
-                return await db.Exepciones.OrderBy(x => x.Detalle).ToListAsync();
+                return await db.Exepciones.Include(x => x.ValidacionInmediatoSuperior).OrderBy(x => x.Detalle).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/BasesDatos/5
+        // GET: api/Exepcioneses/5
         [HttpGet("{id}")]
         public async Task<Response> GetExepciones([FromRoute] int id)
         {
@@ -62,7 +62,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -73,14 +73,14 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
+                    Message = Mensaje.Satisfactorio,
                     Resultado = Exepciones,
                 };
             }
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,12 +99,12 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // PUT: api/BasesDatos/5
+        // PUT: api/Exepcioneses/5
         [HttpPut("{id}")]
         public async Task<Response> PutExepciones([FromRoute] int id, [FromBody] Exepciones Exepciones)
         {
@@ -115,7 +115,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
@@ -125,7 +125,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe un registro de igual Detalle",
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
 
@@ -141,7 +141,7 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
+                            Message = Mensaje.Satisfactorio,
                         };
 
                     }
@@ -151,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -160,7 +160,7 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = "Error ",
+                            Message = Mensaje.Error,
                         };
                     }
                 }
@@ -171,7 +171,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe"
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -179,12 +179,12 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Excepción"
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // POST: api/BasesDatos
+        // POST: api/Exepcioneses
         [HttpPost]
         [Route("InsertarExepciones")]
         public async Task<Response> PostExepciones([FromBody] Exepciones Exepciones)
@@ -196,7 +196,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
@@ -208,14 +208,14 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un registro de igual Detalle..."
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -225,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -234,12 +234,12 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        // DELETE: api/Exepcioneses/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteExepciones([FromRoute] int id)
         {
@@ -250,7 +250,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -260,7 +260,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
                 db.Exepciones.Remove(respuesta);
@@ -269,7 +269,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -278,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -301,7 +301,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una exepción de igual nombre",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -313,6 +313,5 @@ namespace bd.swth.web.Controllers.API
                 Resultado = Exepcionesrespuesta,
             };
         }
-
     }
 }

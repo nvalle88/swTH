@@ -137,6 +137,9 @@ namespace bd.swth.web.Controllers.API
                     try
                     {
                         ImpuestoRentaParametrosActualizar.FraccionBasica = ImpuestoRentaParametros.FraccionBasica;
+                        ImpuestoRentaParametrosActualizar.ExcesoHasta = ImpuestoRentaParametros.ExcesoHasta;
+                        ImpuestoRentaParametrosActualizar.ImpuestoFraccionBasica = ImpuestoRentaParametros.ImpuestoFraccionBasica;
+                        ImpuestoRentaParametrosActualizar.PorcentajeImpuestoFraccionExcedente = ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -314,6 +317,7 @@ namespace bd.swth.web.Controllers.API
                 Resultado = ImpuestoRentaParametrosrespuesta,
             };
         }
+
 
     }
 }
