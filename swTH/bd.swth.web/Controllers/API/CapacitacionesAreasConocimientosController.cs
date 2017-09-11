@@ -197,7 +197,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = ""
                     };
                 }
 
@@ -216,7 +216,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe una capacitación de una área de conocimiento con igual descripción"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -302,7 +302,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un capacitación de un área de conocimiento de igual descripción",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 

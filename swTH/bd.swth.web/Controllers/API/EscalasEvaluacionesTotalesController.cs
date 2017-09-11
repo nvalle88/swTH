@@ -146,7 +146,7 @@ namespace bd.swth.web.Controllers.API
                     {
 
                         EscalaEvaluacionTotalActualizar.Descripcion = EscalaEvaluacionTotal.Descripcion;
-                        EscalaEvaluacionTotalActualizar.Nombre = EscalaEvaluacionTotal.Nombre;
+                        EscalaEvaluacionTotalActualizar.Name = EscalaEvaluacionTotal.Name;
                         EscalaEvaluacionTotalActualizar.PorcientoDesde = EscalaEvaluacionTotal.PorcientoDesde;
                         EscalaEvaluacionTotalActualizar.PorcientoHasta = EscalaEvaluacionTotal.PorcientoHasta;
                         db.EscalaEvaluacionTotal.Update(EscalaEvaluacionTotalActualizar);
@@ -232,7 +232,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = ""
                     };
                 }
 
@@ -318,8 +318,8 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(EscalaEvaluacionTotal EscalaEvaluacionTotal)
         {
-            var bdd = EscalaEvaluacionTotal.Nombre.ToUpper().TrimEnd().TrimStart();
-            var EscalaEvaluacionTotalrespuesta = db.EscalaEvaluacionTotal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd = EscalaEvaluacionTotal.Name;
+            var EscalaEvaluacionTotalrespuesta = db.EscalaEvaluacionTotal.Where(p => p.Name == bdd).FirstOrDefault();
             if (EscalaEvaluacionTotalrespuesta != null)
             {
                 return new Response

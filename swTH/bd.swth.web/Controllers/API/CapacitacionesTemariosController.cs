@@ -188,7 +188,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = ""
                     };
                 }
 
@@ -207,7 +207,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un temario de capacitación     con igual nombre"
+                    Message = "Existe un área de conocimiento asignado a un mismo tema"
                 };
 
             }
@@ -293,7 +293,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un temario de capacitación con igual nombre",
+                    Message = "Existe un área de conocimiento asignado a un mismo tema",
                     Resultado = null,
                 };
 

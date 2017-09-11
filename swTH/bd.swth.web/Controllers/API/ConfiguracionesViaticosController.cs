@@ -33,7 +33,8 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ConfiguracionViatico.OrderBy(x => x.PorCientoAJustificar).ToListAsync();
+                return await db.ConfiguracionViatico.Include(x => x.Dependencia).ToListAsync();
+
             }
             catch (Exception ex)
             {
@@ -189,7 +190,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = ""
                     };
                 }
 

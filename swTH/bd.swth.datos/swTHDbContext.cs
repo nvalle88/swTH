@@ -1209,7 +1209,7 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.Descripcion).IsRequired();
 
-                entity.Property(e => e.Nombre)
+                entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(50);
 

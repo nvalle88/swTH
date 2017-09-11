@@ -217,7 +217,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe una brigada de salud y seguridad ocupacional con igual nombre"
+                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol"
                 };
 
             }
@@ -303,7 +303,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una brigada de salud y seguridad ocupacional con igual nombre",
+                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol",
                     Resultado = null,
                 };
 

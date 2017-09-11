@@ -6,7 +6,7 @@ namespace bd.swth.entidades.Negocio
     public partial class ActividadesEsenciales
     {
         [Key]
-        public int ActividadesEsencialesId { get; set; }
+        public int IdActividadesEsenciales { get; set; }
 
         [Required(ErrorMessage = "Debe introducir  {0}")]
         [Display(Name = "Actiividades eseneciales:")]

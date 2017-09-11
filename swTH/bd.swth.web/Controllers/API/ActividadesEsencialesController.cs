@@ -66,7 +66,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var ActividadesEsenciales = await db.ActividadesEsenciales.SingleOrDefaultAsync(m => m.ActividadesEsencialesId == id);
+                var ActividadesEsenciales = await db.ActividadesEsenciales.SingleOrDefaultAsync(m => m.IdActividadesEsenciales == id);
 
                 if (ActividadesEsenciales == null)
                 {
@@ -132,7 +132,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var ActividadesEsencialesActualizar = await db.ActividadesEsenciales.Where(x => x.ActividadesEsencialesId == id).FirstOrDefaultAsync();
+                var ActividadesEsencialesActualizar = await db.ActividadesEsenciales.Where(x => x.IdActividadesEsenciales == id).FirstOrDefaultAsync();
                 if (ActividadesEsencialesActualizar != null)
                 {
                     try
@@ -200,7 +200,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = ""
                     };
                 }
 
@@ -258,7 +258,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.ActividadesEsenciales.SingleOrDefaultAsync(m => m.ActividadesEsencialesId == id);
+                var respuesta = await db.ActividadesEsenciales.SingleOrDefaultAsync(m => m.IdActividadesEsenciales == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -298,8 +298,8 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(ActividadesEsenciales ActividadesEsenciales)
         {
-            var bdd = ActividadesEsenciales.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var ActividadesEsencialesrespuesta = db.ActividadesEsenciales.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd = ActividadesEsenciales.Descripcion;
+            var ActividadesEsencialesrespuesta = db.ActividadesEsenciales.Where(p => p.Descripcion.Equals(bdd)).FirstOrDefault();
             if (ActividadesEsencialesrespuesta != null)
             {
                 return new Response
