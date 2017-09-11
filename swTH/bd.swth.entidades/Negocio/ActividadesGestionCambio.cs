@@ -29,7 +29,7 @@ namespace bd.swth.entidades.Negocio
         public int Indicador { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
-        [Display(Name = "Prociento:")]
+        [Display(Name = "Porciento:")]
         public bool Porciento { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]

@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ItemViatico.OrderBy(x => x.Descipcion).ToListAsync();
+                return await db.ItemViatico.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -135,7 +135,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        ItemViaticoActualizar.Descipcion = ItemViatico.Descipcion;
+                        ItemViaticoActualizar.Descripcion = ItemViatico.Descripcion;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -294,8 +294,8 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(ItemViatico ItemViatico)
         {
-            var bdd = ItemViatico.Descipcion;
-            var ItemViaticorespuesta = db.ItemViatico.Where(p => p.Descipcion == bdd).FirstOrDefault();
+            var bdd = ItemViatico.Descripcion;
+            var ItemViaticorespuesta = db.ItemViatico.Where(p => p.Descripcion == bdd).FirstOrDefault();
             if (ItemViaticorespuesta != null)
             {
                 return new Response

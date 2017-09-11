@@ -9,7 +9,7 @@ namespace bd.swth.entidades.Negocio
 
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "¿Revizar?:")]
-        public bool? Revizar { get; set; }
+        public bool? Revisar { get; set; }
 
         //Propiedades Virtuales Referencias a otras clases
 

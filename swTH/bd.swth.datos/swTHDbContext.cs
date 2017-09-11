@@ -701,10 +701,10 @@ namespace bd.swth.datos
 
             modelBuilder.Entity<ComportamientoObservable>(entity =>
             {
-                entity.HasIndex(e => e.DenominacionCompetenciaId)
+                entity.HasIndex(e => e.IdDenominacionCompetencia)
                     .HasName("IX_ComportamientoObservable_DenominacionCompetenciaId");
 
-                entity.HasIndex(e => e.NivelId)
+                entity.HasIndex(e => e.IdNivel)
                     .HasName("IX_ComportamientoObservable_NivelId");
 
                 entity.Property(e => e.Descripcion)
@@ -713,12 +713,12 @@ namespace bd.swth.datos
 
                 entity.HasOne(d => d.DenominacionCompetencia)
                     .WithMany(p => p.ComportamientoObservable)
-                    .HasForeignKey(d => d.DenominacionCompetenciaId)
+                    .HasForeignKey(d => d.IdDenominacionCompetencia)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(d => d.Nivel)
                     .WithMany(p => p.ComportamientoObservable)
-                    .HasForeignKey(d => d.NivelId)
+                    .HasForeignKey(d => d.IdNivel)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -891,27 +891,27 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdDetalleExamenInduccion)
                     .HasName("PK_DetalleExamenInduccion");
 
-                entity.HasIndex(e => e.PreguntaId)
+                entity.HasIndex(e => e.IdPregunta)
                     .HasName("IX_DetalleExamenInduccion_PreguntaId");
 
-                entity.HasIndex(e => e.RealizaExamenInduccionId)
+                entity.HasIndex(e => e.IdRealizaExamenInduccion)
                     .HasName("IX_DetalleExamenInduccion_RealizaExamenInduccionId");
 
-                entity.HasIndex(e => e.RespuestaId)
+                entity.HasIndex(e => e.IdRespuesta)
                     .HasName("IX_DetalleExamenInduccion_RespuestaId");
 
                 entity.HasOne(d => d.Pregunta)
                     .WithMany(p => p.DetalleExamenInduccion)
-                    .HasForeignKey(d => d.PreguntaId);
+                    .HasForeignKey(d => d.IdPregunta);
 
                 entity.HasOne(d => d.RealizaExamenInduccion)
                     .WithMany(p => p.DetalleExamenInduccion)
-                    .HasForeignKey(d => d.RealizaExamenInduccionId)
+                    .HasForeignKey(d => d.IdRealizaExamenInduccion)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(d => d.Respuesta)
                     .WithMany(p => p.DetalleExamenInduccion)
-                    .HasForeignKey(d => d.RespuestaId)
+                    .HasForeignKey(d => d.IdRespuesta)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -1185,7 +1185,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdEmpleadosFormularioDevengacion)
                     .HasName("PK_EmpleadosFormularioDevengacion");
 
-                entity.HasIndex(e => e.FormularioDevengacionId)
+                entity.HasIndex(e => e.IdFormularioDevengacion)
                     .HasName("IX_EmpleadosFormularioDevengacion_FormularioDevengacionId");
 
                 entity.HasIndex(e => e.IdEmpleado)
@@ -1193,7 +1193,7 @@ namespace bd.swth.datos
 
                 entity.HasOne(d => d.FormularioDevengacion)
                     .WithMany(p => p.EmpleadosFormularioDevengacion)
-                    .HasForeignKey(d => d.FormularioDevengacionId)
+                    .HasForeignKey(d => d.IdFormularioDevengacion)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(d => d.Empleado)
@@ -1768,7 +1768,7 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdItemViatico)
                     .HasName("IX_FacturaViatico_IdItemViatico");
 
-                entity.HasIndex(e => e.ItinerarioViaticoId)
+                entity.HasIndex(e => e.IdItinerarioViatico)
                     .HasName("IX_FacturaViatico_ItinerarioViaticoId");
 
                 entity.Property(e => e.NumeroFactura)
@@ -1792,7 +1792,7 @@ namespace bd.swth.datos
 
                 entity.HasOne(d => d.ItinerarioViatico)
                     .WithMany(p => p.FacturaViatico)
-                    .HasForeignKey(d => d.ItinerarioViaticoId)
+                    .HasForeignKey(d => d.IdItinerarioViatico)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -2283,7 +2283,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdItemViatico)
                     .HasName("PK_ItemViatico");
 
-                entity.Property(e => e.Descipcion)
+                entity.Property(e => e.Descripcion)
                     .IsRequired()
                     .HasMaxLength(20);
             });
@@ -3083,7 +3083,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdRequisitosNoCumple)
                     .HasName("PK_RequisitosNoCumple");
 
-                entity.HasIndex(e => e.AdministracionTalentoHumanoId)
+                entity.HasIndex(e => e.IdAdministracionTalentoHumano)
                     .HasName("IX_RequisitosNoCumple_AdministracionTalentoHumanoId");
 
                 entity.Property(e => e.Detalle)
@@ -3092,7 +3092,7 @@ namespace bd.swth.datos
 
                 entity.HasOne(d => d.AdministracionTalentoHumano)
                     .WithMany(p => p.RequisitosNoCumple)
-                    .HasForeignKey(d => d.AdministracionTalentoHumanoId)
+                    .HasForeignKey(d => d.IdAdministracionTalentoHumano)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -3101,7 +3101,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdRespuesta)
                     .HasName("PK_Respuesta");
 
-                entity.Property(c => c.IdRespuesta).HasColumnName("RespuestaId");
+                entity.Property(c => c.IdRespuesta).HasColumnName("IdRespuesta");
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
