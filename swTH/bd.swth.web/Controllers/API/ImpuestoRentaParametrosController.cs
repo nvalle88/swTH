@@ -113,6 +113,7 @@ namespace bd.swth.web.Controllers.API
             {
                 if (!ModelState.IsValid)
                 {
+
                     return new Response
                     {
                         IsSuccess = false,
@@ -123,54 +124,57 @@ namespace bd.swth.web.Controllers.API
                 var existe = Existe(ImpuestoRentaParametros);
                 if (existe.IsSuccess)
                 {
+                    var impustoRenta = (ImpuestoRentaParametros)existe.Resultado;
+
+                    if (id==impustoRenta.IdImpuestoRentaParametros)
+                    {
+                        var ImpuestoRentaParametrosActualizar = await db.ImpuestoRentaParametros.Where(x => x.IdImpuestoRentaParametros == id).FirstOrDefaultAsync();
+
+                        if (ImpuestoRentaParametrosActualizar != null)
+                        {
+                            try
+                            {
+                                ImpuestoRentaParametrosActualizar.FraccionBasica = ImpuestoRentaParametros.FraccionBasica;
+                                ImpuestoRentaParametrosActualizar.ExcesoHasta = ImpuestoRentaParametros.ExcesoHasta;
+                                ImpuestoRentaParametrosActualizar.ImpuestoFraccionBasica = ImpuestoRentaParametros.ImpuestoFraccionBasica;
+                                ImpuestoRentaParametrosActualizar.PorcentajeImpuestoFraccionExcedente = ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente;
+                                await db.SaveChangesAsync();
+
+                                return new Response
+                                {
+                                    IsSuccess = true,
+                                    Message = "Ok",
+                                };
+
+                            }
+                            catch (Exception ex)
+                            {
+                                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                                {
+                                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                                    ExceptionTrace = ex,
+                                    Message = "Se ha producido una excepción",
+                                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                                    UserName = "",
+
+                                });
+                                return new Response
+                                {
+                                    IsSuccess = false,
+                                    Message = "Error ",
+                                };
+                            }
+                        }
+
+                    }
                     return new Response
                     {
                         IsSuccess = false,
                         Message = "Existe un registro de igual Fracción Básica",
                     };
                 }
-
-                var ImpuestoRentaParametrosActualizar = await db.ImpuestoRentaParametros.Where(x => x.IdImpuestoRentaParametros == id).FirstOrDefaultAsync();
-
-                if (ImpuestoRentaParametrosActualizar != null)
-                {
-                    try
-                    {
-                        ImpuestoRentaParametrosActualizar.FraccionBasica = ImpuestoRentaParametros.FraccionBasica;
-                        ImpuestoRentaParametrosActualizar.ExcesoHasta = ImpuestoRentaParametros.ExcesoHasta;
-                        ImpuestoRentaParametrosActualizar.ImpuestoFraccionBasica = ImpuestoRentaParametros.ImpuestoFraccionBasica;
-                        ImpuestoRentaParametrosActualizar.PorcentajeImpuestoFraccionExcedente = ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente;
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = "Ok",
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Error ",
-                        };
-                    }
-                }
-
-
-
+                
 
                 return new Response
                 {
@@ -306,7 +310,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Existe un Impuesto Renta Parámetros de igual nombre",
-                    Resultado = null,
+                    Resultado = ImpuestoRentaParametros,
                 };
 
             }

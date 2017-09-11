@@ -18,7 +18,7 @@ namespace bd.swth.entidades.Negocio
 
         [Display(Name = "Administración de talento humano:")]
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
-        public int AdministracionTalentoHumanoId { get; set; }
+        public int IdAdministracionTalentoHumano { get; set; }
         public virtual AdministracionTalentoHumano AdministracionTalentoHumano { get; set; }
     }
 }
