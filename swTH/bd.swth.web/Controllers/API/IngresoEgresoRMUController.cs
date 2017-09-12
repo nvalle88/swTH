@@ -17,11 +17,11 @@ namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
     [Route("api/IngresoEgresoRMU")]
-    public class IngresoEgresoRMUsController : Controller
+    public class IngresoEgresoRMUController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public IngresoEgresoRMUsController(SwTHDbContext db)
+        public IngresoEgresoRMUController(SwTHDbContext db)
         {
             this.db = db;
         }

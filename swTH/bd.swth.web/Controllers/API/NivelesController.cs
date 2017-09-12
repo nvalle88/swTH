@@ -119,69 +119,74 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                try
+                var existe = Existe(Nivel.Nombre);
+                if (existe.IsSuccess)
                 {
-                    var entidad = await db.Nivel.Where(x => x.IdNivel == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
+                    return new Response
                     {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.RegistroNoEncontrado,
-                        };
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
 
-                    }
-                    else
+                var NivelActualizar = await db.Nivel.Where(x => x.IdNivel == id).FirstOrDefaultAsync();
+
+                if (NivelActualizar != null)
+                {
+                    try
                     {
-
-                        entidad.Nombre = Nivel.Nombre;
-                        db.Nivel.Update(entidad);
+                        NivelActualizar.Nombre = Nivel.Nombre;
                         await db.SaveChangesAsync();
+
                         return new Response
                         {
                             IsSuccess = true,
                             Message = Mensaje.Satisfactorio,
                         };
+
                     }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
 
-
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = Mensaje.Excepcion,
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.Error,
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
             }
             catch (Exception)
             {
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
         // POST: api/Nivels
         [HttpPost]
-        [Route("InsertarNivel")]
+        [Route("InsertarNiveles")]
         public async Task<Response> PostNivel([FromBody] Nivel Nivel)
         {
             try
