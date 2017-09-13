@@ -53,8 +53,8 @@ namespace bd.swth.web
                 using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
                 .CreateScope())
                 {
-                    serviceScope.ServiceProvider.GetService<SwTHDbContext>()
-                             .Database.Migrate();
+                    //serviceScope.ServiceProvider.GetService<SwTHDbContext>()
+                    //         .Database.Migrate();
 
                     //serviceScope.ServiceProvider.GetService<SwCompartidoDbContext>().EnsureSeedData();
                 }

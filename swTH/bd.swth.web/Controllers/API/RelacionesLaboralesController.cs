@@ -16,25 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Rubros")]
-    public class RubroController : Controller
+    [Route("api/RelacionesLaborales")]
+    public class RelacionesLaboralesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RubroController(SwTHDbContext db)
+        public RelacionesLaboralesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/Rubro
+        // GET: api/RelacionLaboral
         [HttpGet]
-        [HttpGet]
-        [Route("ListarRubros")]
-        public async Task<List<Rubro>> GetRubros()
+        [Route("ListarRelacionesLaborales")]
+        public async Task<List<RelacionLaboral>> GetRelacionesLaborales()
         {
             try
             {
-                return await db.Rubro.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.RelacionLaboral.Include(x => x.RegimenLaboral).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -48,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Rubro>();
+                return new List<RelacionLaboral>();
             }
         }
 
-        // GET: api/Rubro/5
+        // GET: api/RelacionLaboral/5
         [HttpGet("{id}")]
-        public async Task<Response> GetRubro([FromRoute] int id)
+        public async Task<Response> GetRelacionLaboral([FromRoute] int id)
         {
             try
             {
@@ -67,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var rubro = await db.Rubro.SingleOrDefaultAsync(m => m.IdRubro == id);
+                var relacionLaboral = await db.RelacionLaboral.SingleOrDefaultAsync(m => m.IdRelacionLaboral == id);
 
-                if (rubro == null)
+                if (relacionLaboral == null)
                 {
                     return new Response
                     {
@@ -82,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = rubro,
+                    Resultado = relacionLaboral,
                 };
             }
             catch (Exception ex)
@@ -105,81 +104,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/Rubro/5
-        [HttpPut("{id}")]
-        public async Task<Response> PutRubro([FromRoute] int id, [FromBody] Rubro rubro)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
-
-                var rubroActualizar = await db.Rubro.Where(x => x.IdRubro == id).FirstOrDefaultAsync();
-                if (rubroActualizar != null)
-                {
-                    try
-                    {
-                        rubroActualizar.TasaPorcentualMaxima = rubro.TasaPorcentualMaxima;
-                        rubroActualizar.Nombre = rubro.Nombre;
-                        db.Rubro.Update(rubroActualizar);
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
-                };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
-                };
-            }
-        }
-
-        // POST: api/Rubro
+        // POST: api/RelacionLaboral
         [HttpPost]
-        [Route("InsertarRubro")]
-        public async Task<Response> PostRubro([FromBody] Rubro rubro)
+        [Route("InsertarRelacionLaboral")]
+        public async Task<Response> PostRelacionLaboral([FromBody] RelacionLaboral relacionLaboral)
         {
             try
             {
@@ -192,10 +120,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(rubro);
+                var respuesta = Existe(relacionLaboral);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Rubro.Add(rubro);
+                    db.RelacionLaboral.Add(relacionLaboral);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -231,9 +159,80 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        // PUT: api/RelacionLaboral/5
+        [HttpPut("{id}")]
+        public async Task<Response> PutRelacionLaboral([FromRoute] int id, [FromBody] RelacionLaboral relacionLaboral)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                var RelacionLaboralActualizar = await db.RelacionLaboral.Where(x => x.IdRelacionLaboral == id).FirstOrDefaultAsync();
+                if (RelacionLaboralActualizar != null)
+                {
+                    try
+                    {
+                        RelacionLaboralActualizar.Nombre = relacionLaboral.Nombre;
+                        RelacionLaboralActualizar.IdRegimenLaboral = relacionLaboral.IdRegimenLaboral;
+                        db.RelacionLaboral.Update(RelacionLaboralActualizar);
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                                               Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message=Mensaje.ExisteRegistro
+                };
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                     Message = Mensaje.Excepcion
+                };
+            }
+        }
+
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteRubro([FromRoute] int id)
+        public async Task<Response> DeleteRelacionLaboral([FromRoute] int id)
         {
             try
             {
@@ -246,7 +245,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.Rubro.SingleOrDefaultAsync(m => m.IdRubro == id);
+                var respuesta = await db.RelacionLaboral.SingleOrDefaultAsync(m => m.IdRelacionLaboral == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -255,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.Rubro.Remove(respuesta);
+                db.RelacionLaboral.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -284,16 +283,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(Rubro rubro)
+        private Response Existe(RelacionLaboral relacionLaboral)
         {
-            var bdd = rubro.Nombre.ToUpper().TrimEnd().TrimStart();
-            var Rubrorespuesta = db.Rubro.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (Rubrorespuesta != null)
+            var bdd = relacionLaboral.Nombre.ToUpper().TrimEnd().TrimStart();
+            var RelacionLaboralrespuesta = db.RelacionLaboral.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (RelacionLaboralrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un rubro de igual nombre",
+                    Message = "Existe una relación laboral de igual nombre",
                     Resultado = null,
                 };
 
@@ -302,7 +301,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = Rubrorespuesta,
+                Resultado = RelacionLaboralrespuesta,
             };
         }
     }

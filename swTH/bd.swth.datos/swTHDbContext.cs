@@ -3035,7 +3035,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdRelacionesInternasExternas)
                     .HasName("PK_RelacionesInternasExternas");
 
-                entity.Property(e => e.IdRelacionesInternasExternas).HasColumnName("RelacionesInternasExternasId");
+                entity.Property(e => e.IdRelacionesInternasExternas).HasColumnName("IdRelacionesInternasExternas");
 
                 entity.Property(e => e.Descripcion)
                     .IsRequired()
@@ -3050,8 +3050,8 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdIndiceOcupacional)
                     .HasName("IX_RelacionesInternasExternasIndiceOcupacional_IdIndiceOcupacional");
 
-                entity.HasIndex(e => e.RelacionesInternasExternasId)
-                    .HasName("IX_RelacionesInternasExternasIndiceOcupacional_RelacionesInternasExternasId");
+                entity.HasIndex(e => e.IdRelacionesInternasExternas)
+                    .HasName("IX_RelacionesInternasExternasIndiceOcupacional_IdRelacionesInternasExternas");
 
                 entity.HasOne(d => d.IndiceOcupacional)
                     .WithMany(p => p.RelacionesInternasExternasIndiceOcupacional)
@@ -3060,7 +3060,7 @@ namespace bd.swth.datos
 
                 entity.HasOne(d => d.RelacionesInternasExternas)
                     .WithMany(p => p.RelacionesInternasExternasIndiceOcupacional)
-                    .HasForeignKey(d => d.RelacionesInternasExternasId)
+                    .HasForeignKey(d => d.IdRelacionesInternasExternas)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 

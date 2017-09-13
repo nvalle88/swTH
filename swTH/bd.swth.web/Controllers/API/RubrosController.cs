@@ -16,24 +16,25 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Respuestas")]
-    public class RespuestaController : Controller
+    [Route("api/Rubros")]
+    public class RubrosController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RespuestaController(SwTHDbContext db)
+        public RubrosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/Respuesta
+        // GET: api/Rubro
         [HttpGet]
-        [Route("ListarRespuestas")]
-        public async Task<List<Respuesta>> GetRespuestas()
+        [HttpGet]
+        [Route("ListarRubros")]
+        public async Task<List<Rubro>> GetRubros()
         {
             try
             {
-                return await db.Respuesta.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Rubro.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +48,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Respuesta>();
+                return new List<Rubro>();
             }
         }
 
-        // GET: api/Respuesta/5
+        // GET: api/Rubro/5
         [HttpGet("{id}")]
-        public async Task<Response> GetRespuesta([FromRoute] int id)
+        public async Task<Response> GetRubro([FromRoute] int id)
         {
             try
             {
@@ -66,9 +67,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.Respuesta.SingleOrDefaultAsync(m => m.IdRespuesta == id);
+                var rubro = await db.Rubro.SingleOrDefaultAsync(m => m.IdRubro == id);
 
-                if (respuesta == null)
+                if (rubro == null)
                 {
                     return new Response
                     {
@@ -81,7 +82,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = respuesta,
+                    Resultado = rubro,
                 };
             }
             catch (Exception ex)
@@ -103,10 +104,10 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
-        
-        // PUT: api/Respuesta/5
+
+        // PUT: api/Rubro/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRespuesta([FromRoute] int id, [FromBody] Respuesta respuesta)
+        public async Task<Response> PutRubro([FromRoute] int id, [FromBody] Rubro rubro)
         {
             try
             {
@@ -119,14 +120,14 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuestaActualizar = await db.Respuesta.Where(x => x.IdRespuesta == id).FirstOrDefaultAsync();
-                if (respuestaActualizar != null)
+                var rubroActualizar = await db.Rubro.Where(x => x.IdRubro == id).FirstOrDefaultAsync();
+                if (rubroActualizar != null)
                 {
                     try
                     {
-
-                        respuestaActualizar.Nombre = respuesta.Nombre;
-                        db.Respuesta.Update(respuestaActualizar);
+                        rubroActualizar.TasaPorcentualMaxima = rubro.TasaPorcentualMaxima;
+                        rubroActualizar.Nombre = rubro.Nombre;
+                        db.Rubro.Update(rubroActualizar);
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -162,7 +163,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message=Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -175,10 +176,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/Respuesta
+        // POST: api/Rubro
         [HttpPost]
-        [Route("InsertarRespuesta")]
-        public async Task<Response> PostRespuesta([FromBody] Respuesta respuesta)
+        [Route("InsertarRubro")]
+        public async Task<Response> PostRubro([FromBody] Rubro rubro)
         {
             try
             {
@@ -191,10 +192,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuestaResp = Existe(respuesta);
-                if (!respuestaResp.IsSuccess)
+                var respuesta = Existe(rubro);
+                if (!respuesta.IsSuccess)
                 {
-                    db.Respuesta.Add(respuesta);
+                    db.Rubro.Add(rubro);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -232,7 +233,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteRespuesta([FromRoute] int id)
+        public async Task<Response> DeleteRubro([FromRoute] int id)
         {
             try
             {
@@ -245,7 +246,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.Respuesta.SingleOrDefaultAsync(m => m.IdRespuesta == id);
+                var respuesta = await db.Rubro.SingleOrDefaultAsync(m => m.IdRubro == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -254,7 +255,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.Respuesta.Remove(respuesta);
+                db.Rubro.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -283,16 +284,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(Respuesta respuesta)
+        private Response Existe(Rubro rubro)
         {
-            var bdd = respuesta.Nombre.ToUpper().TrimEnd().TrimStart();
-            var Respuestarespuesta = db.Respuesta.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (Respuestarespuesta != null)
+            var bdd = rubro.Nombre.ToUpper().TrimEnd().TrimStart();
+            var Rubrorespuesta = db.Rubro.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (Rubrorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una respuesta de igual nombre",
+                    Message = "Existe un rubro de igual nombre",
                     Resultado = null,
                 };
 
@@ -301,7 +302,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = Respuestarespuesta,
+                Resultado = Rubrorespuesta,
             };
         }
     }
