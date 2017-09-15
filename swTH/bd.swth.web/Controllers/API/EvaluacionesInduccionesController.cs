@@ -194,6 +194,14 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
+                if (EvaluacionInducion.MinimoAprobar> EvaluacionInducion.MaximoPuntos)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "El mínimo de puntos a aprobar no puede ser mayor que el máximo de puntos a aprobar"
+                    };
+                }
                 if (!ModelState.IsValid)
                 {
                     return new Response

@@ -119,6 +119,17 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+
+                var existe = Existe(DenominacionCompetencia);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
                 var DenominacionCompetenciaActualizar = await db.DenominacionCompetencia.Where(x => x.IdDenominacionCompetencia == id).FirstOrDefaultAsync();
                 if (DenominacionCompetenciaActualizar != null)
                 {

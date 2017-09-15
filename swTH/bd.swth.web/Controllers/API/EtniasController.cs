@@ -275,6 +275,15 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
+
+                if (ex.InnerException.Message.Contains("REFERENCE"))
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No se puede eliminar",
+                    };
+                }
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),

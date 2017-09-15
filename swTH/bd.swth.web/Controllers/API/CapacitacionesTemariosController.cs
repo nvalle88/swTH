@@ -119,7 +119,17 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var CapacitacionTemarioActualizar = await db.CapacitacionTemario.Where(x => x.IdCapacitacionTemario == id).FirstOrDefaultAsync();
+                //var existe = Existe(CapacitacionTemario);
+                //if (existe.IsSuccess)
+                //{
+                //    return new Response
+                //    {
+                //        IsSuccess = false,
+                //        Message = Mensaje.ExisteRegistro,
+                //    };
+                //}
+
+                var CapacitacionTemarioActualizar = await db.CapacitacionTemario.Where(x => x.IdCapacitacionTemario != id && x.Tema==CapacitacionTemario.Tema).FirstOrDefaultAsync();
                 if (CapacitacionTemarioActualizar != null)
                 {
                     try
@@ -156,6 +166,11 @@ namespace bd.swth.web.Controllers.API
                         };
                     }
                 }
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro,
+                };
 
 
 
@@ -287,7 +302,7 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(CapacitacionTemario CapacitacionTemario)
         {
             var bdd = CapacitacionTemario.Tema.ToUpper().TrimEnd().TrimStart();
-            var CapacitacionTemariorespuesta = db.CapacitacionTemario.Where(p => p.Tema.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var CapacitacionTemariorespuesta = db.CapacitacionTemario.Where(p => p.Tema.ToUpper().TrimStart().TrimEnd() == bdd && p.IdCapacitacionTemario!=CapacitacionTemario.IdCapacitacionTemario).FirstOrDefault();
             if (CapacitacionTemariorespuesta != null)
             {
                 return new Response
