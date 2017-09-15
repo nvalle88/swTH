@@ -16,24 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Relevancias")]
-    public class RelevanciaController : Controller
+    [Route("api/Respuestas")]
+    public class RespuestasController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RelevanciaController(SwTHDbContext db)
+        public RespuestasController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/Relevancia
+        // GET: api/Respuesta
         [HttpGet]
-        [Route("ListarRelevancias")]
-        public async Task<List<Relevancia>> GetRelevancias()
+        [Route("ListarRespuestas")]
+        public async Task<List<Respuesta>> GetRespuestas()
         {
             try
             {
-                return await db.Relevancia.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Respuesta.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Relevancia>();
+                return new List<Respuesta>();
             }
         }
 
-        // GET: api/Relevancia/5
+        // GET: api/Respuesta/5
         [HttpGet("{id}")]
-        public async Task<Response> GetRelevancia([FromRoute] int id)
+        public async Task<Response> GetRespuesta([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var relevancia = await db.Relevancia.SingleOrDefaultAsync(m => m.IdRelevancia == id);
+                var respuesta = await db.Respuesta.SingleOrDefaultAsync(m => m.IdRespuesta == id);
 
-                if (relevancia == null)
+                if (respuesta == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = relevancia,
+                    Resultado = respuesta,
                 };
             }
             catch (Exception ex)
@@ -103,65 +103,10 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
-
-        // POST: api/Relevancia
-        [HttpPost]
-        [Route("InsertarRelevancia")]
-        public async Task<Response> PostRelevancia([FromBody] Relevancia relevancia)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
-
-                var respuesta = Existe(relevancia);
-                if (!respuesta.IsSuccess)
-                {
-                    db.Relevancia.Add(relevancia);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
-                };
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
-        // PUT: api/Relevancia/5
+        
+        // PUT: api/Respuesta/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRelevancia([FromRoute] int id, [FromBody] Relevancia relevancia)
+        public async Task<Response> PutRespuesta([FromRoute] int id, [FromBody] Respuesta respuesta)
         {
             try
             {
@@ -174,14 +119,14 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var RelevanciaActualizar = await db.Relevancia.Where(x => x.IdRelevancia == id).FirstOrDefaultAsync();
-                if (RelevanciaActualizar != null)
+                var respuestaActualizar = await db.Respuesta.Where(x => x.IdRespuesta == id).FirstOrDefaultAsync();
+                if (respuestaActualizar != null)
                 {
                     try
                     {
-                        RelevanciaActualizar.ComportamientoObservable = relevancia.ComportamientoObservable;
-                        RelevanciaActualizar.Nombre = relevancia.Nombre;
-                        db.Relevancia.Update(RelevanciaActualizar);
+
+                        respuestaActualizar.Nombre = respuesta.Nombre;
+                        db.Respuesta.Update(respuestaActualizar);
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -230,9 +175,64 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        // POST: api/Respuesta
+        [HttpPost]
+        [Route("InsertarRespuesta")]
+        public async Task<Response> PostRespuesta([FromBody] Respuesta respuesta)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                var respuestaResp = Existe(respuesta);
+                if (!respuestaResp.IsSuccess)
+                {
+                    db.Respuesta.Add(respuesta);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Satisfactorio
+                };
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                                       Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteRelevancia([FromRoute] int id)
+        public async Task<Response> DeleteRespuesta([FromRoute] int id)
         {
             try
             {
@@ -245,7 +245,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.Relevancia.SingleOrDefaultAsync(m => m.IdRelevancia == id);
+                var respuesta = await db.Respuesta.SingleOrDefaultAsync(m => m.IdRespuesta == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -254,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.Relevancia.Remove(respuesta);
+                db.Respuesta.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -283,16 +283,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(Relevancia relevancia)
+        private Response Existe(Respuesta respuesta)
         {
-            var bdd = relevancia.Nombre.ToUpper().TrimEnd().TrimStart();
-            var Relevanciarespuesta = db.Relevancia.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (Relevanciarespuesta != null)
+            var bdd = respuesta.Nombre.ToUpper().TrimEnd().TrimStart();
+            var Respuestarespuesta = db.Respuesta.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (Respuestarespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una relevancia de igual nombre",
+                    Message = "Existe una respuesta de igual nombre",
                     Resultado = null,
                 };
 
@@ -301,7 +301,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = Relevanciarespuesta,
+                Resultado = Respuestarespuesta,
             };
         }
     }

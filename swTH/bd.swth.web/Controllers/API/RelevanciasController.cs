@@ -16,24 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/RubrosLiquidacion")]
-    public class RubroLiquidacionController : Controller
+    [Route("api/Relevancias")]
+    public class RelevanciasController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RubroLiquidacionController(SwTHDbContext db)
+        public RelevanciasController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/RubroLiquidacion
+        // GET: api/Relevancia
         [HttpGet]
-        [Route("ListarRubrosLiquidacion")]
-        public async Task<List<RubroLiquidacion>> GetRubrosLiquidacion()
+        [Route("ListarRelevancias")]
+        public async Task<List<Relevancia>> GetRelevancias()
         {
             try
             {
-                return await db.RubroLiquidacion.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.Relevancia.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<RubroLiquidacion>();
+                return new List<Relevancia>();
             }
         }
 
-        // GET: api/RubroLiquidacion/5
+        // GET: api/Relevancia/5
         [HttpGet("{id}")]
-        public async Task<Response> GetRubroLiquidacion([FromRoute] int id)
+        public async Task<Response> GetRelevancia([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var rubroLiquidacion = await db.RubroLiquidacion.SingleOrDefaultAsync(m => m.IdRubroLiquidacion == id);
+                var relevancia = await db.Relevancia.SingleOrDefaultAsync(m => m.IdRelevancia == id);
 
-                if (rubroLiquidacion == null)
+                if (relevancia == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = rubroLiquidacion,
+                    Resultado = relevancia,
                 };
             }
             catch (Exception ex)
@@ -104,9 +104,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/RubroLiquidacion/5        
-        [HttpPut("{id}")]
-        public async Task<Response> PutRubroLiquidacion([FromRoute] int id, [FromBody] RubroLiquidacion rubroLiquidacion)
+        // POST: api/Relevancia
+        [HttpPost]
+        [Route("InsertarRelevancia")]
+        public async Task<Response> PostRelevancia([FromBody] Relevancia relevancia)
         {
             try
             {
@@ -119,14 +120,68 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var rubroLiquidacionActualizar = await db.RubroLiquidacion.Where(x => x.IdRubroLiquidacion == id).FirstOrDefaultAsync();
-                if (rubroLiquidacionActualizar != null)
+                var respuesta = Existe(relevancia);
+                if (!respuesta.IsSuccess)
+                {
+                    db.Relevancia.Add(relevancia);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Satisfactorio
+                };
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                                       Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        // PUT: api/Relevancia/5
+        [HttpPut("{id}")]
+        public async Task<Response> PutRelevancia([FromRoute] int id, [FromBody] Relevancia relevancia)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                var RelevanciaActualizar = await db.Relevancia.Where(x => x.IdRelevancia == id).FirstOrDefaultAsync();
+                if (RelevanciaActualizar != null)
                 {
                     try
                     {
-
-                        rubroLiquidacionActualizar.Descripcion = rubroLiquidacion.Descripcion;
-                        db.RubroLiquidacion.Update(rubroLiquidacionActualizar);
+                        RelevanciaActualizar.ComportamientoObservable = relevancia.ComportamientoObservable;
+                        RelevanciaActualizar.Nombre = relevancia.Nombre;
+                        db.Relevancia.Update(RelevanciaActualizar);
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -175,64 +230,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/RubroLiquidacion
-        [HttpPost]
-        [Route("InsertarRubroLiquidacion")]
-        public async Task<Response> PostRubroLiquidacion([FromBody] RubroLiquidacion rubroLiquidacion)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
-
-                var respuesta = Existe(rubroLiquidacion);
-                if (!respuesta.IsSuccess)
-                {
-                    db.RubroLiquidacion.Add(rubroLiquidacion);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
-                };
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteRubroLiquidacion([FromRoute] int id)
+        public async Task<Response> DeleteRelevancia([FromRoute] int id)
         {
             try
             {
@@ -245,7 +245,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.RubroLiquidacion.SingleOrDefaultAsync(m => m.IdRubroLiquidacion == id);
+                var respuesta = await db.Relevancia.SingleOrDefaultAsync(m => m.IdRelevancia == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -254,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.RubroLiquidacion.Remove(respuesta);
+                db.Relevancia.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -283,16 +283,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(RubroLiquidacion rubroLiquidacion)
+        private Response Existe(Relevancia relevancia)
         {
-            var bdd = rubroLiquidacion.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var RubroLiquidacionrespuesta = db.RubroLiquidacion.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (RubroLiquidacionrespuesta != null)
+            var bdd = relevancia.Nombre.ToUpper().TrimEnd().TrimStart();
+            var Relevanciarespuesta = db.Relevancia.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (Relevanciarespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un rubro de liquidación de igual descripción",
+                    Message = "Existe una relevancia de igual nombre",
                     Resultado = null,
                 };
 
@@ -301,7 +301,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = RubroLiquidacionrespuesta,
+                Resultado = Relevanciarespuesta,
             };
         }
     }

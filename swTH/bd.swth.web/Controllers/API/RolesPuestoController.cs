@@ -17,11 +17,11 @@ namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
     [Route("api/RolesPuesto")]
-    public class RolPuestoController : Controller
+    public class RolesPuestoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RolPuestoController(SwTHDbContext db)
+        public RolesPuestoController(SwTHDbContext db)
         {
             this.db = db;
         }
