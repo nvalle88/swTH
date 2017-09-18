@@ -119,76 +119,57 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                //var existe = Existe(CapacitacionTemario);
-                //if (existe.IsSuccess)
-                //{
-                //    return new Response
-                //    {
-                //        IsSuccess = false,
-                //        Message = Mensaje.ExisteRegistro,
-                //    };
-                //}
-
-                var CapacitacionTemarioActualizar = await db.CapacitacionTemario.Where(x => x.IdCapacitacionTemario != id && x.Tema==CapacitacionTemario.Tema).FirstOrDefaultAsync();
-                if (CapacitacionTemarioActualizar != null)
+                var existe = Existe(CapacitacionTemario);
+                var CapacitacionTemarioActualizar = (CapacitacionTemario)existe.Resultado;
+                if (existe.IsSuccess)
                 {
-                    try
+                    if (CapacitacionTemarioActualizar.IdCapacitacionTemario == CapacitacionTemario.IdCapacitacionTemario)
                     {
-
-                        CapacitacionTemarioActualizar.IdCapacitacionAreaConocimiento = CapacitacionTemario.IdCapacitacionAreaConocimiento;
-                        CapacitacionTemarioActualizar.Tema = CapacitacionTemario.Tema;
-                        db.CapacitacionTemario.Update(CapacitacionTemarioActualizar);
-                        await db.SaveChangesAsync();
-
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
                         };
-
                     }
-                    catch (Exception ex)
+                    return new Response
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
                 }
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro,
-                };
+                var capacitacionac = db.CapacitacionTemario.Find(CapacitacionTemario.IdCapacitacionTemario);
 
-
-
+                capacitacionac.IdCapacitacionAreaConocimiento = CapacitacionTemario.IdCapacitacionAreaConocimiento;
+                capacitacionac.Tema = CapacitacionTemario.Tema;
+                db.CapacitacionTemario.Update(capacitacionac);
+                await db.SaveChangesAsync();
 
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
+                  
         }
 
         // POST: api/BasesDatos
@@ -222,7 +203,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un área de conocimiento asignado a un mismo tema"
+                    Message = Mensaje.ExisteRegistro,
                 };
 
             }
@@ -302,14 +283,14 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(CapacitacionTemario CapacitacionTemario)
         {
             var bdd = CapacitacionTemario.Tema.ToUpper().TrimEnd().TrimStart();
-            var CapacitacionTemariorespuesta = db.CapacitacionTemario.Where(p => p.Tema.ToUpper().TrimStart().TrimEnd() == bdd && p.IdCapacitacionTemario!=CapacitacionTemario.IdCapacitacionTemario).FirstOrDefault();
+            var CapacitacionTemariorespuesta = db.CapacitacionTemario.Where(p => p.Tema.ToUpper().TrimStart().TrimEnd() == bdd && p.IdCapacitacionAreaConocimiento== CapacitacionTemario.IdCapacitacionAreaConocimiento).FirstOrDefault();
             if (CapacitacionTemariorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un área de conocimiento asignado a un mismo tema",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = CapacitacionTemariorespuesta,
                 };
 
             }
