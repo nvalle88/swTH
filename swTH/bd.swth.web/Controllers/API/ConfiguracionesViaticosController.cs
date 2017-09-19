@@ -105,10 +105,22 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        private async Task Actualizar(ConfiguracionViatico configuracionViatico)
+        {
+            var escalaevatotal = db.ConfiguracionViatico.Find(configuracionViatico.IdConfiguracionViatico);
+
+            escalaevatotal.IdDependencia = configuracionViatico.IdDependencia;
+            escalaevatotal.ValorEntregadoPorDia = configuracionViatico.ValorEntregadoPorDia;
+            escalaevatotal.PorCientoAJustificar = configuracionViatico.PorCientoAJustificar;
+            db.ConfiguracionViatico.Update(escalaevatotal);
+            await db.SaveChangesAsync();
+        }
+
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutConfiguracionViatico([FromRoute] int id, [FromBody] ConfiguracionViatico ConfiguracionViatico)
         {
+
             try
             {
                 if (!ModelState.IsValid)
@@ -120,62 +132,68 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var ConfiguracionViaticoActualizar = await db.ConfiguracionViatico.Where(x => x.IdConfiguracionViatico == id).FirstOrDefaultAsync();
-                if (ConfiguracionViaticoActualizar != null)
+
+                var existe = Existe(ConfiguracionViatico);
+                var ConfiguracionViaticoActualizar = (ConfiguracionViatico)existe.Resultado;
+
+                if (existe.IsSuccess)
                 {
-                    try
+
+
+                    if (ConfiguracionViaticoActualizar.IdConfiguracionViatico == ConfiguracionViatico.IdConfiguracionViatico)
                     {
+                        if (ConfiguracionViatico.IdDependencia == ConfiguracionViaticoActualizar.IdDependencia &&
+                        ConfiguracionViatico.ValorEntregadoPorDia == ConfiguracionViaticoActualizar.ValorEntregadoPorDia &&
+                        ConfiguracionViatico.PorCientoAJustificar == ConfiguracionViaticoActualizar.PorCientoAJustificar)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                            };
+                        }
 
-                        ConfiguracionViaticoActualizar.IdDependencia = ConfiguracionViatico.IdDependencia;
-                        ConfiguracionViaticoActualizar.PorCientoAJustificar= ConfiguracionViatico.PorCientoAJustificar;
-                        ConfiguracionViaticoActualizar.ValorEntregadoPorDia = ConfiguracionViatico.ValorEntregadoPorDia;
-                        db.ConfiguracionViatico.Update(ConfiguracionViaticoActualizar);
-                        await db.SaveChangesAsync();
-
+                        await Actualizar(ConfiguracionViatico);
                         return new Response
                         {
                             IsSuccess = true,
                             Message = Mensaje.Satisfactorio,
                         };
-
                     }
-                    catch (Exception ex)
+                    return new Response
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
                 }
 
-
-
-
+                await Actualizar(ConfiguracionViatico);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
+
         }
 
         // POST: api/BasesDatos
@@ -209,7 +227,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe una configuración de viático con igual información"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -296,8 +314,8 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una configuración de viático con igual información",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = ConfiguracionViaticorespuesta,
                 };
 
             }

@@ -104,6 +104,18 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        private async Task Actualizar(EscalaEvaluacionTotal escalaEvaluacionTotal)
+        {
+            var escalaevatotal = db.EscalaEvaluacionTotal.Find(escalaEvaluacionTotal.IdEscalaEvaluacionTotal);
+
+            escalaevatotal.Name = escalaEvaluacionTotal.Name;
+            escalaevatotal.Descripcion = escalaEvaluacionTotal.Descripcion;
+            escalaevatotal.PorcientoDesde = escalaEvaluacionTotal.PorcientoDesde;
+            escalaevatotal.PorcientoHasta = escalaEvaluacionTotal.PorcientoHasta;
+            db.EscalaEvaluacionTotal.Update(escalaevatotal);
+            await db.SaveChangesAsync();
+        }
+
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutEscalaEvaluacionTotal([FromRoute] int id, [FromBody] EscalaEvaluacionTotal EscalaEvaluacionTotal)
@@ -120,18 +132,42 @@ namespace bd.swth.web.Controllers.API
                 }
 
 
-                if (EscalaEvaluacionTotal.PorcientoDesde > EscalaEvaluacionTotal.PorcientoHasta)
+                if (EscalaEvaluacionTotal.PorcientoDesde > EscalaEvaluacionTotal.PorcientoHasta || EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotal.PorcientoHasta)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "El porcentaje desde no puede ser mayor el porcentaje hasta"
+                        Message = "El porcentaje desde no puede ser mayor o igual el porcentaje hasta"
                     };
                 }
 
                 var existe = Existe(EscalaEvaluacionTotal);
+                var EscalaEvaluacionTotalActualizar = (EscalaEvaluacionTotal)existe.Resultado;
+
                 if (existe.IsSuccess)
                 {
+
+
+                    if (EscalaEvaluacionTotalActualizar.IdEscalaEvaluacionTotal == EscalaEvaluacionTotal.IdEscalaEvaluacionTotal)
+                    {
+                        if (EscalaEvaluacionTotal.Name == EscalaEvaluacionTotalActualizar.Name &&
+                        EscalaEvaluacionTotal.Descripcion == EscalaEvaluacionTotalActualizar.Descripcion &&
+                        EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotalActualizar.PorcientoDesde &&
+                        EscalaEvaluacionTotal.PorcientoHasta == EscalaEvaluacionTotalActualizar.PorcientoHasta)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                            };
+                        }
+
+                        await Actualizar(EscalaEvaluacionTotal);
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
@@ -139,64 +175,34 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EscalaEvaluacionTotalActualizar = await db.EscalaEvaluacionTotal.Where(x => x.IdEscalaEvaluacionTotal == id).FirstOrDefaultAsync();
-                if (EscalaEvaluacionTotalActualizar != null)
-                {
-                    try
-                    {
-
-                        EscalaEvaluacionTotalActualizar.Descripcion = EscalaEvaluacionTotal.Descripcion;
-                        EscalaEvaluacionTotalActualizar.Name = EscalaEvaluacionTotal.Name;
-                        EscalaEvaluacionTotalActualizar.PorcientoDesde = EscalaEvaluacionTotal.PorcientoDesde;
-                        EscalaEvaluacionTotalActualizar.PorcientoHasta = EscalaEvaluacionTotal.PorcientoHasta;
-                        db.EscalaEvaluacionTotal.Update(EscalaEvaluacionTotalActualizar);
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
-
+                await Actualizar(EscalaEvaluacionTotal);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
-        }
+            }
 
         // POST: api/BasesDatos
         [HttpPost]
@@ -205,13 +211,13 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-            
-                if (EscalaEvaluacionTotal.PorcientoDesde> EscalaEvaluacionTotal.PorcientoHasta)
+
+                if (EscalaEvaluacionTotal.PorcientoDesde > EscalaEvaluacionTotal.PorcientoHasta || EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotal.PorcientoHasta)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "El porcentaje desde no puede ser mayor el porcentaje hasta"
+                        Message = "El porcentaje desde no puede ser mayor o igual el porcentaje hasta"
                     };
                 }
 
@@ -325,8 +331,8 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una escala de evaluación total de igual nombre",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = EscalaEvaluacionTotalrespuesta,
                 };
 
             }

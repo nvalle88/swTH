@@ -104,10 +104,23 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        private async Task Actualizar(EvaluacionInducion evaluacionInducion)
+        {
+            var escalaevatotal = db.EvaluacionInducion.Find(evaluacionInducion.IdEvaluacionInduccion);
+
+            escalaevatotal.MinimoAprobar = evaluacionInducion.MinimoAprobar;
+            escalaevatotal.MaximoPuntos = evaluacionInducion.MaximoPuntos;
+            escalaevatotal.Nombre = evaluacionInducion.Nombre;
+            db.EvaluacionInducion.Update(escalaevatotal);
+            await db.SaveChangesAsync();
+        }
+
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutEvaluacionInducion([FromRoute] int id, [FromBody] EvaluacionInducion EvaluacionInducion)
         {
+
             try
             {
                 if (!ModelState.IsValid)
@@ -119,9 +132,41 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                if (EvaluacionInducion.MinimoAprobar > EvaluacionInducion.MaximoPuntos || EvaluacionInducion.MinimoAprobar == EvaluacionInducion.MaximoPuntos)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "El mínimo de puntos a aprobar no puede ser mayor o igual que el máximo de puntos a aprobar"
+                    };
+                }
+
                 var existe = Existe(EvaluacionInducion);
+                var EvaluacionInducionActualizar = (EvaluacionInducion)existe.Resultado;
+
                 if (existe.IsSuccess)
                 {
+
+
+                    if (EvaluacionInducionActualizar.IdEvaluacionInduccion == EvaluacionInducion.IdEvaluacionInduccion)
+                    {
+                        if (EvaluacionInducion.MinimoAprobar == EvaluacionInducionActualizar.MinimoAprobar &&
+                        EvaluacionInducion.MaximoPuntos == EvaluacionInducionActualizar.MaximoPuntos &&
+                        EvaluacionInducion.Nombre == EvaluacionInducionActualizar.Nombre)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                            };
+                        }
+
+                        await Actualizar(EvaluacionInducion);
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
@@ -129,62 +174,35 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EvaluacionInducionActualizar = await db.EvaluacionInducion.Where(x => x.IdEvaluacionInduccion == id).FirstOrDefaultAsync();
-                if (EvaluacionInducionActualizar != null)
-                {
-                    try
-                    {
-
-                        EvaluacionInducionActualizar.Nombre = EvaluacionInducion.Nombre;
-                        EvaluacionInducionActualizar.MaximoPuntos = EvaluacionInducion.MaximoPuntos;
-                        EvaluacionInducionActualizar.MinimoAprobar = EvaluacionInducion.MinimoAprobar;
-                        db.EvaluacionInducion.Update(EvaluacionInducionActualizar);
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
-
+                await Actualizar(EvaluacionInducion);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
+
             }
+
         }
 
         // POST: api/BasesDatos
@@ -194,12 +212,12 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                if (EvaluacionInducion.MinimoAprobar> EvaluacionInducion.MaximoPuntos)
+                if (EvaluacionInducion.MinimoAprobar > EvaluacionInducion.MaximoPuntos || EvaluacionInducion.MinimoAprobar > EvaluacionInducion.MaximoPuntos)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "El mínimo de puntos a aprobar no puede ser mayor que el máximo de puntos a aprobar"
+                        Message = "El mínimo de puntos a aprobar no puede ser mayor o igual que el máximo de puntos a aprobar"
                     };
                 }
                 if (!ModelState.IsValid)
@@ -313,7 +331,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = EvaluacionInducionrespuesta,
                 };
 
             }

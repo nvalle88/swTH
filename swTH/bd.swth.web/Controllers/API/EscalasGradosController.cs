@@ -105,12 +105,23 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        private async Task Actualizar(EscalaGrados escalaGrados)
+        {
+            var escalaevatotal = db.EscalaGrados.Find(escalaGrados.IdEscalaGrados);
+
+            escalaevatotal.IdGrupoOcupacional = escalaGrados.IdGrupoOcupacional;
+            escalaevatotal.Grado = escalaGrados.Grado;
+            escalaevatotal.Remuneracion = escalaGrados.Remuneracion;
+            db.EscalaGrados.Update(escalaevatotal);
+            await db.SaveChangesAsync();
+        }
+
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutEscalaGrados([FromRoute] int id, [FromBody] EscalaGrados EscalaGrados)
         {
-            try
-            {
+           
                 if (!ModelState.IsValid)
                 {
                     return new Response
@@ -120,73 +131,46 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(EscalaGrados);
-                if (existe.IsSuccess)
+            var existe = Existe(EscalaGrados);
+            var EscalaGradosActualizar = (EscalaGrados)existe.Resultado;
+
+            if (existe.IsSuccess)
+            {
+
+
+                if (EscalaGradosActualizar.IdEscalaGrados == EscalaGrados.IdEscalaGrados)
                 {
-                    return new Response
+                    if (EscalaGrados.IdGrupoOcupacional == EscalaGradosActualizar.IdGrupoOcupacional &&
+                    EscalaGrados.Grado == EscalaGradosActualizar.Grado &&
+                    EscalaGrados.Remuneracion == EscalaGradosActualizar.Remuneracion)
                     {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
-                    };
-                }
-
-                var EscalaGradosActualizar = await db.EscalaGrados.Where(x => x.IdEscalaGrados == id).FirstOrDefaultAsync();
-                if (EscalaGradosActualizar != null)
-                {
-                    try
-                    {
-
-                        EscalaGradosActualizar.Grado = EscalaGrados.Grado;
-                        EscalaGradosActualizar.IdGrupoOcupacional = EscalaGrados.IdGrupoOcupacional;
-                        EscalaGradosActualizar.Remuneracion = EscalaGrados.Remuneracion;
-
-                        db.EscalaGrados.Update(EscalaGradosActualizar);
-                        await db.SaveChangesAsync();
-
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
                         };
-
                     }
-                    catch (Exception ex)
+
+                    await Actualizar(EscalaGrados);
+                    return new Response
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                    };
                 }
-
-
-
-
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro,
                 };
             }
-            catch (Exception)
+
+            await Actualizar(EscalaGrados);
+            return new Response
             {
-                return new Response
-                {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
-                };
-            }
+                IsSuccess = true,
+                Message = Mensaje.Satisfactorio,
+            };
+
         }
 
         // POST: api/BasesDatos
@@ -220,7 +204,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe una escala de grado ocupacional de igual grado"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -306,8 +290,8 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una escala de grado ocupacional de igual grado",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = EscalaGradosrespuesta,
                 };
 
             }

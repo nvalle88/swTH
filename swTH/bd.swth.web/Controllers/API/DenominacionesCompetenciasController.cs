@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -103,11 +103,22 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+        private async Task Actualizar(DenominacionCompetencia DenominacionCompetencia)
+        {
+            var capacitacionac = db.DenominacionCompetencia.Find(DenominacionCompetencia.IdDenominacionCompetencia);
+
+            capacitacionac.CompetenciaTecnica = DenominacionCompetencia.CompetenciaTecnica;
+            capacitacionac.Definicion = DenominacionCompetencia.Definicion;
+            capacitacionac.Nombre = DenominacionCompetencia.Nombre;
+            db.DenominacionCompetencia.Update(capacitacionac);
+            await db.SaveChangesAsync();
+        }
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutDenominacionCompetencia([FromRoute] int id, [FromBody] DenominacionCompetencia DenominacionCompetencia)
         {
+
             try
             {
                 if (!ModelState.IsValid)
@@ -119,10 +130,32 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
                 var existe = Existe(DenominacionCompetencia);
+                var DenominacionCompetenciaActualizar = (DenominacionCompetencia)existe.Resultado;
+
                 if (existe.IsSuccess)
                 {
+
+
+                    if (DenominacionCompetenciaActualizar.IdDenominacionCompetencia == DenominacionCompetencia.IdDenominacionCompetencia)
+                    {
+                        if (DenominacionCompetencia.Nombre == DenominacionCompetenciaActualizar.Nombre &&
+                        DenominacionCompetencia.Definicion == DenominacionCompetenciaActualizar.Definicion &&
+                        DenominacionCompetencia.CompetenciaTecnica == DenominacionCompetenciaActualizar.CompetenciaTecnica)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                            };
+                        }
+
+                        await Actualizar(DenominacionCompetencia);
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
@@ -130,60 +163,32 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var DenominacionCompetenciaActualizar = await db.DenominacionCompetencia.Where(x => x.IdDenominacionCompetencia == id).FirstOrDefaultAsync();
-                if (DenominacionCompetenciaActualizar != null)
-                {
-                    try
-                    {
-
-                        DenominacionCompetenciaActualizar.CompetenciaTecnica = DenominacionCompetencia.CompetenciaTecnica;
-                        DenominacionCompetenciaActualizar.Definicion = DenominacionCompetencia.Definicion;
-                        DenominacionCompetenciaActualizar.Nombre = DenominacionCompetencia.Nombre;
-                        db.DenominacionCompetencia.Update(DenominacionCompetenciaActualizar);
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
-
+                await Actualizar(DenominacionCompetencia);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
@@ -229,7 +234,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -282,7 +287,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -305,8 +310,8 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una denominación de competencia de igual nombre",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = DenominacionCompetenciarespuesta,
                 };
 
             }
