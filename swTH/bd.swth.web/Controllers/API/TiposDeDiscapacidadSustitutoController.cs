@@ -6,34 +6,34 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
 using Microsoft.EntityFrameworkCore;
+using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 
-namespace bd.swrm.web.Controllers.API
+namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoViatico")]
-    public class TipoViaticoController : Controller
+    [Route("api/TiposDeDiscapacidadSustituto")]
+    public class TiposDeDiscapacidadSustitutoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoViaticoController(SwTHDbContext db)
+        public TiposDeDiscapacidadSustitutoController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/TipoViatico
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoViatico")]
-        public async Task<List<TipoViatico>> GetTipoViatico()
+        [Route("ListarTiposDeDiscapacidadSustituto")]
+        public async Task<List<TipoDiscapacidadSustituto>> GetTipoDiscapacidadSustituto()
         {
             try
             {
-                return await db.TipoViatico.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.TipoDiscapacidadSustituto.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swrm.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<TipoViatico>();
+                return new List<TipoDiscapacidadSustituto>();
             }
         }
 
-        // GET: api/TipoViatico/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoViatico([FromRoute] int id)
+        public async Task<Response> GetTipoDiscapacidadSustituto([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var tipoViatico = await db.TipoViatico.SingleOrDefaultAsync(m => m.IdTipoViatico == id);
+                var TipoDiscapacidadSustituto = await db.TipoDiscapacidadSustituto.SingleOrDefaultAsync(m => m.IdTipoDiscapacidadSustituto == id);
 
-                if (tipoViatico == null)
+                if (TipoDiscapacidadSustituto == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swrm.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = tipoViatico,
+                    Resultado = TipoDiscapacidadSustituto,
                 };
             }
             catch (Exception ex)
@@ -104,9 +104,9 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // PUT: api/TipoViatico/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoViatico([FromRoute] int id, [FromBody] TipoViatico tipoViatico)
+        public async Task<Response> PutTipoDiscapacidadSustituto([FromRoute] int id, [FromBody] TipoDiscapacidadSustituto TipoDiscapacidadSustituto)
         {
             try
             {
@@ -119,13 +119,23 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var tipoViaticoActualizar = await db.TipoViatico.Where(x => x.IdTipoViatico == id).FirstOrDefaultAsync();
-                if (tipoViaticoActualizar != null)
+                var existe = Existe(TipoDiscapacidadSustituto);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var TipoDiscapacidadSustitutoActualizar = await db.TipoDiscapacidadSustituto.Where(x => x.IdTipoDiscapacidadSustituto == id).FirstOrDefaultAsync();
+
+                if (TipoDiscapacidadSustitutoActualizar != null)
                 {
                     try
                     {
-                        tipoViaticoActualizar.Descripcion = tipoViatico.Descripcion;
-                        db.TipoViatico.Update(tipoViaticoActualizar);
+                        TipoDiscapacidadSustitutoActualizar.Nombre = TipoDiscapacidadSustituto.Nombre;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -154,6 +164,10 @@ namespace bd.swrm.web.Controllers.API
                         };
                     }
                 }
+
+
+
+
                 return new Response
                 {
                     IsSuccess = false,
@@ -170,10 +184,10 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // POST: api/TipoViatico
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoViatico")]
-        public async Task<Response> PostTipoViatico([FromBody] TipoViatico tipoViatico)
+        [Route("InsertarTipoDiscapacidadSustituto")]
+        public async Task<Response> PostTipoDiscapacidadSustituto([FromBody] TipoDiscapacidadSustituto TipoDiscapacidadSustituto)
         {
             try
             {
@@ -186,10 +200,10 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(tipoViatico);
+                var respuesta = Existe(TipoDiscapacidadSustituto);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoViatico.Add(tipoViatico);
+                    db.TipoDiscapacidadSustituto.Add(TipoDiscapacidadSustituto);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -201,7 +215,7 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -225,9 +239,9 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // DELETE: api/TipoViatico/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoViatico([FromRoute] int id)
+        public async Task<Response> DeleteTipoDiscapacidadSustituto([FromRoute] int id)
         {
             try
             {
@@ -240,7 +254,7 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TipoViatico.SingleOrDefaultAsync(m => m.IdTipoViatico == id);
+                var respuesta = await db.TipoDiscapacidadSustituto.SingleOrDefaultAsync(m => m.IdTipoDiscapacidadSustituto == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -249,7 +263,7 @@ namespace bd.swrm.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoViatico.Remove(respuesta);
+                db.TipoDiscapacidadSustituto.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -278,16 +292,11 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        private bool TipoViaticoExists(string nombre)
+        private Response Existe(TipoDiscapacidadSustituto TipoDiscapacidadSustituto)
         {
-            return db.TipoViatico.Any(e => e.Descripcion == nombre);
-        }
-
-        public Response Existe(TipoViatico tipoViatico)
-        {
-            var bdd = tipoViatico.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.TipoViatico.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = TipoDiscapacidadSustituto.Nombre;
+            var TipoDiscapacidadSustitutorespuesta = db.TipoDiscapacidadSustituto.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (TipoDiscapacidadSustitutorespuesta != null)
             {
                 return new Response
                 {
@@ -301,7 +310,7 @@ namespace bd.swrm.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = TipoDiscapacidadSustitutorespuesta,
             };
         }
 

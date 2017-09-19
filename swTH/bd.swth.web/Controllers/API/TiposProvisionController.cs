@@ -1,37 +1,39 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Utils;
 using bd.log.guardar.Servicios;
-using bd.log.guardar.ObjectTranfer;
-using System;
-using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
+using bd.log.guardar.ObjectTranfer;
+using bd.swth.entidades.Enumeradores;
+using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/RegimenLaborales")]
-    public class RegimenLaboralesController : Controller
+    [Route("api/TiposProvision")]
+    public class TiposProvisionController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RegimenLaboralesController(SwTHDbContext db)
+        public TiposProvisionController(SwTHDbContext db)
         {
             this.db = db;
         }
 
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarRegimenLaborales")]
-        public async Task<List<RegimenLaboral>> GetRegimenLaboral()
+        [Route("ListarTiposProvision")]
+        public async Task<List<TipoProvision>> GetTipoProvision()
         {
             try
             {
-                return await db.RegimenLaboral.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoProvision.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -39,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<RegimenLaboral>();
+                return new List<TipoProvision>();
             }
         }
 
-        // GET: api/RegimenLaborals/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetRegimenLaboral([FromRoute] int id)
+        public async Task<Response> GetTipoProvision([FromRoute] int id)
         {
             try
             {
@@ -64,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.RegimenLaboral.SingleOrDefaultAsync(m => m.IdRegimenLaboral == id);
+                var TipoProvision = await db.TipoProvision.SingleOrDefaultAsync(m => m.IdTipoProvision == id);
 
-                if (adscbdd == null)
+                if (TipoProvision == null)
                 {
                     return new Response
                     {
@@ -79,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = adscbdd,
+                    Resultado = TipoProvision,
                 };
             }
             catch (Exception ex)
@@ -88,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -102,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/RegimenLaborals/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRegimenLaboral([FromRoute] int id, [FromBody] RegimenLaboral RegimenLaboral)
+        public async Task<Response> PutTipoProvision([FromRoute] int id, [FromBody] TipoProvision TipoProvision)
         {
             try
             {
@@ -117,70 +119,91 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existeRegimenLaboral = Existe(RegimenLaboral.Nombre);
-                if (existeRegimenLaboral.IsSuccess)
+                var existe = Existe(TipoProvision);
+                if (existe.IsSuccess)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe un RegimenLaboral de igual nombre",
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
-                try
+
+                var TipoProvisionActualizar = await db.TipoProvision.Where(x => x.IdTipoProvision == id).FirstOrDefaultAsync();
+
+                if (TipoProvisionActualizar != null)
                 {
-                    db.RegimenLaboral.Update(RegimenLaboral);
-                    await db.SaveChangesAsync();
-
-                    return new Response
+                    try
                     {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                    };
+                        TipoProvisionActualizar.Descripcion = TipoProvision.Descripcion;
+                        await db.SaveChangesAsync();
 
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.Error,
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
             }
             catch (Exception)
             {
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // POST: api/RegimenLaborals
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarRegimenLaboral")]
-        public async Task<Response> PostRegimenLaboral([FromBody] RegimenLaboral RegimenLaboral)
+        [Route("InsertarTipoProvision")]
+        public async Task<Response> PostTipoProvision([FromBody] TipoProvision TipoProvision)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
 
-                var respuesta = Existe(RegimenLaboral.Nombre);
+                var respuesta = Existe(TipoProvision);
                 if (!respuesta.IsSuccess)
                 {
-                    db.RegimenLaboral.Add(RegimenLaboral);
+                    db.TipoProvision.Add(TipoProvision);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -192,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -202,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -216,9 +239,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/RegimenLaborals/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteRegimenLaboral([FromRoute] int id)
+        public async Task<Response> DeleteTipoProvision([FromRoute] int id)
         {
             try
             {
@@ -231,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.RegimenLaboral.SingleOrDefaultAsync(m => m.IdRegimenLaboral == id);
+                var respuesta = await db.TipoProvision.SingleOrDefaultAsync(m => m.IdTipoProvision == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -240,7 +263,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.RegimenLaboral.Remove(respuesta);
+                db.TipoProvision.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -255,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -269,22 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool RegimenLaboralExists(int id)
+        private Response Existe(TipoProvision TipoProvision)
         {
-            return db.RegimenLaboral.Any(e => e.IdRegimenLaboral == id);
-        }
-
-
-        public Response Existe(string nombreRegimenLaboral)
-        {
-
-            var loglevelrespuesta = db.RegimenLaboral.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreRegimenLaboral).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = TipoProvision.Descripcion;
+            var TipoProvisionrespuesta = db.TipoProvision.Where(p => p.Descripcion == bdd).FirstOrDefault();
+            if (TipoProvisionrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -293,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = TipoProvisionrespuesta,
             };
         }
+
     }
 }

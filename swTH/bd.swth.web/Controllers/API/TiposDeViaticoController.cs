@@ -6,34 +6,34 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 
-namespace bd.swth.web.Controllers.API
+namespace bd.swrm.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoEnfermedad")]
-    public class TipoEnfermedadController : Controller
+    [Route("api/TiposDeViatico")]
+    public class TiposDeViaticoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoEnfermedadController(SwTHDbContext db)
+        public TiposDeViaticoController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoEnfermedad")]
-        public async Task<List<TipoEnfermedad>> GetTipoEnfermedad()
+        [Route("ListarTiposDeViatico")]
+        public async Task<List<TipoViatico>> GetTipoViatico()
         {
             try
             {
-                return await db.TipoEnfermedad.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoViatico.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,22 +41,21 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<TipoEnfermedad>();
+                return new List<TipoViatico>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoEnfermedad([FromRoute] int id)
+        public async Task<Response> GetTipoViatico([FromRoute] int id)
         {
-            try
-            {
+            try{
                 if (!ModelState.IsValid)
                 {
                     return new Response
@@ -66,9 +65,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoEnfermedad = await db.TipoEnfermedad.SingleOrDefaultAsync(m => m.IdTipoEnfermedad == id);
+                var TipoViatico = await db.TipoViatico.SingleOrDefaultAsync(m => m.IdTipoViatico == id);
 
-                if (TipoEnfermedad == null)
+                if (TipoViatico == null)
                 {
                     return new Response
                     {
@@ -81,7 +80,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoEnfermedad,
+                    Resultado = TipoViatico,
                 };
             }
             catch (Exception ex)
@@ -90,7 +89,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -106,7 +105,7 @@ namespace bd.swth.web.Controllers.API
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoEnfermedad([FromRoute] int id, [FromBody] TipoEnfermedad TipoEnfermedad)
+        public async Task<Response> PutTipoViatico([FromRoute] int id, [FromBody] TipoViatico TipoViatico)
         {
             try
             {
@@ -119,16 +118,23 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoEnfermedadActualizar = await db.TipoEnfermedad.Where(x => x.IdTipoEnfermedad == id).FirstOrDefaultAsync();
-                if (TipoEnfermedadActualizar != null)
+                var existe = Existe(TipoViatico);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var TipoViaticoActualizar = await db.TipoViatico.Where(x => x.IdTipoViatico == id).FirstOrDefaultAsync();
+
+                if (TipoViaticoActualizar != null)
                 {
                     try
                     {
-
-                        TipoEnfermedadActualizar.Nombre = TipoEnfermedad.Nombre;
-                        TipoEnfermedadActualizar.PersonaEnfermedad = TipoEnfermedad.PersonaEnfermedad; 
-
-                        db.TipoEnfermedad.Update(TipoEnfermedadActualizar);
+                        TipoViaticoActualizar.Descripcion = TipoViatico.Descripcion;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -144,7 +150,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -158,10 +164,13 @@ namespace bd.swth.web.Controllers.API
                     }
                 }
 
+
+
+
                 return new Response
                 {
                     IsSuccess = false,
-                    Message=Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -169,15 +178,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoEnfermedad")]
-        public async Task<Response> PostTipoEnfermedad([FromBody] TipoEnfermedad TipoEnfermedad)
+        [Route("InsertarTipoViatico")]
+        public async Task<Response> PostTipoViatico([FromBody] TipoViatico TipoViatico)
         {
             try
             {
@@ -190,10 +199,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(TipoEnfermedad);
+                var respuesta = Existe(TipoViatico);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoEnfermedad.Add(TipoEnfermedad);
+                    db.TipoViatico.Add(TipoViatico);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -205,7 +214,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -215,7 +224,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -231,7 +240,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoEnfermedad([FromRoute] int id)
+        public async Task<Response> DeleteTipoViatico([FromRoute] int id)
         {
             try
             {
@@ -244,7 +253,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TipoEnfermedad.SingleOrDefaultAsync(m => m.IdTipoEnfermedad == id);
+                var respuesta = await db.TipoViatico.SingleOrDefaultAsync(m => m.IdTipoViatico == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -253,7 +262,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoEnfermedad.Remove(respuesta);
+                db.TipoViatico.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -268,7 +277,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -282,16 +291,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(TipoEnfermedad TipoEnfermedad)
+        private Response Existe(TipoViatico TipoViatico)
         {
-            var bdd = TipoEnfermedad.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoEnfermedadrespuesta = db.TipoEnfermedad.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (TipoEnfermedadrespuesta != null)
+            var bdd = TipoViatico.Descripcion;
+            var TipoViaticorespuesta = db.TipoViatico.Where(p => p.Descripcion == bdd).FirstOrDefault();
+            if (TipoViaticorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = String.Format("Ya existe un Tipo de Enfermedad con el nombre {0}", TipoEnfermedad.Nombre),
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -300,8 +309,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoEnfermedadrespuesta,
+                Resultado = TipoViaticorespuesta,
             };
         }
+
     }
 }

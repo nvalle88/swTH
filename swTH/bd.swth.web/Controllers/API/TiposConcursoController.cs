@@ -4,36 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
-using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 
-namespace bd.swrm.web.Controllers.API
+namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TrabajoEquipoIniciativaLiderazgo")]
-    public class TrabajoEquipoIniciativaLiderazgoController : Controller
+    [Route("api/TiposConcurso")]
+    public class TiposConcursoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TrabajoEquipoIniciativaLiderazgoController(SwTHDbContext db)
+        public TiposConcursoController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/TrabajoEquipoIniciativaLiderazgo
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTrabajoEquipoIniciativaLiderazgo")]
-        public async Task<List<TrabajoEquipoIniciativaLiderazgo>> GetTrabajoEquipoIniciativaLiderazgo()
+        [Route("ListarTiposConcurso")]
+        public async Task<List<TipoConcurso>> GetTipoConcurso()
         {
             try
             {
-                return await db.TrabajoEquipoIniciativaLiderazgo.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoConcurso.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swrm.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<TrabajoEquipoIniciativaLiderazgo>();
+                return new List<TipoConcurso>();
             }
         }
 
-        // GET: api/TrabajoEquipoIniciativaLiderazgo/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTrabajoEquipoIniciativaLiderazgo([FromRoute] int id)
+        public async Task<Response> GetTipoConcurso([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var trabajoEquipoIniciativaLiderazgo = await db.TrabajoEquipoIniciativaLiderazgo.SingleOrDefaultAsync(m => m.IdTrabajoEquipoIniciativaLiderazgo == id);
+                var TipoConcurso = await db.TipoConcurso.SingleOrDefaultAsync(m => m.IdTipoConcurso == id);
 
-                if (trabajoEquipoIniciativaLiderazgo == null)
+                if (TipoConcurso == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swrm.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = trabajoEquipoIniciativaLiderazgo,
+                    Resultado = TipoConcurso,
                 };
             }
             catch (Exception ex)
@@ -104,9 +104,9 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // PUT: api/TrabajoEquipoIniciativaLiderazgo/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTrabajoEquipoIniciativaLiderazgo([FromRoute] int id, [FromBody] TrabajoEquipoIniciativaLiderazgo trabajoEquipoIniciativaLiderazgo)
+        public async Task<Response> PutTipoConcurso([FromRoute] int id, [FromBody] TipoConcurso TipoConcurso)
         {
             try
             {
@@ -119,13 +119,23 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var trabajoEquipoIniciativaLiderazgoActualizar = await db.TrabajoEquipoIniciativaLiderazgo.Where(x => x.IdTrabajoEquipoIniciativaLiderazgo == id).FirstOrDefaultAsync();
-                if (trabajoEquipoIniciativaLiderazgoActualizar != null)
+                var existe = Existe(TipoConcurso);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var TipoConcursoActualizar = await db.TipoConcurso.Where(x => x.IdTipoConcurso == id).FirstOrDefaultAsync();
+
+                if (TipoConcursoActualizar != null)
                 {
                     try
                     {
-                        trabajoEquipoIniciativaLiderazgoActualizar.Nombre = trabajoEquipoIniciativaLiderazgo.Nombre;
-                        db.TrabajoEquipoIniciativaLiderazgo.Update(trabajoEquipoIniciativaLiderazgoActualizar);
+                        TipoConcursoActualizar.Nombre = TipoConcurso.Nombre;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -154,6 +164,10 @@ namespace bd.swrm.web.Controllers.API
                         };
                     }
                 }
+
+
+
+
                 return new Response
                 {
                     IsSuccess = false,
@@ -170,10 +184,10 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // POST: api/TrabajoEquipoIniciativaLiderazgo
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTrabajoEquipoIniciativaLiderazgo")]
-        public async Task<Response> PostTrabajoEquipoIniciativaLiderazgo([FromBody] TrabajoEquipoIniciativaLiderazgo trabajoEquipoIniciativaLiderazgo)
+        [Route("InsertarTipoConcurso")]
+        public async Task<Response> PostTipoConcurso([FromBody] TipoConcurso TipoConcurso)
         {
             try
             {
@@ -186,10 +200,10 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(trabajoEquipoIniciativaLiderazgo);
+                var respuesta = Existe(TipoConcurso);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TrabajoEquipoIniciativaLiderazgo.Add(trabajoEquipoIniciativaLiderazgo);
+                    db.TipoConcurso.Add(TipoConcurso);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -201,7 +215,7 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -225,9 +239,9 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // DELETE: api/TrabajoEquipoIniciativaLiderazgo/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTrabajoEquipoIniciativaLiderazgo([FromRoute] int id)
+        public async Task<Response> DeleteTipoConcurso([FromRoute] int id)
         {
             try
             {
@@ -240,7 +254,7 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TrabajoEquipoIniciativaLiderazgo.SingleOrDefaultAsync(m => m.IdTrabajoEquipoIniciativaLiderazgo == id);
+                var respuesta = await db.TipoConcurso.SingleOrDefaultAsync(m => m.IdTipoConcurso == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -249,7 +263,7 @@ namespace bd.swrm.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TrabajoEquipoIniciativaLiderazgo.Remove(respuesta);
+                db.TipoConcurso.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -278,16 +292,11 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        private bool TrabajoEquipoIniciativaLiderazgoExists(string nombre)
+        private Response Existe(TipoConcurso TipoConcurso)
         {
-            return db.TrabajoEquipoIniciativaLiderazgo.Any(e => e.Nombre == nombre);
-        }
-
-        public Response Existe(TrabajoEquipoIniciativaLiderazgo trabajoEquipoIniciativaLiderazgo)
-        {
-            var bdd = trabajoEquipoIniciativaLiderazgo.Nombre.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.TrabajoEquipoIniciativaLiderazgo.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = TipoConcurso.Nombre;
+            var TipoConcursorespuesta = db.TipoConcurso.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (TipoConcursorespuesta != null)
             {
                 return new Response
                 {
@@ -301,7 +310,7 @@ namespace bd.swrm.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = TipoConcursorespuesta,
             };
         }
 

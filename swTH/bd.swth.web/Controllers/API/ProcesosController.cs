@@ -19,17 +19,17 @@ namespace bd.swth.web.Controllers.API
     [Route("api/Procesos")]
     public class ProcesosController : Controller
     {
-         private readonly SwTHDbContext db;
+        private readonly SwTHDbContext db;
 
         public ProcesosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/Procesos
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarProcesos")]
-        public async Task<List<Proceso>>  GetProceso()
+        public async Task<List<Proceso>> GetProceso()
         {
             try
             {
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/Procesos/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetProceso([FromRoute] int id)
         {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var adscbdd = await db.Proceso.SingleOrDefaultAsync(m => m.IdProceso == id);
+                var Proceso = await db.Proceso.SingleOrDefaultAsync(m => m.IdProceso == id);
 
-                if (adscbdd == null)
+                if (Proceso == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = adscbdd,
+                    Resultado = Proceso,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/Procesos/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutProceso([FromRoute] int id, [FromBody] Proceso proceso)
+        public async Task<Response> PutProceso([FromRoute] int id, [FromBody] Proceso Proceso)
         {
             try
             {
@@ -119,18 +119,23 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existeProceso = Existe(proceso.Nombre);
-                if (existeProceso.IsSuccess)
+                var existe = Existe(Proceso);
+                if (existe.IsSuccess)
                 {
                     return new Response
                     {
-                        IsSuccess=false,
-                        Message="Existe un proceso de igual nombre",
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
+
+                var ProcesoActualizar = await db.Proceso.Where(x => x.IdProceso == id).FirstOrDefaultAsync();
+
+                if (ProcesoActualizar != null)
+                {
                     try
                     {
-                        db.Proceso.Update(proceso);
+                        ProcesoActualizar.Nombre = Proceso.Nombre;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -146,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = "Se ha producido una exepción",
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -158,31 +163,47 @@ namespace bd.swth.web.Controllers.API
                             Message = Mensaje.Error,
                         };
                     }
-               
-                
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
             }
             catch (Exception)
             {
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // POST: api/Procesos
+        // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarProceso")]
-        public async Task<Response> PostProceso([FromBody] Proceso proceso)
+        public async Task<Response> PostProceso([FromBody] Proceso Proceso)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
 
-                var respuesta = Existe(proceso.Nombre);
+                var respuesta = Existe(Proceso);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Proceso.Add(proceso);
+                    db.Proceso.Add(Proceso);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -194,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -204,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -218,7 +239,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/Procesos/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteProceso([FromRoute] int id)
         {
@@ -257,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -271,22 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool ProcesoExists(int id)
+        private Response Existe(Proceso Proceso)
         {
-            return db.Proceso.Any(e => e.IdProceso == id);
-        }
-
-
-        public Response Existe(string nombreProceso)
-        {
-            
-            var loglevelrespuesta = db.Proceso.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreProceso).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = Proceso.Nombre;
+            var Procesorespuesta = db.Proceso.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (Procesorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -295,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = Procesorespuesta,
             };
         }
+
     }
 }

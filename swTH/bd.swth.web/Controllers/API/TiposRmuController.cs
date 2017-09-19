@@ -16,24 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoPermiso")]
-    public class TipoPermisoController : Controller
+    [Route("api/TiposRMU")]
+    public class TiposRMUController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoPermisoController(SwTHDbContext db)
+        public TiposRMUController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/ListarTipoPermiso
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoPermiso")]
-        public async Task<List<TipoPermiso>> GetTipoPermiso()
+        [Route("ListarTiposRMU")]
+        public async Task<List<TipoRMU>> GetTipoRMU()
         {
             try
             {
-                return await db.TipoPermiso.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoRMU.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,20 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<TipoPermiso>();
+                return new List<TipoRMU>();
             }
         }
 
-
-        // GET: api/TipoPermiso/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoPermiso([FromRoute] int id)
+        public async Task<Response> GetTipoRMU([FromRoute] int id)
         {
             try
             {
@@ -67,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoPermiso = await db.TipoPermiso.SingleOrDefaultAsync(m => m.IdTipoPermiso == id);
+                var TipoRMU = await db.TipoRMU.SingleOrDefaultAsync(m => m.IdTipoRMU == id);
 
-                if (TipoPermiso == null)
+                if (TipoRMU == null)
                 {
                     return new Response
                     {
@@ -82,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoPermiso,
+                    Resultado = TipoRMU,
                 };
             }
             catch (Exception ex)
@@ -91,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -105,10 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
-        // PUT: api/TipoPermiso/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoPermiso([FromRoute] int id, [FromBody] TipoPermiso TipoPermiso)
+        public async Task<Response> PutTipoRMU([FromRoute] int id, [FromBody] TipoRMU TipoRMU)
         {
             try
             {
@@ -121,13 +119,23 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoPermisoActualizar = await db.TipoPermiso.Where(x => x.IdTipoPermiso == id).FirstOrDefaultAsync();
-                if (TipoPermisoActualizar != null)
+                var existe = Existe(TipoRMU);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var TipoRMUActualizar = await db.TipoRMU.Where(x => x.IdTipoRMU == id).FirstOrDefaultAsync();
+
+                if (TipoRMUActualizar != null)
                 {
                     try
                     {
-                        TipoPermisoActualizar.Nombre = TipoPermiso.Nombre;
-                        db.TipoPermiso.Update(TipoPermisoActualizar);
+                        TipoRMUActualizar.Descripcion = TipoRMU.Descripcion;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -143,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = "Se ha producido una exepción",
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -163,7 +171,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message=Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -171,15 +179,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // POST: api/TipoPermiso
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoPermiso")]
-        public async Task<Response> PostTipoPermiso([FromBody] TipoPermiso TipoPermiso)
+        [Route("InsertarTipoRMU")]
+        public async Task<Response> PostTipoRMU([FromBody] TipoRMU TipoRMU)
         {
             try
             {
@@ -192,10 +200,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(TipoPermiso);
+                var respuesta = Existe(TipoRMU);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoPermiso.Add(TipoPermiso);
+                    db.TipoRMU.Add(TipoRMU);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -207,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -217,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -231,9 +239,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/TipoPermiso/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoPermiso([FromRoute] int id)
+        public async Task<Response> DeleteTipoRMU([FromRoute] int id)
         {
             try
             {
@@ -246,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TipoPermiso.SingleOrDefaultAsync(m => m.IdTipoPermiso == id);
+                var respuesta = await db.TipoRMU.SingleOrDefaultAsync(m => m.IdTipoRMU == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -255,7 +263,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoPermiso.Remove(respuesta);
+                db.TipoRMU.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -270,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -284,21 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private bool TipoPermisoExists(string nombre)
+        private Response Existe(TipoRMU TipoRMU)
         {
-            return db.TipoPermiso.Any(e => e.Nombre == nombre);
-        }
-
-        public Response Existe(TipoPermiso TipoPermiso)
-        {
-            var bdd = TipoPermiso.Nombre.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.TipoPermiso.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = TipoRMU.Descripcion;
+            var TipoRMUrespuesta = db.TipoRMU.Where(p => p.Descripcion == bdd).FirstOrDefault();
+            if (TipoRMUrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un permiso de igual nombre",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -307,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = TipoRMUrespuesta,
             };
         }
+
     }
 }

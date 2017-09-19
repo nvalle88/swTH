@@ -6,34 +6,34 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoIdentificacion")]
-    public class TipoIdentificacionController : Controller
+    [Route("api/TiposDeTransporte")]
+    public class TiposDeTransporteController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoIdentificacionController(SwTHDbContext db)
+        public TiposDeTransporteController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoIdentificacion")]
-        public async Task<List<TipoIdentificacion>> GetTipoIdentificacion()
+        [Route("ListarTiposDeTransporte")]
+        public async Task<List<TipoTransporte>> GetTipoTransporte()
         {
             try
             {
-                return await db.TipoIdentificacion.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoTransporte.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<TipoIdentificacion>();
+                return new List<TipoTransporte>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoIdentificacion([FromRoute] int id)
+        public async Task<Response> GetTipoTransporte([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoIdentificacion = await db.TipoIdentificacion.SingleOrDefaultAsync(m => m.IdTipoIdentificacion == id);
+                var TipoTransporte = await db.TipoTransporte.SingleOrDefaultAsync(m => m.IdTipoTransporte == id);
 
-                if (TipoIdentificacion == null)
+                if (TipoTransporte == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoIdentificacion,
+                    Resultado = TipoTransporte,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -106,7 +106,7 @@ namespace bd.swth.web.Controllers.API
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoIdentificacion([FromRoute] int id, [FromBody] TipoIdentificacion TipoIdentificacion)
+        public async Task<Response> PutTipoTransporte([FromRoute] int id, [FromBody] TipoTransporte TipoTransporte)
         {
             try
             {
@@ -119,16 +119,23 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoIdentificacionActualizar = await db.TipoIdentificacion.Where(x => x.IdTipoIdentificacion == id).FirstOrDefaultAsync();
-                if (TipoIdentificacionActualizar != null)
+                var existe = Existe(TipoTransporte);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var TipoTransporteActualizar = await db.TipoTransporte.Where(x => x.IdTipoTransporte == id).FirstOrDefaultAsync();
+
+                if (TipoTransporteActualizar != null)
                 {
                     try
                     {
-
-                        TipoIdentificacionActualizar.Nombre = TipoIdentificacion.Nombre;
-                        TipoIdentificacionActualizar.Persona = TipoIdentificacion.Persona;
-
-                        db.TipoIdentificacion.Update(TipoIdentificacionActualizar);
+                        TipoTransporteActualizar.Descripcion = TipoTransporte.Descripcion;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -144,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -158,10 +165,13 @@ namespace bd.swth.web.Controllers.API
                     }
                 }
 
+
+
+
                 return new Response
                 {
                     IsSuccess = false,
-                    Message=Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -169,15 +179,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoIdentificacion")]
-        public async Task<Response> PostTipoIdentificacion([FromBody] TipoIdentificacion TipoIdentificacion)
+        [Route("InsertarTipoTransporte")]
+        public async Task<Response> PostTipoTransporte([FromBody] TipoTransporte TipoTransporte)
         {
             try
             {
@@ -190,10 +200,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(TipoIdentificacion);
+                var respuesta = Existe(TipoTransporte);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoIdentificacion.Add(TipoIdentificacion);
+                    db.TipoTransporte.Add(TipoTransporte);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -205,7 +215,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -215,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -231,7 +241,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoIdentificacion([FromRoute] int id)
+        public async Task<Response> DeleteTipoTransporte([FromRoute] int id)
         {
             try
             {
@@ -244,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TipoIdentificacion.SingleOrDefaultAsync(m => m.IdTipoIdentificacion == id);
+                var respuesta = await db.TipoTransporte.SingleOrDefaultAsync(m => m.IdTipoTransporte == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -253,7 +263,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoIdentificacion.Remove(respuesta);
+                db.TipoTransporte.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -268,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -282,16 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(TipoIdentificacion TipoIdentificacion)
+        private Response Existe(TipoTransporte TipoTransporte)
         {
-            var bdd = TipoIdentificacion.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoIdentificacionrespuesta = db.TipoIdentificacion.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (TipoIdentificacionrespuesta != null)
+            var bdd = TipoTransporte.Descripcion;
+            var TipoTransporterespuesta = db.TipoTransporte.Where(p => p.Descripcion == bdd).FirstOrDefault();
+            if (TipoTransporterespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = String.Format("Ya existe un Tipo de Identificación con el nombre {0}", TipoIdentificacion.Nombre),
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -300,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoIdentificacionrespuesta,
+                Resultado = TipoTransporterespuesta,
             };
         }
+
     }
 }
