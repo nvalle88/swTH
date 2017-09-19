@@ -1601,6 +1601,17 @@ namespace bd.swth.datos
                     .HasMaxLength(50);
             });
 
+
+            modelBuilder.Entity<TipoDiscapacidadSustituto>(entity =>
+            {
+                entity.HasKey(e => e.IdTipoDiscapacidadSustituto)
+                    .HasName("PK68");
+
+                entity.Property(e => e.Nombre)
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
+            });
+
             modelBuilder.Entity<EvaluacionTrabajoEquipoIniciativaLiderazgo>(entity =>
             {
                 entity.HasKey(e => e.IdEvaluacionTrabajoEquipoIniciativaLiderazgo)
@@ -3551,15 +3562,11 @@ namespace bd.swth.datos
             modelBuilder.Entity<TipoConcurso>(entity =>
             {
                 entity.HasKey(e => e.IdTipoConcurso)
-                    .HasName("PK_TipoConcurso");
+                   .HasName("PK268");
 
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasMaxLength(500);
+                entity.Property(e => e.Descripcion).HasColumnType("varchar(250)");
 
-                entity.Property(e => e.Nombre)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                entity.Property(e => e.Nombre).HasColumnType("varchar(50)");
             });
 
             modelBuilder.Entity<TipoDiscapacidad>(entity =>

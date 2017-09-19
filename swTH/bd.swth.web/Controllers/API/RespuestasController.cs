@@ -119,14 +119,23 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuestaActualizar = await db.Respuesta.Where(x => x.IdRespuesta == id).FirstOrDefaultAsync();
-                if (respuestaActualizar != null)
+                var existe = Existe(respuesta);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var RespuestaActualizar = await db.Respuesta.Where(x => x.IdRespuesta == id).FirstOrDefaultAsync();
+
+                if (RespuestaActualizar != null)
                 {
                     try
                     {
-
-                        respuestaActualizar.Nombre = respuesta.Nombre;
-                        db.Respuesta.Update(respuestaActualizar);
+                        RespuestaActualizar.Nombre = respuesta.Nombre;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -142,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -155,14 +164,11 @@ namespace bd.swth.web.Controllers.API
                         };
                     }
                 }
-
-
-
-
+                
                 return new Response
                 {
                     IsSuccess = false,
-                    Message=Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -170,7 +176,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
@@ -206,7 +212,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
