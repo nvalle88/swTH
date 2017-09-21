@@ -42,7 +42,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -63,7 +63,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -74,14 +74,14 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
+                    Message = Mensaje.Satisfactorio,
                     Resultado = ImpuestoRentaParametros,
                 };
             }
@@ -91,7 +91,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -100,9 +100,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
+        }
+
+        private async Task Actualizar(ImpuestoRentaParametros ImpuestoRentaParametros)
+        {
+            var impuestorentaparametros = db.ImpuestoRentaParametros.Find(ImpuestoRentaParametros.IdImpuestoRentaParametros);
+           
+            impuestorentaparametros.ExcesoHasta = ImpuestoRentaParametros.ExcesoHasta;
+            impuestorentaparametros.FraccionBasica = ImpuestoRentaParametros.FraccionBasica;
+            impuestorentaparametros.ImpuestoFraccionBasica = ImpuestoRentaParametros.ImpuestoFraccionBasica;
+            impuestorentaparametros.PorcentajeImpuestoFraccionExcedente = ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente;
+            db.ImpuestoRentaParametros.Update(impuestorentaparametros);
+            await db.SaveChangesAsync();
         }
 
         // PUT: api/BasesDatos/5
@@ -113,81 +125,83 @@ namespace bd.swth.web.Controllers.API
             {
                 if (!ModelState.IsValid)
                 {
-
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+                //fraccionBasica, ExcesoHasta, ImpuestoFraccionBasica, PorcentajeImpuestoFraccionExcedente
+
+                if (ImpuestoRentaParametros.FraccionBasica > ImpuestoRentaParametros.ExcesoHasta || ImpuestoRentaParametros.FraccionBasica == ImpuestoRentaParametros.ExcesoHasta)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fracción básica no puede ser mayor o igual a exceso hasta"
                     };
                 }
 
                 var existe = Existe(ImpuestoRentaParametros);
+                var ImpuestoRentaParametrosActualizar = (ImpuestoRentaParametros)existe.Resultado;
+
                 if (existe.IsSuccess)
                 {
-                    var impustoRenta = (ImpuestoRentaParametros)existe.Resultado;
+                    //fraccionBasica, ExcesoHasta, ImpuestoFraccionBasica, PorcentajeImpuestoFraccionExcedente
 
-                    if (id==impustoRenta.IdImpuestoRentaParametros)
+
+                    if (ImpuestoRentaParametrosActualizar.IdImpuestoRentaParametros == ImpuestoRentaParametros.IdImpuestoRentaParametros)
                     {
-                        var ImpuestoRentaParametrosActualizar = await db.ImpuestoRentaParametros.Where(x => x.IdImpuestoRentaParametros == id).FirstOrDefaultAsync();
-
-                        if (ImpuestoRentaParametrosActualizar != null)
+                        if (ImpuestoRentaParametros.ExcesoHasta == ImpuestoRentaParametrosActualizar.ExcesoHasta &&
+                        ImpuestoRentaParametros.FraccionBasica == ImpuestoRentaParametrosActualizar.FraccionBasica &&
+                        ImpuestoRentaParametros.ImpuestoFraccionBasica == ImpuestoRentaParametrosActualizar.ImpuestoFraccionBasica &&
+                        ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente == ImpuestoRentaParametrosActualizar.PorcentajeImpuestoFraccionExcedente)
                         {
-                            try
+                            return new Response
                             {
-                                ImpuestoRentaParametrosActualizar.FraccionBasica = ImpuestoRentaParametros.FraccionBasica;
-                                ImpuestoRentaParametrosActualizar.ExcesoHasta = ImpuestoRentaParametros.ExcesoHasta;
-                                ImpuestoRentaParametrosActualizar.ImpuestoFraccionBasica = ImpuestoRentaParametros.ImpuestoFraccionBasica;
-                                ImpuestoRentaParametrosActualizar.PorcentajeImpuestoFraccionExcedente = ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente;
-                                await db.SaveChangesAsync();
-
-                                return new Response
-                                {
-                                    IsSuccess = true,
-                                    Message = "Ok",
-                                };
-
-                            }
-                            catch (Exception ex)
-                            {
-                                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                                {
-                                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                                    ExceptionTrace = ex,
-                                    Message = "Se ha producido una excepción",
-                                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                                    UserName = "",
-
-                                });
-                                return new Response
-                                {
-                                    IsSuccess = false,
-                                    Message = "Error ",
-                                };
-                            }
+                                IsSuccess = true,
+                            };
                         }
 
+                        await Actualizar(ImpuestoRentaParametros);
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
                     }
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe un registro de igual Fracción Básica",
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
-                
+
+                await Actualizar(ImpuestoRentaParametros);
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
 
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "Existe"
-                };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Excepción"
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
@@ -199,12 +213,14 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                if (!ModelState.IsValid)
+                //fraccionBasica, ExcesoHasta, ImpuestoFraccionBasica, PorcentajeImpuestoFraccionExcedente
+
+                if (ImpuestoRentaParametros.FraccionBasica > ImpuestoRentaParametros.ExcesoHasta || ImpuestoRentaParametros.FraccionBasica == ImpuestoRentaParametros.ExcesoHasta)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = "La fracción básica  no puede ser mayor o igual al exceso hasta"
                     };
                 }
 
@@ -216,14 +232,23 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un registro de igual Fracción Básica..."
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -233,7 +258,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -242,7 +267,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
@@ -258,7 +283,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -268,7 +293,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
                 db.ImpuestoRentaParametros.Remove(respuesta);
@@ -277,7 +302,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -286,7 +311,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -295,7 +320,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
@@ -309,8 +334,8 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un Impuesto Renta Parámetros de igual nombre",
-                    Resultado = ImpuestoRentaParametros,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = ImpuestoRentaParametrosrespuesta,
                 };
 
             }
@@ -321,7 +346,5 @@ namespace bd.swth.web.Controllers.API
                 Resultado = ImpuestoRentaParametrosrespuesta,
             };
         }
-
-
     }
 }

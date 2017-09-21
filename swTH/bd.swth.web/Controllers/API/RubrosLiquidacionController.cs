@@ -26,10 +26,10 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/RubroLiquidacion
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarRubrosLiquidacion")]
-        public async Task<List<RubroLiquidacion>> GetRubrosLiquidacion()
+        public async Task<List<RubroLiquidacion>> GetRubroLiquidacion()
         {
             try
             {
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/RubroLiquidacion/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetRubroLiquidacion([FromRoute] int id)
         {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var rubroLiquidacion = await db.RubroLiquidacion.SingleOrDefaultAsync(m => m.IdRubroLiquidacion == id);
+                var RubroLiquidacion = await db.RubroLiquidacion.SingleOrDefaultAsync(m => m.IdRubroLiquidacion == id);
 
-                if (rubroLiquidacion == null)
+                if (RubroLiquidacion == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = rubroLiquidacion,
+                    Resultado = RubroLiquidacion,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/RubroLiquidacion/5        
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRubroLiquidacion([FromRoute] int id, [FromBody] RubroLiquidacion rubroLiquidacion)
+        public async Task<Response> PutRubroLiquidacion([FromRoute] int id, [FromBody] RubroLiquidacion RubroLiquidacion)
         {
             try
             {
@@ -119,14 +119,23 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var rubroLiquidacionActualizar = await db.RubroLiquidacion.Where(x => x.IdRubroLiquidacion == id).FirstOrDefaultAsync();
-                if (rubroLiquidacionActualizar != null)
+                var existe = Existe(RubroLiquidacion);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var RubroLiquidacionActualizar = await db.RubroLiquidacion.Where(x => x.IdRubroLiquidacion == id).FirstOrDefaultAsync();
+
+                if (RubroLiquidacionActualizar != null)
                 {
                     try
                     {
-
-                        rubroLiquidacionActualizar.Descripcion = rubroLiquidacion.Descripcion;
-                        db.RubroLiquidacion.Update(rubroLiquidacionActualizar);
+                        RubroLiquidacionActualizar.Descripcion = RubroLiquidacion.Descripcion;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -142,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -162,7 +171,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message=Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -170,15 +179,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // POST: api/RubroLiquidacion
+        // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarRubroLiquidacion")]
-        public async Task<Response> PostRubroLiquidacion([FromBody] RubroLiquidacion rubroLiquidacion)
+        public async Task<Response> PostRubroLiquidacion([FromBody] RubroLiquidacion RubroLiquidacion)
         {
             try
             {
@@ -191,10 +200,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(rubroLiquidacion);
+                var respuesta = Existe(RubroLiquidacion);
                 if (!respuesta.IsSuccess)
                 {
-                    db.RubroLiquidacion.Add(rubroLiquidacion);
+                    db.RubroLiquidacion.Add(RubroLiquidacion);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -216,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -230,7 +239,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/ApiWithActions/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteRubroLiquidacion([FromRoute] int id)
         {
@@ -269,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -283,16 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(RubroLiquidacion rubroLiquidacion)
+        private Response Existe(RubroLiquidacion RubroLiquidacion)
         {
-            var bdd = rubroLiquidacion.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var RubroLiquidacionrespuesta = db.RubroLiquidacion.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd = RubroLiquidacion.Descripcion;
+            var RubroLiquidacionrespuesta = db.RubroLiquidacion.Where(p => p.Descripcion == bdd).FirstOrDefault();
             if (RubroLiquidacionrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un rubro de liquidación de igual descripción",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -304,5 +313,6 @@ namespace bd.swth.web.Controllers.API
                 Resultado = RubroLiquidacionrespuesta,
             };
         }
+
     }
 }

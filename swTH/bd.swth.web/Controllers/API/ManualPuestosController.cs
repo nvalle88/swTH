@@ -29,11 +29,11 @@ namespace bd.swth.web.Controllers.API
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarManualPuestos")]
-        public async Task<List<ManualPuesto>> GetManualPuesto()
+        public async Task<List<ManualPuesto>> GetManualPuestos()
         {
             try
             {
-                return await db.ManualPuesto.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.ManualPuesto.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -104,6 +104,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        private async Task Actualizar(ManualPuesto ManualPuesto)
+        {
+            var manualpuesto = db.ManualPuesto.Find(ManualPuesto.IdManualPuesto);
+
+            manualpuesto.Nombre = ManualPuesto.Nombre;
+            manualpuesto.Descripcion = ManualPuesto.Descripcion;
+            db.ManualPuesto.Update(manualpuesto);
+            await db.SaveChangesAsync();
+        }
+
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutManualPuesto([FromRoute] int id, [FromBody] ManualPuesto ManualPuesto)
@@ -118,10 +128,32 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ModeloInvalido
                     };
                 }
-
+                
                 var existe = Existe(ManualPuesto);
+                var ManualPuestoActualizar = (ManualPuesto)existe.Resultado;
+
                 if (existe.IsSuccess)
                 {
+
+
+                    if (ManualPuestoActualizar.IdManualPuesto == ManualPuesto.IdManualPuesto)
+                    {
+                        if (ManualPuesto.Nombre == ManualPuestoActualizar.Nombre &&
+                        ManualPuesto.Descripcion == ManualPuestoActualizar.Descripcion)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                            };
+                        }
+
+                        await Actualizar(ManualPuesto);
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
@@ -129,77 +161,42 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var ManualPuestoActualizar = await db.ManualPuesto.Where(x => x.IdManualPuesto == id).FirstOrDefaultAsync();
-
-                if (ManualPuestoActualizar != null)
-                {
-                    try
-                    {
-                        ManualPuestoActualizar.Nombre = ManualPuesto.Nombre;
-                        ManualPuestoActualizar.Descripcion = ManualPuesto.Descripcion;
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
-
+                await Actualizar(ManualPuesto);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarManualPuestos")]
+        [Route("InsertarManualPuesto")]
         public async Task<Response> PostManualPuesto([FromBody] ManualPuesto ManualPuesto)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
 
                 var respuesta = Existe(ManualPuesto);
                 if (!respuesta.IsSuccess)
@@ -210,6 +207,15 @@ namespace bd.swth.web.Controllers.API
                     {
                         IsSuccess = true,
                         Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
                     };
                 }
 
@@ -303,7 +309,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = ManualPuestorespuesta,
                 };
 
             }
@@ -314,6 +320,7 @@ namespace bd.swth.web.Controllers.API
                 Resultado = ManualPuestorespuesta,
             };
         }
+
 
     }
 }

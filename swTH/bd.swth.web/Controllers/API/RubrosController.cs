@@ -26,8 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/Rubro
-        [HttpGet]
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarRubros")]
         public async Task<List<Rubro>> GetRubros()
@@ -42,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -52,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/Rubro/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetRubro([FromRoute] int id)
         {
@@ -67,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var rubro = await db.Rubro.SingleOrDefaultAsync(m => m.IdRubro == id);
+                var Rubro = await db.Rubro.SingleOrDefaultAsync(m => m.IdRubro == id);
 
-                if (rubro == null)
+                if (Rubro == null)
                 {
                     return new Response
                     {
@@ -82,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = rubro,
+                    Resultado = Rubro,
                 };
             }
             catch (Exception ex)
@@ -91,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -105,9 +104,19 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/Rubro/5
+        private async Task Actualizar(Rubro Rubro)
+        {
+            var rubro = db.Rubro.Find(Rubro.IdRubro);
+
+            rubro.Nombre = Rubro.Nombre;
+            rubro.TasaPorcentualMaxima = Rubro.TasaPorcentualMaxima;
+            db.Rubro.Update(rubro);
+            await db.SaveChangesAsync();
+        }
+
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRubro([FromRoute] int id, [FromBody] Rubro rubro)
+        public async Task<Response> PutRubro([FromRoute] int id, [FromBody] Rubro Rubro)
         {
             try
             {
@@ -120,79 +129,81 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var rubroActualizar = await db.Rubro.Where(x => x.IdRubro == id).FirstOrDefaultAsync();
-                if (rubroActualizar != null)
-                {
-                    try
-                    {
-                        rubroActualizar.TasaPorcentualMaxima = rubro.TasaPorcentualMaxima;
-                        rubroActualizar.Nombre = rubro.Nombre;
-                        db.Rubro.Update(rubroActualizar);
-                        await db.SaveChangesAsync();
 
+                var existe = Existe(Rubro);
+                var RubroActualizar = (Rubro)existe.Resultado;
+
+                if (existe.IsSuccess)
+                {
+
+
+                    if (RubroActualizar.IdRubro == Rubro.IdRubro)
+                    {
+                        if (Rubro.Nombre == RubroActualizar.Nombre &&
+                        Rubro.TasaPorcentualMaxima == RubroActualizar.TasaPorcentualMaxima)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                            };
+                        }
+
+                        await Actualizar(Rubro);
                         return new Response
                         {
                             IsSuccess = true,
                             Message = Mensaje.Satisfactorio,
                         };
-
                     }
-                    catch (Exception ex)
+                    return new Response
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
                 }
-                
+
+                await Actualizar(Rubro);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
 
-        // POST: api/Rubro
+        // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarRubro")]
-        public async Task<Response> PostRubro([FromBody] Rubro rubro)
+        public async Task<Response> PostRubro([FromBody] Rubro Rubro)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
 
-                var respuesta = Existe(rubro);
+               
+                var respuesta = Existe(Rubro);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Rubro.Add(rubro);
+                    db.Rubro.Add(Rubro);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -201,6 +212,15 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
+                    };
+                }
+
                 return new Response
                 {
                     IsSuccess = false,
@@ -214,7 +234,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -228,7 +248,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/ApiWithActions/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteRubro([FromRoute] int id)
         {
@@ -267,7 +287,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -281,17 +301,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(Rubro rubro)
+        private Response Existe(Rubro Rubro)
         {
-            var bdd = rubro.Nombre.ToUpper().TrimEnd().TrimStart();
-            var Rubrorespuesta = db.Rubro.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd = Rubro.Nombre;
+            var Rubrorespuesta = db.Rubro.Where(p => p.Nombre == bdd).FirstOrDefault();
             if (Rubrorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un rubro de igual nombre",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = Rubrorespuesta,
                 };
 
             }

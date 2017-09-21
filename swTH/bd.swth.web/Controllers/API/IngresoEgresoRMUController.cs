@@ -26,10 +26,10 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/IngresoEgresoRMUes
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarIngresoEgresoRMU")]
-        public async Task<List<IngresoEgresoRMU>> GetIngresoEgresoRMU()
+        public async Task<List<IngresoEgresoRMU>> GetCapacitacionesTemarios()
         {
             try
             {
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/IngresoEgresoRMUes/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetIngresoEgresoRMU([FromRoute] int id)
         {
@@ -104,7 +104,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/IngresoEgresoRMUes/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutIngresoEgresoRMU([FromRoute] int id, [FromBody] IngresoEgresoRMU IngresoEgresoRMU)
         {
@@ -120,71 +120,60 @@ namespace bd.swth.web.Controllers.API
                 }
 
                 var existe = Existe(IngresoEgresoRMU);
+                var IngresoEgresoRMUActualizar = (IngresoEgresoRMU)existe.Resultado;
                 if (existe.IsSuccess)
                 {
+                    if (IngresoEgresoRMUActualizar.IdIngresoEgresoRMU == IngresoEgresoRMU.IdIngresoEgresoRMU)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
+                var ingresoegresormu = db.IngresoEgresoRMU.Find(IngresoEgresoRMU.IdIngresoEgresoRMU);
 
-                var IngresoEgresoRMUActualizar = await db.IngresoEgresoRMU.Where(x => x.IdIngresoEgresoRMU == id).FirstOrDefaultAsync();
-
-                if (IngresoEgresoRMUActualizar != null)
-                {
-                    try
-                    {
-                        IngresoEgresoRMUActualizar.Descripcion = IngresoEgresoRMU.Descripcion;
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
+                ingresoegresormu.IdFormulaRMU = IngresoEgresoRMU.IdFormulaRMU;
+                ingresoegresormu.Descripcion = IngresoEgresoRMU.Descripcion;
+                ingresoegresormu.CuentaContable = IngresoEgresoRMU.CuentaContable;
+                db.IngresoEgresoRMU.Update(ingresoegresormu);
+                await db.SaveChangesAsync();
 
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
+
         }
 
-        // POST: api/IngresoEgresoRMUes
+        // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarIngresoEgresoRMU")]
         public async Task<Response> PostIngresoEgresoRMU([FromBody] IngresoEgresoRMU IngresoEgresoRMU)
@@ -196,7 +185,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = ""
                     };
                 }
 
@@ -215,7 +204,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro,
                 };
 
             }
@@ -239,7 +228,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/IngresoEgresoRMUes/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteIngresoEgresoRMU([FromRoute] int id)
         {
@@ -294,15 +283,16 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(IngresoEgresoRMU IngresoEgresoRMU)
         {
-            var bdd = IngresoEgresoRMU.Descripcion;
-            var IngresoEgresoRMUrespuesta = db.IngresoEgresoRMU.Where(p => p.Descripcion == bdd).FirstOrDefault();
+            var bdd = IngresoEgresoRMU.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var cuenta = IngresoEgresoRMU.CuentaContable;
+            var IngresoEgresoRMUrespuesta = db.IngresoEgresoRMU.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd && p.IdFormulaRMU == IngresoEgresoRMU.IdFormulaRMU  && p.CuentaContable==cuenta).FirstOrDefault();
             if (IngresoEgresoRMUrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = IngresoEgresoRMUrespuesta,
                 };
 
             }
@@ -313,7 +303,6 @@ namespace bd.swth.web.Controllers.API
                 Resultado = IngresoEgresoRMUrespuesta,
             };
         }
-
 
     }
 }

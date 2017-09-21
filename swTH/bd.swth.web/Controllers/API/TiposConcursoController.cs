@@ -29,11 +29,11 @@ namespace bd.swth.web.Controllers.API
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarTiposConcurso")]
-        public async Task<List<TipoConcurso>> GetTipoConcurso()
+        public async Task<List<TipoConcurso>> GetTiposConcurso()
         {
             try
             {
-                return await db.TipoConcurso.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoConcurso.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -104,6 +104,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        private async Task Actualizar(TipoConcurso TipoConcurso)
+        {
+            var tipoconcurso = db.TipoConcurso.Find(TipoConcurso.IdTipoConcurso);
+
+            tipoconcurso.Nombre = TipoConcurso.Nombre;
+            tipoconcurso.Descripcion = TipoConcurso.Descripcion;
+            db.TipoConcurso.Update(tipoconcurso);
+            await db.SaveChangesAsync();
+        }
+
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutTipoConcurso([FromRoute] int id, [FromBody] TipoConcurso TipoConcurso)
@@ -119,9 +129,34 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                
+
                 var existe = Existe(TipoConcurso);
+                var TipoConcursoActualizar = (TipoConcurso)existe.Resultado;
+
                 if (existe.IsSuccess)
                 {
+
+
+                    if (TipoConcursoActualizar.IdTipoConcurso == TipoConcurso.IdTipoConcurso)
+                    {
+                        if (TipoConcurso.Nombre == TipoConcursoActualizar.Nombre &&
+                        TipoConcurso.Descripcion == TipoConcursoActualizar.Descripcion)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Message = Mensaje.ExisteRegistro,
+                            };
+                        }
+
+                        await Actualizar(TipoConcurso);
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
@@ -129,57 +164,31 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoConcursoActualizar = await db.TipoConcurso.Where(x => x.IdTipoConcurso == id).FirstOrDefaultAsync();
-
-                if (TipoConcursoActualizar != null)
-                {
-                    try
-                    {
-                        TipoConcursoActualizar.Nombre = TipoConcurso.Nombre;
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
-
+                await Actualizar(TipoConcurso);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
@@ -191,15 +200,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
-
+                               
                 var respuesta = Existe(TipoConcurso);
                 if (!respuesta.IsSuccess)
                 {
@@ -209,6 +210,15 @@ namespace bd.swth.web.Controllers.API
                     {
                         IsSuccess = true,
                         Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
                     };
                 }
 
@@ -302,7 +312,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = TipoConcursorespuesta,
                 };
 
             }
@@ -313,6 +323,5 @@ namespace bd.swth.web.Controllers.API
                 Resultado = TipoConcursorespuesta,
             };
         }
-
     }
 }

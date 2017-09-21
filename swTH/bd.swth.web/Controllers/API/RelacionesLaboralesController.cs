@@ -26,10 +26,10 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/RelacionLaboral
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarRelacionesLaborales")]
-        public async Task<List<RelacionLaboral>> GetRelacionesLaborales()
+        public async Task<List<RelacionLaboral>> GetCapacitacionesTemarios()
         {
             try
             {
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/RelacionLaboral/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetRelacionLaboral([FromRoute] int id)
         {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var relacionLaboral = await db.RelacionLaboral.SingleOrDefaultAsync(m => m.IdRelacionLaboral == id);
+                var RelacionLaboral = await db.RelacionLaboral.SingleOrDefaultAsync(m => m.IdRelacionLaboral == id);
 
-                if (relacionLaboral == null)
+                if (RelacionLaboral == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = relacionLaboral,
+                    Resultado = RelacionLaboral,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,10 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/RelacionLaboral
-        [HttpPost]
-        [Route("InsertarRelacionLaboral")]
-        public async Task<Response> PostRelacionLaboral([FromBody] RelacionLaboral relacionLaboral)
+        // PUT: api/BasesDatos/5
+        [HttpPut("{id}")]
+        public async Task<Response> PutRelacionLaboral([FromRoute] int id, [FromBody] RelacionLaboral RelacionLaboral)
         {
             try
             {
@@ -120,10 +119,79 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(relacionLaboral);
+                var existe = Existe(RelacionLaboral);
+                var RelacionLaboralActualizar = (RelacionLaboral)existe.Resultado;
+                if (existe.IsSuccess)
+                {
+                    if (RelacionLaboralActualizar.IdRelacionLaboral == RelacionLaboral.IdRelacionLaboral)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                        };
+                    }
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+                var capacitacionac = db.RelacionLaboral.Find(RelacionLaboral.IdRelacionLaboral);
+
+                capacitacionac.IdRegimenLaboral = RelacionLaboral.IdRegimenLaboral;
+                capacitacionac.Nombre = RelacionLaboral.Nombre;
+                db.RelacionLaboral.Update(capacitacionac);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
+                };
+            }
+
+        }
+
+        // POST: api/BasesDatos
+        [HttpPost]
+        [Route("InsertarRelacionLaboral")]
+        public async Task<Response> PostRelacionLaboral([FromBody] RelacionLaboral RelacionLaboral)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
+                    };
+                }
+
+                var respuesta = Existe(RelacionLaboral);
                 if (!respuesta.IsSuccess)
                 {
-                    db.RelacionLaboral.Add(relacionLaboral);
+                    db.RelacionLaboral.Add(RelacionLaboral);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -135,7 +203,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro,
                 };
 
             }
@@ -145,7 +213,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -159,78 +227,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/RelacionLaboral/5
-        [HttpPut("{id}")]
-        public async Task<Response> PutRelacionLaboral([FromRoute] int id, [FromBody] RelacionLaboral relacionLaboral)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
-
-                var RelacionLaboralActualizar = await db.RelacionLaboral.Where(x => x.IdRelacionLaboral == id).FirstOrDefaultAsync();
-                if (RelacionLaboralActualizar != null)
-                {
-                    try
-                    {
-                        RelacionLaboralActualizar.Nombre = relacionLaboral.Nombre;
-                        RelacionLaboralActualizar.IdRegimenLaboral = relacionLaboral.IdRegimenLaboral;
-                        db.RelacionLaboral.Update(RelacionLaboralActualizar);
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message=Mensaje.ExisteRegistro
-                };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
-                };
-            }
-        }
-
-        // DELETE: api/ApiWithActions/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteRelacionLaboral([FromRoute] int id)
         {
@@ -269,7 +266,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -283,17 +280,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(RelacionLaboral relacionLaboral)
+        private Response Existe(RelacionLaboral RelacionLaboral)
         {
-            var bdd = relacionLaboral.Nombre.ToUpper().TrimEnd().TrimStart();
-            var RelacionLaboralrespuesta = db.RelacionLaboral.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd = RelacionLaboral.Nombre.ToUpper().TrimEnd().TrimStart();
+            var RelacionLaboralrespuesta = db.RelacionLaboral.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdRegimenLaboral == RelacionLaboral.IdRegimenLaboral).FirstOrDefault();
             if (RelacionLaboralrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una relación laboral de igual nombre",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = RelacionLaboralrespuesta,
                 };
 
             }
@@ -304,5 +301,6 @@ namespace bd.swth.web.Controllers.API
                 Resultado = RelacionLaboralrespuesta,
             };
         }
+
     }
 }

@@ -26,10 +26,10 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/TipoNombramientoes
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarTiposDeNombramiento")]
-        public async Task<List<TipoNombramiento>> GetTipoNombramiento()
+        public async Task<List<TipoNombramiento>> GetCapacitacionesTemarios()
         {
             try
             {
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/TipoNombramientoes/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetTipoNombramiento([FromRoute] int id)
         {
@@ -104,7 +104,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/TipoNombramientoes/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutTipoNombramiento([FromRoute] int id, [FromBody] TipoNombramiento TipoNombramiento)
         {
@@ -120,71 +120,59 @@ namespace bd.swth.web.Controllers.API
                 }
 
                 var existe = Existe(TipoNombramiento);
+                var TipoNombramientoActualizar = (TipoNombramiento)existe.Resultado;
                 if (existe.IsSuccess)
                 {
+                    if (TipoNombramientoActualizar.IdTipoNombramiento == TipoNombramiento.IdTipoNombramiento)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
+                var tiponombramiento = db.TipoNombramiento.Find(TipoNombramiento.IdTipoNombramiento);
 
-                var TipoNombramientoActualizar = await db.TipoNombramiento.Where(x => x.IdTipoNombramiento == id).FirstOrDefaultAsync();
-
-                if (TipoNombramientoActualizar != null)
-                {
-                    try
-                    {
-                        TipoNombramientoActualizar.Nombre = TipoNombramiento.Nombre;
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
+                tiponombramiento.IdRelacionLaboral = TipoNombramiento.IdRelacionLaboral;
+                tiponombramiento.Nombre = TipoNombramiento.Nombre;
+                db.TipoNombramiento.Update(tiponombramiento);
+                await db.SaveChangesAsync();
 
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
+
         }
 
-        // POST: api/TipoNombramientoes
+        // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarTipoNombramiento")]
         public async Task<Response> PostTipoNombramiento([FromBody] TipoNombramiento TipoNombramiento)
@@ -196,7 +184,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = ""
                     };
                 }
 
@@ -215,7 +203,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro,
                 };
 
             }
@@ -239,7 +227,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/TipoNombramientoes/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteTipoNombramiento([FromRoute] int id)
         {
@@ -294,15 +282,15 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(TipoNombramiento TipoNombramiento)
         {
-            var bdd = TipoNombramiento.Nombre;
-            var TipoNombramientorespuesta = db.TipoNombramiento.Where(p => p.Nombre == bdd).FirstOrDefault();
+            var bdd = TipoNombramiento.Nombre.ToUpper().TrimEnd().TrimStart();
+            var TipoNombramientorespuesta = db.TipoNombramiento.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdRelacionLaboral == TipoNombramiento.IdRelacionLaboral).FirstOrDefault();
             if (TipoNombramientorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = TipoNombramientorespuesta,
                 };
 
             }
@@ -313,5 +301,6 @@ namespace bd.swth.web.Controllers.API
                 Resultado = TipoNombramientorespuesta,
             };
         }
+
     }
 }

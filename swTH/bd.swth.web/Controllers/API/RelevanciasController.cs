@@ -26,7 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/Relevancia
+        // GET: api/BasesDatosRelevancias
         [HttpGet]
         [Route("ListarRelevancias")]
         public async Task<List<Relevancia>> GetRelevancias()
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/Relevancia/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetRelevancia([FromRoute] int id)
         {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var relevancia = await db.Relevancia.SingleOrDefaultAsync(m => m.IdRelevancia == id);
+                var Relevancia = await db.Relevancia.SingleOrDefaultAsync(m => m.IdRelevancia == id);
 
-                if (relevancia == null)
+                if (Relevancia == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = relevancia,
+                    Resultado = Relevancia,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,10 +104,19 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/Relevancia
-        [HttpPost]
-        [Route("InsertarRelevancia")]
-        public async Task<Response> PostRelevancia([FromBody] Relevancia relevancia)
+        private async Task Actualizar(Relevancia Relevancia)
+        {
+            var relevancia = db.Relevancia.Find(Relevancia.IdRelevancia);
+
+            relevancia.Nombre = Relevancia.Nombre;
+            relevancia.ComportamientoObservable = Relevancia.ComportamientoObservable;
+            db.Relevancia.Update(relevancia);
+            await db.SaveChangesAsync();
+        }
+
+        // PUT: api/BasesDatos/5
+        [HttpPut("{id}")]
+        public async Task<Response> PutRelevancia([FromRoute] int id, [FromBody] Relevancia Relevancia)
         {
             try
             {
@@ -119,16 +128,96 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ModeloInvalido
                     };
                 }
+                
 
-                var respuesta = Existe(relevancia);
+                var existe = Existe(Relevancia);
+                var RelevanciaActualizar = (Relevancia)existe.Resultado;
+
+                if (existe.IsSuccess)
+                {
+
+
+                    if (RelevanciaActualizar.IdRelevancia == Relevancia.IdRelevancia)
+                    {
+                        if (
+                        Relevancia.Nombre == RelevanciaActualizar.Nombre &&
+                        Relevancia.ComportamientoObservable == RelevanciaActualizar.ComportamientoObservable)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                            };
+                        }
+
+                        await Actualizar(Relevancia);
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+                    }
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                await Actualizar(Relevancia);
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
+                };
+            }
+        }
+
+        // POST: api/BasesDatos
+        [HttpPost]
+        [Route("InsertarRelevancia")]
+        public async Task<Response> PostRelevancia([FromBody] Relevancia Relevancia)
+        {
+            try
+            {
+                
+                var respuesta = Existe(Relevancia);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Relevancia.Add(relevancia);
+                    db.Relevancia.Add(Relevancia);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
                         Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
                     };
                 }
 
@@ -145,7 +234,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -159,78 +248,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/Relevancia/5
-        [HttpPut("{id}")]
-        public async Task<Response> PutRelevancia([FromRoute] int id, [FromBody] Relevancia relevancia)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
-
-                var RelevanciaActualizar = await db.Relevancia.Where(x => x.IdRelevancia == id).FirstOrDefaultAsync();
-                if (RelevanciaActualizar != null)
-                {
-                    try
-                    {
-                        RelevanciaActualizar.ComportamientoObservable = relevancia.ComportamientoObservable;
-                        RelevanciaActualizar.Nombre = relevancia.Nombre;
-                        db.Relevancia.Update(RelevanciaActualizar);
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message=Mensaje.ExisteRegistro
-                };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
-                };
-            }
-        }
-
-        // DELETE: api/ApiWithActions/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteRelevancia([FromRoute] int id)
         {
@@ -269,7 +287,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -283,17 +301,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(Relevancia relevancia)
+        private Response Existe(Relevancia Relevancia)
         {
-            var bdd = relevancia.Nombre.ToUpper().TrimEnd().TrimStart();
-            var Relevanciarespuesta = db.Relevancia.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd = Relevancia.Nombre;
+            var Relevanciarespuesta = db.Relevancia.Where(p => p.Nombre == bdd).FirstOrDefault();
             if (Relevanciarespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una relevancia de igual nombre",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = Relevanciarespuesta,
                 };
 
             }
@@ -304,5 +322,6 @@ namespace bd.swth.web.Controllers.API
                 Resultado = Relevanciarespuesta,
             };
         }
+
     }
 }

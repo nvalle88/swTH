@@ -29,7 +29,7 @@ namespace bd.swth.web.Controllers.API
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarInstitucionesFinancieras")]
-        public async Task<List<InstitucionFinanciera>> GetInstitucionFinanciera()
+        public async Task<List<InstitucionFinanciera>> GetInstitucionesFinancieras()
         {
             try
             {
@@ -104,6 +104,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        private async Task Actualizar(InstitucionFinanciera InstitucionFinanciera)
+        {
+            var institucionfinanciera = db.InstitucionFinanciera.Find(InstitucionFinanciera.IdInstitucionFinanciera);
+
+            institucionfinanciera.Nombre = InstitucionFinanciera.Nombre;
+            institucionfinanciera.SPI = InstitucionFinanciera.SPI;
+            db.InstitucionFinanciera.Update(institucionfinanciera);
+            await db.SaveChangesAsync();
+        }
+
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutInstitucionFinanciera([FromRoute] int id, [FromBody] InstitucionFinanciera InstitucionFinanciera)
@@ -119,9 +129,34 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+
+                
                 var existe = Existe(InstitucionFinanciera);
+                var InstitucionFinancieraActualizar = (InstitucionFinanciera)existe.Resultado;
+
                 if (existe.IsSuccess)
                 {
+
+
+                    if (InstitucionFinancieraActualizar.IdInstitucionFinanciera == InstitucionFinanciera.IdInstitucionFinanciera)
+                    {
+                        if (
+                        InstitucionFinanciera.Nombre == InstitucionFinancieraActualizar.Nombre &&
+                        InstitucionFinanciera.SPI == InstitucionFinancieraActualizar.SPI)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                            };
+                        }
+
+                        await Actualizar(InstitucionFinanciera);
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
@@ -129,77 +164,44 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var InstitucionFinancieraActualizar = await db.InstitucionFinanciera.Where(x => x.IdInstitucionFinanciera == id).FirstOrDefaultAsync();
-
-                if (InstitucionFinancieraActualizar != null)
-                {
-                    try
-                    {
-                        InstitucionFinancieraActualizar.Nombre = InstitucionFinanciera.Nombre;
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
-
+                await Actualizar(InstitucionFinanciera);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarInstitucionesFinancieras")]
+        [Route("InsertarInstitucionFinanciera")]
         public async Task<Response> PostInstitucionFinanciera([FromBody] InstitucionFinanciera InstitucionFinanciera)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
 
+              
                 var respuesta = Existe(InstitucionFinanciera);
                 if (!respuesta.IsSuccess)
                 {
@@ -209,6 +211,15 @@ namespace bd.swth.web.Controllers.API
                     {
                         IsSuccess = true,
                         Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
                     };
                 }
 
@@ -302,7 +313,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = InstitucionFinancierarespuesta,
                 };
 
             }

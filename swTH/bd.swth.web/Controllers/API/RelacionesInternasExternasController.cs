@@ -26,7 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/RelacionesInternasExternas
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarRelacionesInternasExternas")]
         public async Task<List<RelacionesInternasExternas>> GetRelacionesInternasExternas()
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/RelacionesInternasExternas/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetRelacionesInternasExternas([FromRoute] int id)
         {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var relacionesInternasExternas = await db.RelacionesInternasExternas.SingleOrDefaultAsync(m => m.IdRelacionesInternasExternas == id);
+                var RelacionesInternasExternas = await db.RelacionesInternasExternas.SingleOrDefaultAsync(m => m.IdRelacionesInternasExternas == id);
 
-                if (relacionesInternasExternas == null)
+                if (RelacionesInternasExternas == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = relacionesInternasExternas,
+                    Resultado = RelacionesInternasExternas,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -104,64 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/RelacionesInternasExternas
-        [HttpPost]
-        [Route("InsertarRelacionesInternasExternas")]
-        public async Task<Response> PostRelacionesInternasExternas([FromBody] RelacionesInternasExternas relacionesInternasExternas)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
-
-                var respuesta = Existe(relacionesInternasExternas);
-                if (!respuesta.IsSuccess)
-                {
-                    db.RelacionesInternasExternas.Add(relacionesInternasExternas);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
-                };
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
-        // PUT: api/RelacionesInternasExternas/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRelacionesInternasExternas([FromRoute] int id, [FromBody] RelacionesInternasExternas relacionesInternasExternas)
+        public async Task<Response> PutRelacionesInternasExternas([FromRoute] int id, [FromBody] RelacionesInternasExternas RelacionesInternasExternas)
         {
             try
             {
@@ -171,17 +116,26 @@ namespace bd.swth.web.Controllers.API
                     {
                         IsSuccess = false,
                         Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                var existe = Existe(RelacionesInternasExternas);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
 
                 var RelacionesInternasExternasActualizar = await db.RelacionesInternasExternas.Where(x => x.IdRelacionesInternasExternas == id).FirstOrDefaultAsync();
+
                 if (RelacionesInternasExternasActualizar != null)
                 {
                     try
                     {
-
-                        RelacionesInternasExternasActualizar.Descripcion = relacionesInternasExternas.Descripcion;
-                        db.RelacionesInternasExternas.Update(RelacionesInternasExternasActualizar);
+                        RelacionesInternasExternasActualizar.Descripcion = RelacionesInternasExternas.Descripcion;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -197,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -217,7 +171,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message=Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -225,12 +179,67 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // DELETE: api/ApiWithActions/5
+        // POST: api/BasesDatos
+        [HttpPost]
+        [Route("InsertarRelacionesInternasExternas")]
+        public async Task<Response> PostRelacionesInternasExternas([FromBody] RelacionesInternasExternas RelacionesInternasExternas)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                var respuesta = Existe(RelacionesInternasExternas);
+                if (!respuesta.IsSuccess)
+                {
+                    db.RelacionesInternasExternas.Add(RelacionesInternasExternas);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteRelacionesInternasExternas([FromRoute] int id)
         {
@@ -269,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -283,16 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(RelacionesInternasExternas relacionesInternasExternas)
+        private Response Existe(RelacionesInternasExternas RelacionesInternasExternas)
         {
-            var bdd = relacionesInternasExternas.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var RelacionesInternasExternasrespuesta = db.RelacionesInternasExternas.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd = RelacionesInternasExternas.Descripcion;
+            var RelacionesInternasExternasrespuesta = db.RelacionesInternasExternas.Where(p => p.Descripcion == bdd).FirstOrDefault();
             if (RelacionesInternasExternasrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una relación interna y externa de igual descripción",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -304,5 +313,6 @@ namespace bd.swth.web.Controllers.API
                 Resultado = RelacionesInternasExternasrespuesta,
             };
         }
+
     }
 }

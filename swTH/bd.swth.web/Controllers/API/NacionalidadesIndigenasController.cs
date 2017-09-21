@@ -26,14 +26,14 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/NacionalidadIndigenaes
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarNacionalidadesIndigenas")]
-        public async Task<List<NacionalidadIndigena>> GetNacionalidadIndigena()
+        public async Task<List<NacionalidadIndigena>> GetCapacitacionesTemarios()
         {
             try
             {
-                return await db.NacionalidadIndigena.Include(x=>x.Etnia).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.NacionalidadIndigena.Include(x => x.Etnia).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/NacionalidadIndigenaes/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetNacionalidadIndigena([FromRoute] int id)
         {
@@ -104,7 +104,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/NacionalidadIndigenaes/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutNacionalidadIndigena([FromRoute] int id, [FromBody] NacionalidadIndigena NacionalidadIndigena)
         {
@@ -120,73 +120,61 @@ namespace bd.swth.web.Controllers.API
                 }
 
                 var existe = Existe(NacionalidadIndigena);
+                var NacionalidadIndigenaActualizar = (NacionalidadIndigena)existe.Resultado;
                 if (existe.IsSuccess)
                 {
+                    if (NacionalidadIndigenaActualizar.IdNacionalidadIndigena == NacionalidadIndigena.IdNacionalidadIndigena)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
+                var nacionalidadindigena = db.NacionalidadIndigena.Find(NacionalidadIndigena.IdNacionalidadIndigena);
 
-                var NacionalidadIndigenaActualizar = await db.NacionalidadIndigena.Where(x => x.IdNacionalidadIndigena == id).FirstOrDefaultAsync();
-
-                if (NacionalidadIndigenaActualizar != null)
-                {
-                    try
-                    {
-                        NacionalidadIndigenaActualizar.Nombre = NacionalidadIndigena.Nombre;
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
+                nacionalidadindigena.IdEtnia = NacionalidadIndigena.IdEtnia;
+                nacionalidadindigena.Nombre = NacionalidadIndigena.Nombre;
+                db.NacionalidadIndigena.Update(nacionalidadindigena);
+                await db.SaveChangesAsync();
 
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
+
         }
 
-        // POST: api/NacionalidadIndigenaes
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarNacionalidadesIndigenas")]
+        [Route("InsertarNacionalidadIndigena")]
         public async Task<Response> PostNacionalidadIndigena([FromBody] NacionalidadIndigena NacionalidadIndigena)
         {
             try
@@ -196,7 +184,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = ""
                     };
                 }
 
@@ -215,7 +203,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro,
                 };
 
             }
@@ -239,7 +227,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/NacionalidadIndigenaes/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteNacionalidadIndigena([FromRoute] int id)
         {
@@ -294,15 +282,15 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(NacionalidadIndigena NacionalidadIndigena)
         {
-            var bdd = NacionalidadIndigena.Nombre;
-            var NacionalidadIndigenarespuesta = db.NacionalidadIndigena.Where(p => p.Nombre == bdd).FirstOrDefault();
+            var bdd = NacionalidadIndigena.Nombre.ToUpper().TrimEnd().TrimStart();
+            var NacionalidadIndigenarespuesta = db.NacionalidadIndigena.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdEtnia == NacionalidadIndigena.IdEtnia).FirstOrDefault();
             if (NacionalidadIndigenarespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = NacionalidadIndigenarespuesta,
                 };
 
             }
