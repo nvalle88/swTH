@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
@@ -16,24 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/RolesPuesto")]
-    public class RolPuestoController : Controller
+    [Route("api/TiposDeDiscapacidadSustituto")]
+    public class TiposDeDiscapacidadSustitutoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RolPuestoController(SwTHDbContext db)
+        public TiposDeDiscapacidadSustitutoController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/RolesPuesto
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarRolesPuesto")]
-        public async Task<List<RolPuesto>> GetRolesPuestos()
+        [Route("ListarTiposDeDiscapacidadSustituto")]
+        public async Task<List<TipoDiscapacidadSustituto>> GetTipoDiscapacidadSustituto()
         {
             try
             {
-                return await db.RolPuesto.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoDiscapacidadSustituto.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<RolPuesto>();
+                return new List<TipoDiscapacidadSustituto>();
             }
         }
 
-        // GET: api/RolPuesto/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetRolPuesto([FromRoute] int id)
+        public async Task<Response> GetTipoDiscapacidadSustituto([FromRoute] int id)
         {
             try
             {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var rolPuesto = await db.RolPuesto.SingleOrDefaultAsync(m => m.IdRolPuesto == id);
+                var TipoDiscapacidadSustituto = await db.TipoDiscapacidadSustituto.SingleOrDefaultAsync(m => m.IdTipoDiscapacidadSustituto == id);
 
-                if (rolPuesto == null)
+                if (TipoDiscapacidadSustituto == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
-                    Resultado = rolPuesto,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = TipoDiscapacidadSustituto,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,69 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // POST: api/RolPuesto
-        [HttpPost]
-        [Route("InsertarRolPuesto")]
-        public async Task<Response> PostRolPuesto([FromBody] RolPuesto rolPuesto)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Módelo inválido"
-                    };
-                }
-
-                var respuesta = Existe(rolPuesto);
-                if (!respuesta.IsSuccess)
-                {
-                    db.RolPuesto.Add(rolPuesto);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = "OK"
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "OK"
-                };
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Error ",
-                };
-            }
-        }
-
-        // PUT: api/RolPuesto/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRolPuesto([FromRoute] int id, [FromBody] RolPuesto rolPuesto)
+        public async Task<Response> PutTipoDiscapacidadSustituto([FromRoute] int id, [FromBody] TipoDiscapacidadSustituto TipoDiscapacidadSustituto)
         {
             try
             {
@@ -170,24 +115,33 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var RolPuestoActualizar = await db.RolPuesto.Where(x => x.IdRolPuesto == id).FirstOrDefaultAsync();
-                if (RolPuestoActualizar != null)
+                var existe = Existe(TipoDiscapacidadSustituto);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var TipoDiscapacidadSustitutoActualizar = await db.TipoDiscapacidadSustituto.Where(x => x.IdTipoDiscapacidadSustituto == id).FirstOrDefaultAsync();
+
+                if (TipoDiscapacidadSustitutoActualizar != null)
                 {
                     try
                     {
-
-                        RolPuestoActualizar.Nombre = rolPuesto.Nombre;
-                        db.RolPuesto.Update(RolPuestoActualizar);
+                        TipoDiscapacidadSustitutoActualizar.Nombre = TipoDiscapacidadSustituto.Nombre;
                         await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
+                            Message = Mensaje.Satisfactorio,
                         };
 
                     }
@@ -197,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -206,7 +160,7 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = "Error ",
+                            Message = Mensaje.Error,
                         };
                     }
                 }
@@ -217,7 +171,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe"
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -225,14 +179,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Excepción"
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public async Task<Response> DeleteRolPuesto([FromRoute] int id)
+        // POST: api/BasesDatos
+        [HttpPost]
+        [Route("InsertarTipoDiscapacidadSustituto")]
+        public async Task<Response> PostTipoDiscapacidadSustituto([FromBody] TipoDiscapacidadSustituto TipoDiscapacidadSustituto)
         {
             try
             {
@@ -241,27 +196,28 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var respuesta = await db.RolPuesto.SingleOrDefaultAsync(m => m.IdRolPuesto == id);
-                if (respuesta == null)
+                var respuesta = Existe(TipoDiscapacidadSustituto);
+                if (!respuesta.IsSuccess)
                 {
+                    db.TipoDiscapacidadSustituto.Add(TipoDiscapacidadSustituto);
+                    await db.SaveChangesAsync();
                     return new Response
                     {
-                        IsSuccess = false,
-                        Message = "No existe ",
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
                     };
                 }
-                db.RolPuesto.Remove(respuesta);
-                await db.SaveChangesAsync();
 
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = "Eliminado ",
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
                 };
+
             }
             catch (Exception ex)
             {
@@ -269,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -278,21 +234,74 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private Response Existe(RolPuesto rolPuesto)
+        // DELETE: api/BasesDatos/5
+        [HttpDelete("{id}")]
+        public async Task<Response> DeleteTipoDiscapacidadSustituto([FromRoute] int id)
         {
-            var bdd = rolPuesto.Nombre.ToUpper().TrimEnd().TrimStart();
-            var RolPuestorespuesta = db.RolPuesto.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (RolPuestorespuesta != null)
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.TipoDiscapacidadSustituto.SingleOrDefaultAsync(m => m.IdTipoDiscapacidadSustituto == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.TipoDiscapacidadSustituto.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        private Response Existe(TipoDiscapacidadSustituto TipoDiscapacidadSustituto)
+        {
+            var bdd = TipoDiscapacidadSustituto.Nombre;
+            var TipoDiscapacidadSustitutorespuesta = db.TipoDiscapacidadSustituto.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (TipoDiscapacidadSustitutorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un rol de puesto de igual nombre",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -301,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = RolPuestorespuesta,
+                Resultado = TipoDiscapacidadSustitutorespuesta,
             };
         }
+
     }
 }

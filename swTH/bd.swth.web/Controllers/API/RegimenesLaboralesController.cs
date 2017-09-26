@@ -1,39 +1,38 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
+using bd.swth.entidades.Utils;
 using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
-using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
+using System;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Utiles;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoRMU")]
-    public class TipoRMUController : Controller
+    [Route("api/RegimenesLaborales")]
+    public class RegimenesLaboralesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoRMUController(SwTHDbContext db)
+        public RegimenesLaboralesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/ListarTipoRMU
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoRMU")]
-        public async Task<List<TipoRMU>> GetTipoRMU()
+        [Route("ListarRegimenesLaborales")]
+        public async Task<List<RegimenLaboral>> GetRegimenLaboral()
         {
             try
             {
-                return await db.TipoRMU.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.RegimenLaboral.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,20 +40,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<TipoRMU>();
+                return new List<RegimenLaboral>();
             }
         }
 
-
-        // GET: api/TipoRMU/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoRMU([FromRoute] int id)
+        public async Task<Response> GetRegimenLaboral([FromRoute] int id)
         {
             try
             {
@@ -63,26 +61,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var TipoRMU = await db.TipoRMU.SingleOrDefaultAsync(m => m.IdTipoRMU == id);
+                var RegimenLaboral = await db.RegimenLaboral.SingleOrDefaultAsync(m => m.IdRegimenLaboral == id);
 
-                if (TipoRMU == null)
+                if (RegimenLaboral == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
-                    Resultado = TipoRMU,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = RegimenLaboral,
                 };
             }
             catch (Exception ex)
@@ -91,7 +89,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -100,15 +98,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-
-        // PUT: api/TipoRMU/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoRMU([FromRoute] int id, [FromBody] TipoRMU TipoRMU)
+        public async Task<Response> PutRegimenLaboral([FromRoute] int id, [FromBody] RegimenLaboral RegimenLaboral)
         {
             try
             {
@@ -117,23 +114,33 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var TipoRMUActualizar = await db.TipoRMU.Where(x => x.IdTipoRMU == id).FirstOrDefaultAsync();
-                if (TipoRMUActualizar != null)
+                var existe = Existe(RegimenLaboral);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var RegimenLaboralActualizar = await db.RegimenLaboral.Where(x => x.IdRegimenLaboral == id).FirstOrDefaultAsync();
+
+                if (RegimenLaboralActualizar != null)
                 {
                     try
                     {
-                        TipoRMUActualizar.Descripcion = TipoRMU.Descripcion;
-                        db.TipoRMU.Update(TipoRMUActualizar);
+                        RegimenLaboralActualizar.Nombre = RegimenLaboral.Nombre;
                         await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
+                            Message = Mensaje.Satisfactorio,
                         };
 
                     }
@@ -143,7 +150,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = "Se ha producido una exepción",
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -152,7 +159,7 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = "Error ",
+                            Message = Mensaje.Error,
                         };
                     }
                 }
@@ -163,7 +170,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe"
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -171,15 +178,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Excepción"
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // POST: api/TipoRMU
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoRMU")]
-        public async Task<Response> PostTipoRMU([FromBody] TipoRMU TipoRMU)
+        [Route("InsertarRegimenLaboral")]
+        public async Task<Response> PostRegimenLaboral([FromBody] RegimenLaboral RegimenLaboral)
         {
             try
             {
@@ -188,26 +195,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var respuesta = Existe(TipoRMU);
+                var respuesta = Existe(RegimenLaboral);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoRMU.Add(TipoRMU);
+                    db.RegimenLaboral.Add(RegimenLaboral);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -217,7 +224,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -226,14 +233,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // DELETE: api/TipoRMU/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoRMU([FromRoute] int id)
+        public async Task<Response> DeleteRegimenLaboral([FromRoute] int id)
         {
             try
             {
@@ -242,26 +249,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var respuesta = await db.TipoRMU.SingleOrDefaultAsync(m => m.IdTipoRMU == id);
+                var respuesta = await db.RegimenLaboral.SingleOrDefaultAsync(m => m.IdRegimenLaboral == id);
                 if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoRMU.Remove(respuesta);
+                db.RegimenLaboral.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -270,7 +277,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -279,26 +286,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private bool TipoRMUExists(string nombre)
+        private Response Existe(RegimenLaboral RegimenLaboral)
         {
-            return db.TipoRMU.Any(e => e.Descripcion == nombre);
-        }
-
-        public Response Existe(TipoRMU TipoRMU)
-        {
-            var bdd = TipoRMU.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.TipoRMU.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = RegimenLaboral.Nombre;
+            var RegimenLaboralrespuesta = db.RegimenLaboral.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (RegimenLaboralrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un tipoRMU de igual descripcion",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -307,8 +309,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = RegimenLaboralrespuesta,
             };
         }
+
     }
 }

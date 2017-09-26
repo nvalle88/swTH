@@ -4,36 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Respuestas")]
-    public class RespuestaController : Controller
+    [Route("api/TiposRMU")]
+    public class TiposRMUController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RespuestaController(SwTHDbContext db)
+        public TiposRMUController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/Respuesta
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarRespuestas")]
-        public async Task<List<Respuesta>> GetRespuestas()
+        [Route("ListarTiposRMU")]
+        public async Task<List<TipoRMU>> GetTipoRMU()
         {
             try
             {
-                return await db.Respuesta.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoRMU.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<Respuesta>();
+                return new List<TipoRMU>();
             }
         }
 
-        // GET: api/Respuesta/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetRespuesta([FromRoute] int id)
+        public async Task<Response> GetTipoRMU([FromRoute] int id)
         {
             try
             {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var respuesta = await db.Respuesta.SingleOrDefaultAsync(m => m.IdRespuesta == id);
+                var TipoRMU = await db.TipoRMU.SingleOrDefaultAsync(m => m.IdTipoRMU == id);
 
-                if (respuesta == null)
+                if (TipoRMU == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
-                    Resultado = respuesta,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = TipoRMU,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
-        
-        // PUT: api/Respuesta/5
+
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRespuesta([FromRoute] int id, [FromBody] Respuesta respuesta)
+        public async Task<Response> PutTipoRMU([FromRoute] int id, [FromBody] TipoRMU TipoRMU)
         {
             try
             {
@@ -115,24 +115,33 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var respuestaActualizar = await db.Respuesta.Where(x => x.IdRespuesta == id).FirstOrDefaultAsync();
-                if (respuestaActualizar != null)
+                var existe = Existe(TipoRMU);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var TipoRMUActualizar = await db.TipoRMU.Where(x => x.IdTipoRMU == id).FirstOrDefaultAsync();
+
+                if (TipoRMUActualizar != null)
                 {
                     try
                     {
-
-                        respuestaActualizar.Nombre = respuesta.Nombre;
-                        db.Respuesta.Update(respuestaActualizar);
+                        TipoRMUActualizar.Descripcion = TipoRMU.Descripcion;
                         await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
+                            Message = Mensaje.Satisfactorio,
                         };
 
                     }
@@ -142,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -151,7 +160,7 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = "Error ",
+                            Message = Mensaje.Error,
                         };
                     }
                 }
@@ -162,7 +171,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe"
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -170,15 +179,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Excepción"
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // POST: api/Respuesta
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarRespuesta")]
-        public async Task<Response> PostRespuesta([FromBody] Respuesta respuesta)
+        [Route("InsertarTipoRMU")]
+        public async Task<Response> PostTipoRMU([FromBody] TipoRMU TipoRMU)
         {
             try
             {
@@ -187,26 +196,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var respuestaResp = Existe(respuesta);
-                if (!respuestaResp.IsSuccess)
+                var respuesta = Existe(TipoRMU);
+                if (!respuesta.IsSuccess)
                 {
-                    db.Respuesta.Add(respuesta);
+                    db.TipoRMU.Add(TipoRMU);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -216,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -225,14 +234,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // DELETE: api/ApiWithActions/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteRespuesta([FromRoute] int id)
+        public async Task<Response> DeleteTipoRMU([FromRoute] int id)
         {
             try
             {
@@ -241,26 +250,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var respuesta = await db.Respuesta.SingleOrDefaultAsync(m => m.IdRespuesta == id);
+                var respuesta = await db.TipoRMU.SingleOrDefaultAsync(m => m.IdTipoRMU == id);
                 if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.Respuesta.Remove(respuesta);
+                db.TipoRMU.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -269,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -278,21 +287,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private Response Existe(Respuesta respuesta)
+        private Response Existe(TipoRMU TipoRMU)
         {
-            var bdd = respuesta.Nombre.ToUpper().TrimEnd().TrimStart();
-            var Respuestarespuesta = db.Respuesta.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (Respuestarespuesta != null)
+            var bdd = TipoRMU.Descripcion;
+            var TipoRMUrespuesta = db.TipoRMU.Where(p => p.Descripcion == bdd).FirstOrDefault();
+            if (TipoRMUrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una respuesta de igual nombre",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -301,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = Respuestarespuesta,
+                Resultado = TipoRMUrespuesta,
             };
         }
+
     }
 }

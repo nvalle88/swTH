@@ -13,27 +13,27 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 
-namespace bd.swrm.web.Controllers.API
+namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TrabajoEquipoIniciativaLiderazgo")]
-    public class TrabajoEquipoIniciativaLiderazgoController : Controller
+    [Route("api/TiposDeNombramiento")]
+    public class TiposDeNombramientoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TrabajoEquipoIniciativaLiderazgoController(SwTHDbContext db)
+        public TiposDeNombramientoController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/TrabajoEquipoIniciativaLiderazgo
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTrabajoEquipoIniciativaLiderazgo")]
-        public async Task<List<TrabajoEquipoIniciativaLiderazgo>> GetTrabajoEquipoIniciativaLiderazgo()
+        [Route("ListarTiposDeNombramiento")]
+        public async Task<List<TipoNombramiento>> GetCapacitacionesTemarios()
         {
             try
             {
-                return await db.TrabajoEquipoIniciativaLiderazgo.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoNombramiento.Include(x => x.RelacionLaboral).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swrm.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<TrabajoEquipoIniciativaLiderazgo>();
+                return new List<TipoNombramiento>();
             }
         }
 
-        // GET: api/TrabajoEquipoIniciativaLiderazgo/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTrabajoEquipoIniciativaLiderazgo([FromRoute] int id)
+        public async Task<Response> GetTipoNombramiento([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var trabajoEquipoIniciativaLiderazgo = await db.TrabajoEquipoIniciativaLiderazgo.SingleOrDefaultAsync(m => m.IdTrabajoEquipoIniciativaLiderazgo == id);
+                var TipoNombramiento = await db.TipoNombramiento.SingleOrDefaultAsync(m => m.IdTipoNombramiento == id);
 
-                if (trabajoEquipoIniciativaLiderazgo == null)
+                if (TipoNombramiento == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swrm.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = trabajoEquipoIniciativaLiderazgo,
+                    Resultado = TipoNombramiento,
                 };
             }
             catch (Exception ex)
@@ -104,9 +104,9 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // PUT: api/TrabajoEquipoIniciativaLiderazgo/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTrabajoEquipoIniciativaLiderazgo([FromRoute] int id, [FromBody] TrabajoEquipoIniciativaLiderazgo trabajoEquipoIniciativaLiderazgo)
+        public async Task<Response> PutTipoNombramiento([FromRoute] int id, [FromBody] TipoNombramiento TipoNombramiento)
         {
             try
             {
@@ -119,61 +119,63 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var trabajoEquipoIniciativaLiderazgoActualizar = await db.TrabajoEquipoIniciativaLiderazgo.Where(x => x.IdTrabajoEquipoIniciativaLiderazgo == id).FirstOrDefaultAsync();
-                if (trabajoEquipoIniciativaLiderazgoActualizar != null)
+                var existe = Existe(TipoNombramiento);
+                var TipoNombramientoActualizar = (TipoNombramiento)existe.Resultado;
+                if (existe.IsSuccess)
                 {
-                    try
+                    if (TipoNombramientoActualizar.IdTipoNombramiento == TipoNombramiento.IdTipoNombramiento)
                     {
-                        trabajoEquipoIniciativaLiderazgoActualizar.Nombre = trabajoEquipoIniciativaLiderazgo.Nombre;
-                        db.TrabajoEquipoIniciativaLiderazgo.Update(trabajoEquipoIniciativaLiderazgoActualizar);
-                        await db.SaveChangesAsync();
-
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
                         };
-
                     }
-                    catch (Exception ex)
+                    return new Response
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
                 }
+                var tiponombramiento = db.TipoNombramiento.Find(TipoNombramiento.IdTipoNombramiento);
+
+                tiponombramiento.IdRelacionLaboral = TipoNombramiento.IdRelacionLaboral;
+                tiponombramiento.Nombre = TipoNombramiento.Nombre;
+                db.TipoNombramiento.Update(tiponombramiento);
+                await db.SaveChangesAsync();
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
+
         }
 
-        // POST: api/TrabajoEquipoIniciativaLiderazgo
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTrabajoEquipoIniciativaLiderazgo")]
-        public async Task<Response> PostTrabajoEquipoIniciativaLiderazgo([FromBody] TrabajoEquipoIniciativaLiderazgo trabajoEquipoIniciativaLiderazgo)
+        [Route("InsertarTipoNombramiento")]
+        public async Task<Response> PostTipoNombramiento([FromBody] TipoNombramiento TipoNombramiento)
         {
             try
             {
@@ -182,14 +184,14 @@ namespace bd.swrm.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = ""
                     };
                 }
 
-                var respuesta = Existe(trabajoEquipoIniciativaLiderazgo);
+                var respuesta = Existe(TipoNombramiento);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TrabajoEquipoIniciativaLiderazgo.Add(trabajoEquipoIniciativaLiderazgo);
+                    db.TipoNombramiento.Add(TipoNombramiento);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -201,7 +203,7 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro,
                 };
 
             }
@@ -225,9 +227,9 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // DELETE: api/TrabajoEquipoIniciativaLiderazgo/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTrabajoEquipoIniciativaLiderazgo([FromRoute] int id)
+        public async Task<Response> DeleteTipoNombramiento([FromRoute] int id)
         {
             try
             {
@@ -240,7 +242,7 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TrabajoEquipoIniciativaLiderazgo.SingleOrDefaultAsync(m => m.IdTrabajoEquipoIniciativaLiderazgo == id);
+                var respuesta = await db.TipoNombramiento.SingleOrDefaultAsync(m => m.IdTipoNombramiento == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -249,7 +251,7 @@ namespace bd.swrm.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TrabajoEquipoIniciativaLiderazgo.Remove(respuesta);
+                db.TipoNombramiento.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -278,22 +280,17 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        private bool TrabajoEquipoIniciativaLiderazgoExists(string nombre)
+        private Response Existe(TipoNombramiento TipoNombramiento)
         {
-            return db.TrabajoEquipoIniciativaLiderazgo.Any(e => e.Nombre == nombre);
-        }
-
-        public Response Existe(TrabajoEquipoIniciativaLiderazgo trabajoEquipoIniciativaLiderazgo)
-        {
-            var bdd = trabajoEquipoIniciativaLiderazgo.Nombre.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.TrabajoEquipoIniciativaLiderazgo.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = TipoNombramiento.Nombre.ToUpper().TrimEnd().TrimStart();
+            var TipoNombramientorespuesta = db.TipoNombramiento.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdRelacionLaboral == TipoNombramiento.IdRelacionLaboral).FirstOrDefault();
+            if (TipoNombramientorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = TipoNombramientorespuesta,
                 };
 
             }
@@ -301,7 +298,7 @@ namespace bd.swrm.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = TipoNombramientorespuesta,
             };
         }
 

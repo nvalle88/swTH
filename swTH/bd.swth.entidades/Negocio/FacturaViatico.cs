@@ -51,7 +51,7 @@ namespace bd.swth.entidades.Negocio
 
         [Display(Name = "Itinerario:")]
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
-        public int ItinerarioViaticoId { get; set; }
+        public int IdItinerarioViatico { get; set; }
         public virtual ItinerarioViatico ItinerarioViatico { get; set; }
 
         //Propiedades Virtuales Referencias a otras clases

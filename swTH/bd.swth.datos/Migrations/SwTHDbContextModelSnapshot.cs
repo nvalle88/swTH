@@ -580,6 +580,7 @@ namespace bd.swth.datos.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
+                        .HasColumnName("Name")
                         .HasMaxLength(50);
 
                     b.HasKey("IdCiudad")
@@ -1609,7 +1610,8 @@ namespace bd.swth.datos.Migrations
                     b.Property<int>("IdEvaluacionInduccion")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int>("MaximoPuntos");
+                    b.Property<int>("MaximoPuntos")
+                        .HasColumnName("MaximoPuntos");
 
                     b.Property<int>("MinimoAprobar")
                         .HasColumnName("MinimoAprobar");
@@ -1890,10 +1892,10 @@ namespace bd.swth.datos.Migrations
 
                     b.Property<int>("IdEmpleado");
 
-                    b.Property<bool?>("InternoMismoProceso")
+                    b.Property<bool?>("InternoMismoInstitucionFinanciera")
                         .IsRequired();
 
-                    b.Property<bool?>("InternoOtroProceso")
+                    b.Property<bool?>("InternoOtroInstitucionFinanciera")
                         .IsRequired();
 
                     b.Property<string>("MisionPuesto")
@@ -2044,6 +2046,25 @@ namespace bd.swth.datos.Migrations
                         .HasName("PK_GrupoOcupacional");
 
                     b.ToTable("GrupoOcupacional");
+                });
+
+            modelBuilder.Entity("bd.swth.entidades.Negocio.ImpuestoRentaParametros", b =>
+                {
+                    b.Property<int>("IdImpuestoRentaParametros")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<decimal>("ExcesoHasta");
+
+                    b.Property<decimal>("FraccionBasica");
+
+                    b.Property<int?>("ImpuestoFraccionBasica")
+                        .IsRequired();
+
+                    b.Property<int>("PorcentajeImpuestoFraccionExcedente");
+
+                    b.HasKey("IdImpuestoRentaParametros");
+
+                    b.ToTable("ImpuestoRentaParametros");
                 });
 
             modelBuilder.Entity("bd.swth.entidades.Negocio.Indicador", b =>
@@ -2353,6 +2374,20 @@ namespace bd.swth.datos.Migrations
                     b.ToTable("InstitucionFinanciera");
                 });
 
+            modelBuilder.Entity("bd.swth.entidades.Negocio.InstruccionFormal", b =>
+                {
+                    b.Property<int>("IdInstruccionFormal")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(20);
+
+                    b.HasKey("IdInstruccionFormal");
+
+                    b.ToTable("InstruccionFormal");
+                });
+
             modelBuilder.Entity("bd.swth.entidades.Negocio.ItemViatico", b =>
                 {
                     b.Property<int>("IdItemViatico")
@@ -2656,6 +2691,20 @@ namespace bd.swth.datos.Migrations
                         .HasName("PK_PaquetesInformaticos");
 
                     b.ToTable("PaquetesInformaticos");
+                });
+
+            modelBuilder.Entity("bd.swth.entidades.Negocio.ParametrosGenerales", b =>
+                {
+                    b.Property<int>("IdParametrosGenerales")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Nombre");
+
+                    b.Property<string>("Valor");
+
+                    b.HasKey("IdParametrosGenerales");
+
+                    b.ToTable("ParametrosGenerales");
                 });
 
             modelBuilder.Entity("bd.swth.entidades.Negocio.Parentesco", b =>
@@ -3200,7 +3249,8 @@ namespace bd.swth.datos.Migrations
             modelBuilder.Entity("bd.swth.entidades.Negocio.RelacionesInternasExternas", b =>
                 {
                     b.Property<int>("IdRelacionesInternasExternas")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("RelacionesInternasExternasId");
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
@@ -3295,7 +3345,8 @@ namespace bd.swth.datos.Migrations
             modelBuilder.Entity("bd.swth.entidades.Negocio.Respuesta", b =>
                 {
                     b.Property<int>("IdRespuesta")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("RespuestaId");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -3920,6 +3971,20 @@ namespace bd.swth.datos.Migrations
                         .HasName("PK_TipoDiscapacidad");
 
                     b.ToTable("TipoDiscapacidad");
+                });
+
+            modelBuilder.Entity("bd.swth.entidades.Negocio.TipoDiscapacidadSustituto", b =>
+                {
+                    b.Property<int>("IdTipoDiscapacidadSustituto")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(50);
+
+                    b.HasKey("IdTipoDiscapacidadSustituto");
+
+                    b.ToTable("TipoDiscapacidadSustituto");
                 });
 
             modelBuilder.Entity("bd.swth.entidades.Negocio.TipoEnfermedad", b =>

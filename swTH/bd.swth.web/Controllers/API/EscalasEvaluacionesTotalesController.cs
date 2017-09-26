@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                                       Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -62,7 +62,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -73,14 +73,14 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
+                    Message = Mensaje.Satisfactorio,
                     Resultado = EscalaEvaluacionTotal,
                 };
             }
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                                       Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,9 +99,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
+        }
+
+        private async Task Actualizar(EscalaEvaluacionTotal escalaEvaluacionTotal)
+        {
+            var escalaevatotal = db.EscalaEvaluacionTotal.Find(escalaEvaluacionTotal.IdEscalaEvaluacionTotal);
+
+            escalaevatotal.Name = escalaEvaluacionTotal.Name;
+            escalaevatotal.Descripcion = escalaEvaluacionTotal.Descripcion;
+            escalaevatotal.PorcientoDesde = escalaEvaluacionTotal.PorcientoDesde;
+            escalaevatotal.PorcientoHasta = escalaEvaluacionTotal.PorcientoHasta;
+            db.EscalaEvaluacionTotal.Update(escalaevatotal);
+            await db.SaveChangesAsync();
         }
 
         // PUT: api/BasesDatos/5
@@ -115,23 +127,47 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
 
-                if (EscalaEvaluacionTotal.PorcientoDesde > EscalaEvaluacionTotal.PorcientoHasta)
+                if (EscalaEvaluacionTotal.PorcientoDesde > EscalaEvaluacionTotal.PorcientoHasta || EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotal.PorcientoHasta)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "El porcentaje desde no puede ser mayor el porcentaje hasta"
+                        Message = "El porcentaje desde no puede ser mayor o igual el porcentaje hasta"
                     };
                 }
 
                 var existe = Existe(EscalaEvaluacionTotal);
+                var EscalaEvaluacionTotalActualizar = (EscalaEvaluacionTotal)existe.Resultado;
+
                 if (existe.IsSuccess)
                 {
+
+
+                    if (EscalaEvaluacionTotalActualizar.IdEscalaEvaluacionTotal == EscalaEvaluacionTotal.IdEscalaEvaluacionTotal)
+                    {
+                        if (EscalaEvaluacionTotal.Name == EscalaEvaluacionTotalActualizar.Name &&
+                        EscalaEvaluacionTotal.Descripcion == EscalaEvaluacionTotalActualizar.Descripcion &&
+                        EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotalActualizar.PorcientoDesde &&
+                        EscalaEvaluacionTotal.PorcientoHasta == EscalaEvaluacionTotalActualizar.PorcientoHasta)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                            };
+                        }
+
+                        await Actualizar(EscalaEvaluacionTotal);
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
@@ -139,64 +175,34 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EscalaEvaluacionTotalActualizar = await db.EscalaEvaluacionTotal.Where(x => x.IdEscalaEvaluacionTotal == id).FirstOrDefaultAsync();
-                if (EscalaEvaluacionTotalActualizar != null)
-                {
-                    try
-                    {
-
-                        EscalaEvaluacionTotalActualizar.Descripcion = EscalaEvaluacionTotal.Descripcion;
-                        EscalaEvaluacionTotalActualizar.Nombre = EscalaEvaluacionTotal.Nombre;
-                        EscalaEvaluacionTotalActualizar.PorcientoDesde = EscalaEvaluacionTotal.PorcientoDesde;
-                        EscalaEvaluacionTotalActualizar.PorcientoHasta = EscalaEvaluacionTotal.PorcientoHasta;
-                        db.EscalaEvaluacionTotal.Update(EscalaEvaluacionTotalActualizar);
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = "Ok",
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Error ",
-                        };
-                    }
-                }
-
-
-
-
+                await Actualizar(EscalaEvaluacionTotal);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "Existe"
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "Excepción"
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
-        }
+            }
 
         // POST: api/BasesDatos
         [HttpPost]
@@ -205,13 +211,13 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-            
-                if (EscalaEvaluacionTotal.PorcientoDesde> EscalaEvaluacionTotal.PorcientoHasta)
+
+                if (EscalaEvaluacionTotal.PorcientoDesde > EscalaEvaluacionTotal.PorcientoHasta || EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotal.PorcientoHasta)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "El porcentaje desde no puede ser mayor el porcentaje hasta"
+                        Message = "El porcentaje desde no puede ser mayor o igual el porcentaje hasta"
                     };
                 }
 
@@ -223,7 +229,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
@@ -232,14 +238,14 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = ""
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -249,7 +255,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                                       Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -258,7 +264,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
@@ -274,7 +280,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -284,7 +290,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
                 db.EscalaEvaluacionTotal.Remove(respuesta);
@@ -293,7 +299,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -302,7 +308,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                                       Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -311,22 +317,22 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
         private Response Existe(EscalaEvaluacionTotal EscalaEvaluacionTotal)
         {
-            var bdd = EscalaEvaluacionTotal.Nombre.ToUpper().TrimEnd().TrimStart();
-            var EscalaEvaluacionTotalrespuesta = db.EscalaEvaluacionTotal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd = EscalaEvaluacionTotal.Name;
+            var EscalaEvaluacionTotalrespuesta = db.EscalaEvaluacionTotal.Where(p => p.Name == bdd).FirstOrDefault();
             if (EscalaEvaluacionTotalrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una escala de evaluación total de igual nombre",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = EscalaEvaluacionTotalrespuesta,
                 };
 
             }

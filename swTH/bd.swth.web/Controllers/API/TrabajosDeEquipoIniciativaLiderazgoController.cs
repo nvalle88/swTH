@@ -11,29 +11,29 @@ using bd.log.guardar.Enumeradores;
 using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Utiles;
+using bd.swth.entidades.Utils;
 
-namespace bd.swth.web.Controllers.API
+namespace bd.swrm.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoPermiso")]
-    public class TipoPermisoController : Controller
+    [Route("api/TrabajosDeEquipoIniciativaLiderazgo")]
+    public class TrabajosDeEquipoIniciativaLiderazgoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoPermisoController(SwTHDbContext db)
+        public TrabajosDeEquipoIniciativaLiderazgoController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/ListarTipoPermiso
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoPermiso")]
-        public async Task<List<TipoPermiso>> GetTipoPermiso()
+        [Route("ListarTrabajosDeEquipoIniciativaLiderazgo")]
+        public async Task<List<TrabajoEquipoIniciativaLiderazgo>> GetTrabajoEquipoIniciativaLiderazgo()
         {
             try
             {
-                return await db.TipoPermiso.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TrabajoEquipoIniciativaLiderazgo.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,20 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<TipoPermiso>();
+                return new List<TrabajoEquipoIniciativaLiderazgo>();
             }
         }
 
-
-        // GET: api/TipoPermiso/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoPermiso([FromRoute] int id)
+        public async Task<Response> GetTrabajoEquipoIniciativaLiderazgo([FromRoute] int id)
         {
             try
             {
@@ -63,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var TipoPermiso = await db.TipoPermiso.SingleOrDefaultAsync(m => m.IdTipoPermiso == id);
+                var TrabajoEquipoIniciativaLiderazgo = await db.TrabajoEquipoIniciativaLiderazgo.SingleOrDefaultAsync(m => m.IdTrabajoEquipoIniciativaLiderazgo == id);
 
-                if (TipoPermiso == null)
+                if (TrabajoEquipoIniciativaLiderazgo == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
-                    Resultado = TipoPermiso,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = TrabajoEquipoIniciativaLiderazgo,
                 };
             }
             catch (Exception ex)
@@ -91,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -100,15 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-
-        // PUT: api/TipoPermiso/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoPermiso([FromRoute] int id, [FromBody] TipoPermiso TipoPermiso)
+        public async Task<Response> PutTrabajoEquipoIniciativaLiderazgo([FromRoute] int id, [FromBody] TrabajoEquipoIniciativaLiderazgo TrabajoEquipoIniciativaLiderazgo)
         {
             try
             {
@@ -117,23 +115,33 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var TipoPermisoActualizar = await db.TipoPermiso.Where(x => x.IdTipoPermiso == id).FirstOrDefaultAsync();
-                if (TipoPermisoActualizar != null)
+                var existe = Existe(TrabajoEquipoIniciativaLiderazgo);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var TrabajoEquipoIniciativaLiderazgoActualizar = await db.TrabajoEquipoIniciativaLiderazgo.Where(x => x.IdTrabajoEquipoIniciativaLiderazgo == id).FirstOrDefaultAsync();
+
+                if (TrabajoEquipoIniciativaLiderazgoActualizar != null)
                 {
                     try
                     {
-                        TipoPermisoActualizar.Nombre = TipoPermiso.Nombre;
-                        db.TipoPermiso.Update(TipoPermisoActualizar);
+                        TrabajoEquipoIniciativaLiderazgoActualizar.Nombre = TrabajoEquipoIniciativaLiderazgo.Nombre;
                         await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
+                            Message = Mensaje.Satisfactorio,
                         };
 
                     }
@@ -143,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = "Se ha producido una exepción",
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -152,7 +160,7 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = "Error ",
+                            Message = Mensaje.Error,
                         };
                     }
                 }
@@ -163,7 +171,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe"
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -171,15 +179,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Excepción"
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // POST: api/TipoPermiso
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoPermiso")]
-        public async Task<Response> PostTipoPermiso([FromBody] TipoPermiso TipoPermiso)
+        [Route("InsertarTrabajoEquipoIniciativaLiderazgo")]
+        public async Task<Response> PostTrabajoEquipoIniciativaLiderazgo([FromBody] TrabajoEquipoIniciativaLiderazgo TrabajoEquipoIniciativaLiderazgo)
         {
             try
             {
@@ -188,26 +196,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var respuesta = Existe(TipoPermiso);
+                var respuesta = Existe(TrabajoEquipoIniciativaLiderazgo);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoPermiso.Add(TipoPermiso);
+                    db.TrabajoEquipoIniciativaLiderazgo.Add(TrabajoEquipoIniciativaLiderazgo);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -217,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -226,14 +234,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // DELETE: api/TipoPermiso/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoPermiso([FromRoute] int id)
+        public async Task<Response> DeleteTrabajoEquipoIniciativaLiderazgo([FromRoute] int id)
         {
             try
             {
@@ -242,26 +250,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var respuesta = await db.TipoPermiso.SingleOrDefaultAsync(m => m.IdTipoPermiso == id);
+                var respuesta = await db.TrabajoEquipoIniciativaLiderazgo.SingleOrDefaultAsync(m => m.IdTrabajoEquipoIniciativaLiderazgo == id);
                 if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoPermiso.Remove(respuesta);
+                db.TrabajoEquipoIniciativaLiderazgo.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -270,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -279,26 +287,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private bool TipoPermisoExists(string nombre)
+        private Response Existe(TrabajoEquipoIniciativaLiderazgo TrabajoEquipoIniciativaLiderazgo)
         {
-            return db.TipoPermiso.Any(e => e.Nombre == nombre);
-        }
-
-        public Response Existe(TipoPermiso TipoPermiso)
-        {
-            var bdd = TipoPermiso.Nombre.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.TipoPermiso.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = TrabajoEquipoIniciativaLiderazgo.Nombre;
+            var TrabajoEquipoIniciativaLiderazgorespuesta = db.TrabajoEquipoIniciativaLiderazgo.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (TrabajoEquipoIniciativaLiderazgorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un permiso de igual nombre",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -307,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = TrabajoEquipoIniciativaLiderazgorespuesta,
             };
         }
+
     }
 }

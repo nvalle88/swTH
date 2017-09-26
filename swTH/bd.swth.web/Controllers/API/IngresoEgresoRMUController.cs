@@ -2,37 +2,38 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
-using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Utiles;
+using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoSangre")]
-    public class TipoSangreController : Controller
+    [Route("api/IngresoEgresoRMU")]
+    public class IngresoEgresoRMUController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoSangreController(SwTHDbContext db)
+        public IngresoEgresoRMUController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/ListarTipoSangre
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoSangre")]
-        public async Task<List<TipoSangre>> GetTipoSangre()
+        [Route("ListarIngresoEgresoRMU")]
+        public async Task<List<IngresoEgresoRMU>> GetCapacitacionesTemarios()
         {
             try
             {
-                return await db.TipoSangre.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.IngresoEgresoRMU.Include(x => x.FormulasRMU).OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -40,20 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<TipoSangre>();
+                return new List<IngresoEgresoRMU>();
             }
         }
 
-
-        // GET: api/TipoSangre/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoSangre([FromRoute] int id)
+        public async Task<Response> GetIngresoEgresoRMU([FromRoute] int id)
         {
             try
             {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var TipoSangre = await db.TipoSangre.SingleOrDefaultAsync(m => m.IdTipoSangre == id);
+                var IngresoEgresoRMU = await db.IngresoEgresoRMU.SingleOrDefaultAsync(m => m.IdIngresoEgresoRMU == id);
 
-                if (TipoSangre == null)
+                if (IngresoEgresoRMU == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
-                    Resultado = TipoSangre,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = IngresoEgresoRMU,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,15 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-
-        // PUT: api/TipoSangre/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoSangre([FromRoute] int id, [FromBody] TipoSangre TipoSangre)
+        public async Task<Response> PutIngresoEgresoRMU([FromRoute] int id, [FromBody] IngresoEgresoRMU IngresoEgresoRMU)
         {
             try
             {
@@ -116,152 +115,41 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var TipoSangreActualizar = await db.TipoSangre.Where(x => x.IdTipoSangre == id).FirstOrDefaultAsync();
-                if (TipoSangreActualizar != null)
+                var existe = Existe(IngresoEgresoRMU);
+                var IngresoEgresoRMUActualizar = (IngresoEgresoRMU)existe.Resultado;
+                if (existe.IsSuccess)
                 {
-                    try
+                    if (IngresoEgresoRMUActualizar.IdIngresoEgresoRMU == IngresoEgresoRMU.IdIngresoEgresoRMU)
                     {
-                        TipoSangreActualizar.Nombre = TipoSangre.Nombre;
-                        db.TipoSangre.Update(TipoSangreActualizar);
-                        await db.SaveChangesAsync();
-
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = "Se ha producido una exepción",
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Error ",
                         };
                     }
-                }
-
-
-
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Existe"
-                };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Excepción"
-                };
-            }
-        }
-
-        // POST: api/TipoSangre
-        [HttpPost]
-        [Route("InsertarTipoSangre")]
-        public async Task<Response> PostTipoSangre([FromBody] TipoSangre TipoSangre)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
+                var ingresoegresormu = db.IngresoEgresoRMU.Find(IngresoEgresoRMU.IdIngresoEgresoRMU);
 
-                var respuesta = Existe(TipoSangre);
-                if (!respuesta.IsSuccess)
-                {
-                    db.TipoSangre.Add(TipoSangre);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = "OK"
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "OK"
-                };
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Error ",
-                };
-            }
-        }
-
-        // DELETE: api/TipoSangre/5
-        [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoSangre([FromRoute] int id)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Módelo no válido ",
-                    };
-                }
-
-                var respuesta = await db.TipoSangre.SingleOrDefaultAsync(m => m.IdTipoSangre == id);
-                if (respuesta == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "No existe ",
-                    };
-                }
-                db.TipoSangre.Remove(respuesta);
+                ingresoegresormu.IdFormulaRMU = IngresoEgresoRMU.IdFormulaRMU;
+                ingresoegresormu.Descripcion = IngresoEgresoRMU.Descripcion;
+                ingresoegresormu.CuentaContable = IngresoEgresoRMU.CuentaContable;
+                db.IngresoEgresoRMU.Update(ingresoegresormu);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
+
             }
             catch (Exception ex)
             {
@@ -269,7 +157,64 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
+                };
+            }
+
+        }
+
+        // POST: api/BasesDatos
+        [HttpPost]
+        [Route("InsertarIngresoEgresoRMU")]
+        public async Task<Response> PostIngresoEgresoRMU([FromBody] IngresoEgresoRMU IngresoEgresoRMU)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
+                    };
+                }
+
+                var respuesta = Existe(IngresoEgresoRMU);
+                if (!respuesta.IsSuccess)
+                {
+                    db.IngresoEgresoRMU.Add(IngresoEgresoRMU);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -278,27 +223,76 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private bool TipoSangreExists(string nombre)
+        // DELETE: api/BasesDatos/5
+        [HttpDelete("{id}")]
+        public async Task<Response> DeleteIngresoEgresoRMU([FromRoute] int id)
         {
-            return db.TipoSangre.Any(e => e.Nombre == nombre);
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.IngresoEgresoRMU.SingleOrDefaultAsync(m => m.IdIngresoEgresoRMU == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.IngresoEgresoRMU.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
         }
 
-        public Response Existe(TipoSangre TipoSangre)
+        private Response Existe(IngresoEgresoRMU IngresoEgresoRMU)
         {
-            var bdd = TipoSangre.Nombre.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.TipoSangre.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = IngresoEgresoRMU.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var cuenta = IngresoEgresoRMU.CuentaContable;
+            var IngresoEgresoRMUrespuesta = db.IngresoEgresoRMU.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd && p.IdFormulaRMU == IngresoEgresoRMU.IdFormulaRMU  && p.CuentaContable==cuenta).FirstOrDefault();
+            if (IngresoEgresoRMUrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un tipo de sangre de igual nombre",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = IngresoEgresoRMUrespuesta,
                 };
 
             }
@@ -306,8 +300,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = IngresoEgresoRMUrespuesta,
             };
         }
+
     }
 }

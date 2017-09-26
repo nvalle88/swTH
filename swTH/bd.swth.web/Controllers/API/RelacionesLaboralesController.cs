@@ -16,25 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Rubros")]
-    public class RubroController : Controller
+    [Route("api/RelacionesLaborales")]
+    public class RelacionesLaboralesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RubroController(SwTHDbContext db)
+        public RelacionesLaboralesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/Rubro
+        // GET: api/BasesDatos
         [HttpGet]
-        [HttpGet]
-        [Route("ListarRubros")]
-        public async Task<List<Rubro>> GetRubros()
+        [Route("ListarRelacionesLaborales")]
+        public async Task<List<RelacionLaboral>> GetCapacitacionesTemarios()
         {
             try
             {
-                return await db.Rubro.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.RelacionLaboral.Include(x => x.RegimenLaboral).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -42,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<Rubro>();
+                return new List<RelacionLaboral>();
             }
         }
 
-        // GET: api/Rubro/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetRubro([FromRoute] int id)
+        public async Task<Response> GetRelacionLaboral([FromRoute] int id)
         {
             try
             {
@@ -63,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var rubro = await db.Rubro.SingleOrDefaultAsync(m => m.IdRubro == id);
+                var RelacionLaboral = await db.RelacionLaboral.SingleOrDefaultAsync(m => m.IdRelacionLaboral == id);
 
-                if (rubro == null)
+                if (RelacionLaboral == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
-                    Resultado = rubro,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = RelacionLaboral,
                 };
             }
             catch (Exception ex)
@@ -91,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -100,14 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // PUT: api/Rubro/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRubro([FromRoute] int id, [FromBody] Rubro rubro)
+        public async Task<Response> PutRelacionLaboral([FromRoute] int id, [FromBody] RelacionLaboral RelacionLaboral)
         {
             try
             {
@@ -116,153 +115,40 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var rubroActualizar = await db.Rubro.Where(x => x.IdRubro == id).FirstOrDefaultAsync();
-                if (rubroActualizar != null)
+                var existe = Existe(RelacionLaboral);
+                var RelacionLaboralActualizar = (RelacionLaboral)existe.Resultado;
+                if (existe.IsSuccess)
                 {
-                    try
+                    if (RelacionLaboralActualizar.IdRelacionLaboral == RelacionLaboral.IdRelacionLaboral)
                     {
-                        rubroActualizar.TasaPorcentualMaxima = rubro.TasaPorcentualMaxima;
-                        rubroActualizar.Nombre = rubro.Nombre;
-                        db.Rubro.Update(rubroActualizar);
-                        await db.SaveChangesAsync();
-
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Error ",
                         };
                     }
-                }
-
-
-
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Existe"
-                };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Excepción"
-                };
-            }
-        }
-
-        // POST: api/Rubro
-        [HttpPost]
-        [Route("InsertarRubro")]
-        public async Task<Response> PostRubro([FromBody] Rubro rubro)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
+                var capacitacionac = db.RelacionLaboral.Find(RelacionLaboral.IdRelacionLaboral);
 
-                var respuesta = Existe(rubro);
-                if (!respuesta.IsSuccess)
-                {
-                    db.Rubro.Add(rubro);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = "OK"
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "OK"
-                };
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Error ",
-                };
-            }
-        }
-
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public async Task<Response> DeleteRubro([FromRoute] int id)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Módelo no válido ",
-                    };
-                }
-
-                var respuesta = await db.Rubro.SingleOrDefaultAsync(m => m.IdRubro == id);
-                if (respuesta == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "No existe ",
-                    };
-                }
-                db.Rubro.Remove(respuesta);
+                capacitacionac.IdRegimenLaboral = RelacionLaboral.IdRegimenLaboral;
+                capacitacionac.Nombre = RelacionLaboral.Nombre;
+                db.RelacionLaboral.Update(capacitacionac);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
+
             }
             catch (Exception ex)
             {
@@ -270,7 +156,64 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
+                };
+            }
+
+        }
+
+        // POST: api/BasesDatos
+        [HttpPost]
+        [Route("InsertarRelacionLaboral")]
+        public async Task<Response> PostRelacionLaboral([FromBody] RelacionLaboral RelacionLaboral)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
+                    };
+                }
+
+                var respuesta = Existe(RelacionLaboral);
+                if (!respuesta.IsSuccess)
+                {
+                    db.RelacionLaboral.Add(RelacionLaboral);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -279,22 +222,75 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private Response Existe(Rubro rubro)
+        // DELETE: api/BasesDatos/5
+        [HttpDelete("{id}")]
+        public async Task<Response> DeleteRelacionLaboral([FromRoute] int id)
         {
-            var bdd = rubro.Nombre.ToUpper().TrimEnd().TrimStart();
-            var Rubrorespuesta = db.Rubro.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (Rubrorespuesta != null)
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.RelacionLaboral.SingleOrDefaultAsync(m => m.IdRelacionLaboral == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.RelacionLaboral.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        private Response Existe(RelacionLaboral RelacionLaboral)
+        {
+            var bdd = RelacionLaboral.Nombre.ToUpper().TrimEnd().TrimStart();
+            var RelacionLaboralrespuesta = db.RelacionLaboral.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdRegimenLaboral == RelacionLaboral.IdRegimenLaboral).FirstOrDefault();
+            if (RelacionLaboralrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un rubro de igual nombre",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = RelacionLaboralrespuesta,
                 };
 
             }
@@ -302,8 +298,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = Rubrorespuesta,
+                Resultado = RelacionLaboralrespuesta,
             };
         }
+
     }
 }

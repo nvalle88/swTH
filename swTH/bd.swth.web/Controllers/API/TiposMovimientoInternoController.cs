@@ -1,37 +1,39 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Utils;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
-using System;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/RegimenLaborales")]
-    public class RegimenLaboralesController : Controller
+    [Route("api/TiposMovimientoInterno")]
+    public class TiposMovimientoInternoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RegimenLaboralesController(SwTHDbContext db)
+        public TiposMovimientoInternoController(SwTHDbContext db)
         {
             this.db = db;
         }
 
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarRegimenLaborales")]
-        public async Task<List<RegimenLaboral>> GetRegimenLaboral()
+        [Route("ListarTiposMovimientoInterno")]
+        public async Task<List<TipoMovimientoInterno>> GetTipoMovimientoInterno()
         {
             try
             {
-                return await db.RegimenLaboral.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoMovimientoInterno.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -39,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<RegimenLaboral>();
+                return new List<TipoMovimientoInterno>();
             }
         }
 
-        // GET: api/RegimenLaborals/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetRegimenLaboral([FromRoute] int id)
+        public async Task<Response> GetTipoMovimientoInterno([FromRoute] int id)
         {
             try
             {
@@ -60,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var adscbdd = await db.RegimenLaboral.SingleOrDefaultAsync(m => m.IdRegimenLaboral == id);
+                var TipoMovimientoInterno = await db.TipoMovimientoInterno.SingleOrDefaultAsync(m => m.IdTipoMovimientoInterno == id);
 
-                if (adscbdd == null)
+                if (TipoMovimientoInterno == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
-                    Resultado = adscbdd,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = TipoMovimientoInterno,
                 };
             }
             catch (Exception ex)
@@ -88,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -97,14 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // PUT: api/RegimenLaborals/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRegimenLaboral([FromRoute] int id, [FromBody] RegimenLaboral RegimenLaboral)
+        public async Task<Response> PutTipoMovimientoInterno([FromRoute] int id, [FromBody] TipoMovimientoInterno TipoMovimientoInterno)
         {
             try
             {
@@ -113,112 +115,79 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var existeRegimenLaboral = Existe(RegimenLaboral.Nombre);
-                if (existeRegimenLaboral.IsSuccess)
+                var existe = Existe(TipoMovimientoInterno);
+                if (existe.IsSuccess)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe un RegimenLaboral de igual nombre",
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
-                try
+
+                var TipoMovimientoInternoActualizar = await db.TipoMovimientoInterno.Where(x => x.IdTipoMovimientoInterno == id).FirstOrDefaultAsync();
+
+                if (TipoMovimientoInternoActualizar != null)
                 {
-                    db.RegimenLaboral.Update(RegimenLaboral);
-                    await db.SaveChangesAsync();
-
-                    return new Response
+                    try
                     {
-                        IsSuccess = true,
-                        Message = "Ok",
-                    };
+                        TipoMovimientoInternoActualizar.Nombre = TipoMovimientoInterno.Nombre;
+                        await db.SaveChangesAsync();
 
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
                 }
-                catch (Exception ex)
+
+
+
+
+                return new Response
                 {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Error ",
-                    };
-                }
-
-
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
             }
             catch (Exception)
             {
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Excepción"
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // POST: api/RegimenLaborals
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarRegimenLaboral")]
-        public async Task<Response> PostRegimenLaboral([FromBody] RegimenLaboral RegimenLaboral)
-        {
-            try
-            {
-
-                var respuesta = Existe(RegimenLaboral.Nombre);
-                if (!respuesta.IsSuccess)
-                {
-                    db.RegimenLaboral.Add(RegimenLaboral);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = "OK"
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "OK"
-                };
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Error ",
-                };
-            }
-        }
-
-        // DELETE: api/RegimenLaborals/5
-        [HttpDelete("{id}")]
-        public async Task<Response> DeleteRegimenLaboral([FromRoute] int id)
+        [Route("InsertarTipoMovimientoInterno")]
+        public async Task<Response> PostTipoMovimientoInterno([FromBody] TipoMovimientoInterno TipoMovimientoInterno)
         {
             try
             {
@@ -227,27 +196,28 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var respuesta = await db.RegimenLaboral.SingleOrDefaultAsync(m => m.IdRegimenLaboral == id);
-                if (respuesta == null)
+                var respuesta = Existe(TipoMovimientoInterno);
+                if (!respuesta.IsSuccess)
                 {
+                    db.TipoMovimientoInterno.Add(TipoMovimientoInterno);
+                    await db.SaveChangesAsync();
                     return new Response
                     {
-                        IsSuccess = false,
-                        Message = "No existe ",
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
                     };
                 }
-                db.RegimenLaboral.Remove(respuesta);
-                await db.SaveChangesAsync();
 
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = "Eliminado ",
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
                 };
+
             }
             catch (Exception ex)
             {
@@ -255,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -264,27 +234,74 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private bool RegimenLaboralExists(int id)
+        // DELETE: api/BasesDatos/5
+        [HttpDelete("{id}")]
+        public async Task<Response> DeleteTipoMovimientoInterno([FromRoute] int id)
         {
-            return db.RegimenLaboral.Any(e => e.IdRegimenLaboral == id);
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.TipoMovimientoInterno.SingleOrDefaultAsync(m => m.IdTipoMovimientoInterno == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.TipoMovimientoInterno.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
         }
 
-
-        public Response Existe(string nombreRegimenLaboral)
+        private Response Existe(TipoMovimientoInterno TipoMovimientoInterno)
         {
-
-            var loglevelrespuesta = db.RegimenLaboral.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombreRegimenLaboral).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = TipoMovimientoInterno.Nombre;
+            var TipoMovimientoInternorespuesta = db.TipoMovimientoInterno.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (TipoMovimientoInternorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual nombre",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -293,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = TipoMovimientoInternorespuesta,
             };
         }
+
     }
 }

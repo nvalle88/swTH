@@ -42,7 +42,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                                       Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -63,7 +63,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -74,14 +74,14 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
+                    Message = Mensaje.Satisfactorio,
                     Resultado = EscalaGrados,
                 };
             }
@@ -91,7 +91,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                                       Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -100,93 +100,77 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
+        }
+
+
+        private async Task Actualizar(EscalaGrados escalaGrados)
+        {
+            var escalaevatotal = db.EscalaGrados.Find(escalaGrados.IdEscalaGrados);
+
+            escalaevatotal.IdGrupoOcupacional = escalaGrados.IdGrupoOcupacional;
+            escalaevatotal.Grado = escalaGrados.Grado;
+            escalaevatotal.Remuneracion = escalaGrados.Remuneracion;
+            db.EscalaGrados.Update(escalaevatotal);
+            await db.SaveChangesAsync();
         }
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutEscalaGrados([FromRoute] int id, [FromBody] EscalaGrados EscalaGrados)
         {
-            try
-            {
+           
                 if (!ModelState.IsValid)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var existe = Existe(EscalaGrados);
-                if (existe.IsSuccess)
+            var existe = Existe(EscalaGrados);
+            var EscalaGradosActualizar = (EscalaGrados)existe.Resultado;
+
+            if (existe.IsSuccess)
+            {
+
+
+                if (EscalaGradosActualizar.IdEscalaGrados == EscalaGrados.IdEscalaGrados)
                 {
-                    return new Response
+                    if (EscalaGrados.IdGrupoOcupacional == EscalaGradosActualizar.IdGrupoOcupacional &&
+                    EscalaGrados.Grado == EscalaGradosActualizar.Grado &&
+                    EscalaGrados.Remuneracion == EscalaGradosActualizar.Remuneracion)
                     {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
-                    };
-                }
-
-                var EscalaGradosActualizar = await db.EscalaGrados.Where(x => x.IdEscalaGrados == id).FirstOrDefaultAsync();
-                if (EscalaGradosActualizar != null)
-                {
-                    try
-                    {
-
-                        EscalaGradosActualizar.Grado = EscalaGrados.Grado;
-                        EscalaGradosActualizar.IdGrupoOcupacional = EscalaGrados.IdGrupoOcupacional;
-                        EscalaGradosActualizar.Remuneracion = EscalaGrados.Remuneracion;
-
-                        db.EscalaGrados.Update(EscalaGradosActualizar);
-                        await db.SaveChangesAsync();
-
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
                         };
-
                     }
-                    catch (Exception ex)
+
+                    await Actualizar(EscalaGrados);
+                    return new Response
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Error ",
-                        };
-                    }
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                    };
                 }
-
-
-
-
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe"
+                    Message = Mensaje.ExisteRegistro,
                 };
             }
-            catch (Exception)
+
+            await Actualizar(EscalaGrados);
+            return new Response
             {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Excepción"
-                };
-            }
+                IsSuccess = true,
+                Message = Mensaje.Satisfactorio,
+            };
+
         }
 
         // POST: api/BasesDatos
@@ -201,7 +185,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = ""
                     };
                 }
 
@@ -213,14 +197,14 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe una escala de grado ocupacional de igual grado"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -230,7 +214,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                                       Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -239,7 +223,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
@@ -255,7 +239,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -265,7 +249,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
                 db.EscalaGrados.Remove(respuesta);
@@ -274,7 +258,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -283,7 +267,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                                       Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -292,7 +276,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
@@ -306,8 +290,8 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una escala de grado ocupacional de igual grado",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = EscalaGradosrespuesta,
                 };
 
             }

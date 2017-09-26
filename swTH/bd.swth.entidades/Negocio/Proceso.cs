@@ -10,9 +10,9 @@ namespace bd.swth.entidades.Negocio
         public int IdProceso { get; set; }
 
         //Propiedades Virtuales Referencias a otras clases
-
+        [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "Proceso:")]
-        [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
+        [StringLength(20, MinimumLength = 3, ErrorMessage = "El {0} no puede tener más de {1} y menos de {2}")]
         public string Nombre { get; set; }
 
         public virtual ICollection<ProcesoDetalle> ProcesoDetalle { get; set; }

@@ -11,7 +11,7 @@ using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
-using bd.log.guardar.Utiles;
+using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.TipoCertificado.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoCertificado.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -62,7 +62,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -73,14 +73,14 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
+                    Message = Mensaje.Satisfactorio,
                     Resultado = TipoCertificado,
                 };
             }
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,9 +99,19 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
+        }
+
+        private async Task Actualizar(TipoCertificado TipoCertificado)
+        {
+            var tipocertificado = db.TipoCertificado.Find(TipoCertificado.IdTipoCertificado);
+
+            tipocertificado.Nombre = TipoCertificado.Nombre;
+            tipocertificado.Descripcion = TipoCertificado.Descripcion;
+            db.TipoCertificado.Update(tipocertificado);
+            await db.SaveChangesAsync();
         }
 
         // PUT: api/BasesDatos/5
@@ -115,62 +125,69 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var TipoCertificadoActualizar = await db.TipoCertificado.Where(x => x.IdTipoCertificado == id).FirstOrDefaultAsync();
-                if (TipoCertificadoActualizar != null)
+                
+                var existe = Existe(TipoCertificado);
+                var TipoCertificadoActualizar = (TipoCertificado)existe.Resultado;
+
+                if (existe.IsSuccess)
                 {
-                    try
+
+
+                    if (TipoCertificadoActualizar.IdTipoCertificado == TipoCertificado.IdTipoCertificado)
                     {
+                        if (TipoCertificado.Nombre == TipoCertificadoActualizar.Nombre &&
+                        TipoCertificado.Descripcion == TipoCertificadoActualizar.Descripcion)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Message = Mensaje.ExisteRegistro,
+                            };
+                        }
 
-                        TipoCertificadoActualizar.Nombre = TipoCertificado.Nombre;
-                        TipoCertificadoActualizar.Descripcion = TipoCertificado.Descripcion;
-                        TipoCertificadoActualizar.SolicitudCertificadoPersonal = TipoCertificado.SolicitudCertificadoPersonal;
-
-                        db.TipoCertificado.Update(TipoCertificadoActualizar);
-                        await db.SaveChangesAsync();
-
+                        await Actualizar(TipoCertificado);
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
+                            Message = Mensaje.Satisfactorio,
                         };
-
                     }
-                    catch (Exception ex)
+                    return new Response
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Error ",
-                        };
-                    }
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
                 }
 
+                await Actualizar(TipoCertificado);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "Existe"
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "Excepción"
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
@@ -182,14 +199,6 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Módelo inválido"
-                    };
-                }
 
                 var respuesta = Existe(TipoCertificado);
                 if (!respuesta.IsSuccess)
@@ -199,14 +208,23 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -216,7 +234,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -225,7 +243,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
@@ -241,7 +259,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -251,7 +269,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
                 db.TipoCertificado.Remove(respuesta);
@@ -260,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -269,7 +287,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -278,22 +296,22 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
         private Response Existe(TipoCertificado TipoCertificado)
         {
-            var bdd = TipoCertificado.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoCertificadorespuesta = db.TipoCertificado.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd = TipoCertificado.Nombre;
+            var TipoCertificadorespuesta = db.TipoCertificado.Where(p => p.Nombre == bdd).FirstOrDefault();
             if (TipoCertificadorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = String.Format("Ya existe el Tipo de Certioficado {0}", TipoCertificado.Nombre),
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = TipoCertificadorespuesta,
                 };
 
             }

@@ -4,36 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
-using bd.log.guardar.Utiles;
+using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoIdentificacion")]
-    public class TipoIdentificacionController : Controller
+    [Route("api/Relevancias")]
+    public class RelevanciasController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoIdentificacionController(SwTHDbContext db)
+        public RelevanciasController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        // GET: api/BasesDatosRelevancias
         [HttpGet]
-        [Route("ListarTipoIdentificacion")]
-        public async Task<List<TipoIdentificacion>> GetTipoIdentificacion()
+        [Route("ListarRelevancias")]
+        public async Task<List<Relevancia>> GetRelevancias()
         {
             try
             {
-                return await db.TipoIdentificacion.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Relevancia.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<TipoIdentificacion>();
+                return new List<Relevancia>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoIdentificacion([FromRoute] int id)
+        public async Task<Response> GetRelevancia([FromRoute] int id)
         {
             try
             {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var TipoIdentificacion = await db.TipoIdentificacion.SingleOrDefaultAsync(m => m.IdTipoIdentificacion == id);
+                var Relevancia = await db.Relevancia.SingleOrDefaultAsync(m => m.IdRelevancia == id);
 
-                if (TipoIdentificacion == null)
+                if (Relevancia == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
-                    Resultado = TipoIdentificacion,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = Relevancia,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +99,24 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
+        private async Task Actualizar(Relevancia Relevancia)
+        {
+            var relevancia = db.Relevancia.Find(Relevancia.IdRelevancia);
+
+            relevancia.Nombre = Relevancia.Nombre;
+            relevancia.ComportamientoObservable = Relevancia.ComportamientoObservable;
+            db.Relevancia.Update(relevancia);
+            await db.SaveChangesAsync();
+        }
+
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoIdentificacion([FromRoute] int id, [FromBody] TipoIdentificacion TipoIdentificacion)
+        public async Task<Response> PutRelevancia([FromRoute] int id, [FromBody] Relevancia Relevancia)
         {
             try
             {
@@ -115,97 +125,106 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
+                
 
-                var TipoIdentificacionActualizar = await db.TipoIdentificacion.Where(x => x.IdTipoIdentificacion == id).FirstOrDefaultAsync();
-                if (TipoIdentificacionActualizar != null)
+                var existe = Existe(Relevancia);
+                var RelevanciaActualizar = (Relevancia)existe.Resultado;
+
+                if (existe.IsSuccess)
                 {
-                    try
+
+
+                    if (RelevanciaActualizar.IdRelevancia == Relevancia.IdRelevancia)
                     {
+                        if (
+                        Relevancia.Nombre == RelevanciaActualizar.Nombre &&
+                        Relevancia.ComportamientoObservable == RelevanciaActualizar.ComportamientoObservable)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                            };
+                        }
 
-                        TipoIdentificacionActualizar.Nombre = TipoIdentificacion.Nombre;
-                        TipoIdentificacionActualizar.Persona = TipoIdentificacion.Persona;
-
-                        db.TipoIdentificacion.Update(TipoIdentificacionActualizar);
-                        await db.SaveChangesAsync();
-
+                        await Actualizar(Relevancia);
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
+                            Message = Mensaje.Satisfactorio,
                         };
-
                     }
-                    catch (Exception ex)
+                    return new Response
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Error ",
-                        };
-                    }
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
                 }
 
+                await Actualizar(Relevancia);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "Existe"
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "Excepción"
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoIdentificacion")]
-        public async Task<Response> PostTipoIdentificacion([FromBody] TipoIdentificacion TipoIdentificacion)
+        [Route("InsertarRelevancia")]
+        public async Task<Response> PostRelevancia([FromBody] Relevancia Relevancia)
         {
             try
             {
+                
+                var respuesta = Existe(Relevancia);
+                if (!respuesta.IsSuccess)
+                {
+                    db.Relevancia.Add(Relevancia);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
                 if (!ModelState.IsValid)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
-                    };
-                }
-
-                var respuesta = Existe(TipoIdentificacion);
-                if (!respuesta.IsSuccess)
-                {
-                    db.TipoIdentificacion.Add(TipoIdentificacion);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = "OK"
+                        Message = ""
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -215,7 +234,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -224,14 +243,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoIdentificacion([FromRoute] int id)
+        public async Task<Response> DeleteRelevancia([FromRoute] int id)
         {
             try
             {
@@ -240,26 +259,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var respuesta = await db.TipoIdentificacion.SingleOrDefaultAsync(m => m.IdTipoIdentificacion == id);
+                var respuesta = await db.Relevancia.SingleOrDefaultAsync(m => m.IdRelevancia == id);
                 if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoIdentificacion.Remove(respuesta);
+                db.Relevancia.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -268,7 +287,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -277,22 +296,22 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private Response Existe(TipoIdentificacion TipoIdentificacion)
+        private Response Existe(Relevancia Relevancia)
         {
-            var bdd = TipoIdentificacion.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoIdentificacionrespuesta = db.TipoIdentificacion.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (TipoIdentificacionrespuesta != null)
+            var bdd = Relevancia.Nombre;
+            var Relevanciarespuesta = db.Relevancia.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (Relevanciarespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = String.Format("Ya existe un Tipo de Identificación con el nombre {0}", TipoIdentificacion.Nombre),
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = Relevanciarespuesta,
                 };
 
             }
@@ -300,8 +319,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoIdentificacionrespuesta,
+                Resultado = Relevanciarespuesta,
             };
         }
+
     }
 }

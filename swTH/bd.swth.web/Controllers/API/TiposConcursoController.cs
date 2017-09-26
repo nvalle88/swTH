@@ -16,24 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/RubrosLiquidacion")]
-    public class RubroLiquidacionController : Controller
+    [Route("api/TiposConcurso")]
+    public class TiposConcursoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RubroLiquidacionController(SwTHDbContext db)
+        public TiposConcursoController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/RubroLiquidacion
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarRubrosLiquidacion")]
-        public async Task<List<RubroLiquidacion>> GetRubrosLiquidacion()
+        [Route("ListarTiposConcurso")]
+        public async Task<List<TipoConcurso>> GetTiposConcurso()
         {
             try
             {
-                return await db.RubroLiquidacion.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.TipoConcurso.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<RubroLiquidacion>();
+                return new List<TipoConcurso>();
             }
         }
 
-        // GET: api/RubroLiquidacion/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetRubroLiquidacion([FromRoute] int id)
+        public async Task<Response> GetTipoConcurso([FromRoute] int id)
         {
             try
             {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var rubroLiquidacion = await db.RubroLiquidacion.SingleOrDefaultAsync(m => m.IdRubroLiquidacion == id);
+                var TipoConcurso = await db.TipoConcurso.SingleOrDefaultAsync(m => m.IdTipoConcurso == id);
 
-                if (rubroLiquidacion == null)
+                if (TipoConcurso == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
-                    Resultado = rubroLiquidacion,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = TipoConcurso,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +99,24 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // PUT: api/RubroLiquidacion/5        
+        private async Task Actualizar(TipoConcurso TipoConcurso)
+        {
+            var tipoconcurso = db.TipoConcurso.Find(TipoConcurso.IdTipoConcurso);
+
+            tipoconcurso.Nombre = TipoConcurso.Nombre;
+            tipoconcurso.Descripcion = TipoConcurso.Descripcion;
+            db.TipoConcurso.Update(tipoconcurso);
+            await db.SaveChangesAsync();
+        }
+
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRubroLiquidacion([FromRoute] int id, [FromBody] RubroLiquidacion rubroLiquidacion)
+        public async Task<Response> PutTipoConcurso([FromRoute] int id, [FromBody] TipoConcurso TipoConcurso)
         {
             try
             {
@@ -115,98 +125,107 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var rubroLiquidacionActualizar = await db.RubroLiquidacion.Where(x => x.IdRubroLiquidacion == id).FirstOrDefaultAsync();
-                if (rubroLiquidacionActualizar != null)
+                
+
+                var existe = Existe(TipoConcurso);
+                var TipoConcursoActualizar = (TipoConcurso)existe.Resultado;
+
+                if (existe.IsSuccess)
                 {
-                    try
+
+
+                    if (TipoConcursoActualizar.IdTipoConcurso == TipoConcurso.IdTipoConcurso)
                     {
+                        if (TipoConcurso.Nombre == TipoConcursoActualizar.Nombre &&
+                        TipoConcurso.Descripcion == TipoConcursoActualizar.Descripcion)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Message = Mensaje.ExisteRegistro,
+                            };
+                        }
 
-                        rubroLiquidacionActualizar.Descripcion = rubroLiquidacion.Descripcion;
-                        db.RubroLiquidacion.Update(rubroLiquidacionActualizar);
-                        await db.SaveChangesAsync();
-
+                        await Actualizar(TipoConcurso);
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
+                            Message = Mensaje.Satisfactorio,
                         };
-
                     }
-                    catch (Exception ex)
+                    return new Response
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Error ",
-                        };
-                    }
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
                 }
 
-
-
-
+                await Actualizar(TipoConcurso);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "Existe"
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "Excepción"
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
 
-        // POST: api/RubroLiquidacion
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarRubroLiquidacion")]
-        public async Task<Response> PostRubroLiquidacion([FromBody] RubroLiquidacion rubroLiquidacion)
+        [Route("InsertarTipoConcurso")]
+        public async Task<Response> PostTipoConcurso([FromBody] TipoConcurso TipoConcurso)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Módelo inválido"
-                    };
-                }
-
-                var respuesta = Existe(rubroLiquidacion);
+                               
+                var respuesta = Existe(TipoConcurso);
                 if (!respuesta.IsSuccess)
                 {
-                    db.RubroLiquidacion.Add(rubroLiquidacion);
+                    db.TipoConcurso.Add(TipoConcurso);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -216,7 +235,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -225,14 +244,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // DELETE: api/ApiWithActions/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteRubroLiquidacion([FromRoute] int id)
+        public async Task<Response> DeleteTipoConcurso([FromRoute] int id)
         {
             try
             {
@@ -241,26 +260,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var respuesta = await db.RubroLiquidacion.SingleOrDefaultAsync(m => m.IdRubroLiquidacion == id);
+                var respuesta = await db.TipoConcurso.SingleOrDefaultAsync(m => m.IdTipoConcurso == id);
                 if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.RubroLiquidacion.Remove(respuesta);
+                db.TipoConcurso.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -269,7 +288,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -278,22 +297,22 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private Response Existe(RubroLiquidacion rubroLiquidacion)
+        private Response Existe(TipoConcurso TipoConcurso)
         {
-            var bdd = rubroLiquidacion.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var RubroLiquidacionrespuesta = db.RubroLiquidacion.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (RubroLiquidacionrespuesta != null)
+            var bdd = TipoConcurso.Nombre;
+            var TipoConcursorespuesta = db.TipoConcurso.Where(p => p.Nombre == bdd).FirstOrDefault();
+            if (TipoConcursorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un rubro de liquidación de igual descripción",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = TipoConcursorespuesta,
                 };
 
             }
@@ -301,7 +320,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = RubroLiquidacionrespuesta,
+                Resultado = TipoConcursorespuesta,
             };
         }
     }

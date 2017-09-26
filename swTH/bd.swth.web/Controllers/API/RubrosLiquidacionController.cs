@@ -16,24 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/IngresoEgresoRMUs")]
-    public class IngresoEgresoRMUsController : Controller
+    [Route("api/RubrosLiquidacion")]
+    public class RubrosLiquidacionController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public IngresoEgresoRMUsController(SwTHDbContext db)
+        public RubrosLiquidacionController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/IngresoEgresoRMUs
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarIngresoEgresoRMUs")]
-        public async Task<List<IngresoEgresoRMU>> GetIngresoEgresoRMU()
+        [Route("ListarRubrosLiquidacion")]
+        public async Task<List<RubroLiquidacion>> GetRubroLiquidacion()
         {
             try
             {
-                return await db.IngresoEgresoRMU.OrderBy(x => x.CuentaContable).ToListAsync();
+                return await db.RubroLiquidacion.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<IngresoEgresoRMU>();
+                return new List<RubroLiquidacion>();
             }
         }
 
-        // GET: api/IngresoEgresoRMUs/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetIngresoEgresoRMU([FromRoute] int id)
+        public async Task<Response> GetRubroLiquidacion([FromRoute] int id)
         {
             try
             {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var adscbdd = await db.IngresoEgresoRMU.SingleOrDefaultAsync(m => m.IdIngresoEgresoRMU == id);
+                var RubroLiquidacion = await db.RubroLiquidacion.SingleOrDefaultAsync(m => m.IdRubroLiquidacion == id);
 
-                if (adscbdd == null)
+                if (RubroLiquidacion == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
-                    Resultado = adscbdd,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = RubroLiquidacion,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // PUT: api/IngresoEgresoRMUs/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutIngresoEgresoRMU([FromRoute] int id, [FromBody] IngresoEgresoRMU ingresoEgresoRMU)
+        public async Task<Response> PutRubroLiquidacion([FromRoute] int id, [FromBody] RubroLiquidacion RubroLiquidacion)
         {
             try
             {
@@ -115,123 +115,79 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-
-                try
+                var existe = Existe(RubroLiquidacion);
+                if (existe.IsSuccess)
                 {
-                    var entidad = await db.IngresoEgresoRMU.Where(x => x.IdIngresoEgresoRMU == id).FirstOrDefaultAsync();
-
-                    if (entidad == null)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "No existe información acerca del Ingreso Egreso RMU ",
-                        };
-
-                    }
-                    else
-                    {
-
-                        entidad.CuentaContable = ingresoEgresoRMU.CuentaContable;
-                        //entidad.Descripcion = ingresoEgresoRMU.Descripcion;
-                        //entidad.IdFormulaRMU = ingresoEgresoRMU.IdFormulaRMU;
-                        //entidad.FormulasRMU = ingresoEgresoRMU.FormulasRMU;
-                        db.IngresoEgresoRMU.Update(entidad);
-                        await db.SaveChangesAsync();
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = "Ok",
-                        };
-                    }
-
-
-                }
-                catch (Exception ex)
-                {
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
-                        Message = "Se ha producido una exepción",
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Error ",
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
 
+                var RubroLiquidacionActualizar = await db.RubroLiquidacion.Where(x => x.IdRubroLiquidacion == id).FirstOrDefaultAsync();
 
+                if (RubroLiquidacionActualizar != null)
+                {
+                    try
+                    {
+                        RubroLiquidacionActualizar.Descripcion = RubroLiquidacion.Descripcion;
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
             }
             catch (Exception)
             {
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Excepción"
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        // POST: api/IngresoEgresoRMUs
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarIngresoEgresoRMU")]
-        public async Task<Response> PostIngresoEgresoRMU([FromBody] IngresoEgresoRMU ingresoEgresoRMU)
-        {
-            try
-            {
-
-                var respuesta = Existe(ingresoEgresoRMU.CuentaContable);
-                if (!respuesta.IsSuccess)
-                {
-                    db.IngresoEgresoRMU.Add(ingresoEgresoRMU);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = "OK"
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "OK"
-                };
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Error ",
-                };
-            }
-        }
-
-        // DELETE: api/IngresoEgresoRMUs/5
-        [HttpDelete("{id}")]
-        public async Task<Response> DeleteIngresoEgresoRMU([FromRoute] int id)
+        [Route("InsertarRubroLiquidacion")]
+        public async Task<Response> PostRubroLiquidacion([FromBody] RubroLiquidacion RubroLiquidacion)
         {
             try
             {
@@ -240,27 +196,28 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var respuesta = await db.IngresoEgresoRMU.SingleOrDefaultAsync(m => m.IdIngresoEgresoRMU == id);
-                if (respuesta == null)
+                var respuesta = Existe(RubroLiquidacion);
+                if (!respuesta.IsSuccess)
                 {
+                    db.RubroLiquidacion.Add(RubroLiquidacion);
+                    await db.SaveChangesAsync();
                     return new Response
                     {
-                        IsSuccess = false,
-                        Message = "No existe ",
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
                     };
                 }
-                db.IngresoEgresoRMU.Remove(respuesta);
-                await db.SaveChangesAsync();
 
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = "Eliminado ",
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
                 };
+
             }
             catch (Exception ex)
             {
@@ -268,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una exepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -277,27 +234,74 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private bool IngresoEgresoRMUExists(int id)
+        // DELETE: api/BasesDatos/5
+        [HttpDelete("{id}")]
+        public async Task<Response> DeleteRubroLiquidacion([FromRoute] int id)
         {
-            return db.IngresoEgresoRMU.Any(e => e.IdIngresoEgresoRMU == id);
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.RubroLiquidacion.SingleOrDefaultAsync(m => m.IdRubroLiquidacion == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.RubroLiquidacion.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
         }
 
-
-        public Response Existe(string nombreIngresoEgresoRMU)
+        private Response Existe(RubroLiquidacion RubroLiquidacion)
         {
-
-            var loglevelrespuesta = db.IngresoEgresoRMU.Where(p => p.CuentaContable.ToUpper().TrimStart().TrimEnd() == nombreIngresoEgresoRMU).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = RubroLiquidacion.Descripcion;
+            var RubroLiquidacionrespuesta = db.RubroLiquidacion.Where(p => p.Descripcion == bdd).FirstOrDefault();
+            if (RubroLiquidacionrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un sistema de igual cuenta contable",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -306,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = RubroLiquidacionrespuesta,
             };
         }
+
     }
 }

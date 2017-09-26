@@ -6,34 +6,34 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
+using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
-using bd.log.guardar.Utiles;
+using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoDiscapacidadSustituto")]
-    public class TipoDiscapacidadSustitutoController : Controller
+    [Route("api/TiposProvision")]
+    public class TiposProvisionController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoDiscapacidadSustitutoController(SwTHDbContext db)
+        public TiposProvisionController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoDiscapacidadSustituto")]
-        public async Task<List<TipoDiscapacidadSustituto>> GetTipoDiscapacidadSustituto()
+        [Route("ListarTiposProvision")]
+        public async Task<List<TipoProvision>> GetTipoProvision()
         {
             try
             {
-                return await db.TipoDiscapacidadSustituto.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoProvision.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,19 +41,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<TipoDiscapacidadSustituto>();
+                return new List<TipoProvision>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoDiscapacidadSustituto([FromRoute] int id)
+        public async Task<Response> GetTipoProvision([FromRoute] int id)
         {
             try
             {
@@ -62,26 +62,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var TipoDiscapacidadSustituto = await db.TipoDiscapacidadSustituto.SingleOrDefaultAsync(m => m.IdTipoDiscapacidadSustituto == id);
+                var TipoProvision = await db.TipoProvision.SingleOrDefaultAsync(m => m.IdTipoProvision == id);
 
-                if (TipoDiscapacidadSustituto == null)
+                if (TipoProvision == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
-                    Resultado = TipoDiscapacidadSustituto,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = TipoProvision,
                 };
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,14 +99,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoDiscapacidadSustituto([FromRoute] int id, [FromBody] TipoDiscapacidadSustituto TipoDiscapacidadSustituto)
+        public async Task<Response> PutTipoProvision([FromRoute] int id, [FromBody] TipoProvision TipoProvision)
         {
             try
             {
@@ -115,25 +115,33 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var TipoDiscapacidadSustitutoActualizar = await db.TipoDiscapacidadSustituto.Where(x => x.IdTipoDiscapacidadSustituto == id).FirstOrDefaultAsync();
-                if (TipoDiscapacidadSustitutoActualizar != null)
+                var existe = Existe(TipoProvision);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var TipoProvisionActualizar = await db.TipoProvision.Where(x => x.IdTipoProvision == id).FirstOrDefaultAsync();
+
+                if (TipoProvisionActualizar != null)
                 {
                     try
                     {
-
-                        TipoDiscapacidadSustitutoActualizar.Nombre = TipoDiscapacidadSustituto.Nombre;
-
-                        db.TipoDiscapacidadSustituto.Update(TipoDiscapacidadSustitutoActualizar);
+                        TipoProvisionActualizar.Descripcion = TipoProvision.Descripcion;
                         await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
+                            Message = Mensaje.Satisfactorio,
                         };
 
                     }
@@ -143,7 +151,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -152,15 +160,18 @@ namespace bd.swth.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = "Error ",
+                            Message = Mensaje.Error,
                         };
                     }
                 }
 
+
+
+
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe"
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -168,15 +179,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Excepción"
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoDiscapacidadSustituto")]
-        public async Task<Response> PostTipoDiscapacidadSustituto([FromBody] TipoDiscapacidadSustituto TipoDiscapacidadSustituto)
+        [Route("InsertarTipoProvision")]
+        public async Task<Response> PostTipoProvision([FromBody] TipoProvision TipoProvision)
         {
             try
             {
@@ -185,26 +196,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var respuesta = Existe(TipoDiscapacidadSustituto);
+                var respuesta = Existe(TipoProvision);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoDiscapacidadSustituto.Add(TipoDiscapacidadSustituto);
+                    db.TipoProvision.Add(TipoProvision);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "OK"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -214,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -223,14 +234,14 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoDiscapacidadSustituto([FromRoute] int id)
+        public async Task<Response> DeleteTipoProvision([FromRoute] int id)
         {
             try
             {
@@ -239,26 +250,26 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var respuesta = await db.TipoDiscapacidadSustituto.SingleOrDefaultAsync(m => m.IdTipoDiscapacidadSustituto == id);
+                var respuesta = await db.TipoProvision.SingleOrDefaultAsync(m => m.IdTipoProvision == id);
                 if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoDiscapacidadSustituto.Remove(respuesta);
+                db.TipoProvision.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -267,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -276,21 +287,21 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private Response Existe(TipoDiscapacidadSustituto TipoDiscapacidadSustituto)
+        private Response Existe(TipoProvision TipoProvision)
         {
-            var bdd = TipoDiscapacidadSustituto.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoDiscapacidadSustitutorespuesta = db.TipoDiscapacidadSustituto.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (TipoDiscapacidadSustitutorespuesta != null)
+            var bdd = TipoProvision.Descripcion;
+            var TipoProvisionrespuesta = db.TipoProvision.Where(p => p.Descripcion == bdd).FirstOrDefault();
+            if (TipoProvisionrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = String.Format("Ya existe un Tipo de Discapacidad Sustituo con el nombre {0}", TipoDiscapacidadSustituto.Nombre),
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
@@ -299,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoDiscapacidadSustitutorespuesta,
+                Resultado = TipoProvisionrespuesta,
             };
         }
+
     }
 }

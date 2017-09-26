@@ -26,14 +26,14 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/PaquetesInformaticoses
+        // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarPaquetesInformaticos")]
         public async Task<List<PaquetesInformaticos>> GetPaquetesInformaticos()
         {
             try
             {
-                return await db.PaquetesInformaticos.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.PaquetesInformaticos.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/PaquetesInformaticoses/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetPaquetesInformaticos([FromRoute] int id)
         {
@@ -62,7 +62,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -73,14 +73,14 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No encontrado",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
+                    Message = Mensaje.Satisfactorio,
                     Resultado = PaquetesInformaticos,
                 };
             }
@@ -90,7 +90,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -99,12 +99,22 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // PUT: api/PaquetesInformaticoses/5
+        private async Task Actualizar(PaquetesInformaticos PaquetesInformaticos)
+        {
+            var paqueteinformatico = db.PaquetesInformaticos.Find(PaquetesInformaticos.IdPaquetesInformaticos);
+
+            paqueteinformatico.Nombre = PaquetesInformaticos.Nombre;
+            paqueteinformatico.Descripcion = PaquetesInformaticos.Descripcion;
+            db.PaquetesInformaticos.Update(paqueteinformatico);
+            await db.SaveChangesAsync();
+        }
+
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutPaquetesInformaticos([FromRoute] int id, [FromBody] PaquetesInformaticos PaquetesInformaticos)
         {
@@ -115,90 +125,79 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo inválido"
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
+                
 
                 var existe = Existe(PaquetesInformaticos);
+                var PaquetesInformaticosActualizar = (PaquetesInformaticos)existe.Resultado;
+
                 if (existe.IsSuccess)
                 {
-                    return new Response
+
+
+                    if (PaquetesInformaticosActualizar.IdPaquetesInformaticos == PaquetesInformaticos.IdPaquetesInformaticos)
                     {
-                        IsSuccess = false,
-                        Message = "Existe un registro de igual Nombre",
-                    };
-                }
+                        if (PaquetesInformaticos.Nombre == PaquetesInformaticosActualizar.Nombre &&
+                        PaquetesInformaticos.Descripcion == PaquetesInformaticosActualizar.Descripcion )
+                        {
+                            return new Response
+                            {
+                                IsSuccess = true,
+                            };
+                        }
 
-                var PaquetesInformaticosActualizar = await db.PaquetesInformaticos.Where(x => x.IdPaquetesInformaticos == id).FirstOrDefaultAsync();
-
-                if (PaquetesInformaticosActualizar != null)
-                {
-                    try
-                    {
-                        PaquetesInformaticosActualizar.Nombre = PaquetesInformaticos.Nombre;
-                        await db.SaveChangesAsync();
-
+                        await Actualizar(PaquetesInformaticos);
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = "Ok",
+                            Message = Mensaje.Satisfactorio,
                         };
-
                     }
-                    catch (Exception ex)
+                    return new Response
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = "Se ha producido una excepción",
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Error ",
-                        };
-                    }
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
                 }
 
-
-
-
+                await Actualizar(PaquetesInformaticos);
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "Existe"
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "Excepción"
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
 
-        // POST: api/PaquetesInformaticoses
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarPaquetesInformaticos")]
+        [Route("InsertarPaqueteInformatico")]
         public async Task<Response> PostPaquetesInformaticos([FromBody] PaquetesInformaticos PaquetesInformaticos)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Módelo inválido"
-                    };
-                }
 
                 var respuesta = Existe(PaquetesInformaticos);
                 if (!respuesta.IsSuccess)
@@ -208,14 +207,23 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = "OK"
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un registro de igual Nombre..."
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -225,7 +233,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -234,12 +242,12 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        // DELETE: api/PaquetesInformaticoses/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeletePaquetesInformaticos([FromRoute] int id)
         {
@@ -250,7 +258,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido ",
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -260,7 +268,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "No existe ",
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
                 db.PaquetesInformaticos.Remove(respuesta);
@@ -269,7 +277,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Eliminado ",
+                    Message = Mensaje.Satisfactorio,
                 };
             }
             catch (Exception ex)
@@ -278,7 +286,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -287,7 +295,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Error ",
+                    Message = Mensaje.Error,
                 };
             }
         }
@@ -301,8 +309,8 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un Paquetes Informáticos de igual nombre",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = PaquetesInformaticosrespuesta,
                 };
 
             }
@@ -313,6 +321,5 @@ namespace bd.swth.web.Controllers.API
                 Resultado = PaquetesInformaticosrespuesta,
             };
         }
-
     }
 }

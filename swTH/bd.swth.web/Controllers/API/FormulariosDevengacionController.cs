@@ -7,33 +7,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
+using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
-using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/RelacionesLaborales")]
-    public class RelacionLaboralController : Controller
+    [Route("api/FormulariosDevengacion")]
+    public class FormulariosDevengacionController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public RelacionLaboralController(SwTHDbContext db)
+        public FormulariosDevengacionController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/RelacionLaboral
+        // GET: api/FormularioDevengaciones
         [HttpGet]
-        [Route("ListarRelacionesLaborales")]
-        public async Task<List<RelacionLaboral>> GetRelacionesLaborales()
+        [Route("ListarFormulariosDevengacion")]
+        public async Task<List<FormularioDevengacion>> GetFormularioDevengacion()
         {
             try
             {
-                return await db.RelacionLaboral.Include(x => x.RegimenLaboral).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.FormularioDevengacion.Include(x => x.ModosScializacion).Include(x => x.Empleado).Include(x => x.AnalistaDesarrolloInstitucional).Include(x => x.ResponsableArea).OrderBy(x => x.ModoSocial).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<RelacionLaboral>();
+                return new List<FormularioDevengacion>();
             }
         }
 
-        // GET: api/RelacionLaboral/5
+        // GET: api/FormularioDevengaciones/5
         [HttpGet("{id}")]
-        public async Task<Response> GetRelacionLaboral([FromRoute] int id)
+        public async Task<Response> GetFormularioDevengacion([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var relacionLaboral = await db.RelacionLaboral.SingleOrDefaultAsync(m => m.IdRelacionLaboral == id);
+                var FormularioDevengacion = await db.FormularioDevengacion.SingleOrDefaultAsync(m => m.IdFormularioDevengacion == id);
 
-                if (relacionLaboral == null)
+                if (FormularioDevengacion == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = "Ok",
-                    Resultado = relacionLaboral,
+                    Resultado = FormularioDevengacion,
                 };
             }
             catch (Exception ex)
@@ -104,64 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/RelacionLaboral
-        [HttpPost]
-        [Route("InsertarRelacionLaboral")]
-        public async Task<Response> PostRelacionLaboral([FromBody] RelacionLaboral relacionLaboral)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "Módelo inválido"
-                    };
-                }
-
-                var respuesta = Existe(relacionLaboral);
-                if (!respuesta.IsSuccess)
-                {
-                    db.RelacionLaboral.Add(relacionLaboral);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = "OK"
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "OK"
-                };
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Error ",
-                };
-            }
-        }
-
-        // PUT: api/RelacionLaboral/5
+        // PUT: api/FormularioDevengaciones/5
         [HttpPut("{id}")]
-        public async Task<Response> PutRelacionLaboral([FromRoute] int id, [FromBody] RelacionLaboral relacionLaboral)
+        public async Task<Response> PutFormularioDevengacion([FromRoute] int id, [FromBody] FormularioDevengacion FormularioDevengacion)
         {
             try
             {
@@ -174,14 +119,23 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var RelacionLaboralActualizar = await db.RelacionLaboral.Where(x => x.IdRelacionLaboral == id).FirstOrDefaultAsync();
-                if (RelacionLaboralActualizar != null)
+                var existe = Existe(FormularioDevengacion);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Existe un registro de igual modo social",
+                    };
+                }
+
+                var FormularioDevengacionActualizar = await db.FormularioDevengacion.Where(x => x.IdFormularioDevengacion == id).FirstOrDefaultAsync();
+
+                if (FormularioDevengacionActualizar != null)
                 {
                     try
                     {
-                        RelacionLaboralActualizar.Nombre = relacionLaboral.Nombre;
-                        RelacionLaboralActualizar.IdRegimenLaboral = relacionLaboral.IdRegimenLaboral;
-                        db.RelacionLaboral.Update(RelacionLaboralActualizar);
+                        FormularioDevengacionActualizar.ModoSocial = FormularioDevengacion.ModoSocial;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -230,9 +184,64 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/ApiWithActions/5
+        // POST: api/FormularioDevengaciones
+        [HttpPost]
+        [Route("InsertarFormulariosDevengacion")]
+        public async Task<Response> PostFormularioDevengacion([FromBody] FormularioDevengacion FormularioDevengacion)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
+
+                var respuesta = Existe(FormularioDevengacion);
+                if (!respuesta.IsSuccess)
+                {
+                    db.FormularioDevengacion.Add(FormularioDevengacion);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "OK"
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Existe un registro de igual modo social..."
+                };
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una excepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Error ",
+                };
+            }
+        }
+
+        // DELETE: api/FormularioDevengaciones/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteRelacionLaboral([FromRoute] int id)
+        public async Task<Response> DeleteFormularioDevengacion([FromRoute] int id)
         {
             try
             {
@@ -245,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.RelacionLaboral.SingleOrDefaultAsync(m => m.IdRelacionLaboral == id);
+                var respuesta = await db.FormularioDevengacion.SingleOrDefaultAsync(m => m.IdFormularioDevengacion == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -254,7 +263,7 @@ namespace bd.swth.web.Controllers.API
                         Message = "No existe ",
                     };
                 }
-                db.RelacionLaboral.Remove(respuesta);
+                db.FormularioDevengacion.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -283,16 +292,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(RelacionLaboral relacionLaboral)
+        private Response Existe(FormularioDevengacion FormularioDevengacion)
         {
-            var bdd = relacionLaboral.Nombre.ToUpper().TrimEnd().TrimStart();
-            var RelacionLaboralrespuesta = db.RelacionLaboral.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (RelacionLaboralrespuesta != null)
+            var bdd = FormularioDevengacion.ModoSocial;
+            var FormularioDevengacionrespuesta = db.FormularioDevengacion.Where(p => p.ModoSocial == bdd).FirstOrDefault();
+            if (FormularioDevengacionrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una relación laboral de igual nombre",
+                    Message = "Existe un formulario devengación de igual modo social",
                     Resultado = null,
                 };
 
@@ -301,8 +310,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = RelacionLaboralrespuesta,
+                Resultado = FormularioDevengacionrespuesta,
             };
         }
+
     }
 }
