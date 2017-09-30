@@ -30,6 +30,10 @@ namespace bd.swth.entidades.Negocio
         public int? IdEscalaGrados { get; set; }
         public virtual EscalaGrados EscalaGrados { get; set; }
 
+
+
+        public virtual ICollection<IndiceOcupacionalExperienciaLaboralRequerida> IndiceOcupacionalExperienciaLaboralRequerida { get; set; }
+
         public virtual ICollection<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
 
         public virtual ICollection<MisionIndiceOcupacional> MisionIndiceOcupacional { get; set; }
@@ -37,6 +41,8 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<RelacionesInternasExternasIndiceOcupacional> RelacionesInternasExternasIndiceOcupacional { get; set; }
 
         public virtual ICollection<IndiceOcupacionalEstudio> IndiceOcupacionalEstudio { get; set; }
+
+        public virtual ICollection<ExperienciaLaboralRequerida> ExperienciaLaboralRequerida { get; set; }
 
         public virtual ICollection<IndiceOcupacionalAreaConocimiento> IndiceOcupacionalAreaConocimiento { get; set; }
 
