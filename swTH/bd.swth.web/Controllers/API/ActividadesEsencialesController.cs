@@ -51,6 +51,40 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("ListarActividedesEsencialesNoAsignadasIndiceOcupacional")]
+        public async Task<List<ActividadesEsenciales>> ListarActividedesEsencialesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+                var Lista = await db.ActividadesEsenciales
+                                   .Where(ac => !db.IndiceOcupacionalActividadesEsenciales
+                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                   .Select(ioac => ioac.IdActividadesEsenciales)
+                                                   .Contains(ac.IdActividadesEsenciales))
+                                          .ToListAsync();
+                return Lista;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<ActividadesEsenciales>();
+            }
+        }
+
+
+
+
+
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetActividadesEsenciales([FromRoute] int id)

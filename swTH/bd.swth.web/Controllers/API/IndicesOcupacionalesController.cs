@@ -33,10 +33,53 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var lista=await db.IndiceOcupacional.Include(x => x.Dependencia).Include(x => x.ManualPuesto).Include(x => x.RolPuesto)
-                             .Include(x => x.EscalaGrados).ToListAsync();
+                //Escala de grados
+                //Include(x => x.Dependencia.Nombre).Include(x => x.Dependencia.IdDependencia).Include(x => x.ManualPuesto.Nombre).Include(x => x.RolPuesto)
+                var lista=await db.IndiceOcupacional.ToListAsync();
+                var lista1 = new List<IndiceOcupacional>();
 
-                return lista;
+                foreach (var item in lista)
+                {
+                    var escalaGrados =await db.EscalaGrados.Where(x => x.IdEscalaGrados == item.IdEscalaGrados).FirstOrDefaultAsync();
+                    var dependencia = await db.Dependencia.Where(x => x.IdDependencia == item.IdDependencia).FirstOrDefaultAsync();
+                    var manualPuesto = await db.ManualPuesto.Where(x => x.IdManualPuesto == item.IdManualPuesto).FirstOrDefaultAsync();
+                    var rolPuesto = await db.RolPuesto.Where(x => x.IdRolPuesto == item.IdRolPuesto).FirstOrDefaultAsync();
+
+
+                    var grados = new EscalaGrados
+                    {
+                        Grado = escalaGrados.Grado,
+                        GrupoOcupacional = escalaGrados.GrupoOcupacional,
+                        Remuneracion=escalaGrados.Remuneracion,
+                    };
+
+                    var dependencia1 = new Dependencia
+                    {
+                        Nombre =dependencia.Nombre,
+                       DependenciaPadre=dependencia.DependenciaPadre,
+                    };
+
+
+                    var manual = new ManualPuesto
+                    {
+                        Nombre = manualPuesto.Nombre,
+                        Descripcion=manualPuesto.Descripcion,
+                       
+                    };
+
+                    var rol = new RolPuesto
+                    {
+                        Nombre = rolPuesto.Nombre,
+                    };
+
+                    item.EscalaGrados = grados;
+                    item.Dependencia = dependencia1;
+                    item.ManualPuesto = manual;
+                    item.RolPuesto = rol;
+                    lista1.Add(item);
+                }
+
+                return lista1;
             }
             catch (Exception ex)
             {
@@ -348,6 +391,93 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("InsertarActividadesEsenciales")]
+        public async Task<Response> InsertarActividadesEsenciales([FromBody] IndiceOcupacionalActividadesEsenciales indiceOcupacionalActividadesEsenciales)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+                db.IndiceOcupacionalActividadesEsenciales.Add(indiceOcupacionalActividadesEsenciales);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+        [HttpPost]
+        [Route("InsertarAreaConocimiento")]
+        public async Task<Response> InsertarAreaConocimiento([FromBody] IndiceOcupacionalAreaConocimiento indiceOcupacionalAreaConocimiento)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+                    db.IndiceOcupacionalAreaConocimiento.Add(indiceOcupacionalAreaConocimiento);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
         // POST: api/IndicesOcupacionales
         [HttpPost]
         [Route("InsertarIndiceOcupacional")]
@@ -427,6 +557,9 @@ namespace bd.swth.web.Controllers.API
         {
             return db.IndiceOcupacional.Any(e => e.IdIndiceOcupacional == id);
         }
+
+
+
 
         private Response Existe(IndiceOcupacional indiceOcupacional)
         {
