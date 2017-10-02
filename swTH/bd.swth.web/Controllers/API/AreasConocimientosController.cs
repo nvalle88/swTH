@@ -27,6 +27,38 @@ namespace bd.swth.web.Controllers.API
         }
 
         // GET: api/BasesDatos
+
+        [HttpPost]
+        [Route("ListarAreasConocimientosNoAsignadasIndiceOcupacional")]
+        public async Task<List<AreaConocimiento>> ListarAreasConocimientosNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+                var Lista =await db.AreaConocimiento
+                                   .Where(ac => !db.IndiceOcupacionalAreaConocimiento
+                                                   .Where(a=>a.IndiceOcupacional.IdIndiceOcupacional==indiceOcupacional.IdIndiceOcupacional)
+                                                   .Select(ioac => ioac.IdAreaConocimiento)
+                                                   .Contains(ac.IdAreaConocimiento))
+                                          .ToListAsync();
+                return Lista;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<AreaConocimiento>();
+            }
+        }
+
+
         [HttpGet]
         [Route("ListarAreasConocimientos")]
         public async Task<List<AreaConocimiento>> GetAreasConocimientos()

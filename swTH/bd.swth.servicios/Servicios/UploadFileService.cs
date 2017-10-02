@@ -1,7 +1,9 @@
-﻿using bd.swth.entidades.Utils;
+﻿using bd.swth.entidades.ObjectTransfer;
+using bd.swth.entidades.Utils;
 using bd.swth.servicios.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,6 +21,8 @@ namespace bd.swth.servicios.Servicios
         {
             _hostingEnvironment = environment;
         }
+
+       
 
         public async Task<bool> UploadFile(byte[] file, string folder, string fileName, string extension)
         {
@@ -42,6 +46,45 @@ namespace bd.swth.servicios.Servicios
                 return false;
 
             }
+        }
+
+        public bool DeleteFile(string folder, string fileName, string extension)
+        {
+            try
+            {
+                var a = string.Format("{0}/{1}.{2}", folder, fileName, extension);
+                var targetDirectory = Path.Combine(_hostingEnvironment.WebRootPath, a);
+                if (System.IO.File.Exists(targetDirectory))
+                    {
+                        System.IO.File.Delete(targetDirectory);
+                        return true;
+                    }
+                
+            }
+            catch (Exception e)
+            { }
+            return false;
+        }
+
+        public DocumentoInstitucionalTransfer GetFile(string folder, string fileName, string extension)
+        {
+            var a = string.Format("{0}/{1}.{2}", folder, fileName, extension);
+            var targetDirectory = Path.Combine(_hostingEnvironment.WebRootPath, a);
+
+            var file = new FileStream(targetDirectory, FileMode.Open);
+
+            byte[] data;
+            using (var br = new BinaryReader(file))
+                data = br.ReadBytes((int)file.Length);
+
+            var documenttransfer = new DocumentoInstitucionalTransfer
+            {
+                Nombre = "sdjfhsdjkfhsdjk",
+                Fichero = data,
+            };
+            return documenttransfer;
+
+
         }
     }
 }

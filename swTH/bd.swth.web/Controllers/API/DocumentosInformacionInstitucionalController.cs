@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
@@ -13,10 +12,6 @@ using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 using System.IO;
-using Microsoft.AspNetCore.Hosting;
-using System.Diagnostics;
-using Newtonsoft.Json.Linq;
-using Microsoft.Win32.SafeHandles;
 using bd.swth.entidades.ObjectTransfer;
 using bd.swth.servicios.Interfaces;
 
@@ -30,7 +25,7 @@ namespace bd.swth.web.Controllers.API
     {
         private readonly IUploadFileService uploadFileService;
         private readonly SwTHDbContext db;
-      
+
 
 
         public DocumentosInformacionInstitucionalController(SwTHDbContext db, IUploadFileService uploadFileService)
@@ -54,7 +49,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -70,24 +65,67 @@ namespace bd.swth.web.Controllers.API
         public async Task<Response> Post([FromBody] DocumentoInstitucionalTransfer documentoInstitucionalTransfer)
         {
 
-            var documentoInstitucional = new DocumentoInformacionInstitucional
+            try
             {
-                Nombre = documentoInstitucionalTransfer.Nombre,
-            };
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
+                    };
+                }
 
-            documentoInstitucional =await InsertarDocumentoInformacionInstitucional(documentoInstitucional);
+                var documentoInstitucional = new DocumentoInformacionInstitucional
+                {
+                    Nombre = documentoInstitucionalTransfer.Nombre,
+                };
 
-            var respuesta= await uploadFileService.UploadFile(documentoInstitucionalTransfer.Fichero, "Documentos", Convert.ToString(documentoInstitucional.IdDocumentoInformacionInstitucional), "pdf");
+                var respuesta = Existe(documentoInstitucional.Nombre);
+                if (!respuesta.IsSuccess)
+                {
+
+                    documentoInstitucional = await InsertarDocumentoInformacionInstitucional(documentoInstitucional);
+
+                    await uploadFileService.UploadFile(documentoInstitucionalTransfer.Fichero, "Documentos", Convert.ToString(documentoInstitucional.IdDocumentoInformacionInstitucional), "pdf");
 
 
-            var seleccionado = db.DocumentoInformacionInstitucional.Find(documentoInstitucional.IdDocumentoInformacionInstitucional);
-            seleccionado.Url= string.Format("{0}/{1}.{2}", "Documentos", Convert.ToString(documentoInstitucional.IdDocumentoInformacionInstitucional), "pdf");
-            db.DocumentoInformacionInstitucional.Update(seleccionado);
-            db.SaveChanges();
-            return new Response
+                    var seleccionado = db.DocumentoInformacionInstitucional.Find(documentoInstitucional.IdDocumentoInformacionInstitucional);
+                    seleccionado.Url = string.Format("{0}/{1}.{2}", "Documentos", Convert.ToString(documentoInstitucional.IdDocumentoInformacionInstitucional), "pdf");
+                    db.DocumentoInformacionInstitucional.Update(seleccionado);
+                    db.SaveChanges();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
+            }
+            catch (Exception ex)
             {
-                IsSuccess = true,
-            };
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
 
 
         }
@@ -95,18 +133,13 @@ namespace bd.swth.web.Controllers.API
         // POST: api/BasesDatos
         private async Task<DocumentoInformacionInstitucional> InsertarDocumentoInformacionInstitucional(DocumentoInformacionInstitucional DocumentoInformacionInstitucional)
         {
+
             db.DocumentoInformacionInstitucional.Add(DocumentoInformacionInstitucional);
             await db.SaveChangesAsync();
             return DocumentoInformacionInstitucional;
+
         }
 
-
-        private async Task<DocumentoInformacionInstitucional> ActualizarDocumentoInformacionInstitucional(DocumentoInformacionInstitucional DocumentoInformacionInstitucional)
-        {
-            db.DocumentoInformacionInstitucional.Add(DocumentoInformacionInstitucional);
-            await db.SaveChangesAsync();
-            return DocumentoInformacionInstitucional;
-        }
 
 
         // GET: api/BasesDatos/5
@@ -162,6 +195,47 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        // GET: api/BasesDatos/5
+        [HttpPost]
+        [Route("GetFile")]
+        public async Task<Response> GetFile([FromBody] DocumentoInformacionInstitucional documentoInformacionInstitucional)
+        {
+
+            try
+            {
+                var respuestaFile = uploadFileService.GetFile("Documentos", Convert.ToString(documentoInformacionInstitucional.IdDocumentoInformacionInstitucional), "pdf");
+
+                var documentoIstitucional = await db.DocumentoInformacionInstitucional.Where(x => x.IdDocumentoInformacionInstitucional == documentoInformacionInstitucional.IdDocumentoInformacionInstitucional).FirstOrDefaultAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = documentoIstitucional.Nombre,
+                    Resultado = respuestaFile,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutDocumentoInformacionInstitucional([FromRoute] int id, [FromBody] DocumentoInformacionInstitucional documentoInformacionInstitucional)
@@ -177,7 +251,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(documentoInformacionInstitucional);
+                var existe = Existe(documentoInformacionInstitucional.Nombre);
                 if (existe.IsSuccess)
                 {
                     return new Response
@@ -223,9 +297,6 @@ namespace bd.swth.web.Controllers.API
                     }
                 }
 
-
-
-
                 return new Response
                 {
                     IsSuccess = false,
@@ -257,6 +328,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+
+                var respuestaFile = uploadFileService.DeleteFile("Documentos", Convert.ToString(id), "pdf");
+
                 var respuesta = await db.DocumentoInformacionInstitucional.SingleOrDefaultAsync(m => m.IdDocumentoInformacionInstitucional == id);
                 if (respuesta == null)
                 {
@@ -281,7 +355,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -295,16 +369,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(DocumentoInformacionInstitucional DocumentoInformacionInstitucional)
+        private Response Existe(String nombre)
         {
-            var bdd = DocumentoInformacionInstitucional.Nombre.ToUpper().TrimEnd().TrimStart();
+            var bdd = nombre.ToUpper().TrimEnd().TrimStart();
             var DocumentoInformacionInstitucionalrespuesta = db.DocumentoInformacionInstitucional.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
             if (DocumentoInformacionInstitucionalrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe un documento de información institucional con igual nombre",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
