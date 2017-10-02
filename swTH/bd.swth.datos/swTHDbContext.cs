@@ -20,6 +20,7 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionProveedor> CapacitacionProveedor { get; set; }
         public virtual DbSet<ActividadesAnalisisOcupacional> ActividadesAnalisisOcupacional { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ActividadesEsenciales> ActividadesEsenciales { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ComportamientoObservable> ComportamientoObservable { get; set; }
         public virtual DbSet<ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
         public virtual DbSet<AdministracionTalentoHumano> AdministracionTalentoHumano { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AnoExperiencia> AnoExperiencia { get; set; }
@@ -42,7 +43,6 @@ namespace bd.swth.datos
         public virtual DbSet<CapacitacionTemarioProveedor> CapacitacionTemarioProveedor { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionTipoPregunta> CapacitacionTipoPregunta { get; set; }
         public virtual DbSet<Ciudad> Ciudad { get; set; }
-        public virtual DbSet<ComportamientoObservable> ComportamientoObservable { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ConfiguracionViatico> ConfiguracionViatico { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ConfirmacionLectura> ConfirmacionLectura { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ConocimientosAdicionales> ConocimientosAdicionales { get; set; }
@@ -109,9 +109,9 @@ namespace bd.swth.datos
         public virtual DbSet<IndiceOcupacional> IndiceOcupacional { get; set; }
         public virtual DbSet<IndiceOcupacionalActividadesEsenciales> IndiceOcupacionalActividadesEsenciales { get; set; }
         public virtual DbSet<IndiceOcupacionalAreaConocimiento> IndiceOcupacionalAreaConocimiento { get; set; }
-        public virtual DbSet<IndiceOcupacionalCapacitaciones> IndiceOcupacionalCapacitaciones { get; set; }
-        public virtual DbSet<IndiceOcupacionalComportamientoObservable> IndiceOcupacionalComportamientoObservable { get; set; }
-        public virtual DbSet<IndiceOcupacionalConocimientosAdicionales> IndiceOcupacionalConocimientosAdicionales { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalCapacitaciones> IndiceOcupacionalCapacitaciones { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalComportamientoObservable> IndiceOcupacionalComportamientoObservable { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalConocimientosAdicionales> IndiceOcupacionalConocimientosAdicionales { get; set; }
         public virtual DbSet<IndiceOcupacionalEstudio> IndiceOcupacionalEstudio { get; set; }
         public virtual DbSet<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
         public virtual DbSet<InformeUATH> InformeUATH { get; set; }
