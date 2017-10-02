@@ -29,7 +29,7 @@ namespace bd.swth.web.Controllers.API
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarNacionalidadesIndigenas")]
-        public async Task<List<NacionalidadIndigena>> GetCapacitacionesTemarios()
+        public async Task<List<NacionalidadIndigena>> GetNacionalidadesIndigenas()
         {
             try
             {

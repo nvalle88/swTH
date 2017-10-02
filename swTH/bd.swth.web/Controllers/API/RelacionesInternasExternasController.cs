@@ -135,6 +135,8 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
+
+                        RelacionesInternasExternasActualizar.Nombre = RelacionesInternasExternas.Nombre;
                         RelacionesInternasExternasActualizar.Descripcion = RelacionesInternasExternas.Descripcion;
                         await db.SaveChangesAsync();
 

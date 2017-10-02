@@ -112,7 +112,7 @@ namespace bd.swth.datos
         public virtual DbSet<IndiceOcupacionalCapacitaciones> IndiceOcupacionalCapacitaciones { get; set; }
         public virtual DbSet<IndiceOcupacionalComportamientoObservable> IndiceOcupacionalComportamientoObservable { get; set; }
         public virtual DbSet<IndiceOcupacionalConocimientosAdicionales> IndiceOcupacionalConocimientosAdicionales { get; set; }
-        public virtual DbSet<IndiceOcupacionalEstudio> IndiceOcupacionalEstudio { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalEstudio> IndiceOcupacionalEstudio { get; set; }
         public virtual DbSet<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
         public virtual DbSet<InformeUATH> InformeUATH { get; set; }
         public virtual DbSet<InformeViatico> InformeViatico { get; set; }
@@ -124,7 +124,7 @@ namespace bd.swth.datos
         public virtual DbSet<ManualPuesto> ManualPuesto { get; set; }
         public virtual DbSet<MaterialApoyo> MaterialApoyo { get; set; }
         public virtual DbSet<Mision> Mision { get; set; }
-        public virtual DbSet<MisionIndiceOcupacional> MisionIndiceOcupacional { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.MisionIndiceOcupacional> MisionIndiceOcupacional { get; set; }
         public virtual DbSet<ModalidadPartida> ModalidadPartida { get; set; }
         public virtual DbSet<ModosScializacion> ModosScializacion { get; set; }
         public virtual DbSet<Nacionalidad> Nacionalidad { get; set; }
@@ -140,7 +140,7 @@ namespace bd.swth.datos
         public virtual DbSet<Parroquia> Parroquia { get; set; }
         public virtual DbSet<PartidasFase> PartidasFase { get; set; }
         public virtual DbSet<Permiso> Permiso { get; set; }
-        public virtual DbSet<Persona> Persona { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Persona> Persona { get; set; }
         public virtual DbSet<PersonaCapacitacion> PersonaCapacitacion { get; set; }
         public virtual DbSet<PersonaDiscapacidad> PersonaDiscapacidad { get; set; }
         public virtual DbSet<PersonaEnfermedad> PersonaEnfermedad { get; set; }
@@ -159,7 +159,7 @@ namespace bd.swth.datos
         public virtual DbSet<RegistroEntradaSalida> RegistroEntradaSalida { get; set; }
         public virtual DbSet<RelacionLaboral> RelacionLaboral { get; set; }
         public virtual DbSet<RelacionesInternasExternas> RelacionesInternasExternas { get; set; }
-        public virtual DbSet<RelacionesInternasExternasIndiceOcupacional> RelacionesInternasExternasIndiceOcupacional { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.RelacionesInternasExternasIndiceOcupacional> RelacionesInternasExternasIndiceOcupacional { get; set; }
         public virtual DbSet<Relevancia> Relevancia { get; set; }
         public virtual DbSet<RequisitosNoCumple> RequisitosNoCumple { get; set; }
         public virtual DbSet<Respuesta> Respuesta { get; set; }
@@ -2606,10 +2606,7 @@ namespace bd.swth.datos
             {
                 entity.HasKey(e => e.IdPersona)
                     .HasName("PK_Persona");
-
-                entity.HasIndex(e => e.IdCanditato)
-                    .HasName("IX_Persona_IdCanditato");
-
+                
                 entity.HasIndex(e => e.IdEstadoCivil)
                     .HasName("IX_Persona_IdEstadoCivil");
 
@@ -2656,10 +2653,6 @@ namespace bd.swth.datos
                 entity.Property(e => e.TelefonoPrivado)
                     .IsRequired()
                     .HasMaxLength(20);
-
-                entity.HasOne(d => d.Canditato)
-                    .WithMany(p => p.Persona)
-                    .HasForeignKey(d => d.IdCanditato);
 
                 entity.HasOne(d => d.EstadoCivil)
                     .WithMany(p => p.Persona)
