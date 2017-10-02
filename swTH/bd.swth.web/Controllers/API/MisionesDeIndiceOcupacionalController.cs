@@ -7,33 +7,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Utils;
+using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
-using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Misiones")]
-    public class MisionesController : Controller
+    [Route("api/MisionesDeIndiceOcupacional")]
+    public class MisionesDeIndiceOcupacionalController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public MisionesController(SwTHDbContext db)
+        public MisionesDeIndiceOcupacionalController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        // GET: api/MisionIndiceOcupacional
         [HttpGet]
-        [Route("ListarMisiones")]
-        public async Task<List<Mision>> GetMision()
+        [Route("ListarMisionesDeIndiceOcupacional")]
+        public async Task<List<MisionIndiceOcupacional>> GetMisionesDeIndiceOcupacional()
         {
             try
             {
-                return await db.Mision.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.MisionIndiceOcupacional.Include(x => x.Mision).Include(x => x.IndiceOcupacional).OrderBy(x => x.IdIndiceOcupacional).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,40 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Mision>();
+                return new List<MisionIndiceOcupacional>();
             }
         }
 
-        // GET: api/BasesDatos/5
+
+        // GET: api/MisionIndiceOcupacional
+        [HttpGet]
+        [Route("ListarMisionesDeIndiceOcupacionalConId")]
+        public async Task<List<MisionIndiceOcupacional>> GetMisionesDeIndiceOcupacionalConId(int codigoIndiceOcupacional)
+        {
+            try
+            {
+                return await db.MisionIndiceOcupacional.Include(x => x.Mision).Include(x => x.IndiceOcupacional).Where(x=>x.IdIndiceOcupacional==codigoIndiceOcupacional).OrderBy(x => x.IdIndiceOcupacional).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<MisionIndiceOcupacional>();
+            }
+        }
+
+
+        // GET: api/MisionIndiceOcupacional/5
         [HttpGet("{id}")]
-        public async Task<Response> GetMision([FromRoute] int id)
+        public async Task<Response> GetMisionIndiceOcupacional([FromRoute] int id)
         {
             try
             {
@@ -66,9 +93,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var Mision = await db.Mision.SingleOrDefaultAsync(m => m.IdMision == id);
+                var MisionIndiceOcupacional = await db.MisionIndiceOcupacional.SingleOrDefaultAsync(m => m.IdMisionIndiceOcupacional == id);
 
-                if (Mision == null)
+                if (MisionIndiceOcupacional == null)
                 {
                     return new Response
                     {
@@ -81,7 +108,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = Mision,
+                    Resultado = MisionIndiceOcupacional,
                 };
             }
             catch (Exception ex)
@@ -104,9 +131,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/BasesDatos/5
+        // PUT: api/MisionIndiceOcupacional/5
         [HttpPut("{id}")]
-        public async Task<Response> PutMision([FromRoute] int id, [FromBody] Mision Mision)
+        public async Task<Response> PutMisionIndiceOcupacional([FromRoute] int id, [FromBody] MisionIndiceOcupacional MisionIndiceOcupacional)
         {
             try
             {
@@ -119,76 +146,63 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(Mision);
+                var existe = Existe(MisionIndiceOcupacional);
+                var MisionIndiceOcupacionalActualizar = (MisionIndiceOcupacional)existe.Resultado;
                 if (existe.IsSuccess)
                 {
+                    if (MisionIndiceOcupacionalActualizar.IdMisionIndiceOcupacional == MisionIndiceOcupacional.IdMisionIndiceOcupacional)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
+                var misionIndiceOcupacional = db.MisionIndiceOcupacional.Find(MisionIndiceOcupacional.IdMisionIndiceOcupacional);
 
-                var MisionActualizar = await db.Mision.Where(x => x.IdMision == id).FirstOrDefaultAsync();
-
-                if (MisionActualizar != null)
-                {
-                    try
-                    {
-                        MisionActualizar.Nombre = Mision.Nombre;
-                        MisionActualizar.Descripcion = Mision.Descripcion;
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
+                misionIndiceOcupacional.IdMision = MisionIndiceOcupacional.IdMision;
+                misionIndiceOcupacional.IdIndiceOcupacional = MisionIndiceOcupacional.IdIndiceOcupacional;
+                db.MisionIndiceOcupacional.Update(MisionIndiceOcupacional);
+                await db.SaveChangesAsync();
 
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
+
         }
 
-        // POST: api/BasesDatos
+        // POST: api/MisionIndiceOcupacional
         [HttpPost]
-        [Route("InsertarMisiones")]
-        public async Task<Response> PostMision([FromBody] Mision Mision)
+        [Route("InsertarMisionIndiceOcupacional")]
+        public async Task<Response> PostMisionIndiceOcupacional([FromBody] MisionIndiceOcupacional MisionIndiceOcupacional)
         {
             try
             {
@@ -197,14 +211,14 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = ""
                     };
                 }
 
-                var respuesta = Existe(Mision);
+                var respuesta = Existe(MisionIndiceOcupacional);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Mision.Add(Mision);
+                    db.MisionIndiceOcupacional.Add(MisionIndiceOcupacional);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -216,7 +230,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro,
                 };
 
             }
@@ -240,9 +254,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        // DELETE: api/MisionIndiceOcupacional/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteMision([FromRoute] int id)
+        public async Task<Response> DeleteMisionIndiceOcupacional([FromRoute] int id)
         {
             try
             {
@@ -255,7 +269,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.Mision.SingleOrDefaultAsync(m => m.IdMision == id);
+                var respuesta = await db.MisionIndiceOcupacional.SingleOrDefaultAsync(m => m.IdMisionIndiceOcupacional == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -264,7 +278,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.Mision.Remove(respuesta);
+                db.MisionIndiceOcupacional.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -293,17 +307,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(Mision Mision)
+        private Response Existe(MisionIndiceOcupacional MisionIndiceOcupacional)
         {
-            var bdd = Mision.Descripcion;
-            var Misionrespuesta = db.Mision.Where(p => p.Descripcion == bdd).FirstOrDefault();
-            if (Misionrespuesta != null)
+ 
+            var MisionIndiceOcupacionalrespuesta = db.MisionIndiceOcupacional.Where(p => p.IdMision == MisionIndiceOcupacional.IdMision && p.IdIndiceOcupacional == MisionIndiceOcupacional.IdIndiceOcupacional).FirstOrDefault();
+            if (MisionIndiceOcupacionalrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = MisionIndiceOcupacionalrespuesta,
                 };
 
             }
@@ -311,8 +325,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = Misionrespuesta,
+                Resultado = MisionIndiceOcupacionalrespuesta,
             };
         }
+
     }
 }
