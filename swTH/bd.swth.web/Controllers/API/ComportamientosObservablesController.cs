@@ -7,33 +7,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
-using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/NacionalidadesIndigenas")]
-    public class NacionalidadesIndigenasController : Controller
+    [Route("api/ComportamientosObservables")]
+    public class ComportamientosObservablesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public NacionalidadesIndigenasController(SwTHDbContext db)
+        public ComportamientosObservablesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarNacionalidadesIndigenas")]
-        public async Task<List<NacionalidadIndigena>> GetNacionalidadesIndigenas()
+        [Route("ListarComportamientosObservables")]
+        public async Task<List<ComportamientoObservable>> GetComportamientosObservables()
         {
             try
             {
-                return await db.NacionalidadIndigena.Include(x => x.Etnia).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.ComportamientoObservable.Include(x => x.Nivel).Include(x => x.DenominacionCompetencia).OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<NacionalidadIndigena>();
+                return new List<ComportamientoObservable>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetNacionalidadIndigena([FromRoute] int id)
+        public async Task<Response> GetComportamientoObservable([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var NacionalidadIndigena = await db.NacionalidadIndigena.SingleOrDefaultAsync(m => m.IdNacionalidadIndigena == id);
+                var ComportamientoObservable = await db.ComportamientoObservable.SingleOrDefaultAsync(m => m.IdComportamientoObservable == id);
 
-                if (NacionalidadIndigena == null)
+                if (ComportamientoObservable == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = NacionalidadIndigena,
+                    Resultado = ComportamientoObservable,
                 };
             }
             catch (Exception ex)
@@ -106,7 +106,7 @@ namespace bd.swth.web.Controllers.API
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutNacionalidadIndigena([FromRoute] int id, [FromBody] NacionalidadIndigena NacionalidadIndigena)
+        public async Task<Response> PutComportamientoObservable([FromRoute] int id, [FromBody] ComportamientoObservable ComportamientoObservable)
         {
             try
             {
@@ -119,11 +119,11 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(NacionalidadIndigena);
-                var NacionalidadIndigenaActualizar = (NacionalidadIndigena)existe.Resultado;
+                var existe = Existe(ComportamientoObservable);
+                var ComportamientoObservableActualizar = (ComportamientoObservable)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (NacionalidadIndigenaActualizar.IdNacionalidadIndigena == NacionalidadIndigena.IdNacionalidadIndigena)
+                    if (ComportamientoObservableActualizar.IdComportamientoObservable == ComportamientoObservable.IdComportamientoObservable)
                     {
                         return new Response
                         {
@@ -136,11 +136,12 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
-                var nacionalidadindigena = db.NacionalidadIndigena.Find(NacionalidadIndigena.IdNacionalidadIndigena);
+                var comportamiento = db.ComportamientoObservable.Find(ComportamientoObservable.IdComportamientoObservable);
 
-                nacionalidadindigena.IdEtnia = NacionalidadIndigena.IdEtnia;
-                nacionalidadindigena.Nombre = NacionalidadIndigena.Nombre;
-                db.NacionalidadIndigena.Update(nacionalidadindigena);
+                comportamiento.Descripcion = ComportamientoObservable.Descripcion;
+                comportamiento.IdNivel = ComportamientoObservable.IdNivel;
+                comportamiento.IdDenominacionCompetencia = ComportamientoObservable.IdDenominacionCompetencia;
+                db.ComportamientoObservable.Update(comportamiento);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -148,10 +149,10 @@ namespace bd.swth.web.Controllers.API
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
                 };
-
             }
             catch (Exception ex)
             {
+
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
@@ -169,13 +170,12 @@ namespace bd.swth.web.Controllers.API
                     Message = Mensaje.Excepcion,
                 };
             }
-
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarNacionalidadIndigena")]
-        public async Task<Response> PostNacionalidadIndigena([FromBody] NacionalidadIndigena NacionalidadIndigena)
+        [Route("InsertarComportamientoObservable")]
+        public async Task<Response> PostComportamientoObservable([FromBody] ComportamientoObservable ComportamientoObservable)
         {
             try
             {
@@ -188,10 +188,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(NacionalidadIndigena);
+                var respuesta = Existe(ComportamientoObservable);
                 if (!respuesta.IsSuccess)
                 {
-                    db.NacionalidadIndigena.Add(NacionalidadIndigena);
+                    db.ComportamientoObservable.Add(ComportamientoObservable);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -203,7 +203,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro,
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -229,7 +229,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteNacionalidadIndigena([FromRoute] int id)
+        public async Task<Response> DeleteComportamientoObservable([FromRoute] int id)
         {
             try
             {
@@ -242,7 +242,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.NacionalidadIndigena.SingleOrDefaultAsync(m => m.IdNacionalidadIndigena == id);
+                var respuesta = await db.ComportamientoObservable.SingleOrDefaultAsync(m => m.IdComportamientoObservable == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -251,7 +251,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.NacionalidadIndigena.Remove(respuesta);
+                db.ComportamientoObservable.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -280,17 +280,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(NacionalidadIndigena NacionalidadIndigena)
+        private Response Existe(ComportamientoObservable ComportamientoObservable)
         {
-            var bdd = NacionalidadIndigena.Nombre.ToUpper().TrimEnd().TrimStart();
-            var NacionalidadIndigenarespuesta = db.NacionalidadIndigena.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdEtnia == NacionalidadIndigena.IdEtnia).FirstOrDefault();
-            if (NacionalidadIndigenarespuesta != null)
+            var bdd = ComportamientoObservable.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var ComportamientoObservablerespuesta = db.ComportamientoObservable.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd && p.IdNivel == ComportamientoObservable.IdNivel && p.IdDenominacionCompetencia == ComportamientoObservable.IdDenominacionCompetencia).FirstOrDefault();
+            if (ComportamientoObservablerespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = NacionalidadIndigenarespuesta,
+                    Resultado = ComportamientoObservablerespuesta,
                 };
 
             }
@@ -298,7 +298,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = NacionalidadIndigenarespuesta,
+                Resultado = ComportamientoObservablerespuesta,
             };
         }
     }

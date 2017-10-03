@@ -16,24 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/NacionalidadesIndigenas")]
-    public class NacionalidadesIndigenasController : Controller
+    [Route("api/RelacionesInternasExternasDeIndiceOcupacional")]
+    public class RelacionesInternasExternasDeIndiceOcupacionalController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public NacionalidadesIndigenasController(SwTHDbContext db)
+        public RelacionesInternasExternasDeIndiceOcupacionalController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        // GET: api/RelacionesInternasExternasIndiceOcupacional
         [HttpGet]
-        [Route("ListarNacionalidadesIndigenas")]
-        public async Task<List<NacionalidadIndigena>> GetNacionalidadesIndigenas()
+        [Route("ListarRelacionesInternasExternasDeIndiceOcupacional")]
+        public async Task<List<RelacionesInternasExternasIndiceOcupacional>> GetRelacionesInternasExternasDeIndiceOcupacional()
         {
             try
             {
-                return await db.NacionalidadIndigena.Include(x => x.Etnia).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.RelacionesInternasExternasIndiceOcupacional.Include(x => x.RelacionesInternasExternas).Include(x => x.IndiceOcupacional).OrderBy(x => x.IdIndiceOcupacional).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,39 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<NacionalidadIndigena>();
+                return new List<RelacionesInternasExternasIndiceOcupacional>();
             }
         }
 
-        // GET: api/BasesDatos/5
+        // GET: api/RelacionesInternasExternasIndiceOcupacional
+        [HttpGet]
+        [Route("ListarRelacionesInternasExternasDeIndiceOcupacionalConId")]
+        public async Task<List<RelacionesInternasExternasIndiceOcupacional>> GetRelacionesInternasExternasDeIndiceOcupacionalConId(int codigoIndiceOcupacional)
+        {
+            try
+            {
+                return await db.RelacionesInternasExternasIndiceOcupacional.Include(x => x.RelacionesInternasExternas).Include(x => x.IndiceOcupacional).Where(x=>x.IdIndiceOcupacional== codigoIndiceOcupacional).OrderBy(x => x.IdIndiceOcupacional).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<RelacionesInternasExternasIndiceOcupacional>();
+            }
+        }
+
+
+        // GET: api/RelacionesInternasExternasIndiceOcupacional/5
         [HttpGet("{id}")]
-        public async Task<Response> GetNacionalidadIndigena([FromRoute] int id)
+        public async Task<Response> GetRelacionesInternasExternasIndiceOcupacional([FromRoute] int id)
         {
             try
             {
@@ -66,9 +92,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var NacionalidadIndigena = await db.NacionalidadIndigena.SingleOrDefaultAsync(m => m.IdNacionalidadIndigena == id);
+                var RelacionesInternasExternasIndiceOcupacional = await db.RelacionesInternasExternasIndiceOcupacional.SingleOrDefaultAsync(m => m.IdRelacionesInternasExternasIndiceOcupacional == id);
 
-                if (NacionalidadIndigena == null)
+                if (RelacionesInternasExternasIndiceOcupacional == null)
                 {
                     return new Response
                     {
@@ -81,7 +107,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = NacionalidadIndigena,
+                    Resultado = RelacionesInternasExternasIndiceOcupacional,
                 };
             }
             catch (Exception ex)
@@ -104,9 +130,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/BasesDatos/5
+        // PUT: api/RelacionesInternasExternasIndiceOcupacional/5
         [HttpPut("{id}")]
-        public async Task<Response> PutNacionalidadIndigena([FromRoute] int id, [FromBody] NacionalidadIndigena NacionalidadIndigena)
+        public async Task<Response> PutRelacionesInternasExternasIndiceOcupacional([FromRoute] int id, [FromBody] RelacionesInternasExternasIndiceOcupacional RelacionesInternasExternasIndiceOcupacional)
         {
             try
             {
@@ -119,11 +145,11 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(NacionalidadIndigena);
-                var NacionalidadIndigenaActualizar = (NacionalidadIndigena)existe.Resultado;
+                var existe = Existe(RelacionesInternasExternasIndiceOcupacional);
+                var RelacionesInternasExternasIndiceOcupacionalActualizar = (RelacionesInternasExternasIndiceOcupacional)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (NacionalidadIndigenaActualizar.IdNacionalidadIndigena == NacionalidadIndigena.IdNacionalidadIndigena)
+                    if (RelacionesInternasExternasIndiceOcupacionalActualizar.IdRelacionesInternasExternasIndiceOcupacional == RelacionesInternasExternasIndiceOcupacional.IdRelacionesInternasExternasIndiceOcupacional)
                     {
                         return new Response
                         {
@@ -136,11 +162,11 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
-                var nacionalidadindigena = db.NacionalidadIndigena.Find(NacionalidadIndigena.IdNacionalidadIndigena);
+                var relacionesInternasExternasIndiceOcupacional = db.RelacionesInternasExternasIndiceOcupacional.Find(RelacionesInternasExternasIndiceOcupacional.IdRelacionesInternasExternasIndiceOcupacional);
 
-                nacionalidadindigena.IdEtnia = NacionalidadIndigena.IdEtnia;
-                nacionalidadindigena.Nombre = NacionalidadIndigena.Nombre;
-                db.NacionalidadIndigena.Update(nacionalidadindigena);
+                relacionesInternasExternasIndiceOcupacional.IdRelacionesInternasExternas = RelacionesInternasExternasIndiceOcupacional.IdRelacionesInternasExternas;
+                relacionesInternasExternasIndiceOcupacional.IdIndiceOcupacional = RelacionesInternasExternasIndiceOcupacional.IdIndiceOcupacional;
+                db.RelacionesInternasExternasIndiceOcupacional.Update(RelacionesInternasExternasIndiceOcupacional);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -172,10 +198,10 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/BasesDatos
+        // POST: api/RelacionesInternasExternasIndiceOcupacional
         [HttpPost]
-        [Route("InsertarNacionalidadIndigena")]
-        public async Task<Response> PostNacionalidadIndigena([FromBody] NacionalidadIndigena NacionalidadIndigena)
+        [Route("InsertarRelacionesInternasExternasIndiceOcupacional")]
+        public async Task<Response> PostRelacionesInternasExternasIndiceOcupacional([FromBody] RelacionesInternasExternasIndiceOcupacional RelacionesInternasExternasIndiceOcupacional)
         {
             try
             {
@@ -188,10 +214,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(NacionalidadIndigena);
+                var respuesta = Existe(RelacionesInternasExternasIndiceOcupacional);
                 if (!respuesta.IsSuccess)
                 {
-                    db.NacionalidadIndigena.Add(NacionalidadIndigena);
+                    db.RelacionesInternasExternasIndiceOcupacional.Add(RelacionesInternasExternasIndiceOcupacional);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -227,9 +253,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        // DELETE: api/RelacionesInternasExternasIndiceOcupacional/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteNacionalidadIndigena([FromRoute] int id)
+        public async Task<Response> DeleteRelacionesInternasExternasIndiceOcupacional([FromRoute] int id)
         {
             try
             {
@@ -242,7 +268,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.NacionalidadIndigena.SingleOrDefaultAsync(m => m.IdNacionalidadIndigena == id);
+                var respuesta = await db.RelacionesInternasExternasIndiceOcupacional.SingleOrDefaultAsync(m => m.IdRelacionesInternasExternasIndiceOcupacional == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -251,7 +277,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.NacionalidadIndigena.Remove(respuesta);
+                db.RelacionesInternasExternasIndiceOcupacional.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -280,17 +306,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(NacionalidadIndigena NacionalidadIndigena)
+        private Response Existe(RelacionesInternasExternasIndiceOcupacional RelacionesInternasExternasIndiceOcupacional)
         {
-            var bdd = NacionalidadIndigena.Nombre.ToUpper().TrimEnd().TrimStart();
-            var NacionalidadIndigenarespuesta = db.NacionalidadIndigena.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdEtnia == NacionalidadIndigena.IdEtnia).FirstOrDefault();
-            if (NacionalidadIndigenarespuesta != null)
+  
+            var RelacionesInternasExternasIndiceOcupacionalrespuesta = db.RelacionesInternasExternasIndiceOcupacional.Where(p=> p.IdRelacionesInternasExternas == RelacionesInternasExternasIndiceOcupacional.IdRelacionesInternasExternas && p.IdIndiceOcupacional== RelacionesInternasExternasIndiceOcupacional.IdIndiceOcupacional).FirstOrDefault();
+            if (RelacionesInternasExternasIndiceOcupacionalrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = NacionalidadIndigenarespuesta,
+                    Resultado = RelacionesInternasExternasIndiceOcupacionalrespuesta,
                 };
 
             }
@@ -298,8 +324,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = NacionalidadIndigenarespuesta,
+                Resultado = RelacionesInternasExternasIndiceOcupacionalrespuesta,
             };
         }
+
     }
 }

@@ -192,6 +192,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
+                        MisionActualizar.Nombre = Mision.Nombre;
                         MisionActualizar.Descripcion = Mision.Descripcion;
                         await db.SaveChangesAsync();
 

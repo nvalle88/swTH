@@ -16,24 +16,24 @@ using bd.swth.entidades.Utils;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/NacionalidadesIndigenas")]
-    public class NacionalidadesIndigenasController : Controller
+    [Route("api/Personas")]
+    public class PersonasController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public NacionalidadesIndigenasController(SwTHDbContext db)
+        public PersonasController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarNacionalidadesIndigenas")]
-        public async Task<List<NacionalidadIndigena>> GetNacionalidadesIndigenas()
+        [Route("ListarPersonas")]
+        public async Task<List<Persona>> GetCapacitacionesTemarios()
         {
             try
             {
-                return await db.NacionalidadIndigena.Include(x => x.Etnia).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Persona.Include(x => x.Sexo).Include(x=>x.TipoIdentificacion).Include(x => x.EstadoCivil).Include(x => x.Genero).Include(x => x.Nacionalidad).Include(x => x.TipoSangre).Include(x => x.Etnia).OrderBy(x => x.Nombres).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<NacionalidadIndigena>();
+                return new List<Persona>();
             }
         }
 
-        // GET: api/BasesDatos/5
+        // GET: api/Personas/5
         [HttpGet("{id}")]
-        public async Task<Response> GetNacionalidadIndigena([FromRoute] int id)
+        public async Task<Response> GetPersona([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var NacionalidadIndigena = await db.NacionalidadIndigena.SingleOrDefaultAsync(m => m.IdNacionalidadIndigena == id);
+                var Persona = await db.Persona.SingleOrDefaultAsync(m => m.IdPersona == id);
 
-                if (NacionalidadIndigena == null)
+                if (Persona == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = NacionalidadIndigena,
+                    Resultado = Persona,
                 };
             }
             catch (Exception ex)
@@ -104,9 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/BasesDatos/5
+        // PUT: api/Personas/5
         [HttpPut("{id}")]
-        public async Task<Response> PutNacionalidadIndigena([FromRoute] int id, [FromBody] NacionalidadIndigena NacionalidadIndigena)
+        public async Task<Response> PutPersona([FromRoute] int id, [FromBody] Persona Persona)
         {
             try
             {
@@ -119,11 +119,11 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(NacionalidadIndigena);
-                var NacionalidadIndigenaActualizar = (NacionalidadIndigena)existe.Resultado;
+                var existe = Existe(Persona);
+                var PersonaActualizar = (Persona)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (NacionalidadIndigenaActualizar.IdNacionalidadIndigena == NacionalidadIndigena.IdNacionalidadIndigena)
+                    if (PersonaActualizar.IdPersona == Persona.IdPersona)
                     {
                         return new Response
                         {
@@ -136,11 +136,26 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
-                var nacionalidadindigena = db.NacionalidadIndigena.Find(NacionalidadIndigena.IdNacionalidadIndigena);
+                var persona = db.Persona.Find(Persona.IdPersona);
 
-                nacionalidadindigena.IdEtnia = NacionalidadIndigena.IdEtnia;
-                nacionalidadindigena.Nombre = NacionalidadIndigena.Nombre;
-                db.NacionalidadIndigena.Update(nacionalidadindigena);
+                persona.Nombres = Persona.Nombres;
+                persona.FechaNacimiento = Persona.FechaNacimiento;
+                persona.IdSexo = Persona.IdSexo;
+                persona.IdTipoIdentificacion = Persona.IdTipoIdentificacion;
+                persona.IdEstadoCivil = Persona.IdEstadoCivil;
+                persona.IdGenero = Persona.IdGenero;
+                persona.IdNacionalidad = Persona.IdNacionalidad;
+                persona.IdTipoSangre = Persona.IdTipoSangre;
+                persona.IdEtnia = Persona.IdEtnia;
+                persona.Identificacion = Persona.Identificacion;
+                persona.Nombres = Persona.Nombres;
+                persona.Apellidos = Persona.Apellidos;
+                persona.TelefonoPrivado = Persona.TelefonoPrivado;
+                persona.TelefonoCasa = Persona.TelefonoCasa;
+                persona.CorreoPrivado = Persona.CorreoPrivado;
+                persona.LugarTrabajo = Persona.LugarTrabajo;
+ 
+                db.Persona.Update(persona);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -174,8 +189,8 @@ namespace bd.swth.web.Controllers.API
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarNacionalidadIndigena")]
-        public async Task<Response> PostNacionalidadIndigena([FromBody] NacionalidadIndigena NacionalidadIndigena)
+        [Route("InsertarPersona")]
+        public async Task<Response> PostPersona([FromBody] Persona Persona)
         {
             try
             {
@@ -188,10 +203,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(NacionalidadIndigena);
+                var respuesta = Existe(Persona);
                 if (!respuesta.IsSuccess)
                 {
-                    db.NacionalidadIndigena.Add(NacionalidadIndigena);
+                    db.Persona.Add(Persona);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -229,7 +244,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteNacionalidadIndigena([FromRoute] int id)
+        public async Task<Response> DeletePersona([FromRoute] int id)
         {
             try
             {
@@ -242,7 +257,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.NacionalidadIndigena.SingleOrDefaultAsync(m => m.IdNacionalidadIndigena == id);
+                var respuesta = await db.Persona.SingleOrDefaultAsync(m => m.IdPersona == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -251,7 +266,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.NacionalidadIndigena.Remove(respuesta);
+                db.Persona.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -280,25 +295,25 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(NacionalidadIndigena NacionalidadIndigena)
+        private Response Existe(Persona Persona)
         {
-            var bdd = NacionalidadIndigena.Nombre.ToUpper().TrimEnd().TrimStart();
-            var NacionalidadIndigenarespuesta = db.NacionalidadIndigena.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdEtnia == NacionalidadIndigena.IdEtnia).FirstOrDefault();
-            if (NacionalidadIndigenarespuesta != null)
+            var bdd = Persona.Nombres.ToUpper().TrimEnd().TrimStart();
+            var Personarespuesta = db.Persona.Where(p => p.Nombres.ToUpper().TrimStart().TrimEnd() == bdd && p.IdSexo == Persona.IdSexo && p.IdTipoIdentificacion == Persona.IdTipoIdentificacion && p.IdEstadoCivil == Persona.IdEstadoCivil && p.IdGenero == Persona.IdGenero && p.IdNacionalidad == Persona.IdNacionalidad && p.IdTipoSangre == Persona.IdTipoSangre && p.IdEtnia == Persona.IdEtnia).FirstOrDefault();
+            if (Personarespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = NacionalidadIndigenarespuesta,
+                    Resultado = Personarespuesta,
                 };
 
-            }
+         }
 
             return new Response
             {
                 IsSuccess = false,
-                Resultado = NacionalidadIndigenarespuesta,
+                Resultado = Personarespuesta,
             };
         }
     }

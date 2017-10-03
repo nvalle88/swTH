@@ -76,12 +76,7 @@ namespace bd.swth.entidades.Negocio
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int? IdEtnia { get; set; }
         public virtual Etnia Etnia { get; set; }
-
-        [Display(Name = "Candidato:")]
-        [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
-        public int? IdCanditato { get; set; }
-        public virtual Canditato Canditato { get; set; }
-
+        
         [Display(Name = "Estado civil:")]
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int? IdEstadoCivil { get; set; }
