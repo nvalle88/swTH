@@ -240,6 +240,62 @@ namespace bd.swth.web.Controllers
             }
         }
 
+
+
+        // DELETE: api/BasesDatos/5
+        [HttpPost]
+        [Route("EliminarIncideOcupacionalCapacitaciones")]
+        public async Task<Response> EliminarIndiceOcupacionalCapacitaciones([FromBody] IndiceOcupacionalCapacitaciones indiceOcupacionalCapacitaciones)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.IndiceOcupacionalCapacitaciones.SingleOrDefaultAsync(m => m.IdCapacitacion == indiceOcupacionalCapacitaciones.IdCapacitacion && m.IdIndiceOcupacional == indiceOcupacionalCapacitaciones.IdIndiceOcupacional);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.IndiceOcupacionalCapacitaciones.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteCapacitacion([FromRoute] int id)
