@@ -18,8 +18,11 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.AccionPersonal> AccionPersonal { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentoInformacionInstitucional> DocumentoInformacionInstitucional { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionProveedor> CapacitacionProveedor { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ExperienciaLaboralRequerida> ExperienciaLaboralRequerida { get; set; }
         public virtual DbSet<ActividadesAnalisisOcupacional> ActividadesAnalisisOcupacional { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ActividadesEsenciales> ActividadesEsenciales { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ComportamientoObservable> ComportamientoObservable { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalExperienciaLaboralRequerida> IndiceOcupacionalExperienciaLaboralRequerida { get; set; }
         public virtual DbSet<ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
         public virtual DbSet<AdministracionTalentoHumano> AdministracionTalentoHumano { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AnoExperiencia> AnoExperiencia { get; set; }
@@ -42,14 +45,13 @@ namespace bd.swth.datos
         public virtual DbSet<CapacitacionTemarioProveedor> CapacitacionTemarioProveedor { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionTipoPregunta> CapacitacionTipoPregunta { get; set; }
         public virtual DbSet<Ciudad> Ciudad { get; set; }
-        public virtual DbSet<ComportamientoObservable> ComportamientoObservable { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ConfiguracionViatico> ConfiguracionViatico { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ConfirmacionLectura> ConfirmacionLectura { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ConocimientosAdicionales> ConocimientosAdicionales { get; set; }
         public virtual DbSet<DatosBancarios> DatosBancarios { get; set; }
         public virtual DbSet<DeclaracionPatrimonioPersonal> DeclaracionPatrimonioPersonal { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DenominacionCompetencia> DenominacionCompetencia { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.Dependencia> Dependencia { get; set; }
+        public virtual DbSet<Dependencia> Dependencia { get; set; }
         public virtual DbSet<DependenciaDocumento> DependenciaDocumento { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Destreza> Destreza { get; set; }
         public virtual DbSet<DetalleExamenInduccion> DetalleExamenInduccion { get; set; }
@@ -91,7 +93,6 @@ namespace bd.swth.datos
         public virtual DbSet<EvaluacionTrabajoEquipoIniciativaLiderazgoFactor> EvaluacionTrabajoEquipoIniciativaLiderazgoFactor { get; set; }
         public virtual DbSet<Evaluador> Evaluador { get; set; }
         public virtual DbSet<Exepciones> Exepciones { get; set; }
-        public virtual DbSet<ExperienciaLaboralRequerida> ExperienciaLaboralRequerida { get; set; }
         public virtual DbSet<Factor> Factor { get; set; }
         public virtual DbSet<FacturaViatico> FacturaViatico { get; set; }
         public virtual DbSet<FaseConcurso> FaseConcurso { get; set; }
@@ -106,13 +107,12 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.GrupoOcupacional> GrupoOcupacional { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.InstruccionFormal> InstruccionFormal { get; set; }
         public virtual DbSet<Indicador> Indicador { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacional> IndiceOcupacional { get; set; }
+        public virtual DbSet<IndiceOcupacional> IndiceOcupacional { get; set; }
         public virtual DbSet<IndiceOcupacionalActividadesEsenciales> IndiceOcupacionalActividadesEsenciales { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalExperienciaLaboralRequerida> IndiceOcupacionalExperienciaLaboralRequerida { get; set; }
         public virtual DbSet<IndiceOcupacionalAreaConocimiento> IndiceOcupacionalAreaConocimiento { get; set; }
-        public virtual DbSet<IndiceOcupacionalCapacitaciones> IndiceOcupacionalCapacitaciones { get; set; }
-        public virtual DbSet<IndiceOcupacionalComportamientoObservable> IndiceOcupacionalComportamientoObservable { get; set; }
-        public virtual DbSet<IndiceOcupacionalConocimientosAdicionales> IndiceOcupacionalConocimientosAdicionales { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalCapacitaciones> IndiceOcupacionalCapacitaciones { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalComportamientoObservable> IndiceOcupacionalComportamientoObservable { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalConocimientosAdicionales> IndiceOcupacionalConocimientosAdicionales { get; set; }
         public virtual DbSet<IndiceOcupacionalEstudio> IndiceOcupacionalEstudio { get; set; }
         public virtual DbSet<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
         public virtual DbSet<InformeUATH> InformeUATH { get; set; }
@@ -692,7 +692,7 @@ namespace bd.swth.datos
                 entity.Property(e => e.Nombre)
                     .IsRequired()
                     .HasMaxLength(50)
-                    .HasColumnName("Nombre");
+                    .HasColumnName("Name");
 
                 entity.HasOne(d => d.Provincia)
                     .WithMany(p => p.Ciudad)
@@ -2032,24 +2032,6 @@ namespace bd.swth.datos
                     .WithMany(p => p.IndiceOcupacionalActividadesEsenciales)
                     .HasForeignKey(d => d.IdIndiceOcupacional)
                     .OnDelete(DeleteBehavior.Restrict);
-            });
-
-
-
-            modelBuilder.Entity<IndiceOcupacionalExperienciaLaboralRequerida>(entity =>
-            {
-                entity.HasKey(e => e.IdIndiceOcupacionalExperienciaLaboralRequerida)
-                    .HasName("PK_IndiceOcupacionalExperienciaLaboralRequerida");
-
-                entity.HasOne(d => d.ExperienciaLaboralRequerida)
-                    .WithMany(p => p.IndiceOcupacionalExperienciaLaboralRequerida)
-                    .HasForeignKey(d => d.IdExperienciaLaboralRequerida)
-                    .HasConstraintName("FK_IndiceOcupacionalExperienciaLaboralRequerida_ExperienciaLaboralRequerida");
-
-                entity.HasOne(d => d.IndiceOcupacional)
-                    .WithMany(p => p.IndiceOcupacionalExperienciaLaboralRequerida)
-                    .HasForeignKey(d => d.IdIndiceOcupacional)
-                    .HasConstraintName("FK_IndiceOcupacionalExperienciaLaboralRequerida_IndiceOcupacional");
             });
 
             modelBuilder.Entity<IndiceOcupacionalAreaConocimiento>(entity =>

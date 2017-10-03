@@ -51,20 +51,39 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
         [HttpPost]
-        [Route("ListarConocimientosAdicionalesNoAsignadasIndiceOcupacional")]
-        public async Task<List<ConocimientosAdicionales>> ListarConocimientosAdicionalesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        [Route("EliminarIncideOcupacionalConocimientosAdicionales")]
+        public async Task<Response> EliminarIncideOcupacionalConocimientosAdicionales([FromBody] IndiceOcupacionalConocimientosAdicionales indiceOcupacionalConocimientosAdicionales)
         {
             try
             {
-                var Lista = await db.ConocimientosAdicionales
-                                   .Where(ac => !db.IndiceOcupacionalConocimientosAdicionales
-                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
-                                                   .Select(ioac => ioac.IdConocimientosAdicionales)
-                                                   .Contains(ac.IdConocimientosAdicionales))
-                                          .ToListAsync();
-                return Lista;
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.IndiceOcupacionalConocimientosAdicionales.SingleOrDefaultAsync(m => m.IdConocimientosAdicionales == indiceOcupacionalConocimientosAdicionales.IdConocimientosAdicionales
+                                      && m.IdIndiceOcupacional == indiceOcupacionalConocimientosAdicionales.IdIndiceOcupacional);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.IndiceOcupacionalConocimientosAdicionales.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
             }
             catch (Exception ex)
             {
@@ -78,9 +97,15 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<ConocimientosAdicionales>();
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
             }
         }
+
+
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
