@@ -195,7 +195,7 @@ namespace bd.swth.web.Controllers.API
                                       .Include(x => x.Dependencia)
                                       .Include(x=>x.ManualPuesto)
                                       .Include(x=>x.RolPuesto)
-                                      .Include(x=>x.EscalaGrados)
+                                      .Include(x=>x.EscalaGrados.GrupoOcupacional)
                                       .FirstOrDefaultAsync();
 
 

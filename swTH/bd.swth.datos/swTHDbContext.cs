@@ -256,6 +256,9 @@ namespace bd.swth.datos
                     .HasMaxLength(50);
             });
 
+
+           
+
             modelBuilder.Entity<ActividadesGestionCambio>(entity =>
             {
                 entity.HasKey(e => e.IdActividadesGestionCambio)
