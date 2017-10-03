@@ -51,6 +51,63 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("EliminarIncideOcupacionalMision")]
+        public async Task<Response> EliminarIncideOcupacionalMision([FromBody] MisionIndiceOcupacional misionIndiceOcupacional)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.MisionIndiceOcupacional.SingleOrDefaultAsync(m => m.IdMision == misionIndiceOcupacional.IdMision
+                                      && m.IdIndiceOcupacional == misionIndiceOcupacional.IdIndiceOcupacional);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.MisionIndiceOcupacional.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetMision([FromRoute] int id)

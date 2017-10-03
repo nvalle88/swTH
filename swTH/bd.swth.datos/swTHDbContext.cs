@@ -18,6 +18,7 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.AccionPersonal> AccionPersonal { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentoInformacionInstitucional> DocumentoInformacionInstitucional { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionProveedor> CapacitacionProveedor { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ExperienciaLaboralRequerida> ExperienciaLaboralRequerida { get; set; }
         public virtual DbSet<ActividadesAnalisisOcupacional> ActividadesAnalisisOcupacional { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ActividadesEsenciales> ActividadesEsenciales { get; set; }
         public virtual DbSet<ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
@@ -91,7 +92,6 @@ namespace bd.swth.datos
         public virtual DbSet<EvaluacionTrabajoEquipoIniciativaLiderazgoFactor> EvaluacionTrabajoEquipoIniciativaLiderazgoFactor { get; set; }
         public virtual DbSet<Evaluador> Evaluador { get; set; }
         public virtual DbSet<Exepciones> Exepciones { get; set; }
-        public virtual DbSet<ExperienciaLaboralRequerida> ExperienciaLaboralRequerida { get; set; }
         public virtual DbSet<Factor> Factor { get; set; }
         public virtual DbSet<FacturaViatico> FacturaViatico { get; set; }
         public virtual DbSet<FaseConcurso> FaseConcurso { get; set; }
