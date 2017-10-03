@@ -289,6 +289,7 @@ namespace bd.swth.web.Controllers
                 }
 
                 var respuesta = await db.IndiceOcupacionalCapacitaciones.SingleOrDefaultAsync(m => m.IdCapacitacion == indiceOcupacionalCapacitaciones.IdCapacitacion && m.IdIndiceOcupacional == indiceOcupacionalCapacitaciones.IdIndiceOcupacional);
+
                 if (respuesta == null)
                 {
                     return new Response
@@ -379,8 +380,6 @@ namespace bd.swth.web.Controllers
             }
         }
 
-        // DELETE: api/BasesDatos/5
-       
         private Response Existe(Capacitacion Capacitacion)
         {
             var bdd = Capacitacion.Nombre.ToUpper().TrimEnd().TrimStart();

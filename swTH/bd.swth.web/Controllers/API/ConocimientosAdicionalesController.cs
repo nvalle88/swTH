@@ -51,6 +51,37 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("ListarConocimientosAdicionalesNoAsignadasIndiceOcupacional")]
+        public async Task<List<ConocimientosAdicionales>> ListarConocimientosAdicionalesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+                var Lista = await db.ConocimientosAdicionales
+                                   .Where(ac => !db.IndiceOcupacionalConocimientosAdicionales
+                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                   .Select(ioac => ioac.IdConocimientosAdicionales)
+                                                   .Contains(ac.IdConocimientosAdicionales))
+                                          .ToListAsync();
+                return Lista;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<ConocimientosAdicionales>();
+            }
+        }
+
         [HttpPost]
         [Route("EliminarIncideOcupacionalConocimientosAdicionales")]
         public async Task<Response> EliminarIncideOcupacionalConocimientosAdicionales([FromBody] IndiceOcupacionalConocimientosAdicionales indiceOcupacionalConocimientosAdicionales)
