@@ -8,6 +8,7 @@ namespace bd.swth.entidades.Negocio
     {
         [Key]
         public int IdIndiceOcupacionalExperienciaLaboralRequerida { get; set; }
+
         public int IdIndiceOcupacional { get; set; }
         public int IdExperienciaLaboralRequerida { get; set; }
 
