@@ -51,6 +51,37 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("ListarComportamientosObservablesNoAsignadasIndiceOcupacional")]
+        public async Task<List<ComportamientoObservable>> ListarActividedesEsencialesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+                var Lista = await db.ComportamientoObservable
+                                   .Where(ac => !db.IndiceOcupacionalComportamientoObservable
+                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                   .Select(ioac => ioac.IdComportamientoObservable)
+                                                   .Contains(ac.IdComportamientoObservable))
+                                          .ToListAsync();
+                return Lista;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<ComportamientoObservable>();
+            }
+        }
+
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetComportamientoObservable([FromRoute] int id)
@@ -252,6 +283,60 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
                 db.ComportamientoObservable.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+        [HttpPost]
+        [Route("EliminarIndiceOcupacionalComportamientosObservables")]
+        public async Task<Response> EliminarIndiceOcupacionalComportamientosObservables([FromBody] IndiceOcupacionalComportamientoObservable indiceOcupacionalComportamientoObservable)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.IndiceOcupacionalComportamientoObservable.SingleOrDefaultAsync(m => m.IdComportamientoObservable == indiceOcupacionalComportamientoObservable.IdComportamientoObservable && m.IdIndiceOcupacional == indiceOcupacionalComportamientoObservable.IdIndiceOcupacional);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.IndiceOcupacionalComportamientoObservable.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response

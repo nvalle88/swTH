@@ -92,6 +92,13 @@ namespace bd.swth.entidades.Negocio
         public virtual Nacionalidad Nacionalidad { get; set; }
         public int? IdNacionalidad { get; set; }
 
+        [Display(Name = "Candidato:")]
+        [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
+        public virtual Canditato Candidato { get; set; }
+        public int? IdCandidato { get; set; }
+
+
+
         public virtual ICollection<PersonaEnfermedad> PersonaEnfermedad { get; set; }
 
         public virtual ICollection<PersonaDiscapacidad> PersonaDiscapacidad { get; set; }

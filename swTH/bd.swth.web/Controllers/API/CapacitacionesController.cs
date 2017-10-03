@@ -41,7 +41,37 @@ namespace bd.swth.web.Controllers
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<Capacitacion>();
+            }
+        }
+
+        [HttpPost]
+        [Route("ListarCapacitacionesNoAsignadasIndiceOcupacional")]
+        public async Task<List<Capacitacion>> ListarCapacitacionesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+                var Lista = await db.Capacitacion
+                                   .Where(ac => !db.IndiceOcupacionalCapacitaciones
+                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                   .Select(ioac => ioac.IdCapacitacion)
+                                                   .Contains(ac.IdCapacitacion))
+                                          .ToListAsync();
+                return Lista;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -90,7 +120,7 @@ namespace bd.swth.web.Controllers
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -125,7 +155,7 @@ namespace bd.swth.web.Controllers
                     return new Response
                     {
                         IsSuccess = false,
-                        Message=Mensaje.ExisteRegistro,
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
 
@@ -152,7 +182,7 @@ namespace bd.swth.web.Controllers
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
                             ExceptionTrace = ex,
-                                               Message = Mensaje.Excepcion,
+                            Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                             UserName = "",
@@ -180,7 +210,7 @@ namespace bd.swth.web.Controllers
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
@@ -226,7 +256,7 @@ namespace bd.swth.web.Controllers
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -279,7 +309,61 @@ namespace bd.swth.web.Controllers
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        // DELETE: api/BasesDatos/5
+        [HttpPost]
+        [Route("EliminarIncideOcupacionalCapacitaciones")]
+        public async Task<Response> EliminarIndiceOcupacionalCapacitaciones([FromBody] IndiceOcupacionalCapacitaciones indiceOcupacionalCapacitaciones)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.IndiceOcupacionalCapacitaciones.SingleOrDefaultAsync(m => m.IdCapacitacion == indiceOcupacionalCapacitaciones.IdCapacitacion && m.IdIndiceOcupacional == indiceOcupacionalCapacitaciones.IdIndiceOcupacional);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.IndiceOcupacionalCapacitaciones.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
