@@ -26,6 +26,40 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+
+        [HttpPost]
+        [Route("ListarEstudiosNoAsignadasIndiceOcupacional")]
+        public async Task<List<Estudio>> ListarEstudiosNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+                var Lista = await db.Estudio
+                                   .Where(e => !db.IndiceOcupacionalEstudio
+                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                   .Select(ioe => ioe.IdEstudio)
+                                                   .Contains(e.IdEstudio))
+                                          .ToListAsync();
+                return Lista;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<Estudio>();
+            }
+        }
+
+
+
+
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarEstudios")]

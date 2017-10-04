@@ -436,6 +436,137 @@ namespace bd.swth.web.Controllers.API
 
 
         [HttpPost]
+        [Route("InsertarEstudio")]
+        public async Task<Response> InsertarEstudio([FromBody] IndiceOcupacionalEstudio indiceOcupacionalEstudio)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+                db.IndiceOcupacionalEstudio.Add(indiceOcupacionalEstudio);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+
+        [HttpPost]
+        [Route("InsertarMision")]
+        public async Task<Response> InsertarMision([FromBody] MisionIndiceOcupacional misionIndiceOcupacional)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+                db.MisionIndiceOcupacional.Add(misionIndiceOcupacional);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+
+
+        [HttpPost]
+        [Route("InsertarRelacionesInternasExternas")]
+        public async Task<Response> InsertarRelacionesInternasExternas([FromBody] RelacionesInternasExternasIndiceOcupacional relacionesInternasExternasIndiceOcupacional)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+                db.RelacionesInternasExternasIndiceOcupacional.Add(relacionesInternasExternasIndiceOcupacional);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        [HttpPost]
         [Route("InsertarAreaConocimiento")]
         public async Task<Response> InsertarAreaConocimiento([FromBody] IndiceOcupacionalAreaConocimiento indiceOcupacionalAreaConocimiento)
         {

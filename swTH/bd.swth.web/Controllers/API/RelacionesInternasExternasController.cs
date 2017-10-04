@@ -51,6 +51,136 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+
+
+        [HttpPost]
+        [Route("ListarElementosRIE")]
+        public async Task<List<RelacionesInternasExternasIndiceOcupacional>> ListarElementosRIE([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+
+                List<RelacionesInternasExternasIndiceOcupacional> ListaRIE = await db.RelacionesInternasExternasIndiceOcupacional
+                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                   .ToListAsync();
+
+
+                return ListaRIE;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<RelacionesInternasExternasIndiceOcupacional>();
+            }
+        }
+
+
+        [HttpPost]
+        [Route("ListarRIENoAsignadasIndiceOcupacional")]
+        public async Task<List<RelacionesInternasExternas>> ListarRIENoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+                var ListaRIE = await db.RelacionesInternasExternas
+                                   .Where(m => !db.RelacionesInternasExternasIndiceOcupacional
+                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                   .Select(iom => iom.IdRelacionesInternasExternas)
+                                                   .Contains(m.IdRelacionesInternasExternas))
+                                          .ToListAsync();
+
+
+
+                return ListaRIE;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<RelacionesInternasExternas>();
+            }
+        }
+
+
+
+        [HttpPost]
+        [Route("ListarRelacionesInternasExternasAsignadasIndiceOcupacional")]
+        public async Task<RelacionesInternasExternasIndiceOcupacional> ListarRelacionesInternasExternasoAsignadasIndiceOcupacional2([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+
+                var ListaRelacionesInternasExternas = await db.RelacionesInternasExternasIndiceOcupacional.Where(x => x.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                    .Include(x => x.RelacionesInternasExternas)
+                                    .FirstOrDefaultAsync();
+                
+
+                return ListaRelacionesInternasExternas;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new RelacionesInternasExternasIndiceOcupacional();
+            }
+        }
+
+
+        [HttpPost]
+        [Route("ListarRelacionesInternasExternasNoAsignadasIndiceOcupacional")]
+        public async Task<List<RelacionesInternasExternas>> ListarRelacionesInternasExternasoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+                var ListaRelacionesInternasExternas = await db.RelacionesInternasExternas
+                                   .Where(rie => !db.RelacionesInternasExternasIndiceOcupacional
+                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                   .Select(iorie => iorie.IdRelacionesInternasExternas)
+                                                   .Contains(rie.IdRelacionesInternasExternas))
+                                          .ToListAsync();
+                return ListaRelacionesInternasExternas;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<RelacionesInternasExternas>();
+            }
+        }
+
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetRelacionesInternasExternas([FromRoute] int id)
@@ -167,7 +297,7 @@ namespace bd.swth.web.Controllers.API
                     }
                 }
 
-
+                
 
 
                 return new Response
