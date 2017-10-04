@@ -607,7 +607,7 @@ namespace bd.swth.web.Controllers.API
         // POST: api/IndicesOcupacionales
         [HttpPost]
         [Route("InsertarIndiceOcupacional")]
-        public async Task<Response> PostEscalaGrados([FromBody] IndiceOcupacional indiceOcupacional)
+        public async Task<Response> InsertarIndiceOcupacional([FromBody] IndiceOcupacional indiceOcupacional)
         {
             try
             {
