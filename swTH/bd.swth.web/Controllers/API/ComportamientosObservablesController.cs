@@ -62,7 +62,7 @@ namespace bd.swth.web.Controllers.API
                                    .Where(ac => !db.IndiceOcupacionalComportamientoObservable
                                                    .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
                                                    .Select(ioac => ioac.IdComportamientoObservable)
-                                                   .Contains(ac.IdComportamientoObservable))
+                                                   .Contains(ac.IdComportamientoObservable)).Include(x=>x.Nivel).Include(x=>x.DenominacionCompetencia)
                                           .ToListAsync();
                 return Lista;
             }
