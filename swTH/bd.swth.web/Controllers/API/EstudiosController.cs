@@ -85,6 +85,62 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("EliminarIncideOcupacionalEstudio")]
+        public async Task<Response> EliminarIncideOcupacionalEstudio([FromBody] IndiceOcupacionalEstudio indiceOcupacionalEstudio)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.IndiceOcupacionalEstudio.SingleOrDefaultAsync(m => m.IdEstudio == indiceOcupacionalEstudio.IdEstudio
+                                      && m.IdIndiceOcupacional == indiceOcupacionalEstudio.IdIndiceOcupacional);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.IndiceOcupacionalEstudio.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetEstudio([FromRoute] int id)

@@ -181,6 +181,63 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("EliminarIncideOcupacionalRelacionesInternasExternas")]
+        public async Task<Response> EliminarIncideOcupacionalRelacionesInternasExternas([FromBody] RelacionesInternasExternasIndiceOcupacional relacionesInternasExternasIndiceOcupacional)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.RelacionesInternasExternasIndiceOcupacional.SingleOrDefaultAsync(m => m.IdRelacionesInternasExternas == relacionesInternasExternasIndiceOcupacional.IdRelacionesInternasExternas
+                                      && m.IdIndiceOcupacional == relacionesInternasExternasIndiceOcupacional.IdIndiceOcupacional);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.RelacionesInternasExternasIndiceOcupacional.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetRelacionesInternasExternas([FromRoute] int id)

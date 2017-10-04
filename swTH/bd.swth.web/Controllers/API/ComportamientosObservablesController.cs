@@ -10,30 +10,30 @@ using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/ActividadesEsenciales")]
-    public class ActividadesEsencialesController : Controller
+    [Route("api/ComportamientosObservables")]
+    public class ComportamientosObservablesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public ActividadesEsencialesController(SwTHDbContext db)
+        public ComportamientosObservablesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarActividadesEsenciales")]
-        public async Task<List<ActividadesEsenciales>> GetActividadesEsenciales()
+        [Route("ListarComportamientosObservables")]
+        public async Task<List<ComportamientoObservable>> GetComportamientosObservables()
         {
             try
             {
-                return await db.ActividadesEsenciales.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.ComportamientoObservable.Include(x => x.Nivel).Include(x => x.DenominacionCompetencia).OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,21 +47,22 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<ActividadesEsenciales>();
+                return new List<ComportamientoObservable>();
             }
         }
 
+
         [HttpPost]
-        [Route("ListarActividedesEsencialesNoAsignadasIndiceOcupacional")]
-        public async Task<List<ActividadesEsenciales>> ListarActividedesEsencialesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        [Route("ListarComportamientosObservablesNoAsignadasIndiceOcupacional")]
+        public async Task<List<ComportamientoObservable>> ListarActividedesEsencialesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
         {
             try
             {
-                var Lista = await db.ActividadesEsenciales
-                                   .Where(ac => !db.IndiceOcupacionalActividadesEsenciales
+                var Lista = await db.ComportamientoObservable
+                                   .Where(ac => !db.IndiceOcupacionalComportamientoObservable
                                                    .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
-                                                   .Select(ioac => ioac.IdActividadesEsenciales)
-                                                   .Contains(ac.IdActividadesEsenciales))
+                                                   .Select(ioac => ioac.IdComportamientoObservable)
+                                                   .Contains(ac.IdComportamientoObservable)).Include(x=>x.Nivel).Include(x=>x.DenominacionCompetencia)
                                           .ToListAsync();
                 return Lista;
             }
@@ -77,14 +78,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<ActividadesEsenciales>();
+                return new List<ComportamientoObservable>();
             }
         }
 
-
-        [HttpPost]
-        [Route("EliminarIncideOcupacionalActividadesEsenciales")]
-        public async Task<Response> EliminarIncideOcupacionalActividadesEsenciales([FromBody] IndiceOcupacionalActividadesEsenciales indiceOcupacionalActividadesEsenciales)
+        // GET: api/BasesDatos/5
+        [HttpGet("{id}")]
+        public async Task<Response> GetComportamientoObservable([FromRoute] int id)
         {
             try
             {
@@ -97,8 +97,61 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.IndiceOcupacionalActividadesEsenciales.SingleOrDefaultAsync(m => m.IdActividadesEsenciales == indiceOcupacionalActividadesEsenciales.IdActividadesEsenciales
-                                      && m.IdIndiceOcupacional == indiceOcupacionalActividadesEsenciales.IdIndiceOcupacional);
+                var ComportamientoObservable = await db.ComportamientoObservable.SingleOrDefaultAsync(m => m.IdComportamientoObservable == id);
+
+                if (ComportamientoObservable == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = ComportamientoObservable,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        [HttpPost]
+        [Route("EliminarIndiceOcupacionalComportamiemtoObservable")]
+        public async Task<Response> EliminarIndiceOcupacionalComportamiemtoObservable([FromBody] IndiceOcupacionalComportamientoObservable indiceOcupacionalComportamientoObservable)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.IndiceOcupacionalComportamientoObservable.SingleOrDefaultAsync(m => m.IdComportamientoObservable == indiceOcupacionalComportamientoObservable.IdComportamientoObservable
+                                      && m.IdIndiceOcupacional == indiceOcupacionalComportamientoObservable.IdIndiceOcupacional);
                 if (respuesta == null)
                 {
                     return new Response
@@ -107,7 +160,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.IndiceOcupacionalActividadesEsenciales.Remove(respuesta);
+                db.IndiceOcupacionalComportamientoObservable.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -137,64 +190,10 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        // GET: api/BasesDatos/5
-        [HttpGet("{id}")]
-        public async Task<Response> GetActividadesEsenciales([FromRoute] int id)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
 
-                var ActividadesEsenciales = await db.ActividadesEsenciales.SingleOrDefaultAsync(m => m.IdActividadesEsenciales == id);
-
-                if (ActividadesEsenciales == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = ActividadesEsenciales,
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Satisfactorio,
-                };
-
-
-            }
-
-        }
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutActividadesEsenciales([FromRoute] int id, [FromBody] ActividadesEsenciales ActividadesEsenciales)
+        public async Task<Response> PutComportamientoObservable([FromRoute] int id, [FromBody] ComportamientoObservable ComportamientoObservable)
         {
             try
             {
@@ -207,77 +206,63 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                var existe = Existe(ActividadesEsenciales);
+                var existe = Existe(ComportamientoObservable);
+                var ComportamientoObservableActualizar = (ComportamientoObservable)existe.Resultado;
                 if (existe.IsSuccess)
                 {
+                    if (ComportamientoObservableActualizar.IdComportamientoObservable == ComportamientoObservable.IdComportamientoObservable)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
+                var comportamiento = db.ComportamientoObservable.Find(ComportamientoObservable.IdComportamientoObservable);
 
-                var ActividadesEsencialesActualizar = await db.ActividadesEsenciales.Where(x => x.IdActividadesEsenciales == id).FirstOrDefaultAsync();
-                if (ActividadesEsencialesActualizar != null)
-                {
-                    try
-                    {
-
-                        ActividadesEsencialesActualizar.Descripcion = ActividadesEsenciales.Descripcion;
-                        db.ActividadesEsenciales.Update(ActividadesEsencialesActualizar);
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
+                comportamiento.Descripcion = ComportamientoObservable.Descripcion;
+                comportamiento.IdNivel = ComportamientoObservable.IdNivel;
+                comportamiento.IdDenominacionCompetencia = ComportamientoObservable.IdDenominacionCompetencia;
+                db.ComportamientoObservable.Update(comportamiento);
+                await db.SaveChangesAsync();
 
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.Excepcion
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarActividadesEsenciales")]
-        public async Task<Response> PostActividadesEsenciales([FromBody] ActividadesEsenciales ActividadesEsenciales)
+        [Route("InsertarComportamientoObservable")]
+        public async Task<Response> PostComportamientoObservable([FromBody] ComportamientoObservable ComportamientoObservable)
         {
             try
             {
@@ -290,10 +275,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(ActividadesEsenciales);
+                var respuesta = Existe(ComportamientoObservable);
                 if (!respuesta.IsSuccess)
                 {
-                    db.ActividadesEsenciales.Add(ActividadesEsenciales);
+                    db.ComportamientoObservable.Add(ComportamientoObservable);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -331,7 +316,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteActividadesEsenciales([FromRoute] int id)
+        public async Task<Response> DeleteComportamientoObservable([FromRoute] int id)
         {
             try
             {
@@ -344,7 +329,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.ActividadesEsenciales.SingleOrDefaultAsync(m => m.IdActividadesEsenciales == id);
+                var respuesta = await db.ComportamientoObservable.SingleOrDefaultAsync(m => m.IdComportamientoObservable == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -353,7 +338,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.ActividadesEsenciales.Remove(respuesta);
+                db.ComportamientoObservable.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -381,10 +366,11 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+
 
         [HttpPost]
-        [Route("EliminarIndiceOcupacionalActividadesEsenciales")]
-        public async Task<Response> EliminarIndiceOcupacionalActividadesEsenciales([FromBody] IndiceOcupacionalActividadesEsenciales indiceOcupacionalActividadesEsenciales)
+        [Route("EliminarIndiceOcupacionalComportamientosObservables")]
+        public async Task<Response> EliminarIndiceOcupacionalComportamientosObservables([FromBody] IndiceOcupacionalComportamientoObservable indiceOcupacionalComportamientoObservable)
         {
             try
             {
@@ -397,7 +383,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.IndiceOcupacionalActividadesEsenciales.SingleOrDefaultAsync(m => m.IdActividadesEsenciales == indiceOcupacionalActividadesEsenciales.IdActividadesEsenciales && m.IdIndiceOcupacional == indiceOcupacionalActividadesEsenciales.IdIndiceOcupacional);
+                var respuesta = await db.IndiceOcupacionalComportamientoObservable.SingleOrDefaultAsync(m => m.IdComportamientoObservable == indiceOcupacionalComportamientoObservable.IdComportamientoObservable && m.IdIndiceOcupacional == indiceOcupacionalComportamientoObservable.IdIndiceOcupacional);
                 if (respuesta == null)
                 {
                     return new Response
@@ -406,7 +392,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.IndiceOcupacionalActividadesEsenciales.Remove(respuesta);
+                db.IndiceOcupacionalComportamientoObservable.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -435,17 +421,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(ActividadesEsenciales ActividadesEsenciales)
+        private Response Existe(ComportamientoObservable ComportamientoObservable)
         {
-            var bdd = ActividadesEsenciales.Descripcion;
-            var ActividadesEsencialesrespuesta = db.ActividadesEsenciales.Where(p => p.Descripcion.Equals(bdd)).FirstOrDefault();
-            if (ActividadesEsencialesrespuesta != null)
+            var bdd = ComportamientoObservable.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var ComportamientoObservablerespuesta = db.ComportamientoObservable.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd && p.IdNivel == ComportamientoObservable.IdNivel && p.IdDenominacionCompetencia == ComportamientoObservable.IdDenominacionCompetencia).FirstOrDefault();
+            if (ComportamientoObservablerespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = ComportamientoObservablerespuesta,
                 };
 
             }
@@ -453,7 +439,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = ActividadesEsencialesrespuesta,
+                Resultado = ComportamientoObservablerespuesta,
             };
         }
     }
