@@ -27,6 +27,8 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+        
+
         [HttpPost]
         [Route("EliminarIncideOcupacionalExperienciaLaboralRequeridas")]
         public async Task<Response> EliminarIncideOcupacionalExperienciaLaboralRequeridas([FromBody] IndiceOcupacionalExperienciaLaboralRequerida indiceOcupacionalExperienciaLaboralRequerida)
@@ -80,6 +82,42 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+
+        [HttpPost]
+        [Route("ListarExperienciaLaboralRequeridaNoAsignadasIndiceOcupacional")]
+        public async Task<List<ExperienciaLaboralRequerida>> ListarExperienciaLaboralRequeridaNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+
+                var ListaExperienciaLaboralRequerida = await db.ExperienciaLaboralRequerida
+                                   .Where(m => !db.IndiceOcupacionalExperienciaLaboralRequerida
+                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                   .Select(iom => iom.IdExperienciaLaboralRequerida)
+                                                   .Contains(m.IdExperienciaLaboralRequerida))
+                                          .ToListAsync();
+
+
+
+                return ListaExperienciaLaboralRequerida;
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<ExperienciaLaboralRequerida>();
+            }
+        }
+
 
 
         // GET: api/ExperienciaLaboralRequeridas

@@ -480,6 +480,49 @@ namespace bd.swth.web.Controllers.API
 
 
         [HttpPost]
+        [Route("InsertarExperienciaLaboralRequerida")]
+        public async Task<Response> InsertarExperienciaLaboralRequerida([FromBody] IndiceOcupacionalExperienciaLaboralRequerida indiceOcupacionalExperienciaLaboralRequerida)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+                db.IndiceOcupacionalExperienciaLaboralRequerida.Add(indiceOcupacionalExperienciaLaboralRequerida);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+        [HttpPost]
         [Route("InsertarMision")]
         public async Task<Response> InsertarMision([FromBody] MisionIndiceOcupacional misionIndiceOcupacional)
         {
