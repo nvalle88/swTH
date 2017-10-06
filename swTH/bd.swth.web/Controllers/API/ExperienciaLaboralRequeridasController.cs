@@ -25,10 +25,7 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
-
-
         
-
         [HttpPost]
         [Route("EliminarIncideOcupacionalExperienciaLaboralRequeridas")]
         public async Task<Response> EliminarIncideOcupacionalExperienciaLaboralRequeridas([FromBody] IndiceOcupacionalExperienciaLaboralRequerida indiceOcupacionalExperienciaLaboralRequerida)
@@ -117,107 +114,282 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-
         // GET: api/ExperienciaLaboralRequeridas
         [HttpGet]
-        public IEnumerable<ExperienciaLaboralRequerida> GetExperienciaLaboralRequerida()
+        [Route("ListarExperienciaLaboralRequeridas")]
+        public async Task<List<ExperienciaLaboralRequerida>> GetExperienciaLaboralRequeridas()
         {
-            return db.ExperienciaLaboralRequerida;
+            try
+            {
+                return await db.ExperienciaLaboralRequerida.Include(x => x.EspecificidadExperiencia).Include(x => x.AnoExperiencia).Include(x=>x.Estudio).OrderBy(x => x.IdExperienciaLaboralRequerida).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<ExperienciaLaboralRequerida>();
+            }
         }
 
         // GET: api/ExperienciaLaboralRequeridas/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetExperienciaLaboralRequerida([FromRoute] int id)
+        public async Task<Response> GetExperienciaLaboralRequerida([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var ExperienciaLaboralRequerida = await db.ExperienciaLaboralRequerida.SingleOrDefaultAsync(m => m.IdExperienciaLaboralRequerida == id);
+
+                if (ExperienciaLaboralRequerida == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = ExperienciaLaboralRequerida,
+                };
             }
-
-            var experienciaLaboralRequerida = await db.ExperienciaLaboralRequerida.SingleOrDefaultAsync(m => m.IdExperienciaLaboralRequerida == id);
-
-            if (experienciaLaboralRequerida == null)
+            catch (Exception ex)
             {
-                return NotFound();
-            }
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            return Ok(experienciaLaboralRequerida);
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
         }
 
         // PUT: api/ExperienciaLaboralRequeridas/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutExperienciaLaboralRequerida([FromRoute] int id, [FromBody] ExperienciaLaboralRequerida experienciaLaboralRequerida)
+        public async Task<Response> PutExperienciaLaboralRequerida([FromRoute] int id, [FromBody] ExperienciaLaboralRequerida experienciaLaboralRequerida)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != experienciaLaboralRequerida.IdExperienciaLaboralRequerida)
-            {
-                return BadRequest();
-            }
-
-            db.Entry(experienciaLaboralRequerida).State = EntityState.Modified;
-
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                var existe = Existe(experienciaLaboralRequerida);
+                var ExperienciaLaboralRequeridaActualizar = (ExperienciaLaboralRequerida)existe.Resultado;
+                if (existe.IsSuccess)
+                {
+                    if (ExperienciaLaboralRequeridaActualizar.IdExperienciaLaboralRequerida == experienciaLaboralRequerida.IdExperienciaLaboralRequerida)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                        };
+                    }
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+                var ExperienciaLaboralRequerida = db.ExperienciaLaboralRequerida.Find(experienciaLaboralRequerida.IdExperienciaLaboralRequerida);
+
+                ExperienciaLaboralRequerida.IdEspecificidadExperiencia = ExperienciaLaboralRequerida.IdEspecificidadExperiencia;
+                ExperienciaLaboralRequerida.IdAnoExperiencia = ExperienciaLaboralRequerida.IdAnoExperiencia;
+                ExperienciaLaboralRequerida.IdEstudio = ExperienciaLaboralRequerida.IdEstudio;
+                db.ExperienciaLaboralRequerida.Update(ExperienciaLaboralRequerida);
                 await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!ExperienciaLaboralRequeridaExists(id))
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
-                    return NotFound();
-                }
-                else
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
+                return new Response
                 {
-                    throw;
-                }
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
+                };
             }
 
-            return NoContent();
         }
 
-        // POST: api/ExperienciaLaboralRequeridas
+        // POST: api/ExperienciaLaboralRequerida
         [HttpPost]
-        public async Task<IActionResult> PostExperienciaLaboralRequerida([FromBody] ExperienciaLaboralRequerida experienciaLaboralRequerida)
+        [Route("InsertarExperienciaLaboralRequerida")]
+        public async Task<Response> PostExperienciaLaboralRequerida([FromBody] ExperienciaLaboralRequerida ExperienciaLaboralRequerida)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
+                    };
+                }
+
+                var respuesta = Existe(ExperienciaLaboralRequerida);
+                if (!respuesta.IsSuccess)
+                {
+                    db.ExperienciaLaboralRequerida.Add(ExperienciaLaboralRequerida);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro,
+                };
+
             }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            db.ExperienciaLaboralRequerida.Add(experienciaLaboralRequerida);
-            await db.SaveChangesAsync();
-
-            return CreatedAtAction("GetExperienciaLaboralRequerida", new { id = experienciaLaboralRequerida.IdExperienciaLaboralRequerida }, experienciaLaboralRequerida);
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
         }
 
         // DELETE: api/ExperienciaLaboralRequeridas/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteExperienciaLaboralRequerida([FromRoute] int id)
+        public async Task<Response> DeleteExperienciaLaboralRequerida([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
 
-            var experienciaLaboralRequerida = await db.ExperienciaLaboralRequerida.SingleOrDefaultAsync(m => m.IdExperienciaLaboralRequerida == id);
-            if (experienciaLaboralRequerida == null)
+                var respuesta = await db.ExperienciaLaboralRequerida.SingleOrDefaultAsync(m => m.IdExperienciaLaboralRequerida == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.ExperienciaLaboralRequerida.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
             }
-
-            db.ExperienciaLaboralRequerida.Remove(experienciaLaboralRequerida);
-            await db.SaveChangesAsync();
-
-            return Ok(experienciaLaboralRequerida);
         }
 
-        private bool ExperienciaLaboralRequeridaExists(int id)
+        private Response Existe(ExperienciaLaboralRequerida ExperienciaLaboralRequerida)
         {
-            return db.ExperienciaLaboralRequerida.Any(e => e.IdExperienciaLaboralRequerida == id);
+           
+            var ExperienciaLaboralRequeridarespuesta = db.ExperienciaLaboralRequerida.Where(p => p.IdEspecificidadExperiencia == ExperienciaLaboralRequerida.IdEspecificidadExperiencia && p.IdAnoExperiencia == ExperienciaLaboralRequerida.IdAnoExperiencia && p.IdEstudio == ExperienciaLaboralRequerida.IdEstudio).FirstOrDefault();
+            if (ExperienciaLaboralRequeridarespuesta != null)
+            {
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = ExperienciaLaboralRequeridarespuesta,
+                };
+
+            }
+
+            return new Response
+            {
+                IsSuccess = false,
+                Resultado = ExperienciaLaboralRequeridarespuesta,
+            };
         }
+
     }
 }
