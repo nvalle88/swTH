@@ -89,15 +89,13 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-
+                
                 var ListaExperienciaLaboralRequerida = await db.ExperienciaLaboralRequerida
                                    .Where(m => !db.IndiceOcupacionalExperienciaLaboralRequerida
                                                    .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
                                                    .Select(iom => iom.IdExperienciaLaboralRequerida)
-                                                   .Contains(m.IdExperienciaLaboralRequerida))
+                                                   .Contains(m.IdExperienciaLaboralRequerida)).Include(x => x.EspecificidadExperiencia).Include(x => x.AnoExperiencia).Include(x => x.Estudio)
                                           .ToListAsync();
-
-
 
                 return ListaExperienciaLaboralRequerida;
 
