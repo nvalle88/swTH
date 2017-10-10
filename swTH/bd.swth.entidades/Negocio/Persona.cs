@@ -62,6 +62,10 @@ namespace bd.swth.entidades.Negocio
         public int? IdSexo { get; set; }
         public virtual Sexo Sexo { get; set; }
 
+      
+        public int? IdNacionalidadIndigena { get; set; }
+        public virtual NacionalidadIndigena NacionalidadIndigena { get; set; }
+
         [Display(Name = "Género:")]
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int IdGenero { get; set; }

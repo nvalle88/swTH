@@ -2612,6 +2612,8 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdEtnia)
                     .HasName("IX_Persona_IdEtnia");
 
+                entity.HasIndex(e => e.IdNacionalidadIndigena);
+
                 entity.HasIndex(e => e.IdGenero)
                     .HasName("IX_Persona_IdGenero");
 
@@ -2664,6 +2666,10 @@ namespace bd.swth.datos
                 entity.HasOne(d => d.Etnia)
                     .WithMany(p => p.Persona)
                     .HasForeignKey(d => d.IdEtnia);
+
+                entity.HasOne(d => d.NacionalidadIndigena)
+                    .WithMany(p => p.Persona)
+                    .HasForeignKey(d => d.IdNacionalidadIndigena);
 
                 entity.HasOne(d => d.Genero)
                     .WithMany(p => p.Persona)
