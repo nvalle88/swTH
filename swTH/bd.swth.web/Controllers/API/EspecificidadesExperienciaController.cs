@@ -51,6 +51,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetEspecificidadExperiencia([FromRoute] int id)
