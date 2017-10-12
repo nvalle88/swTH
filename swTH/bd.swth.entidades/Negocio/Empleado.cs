@@ -136,9 +136,9 @@ namespace bd.swth.entidades.Negocio
 
         //public virtual ICollection<TransferenciaActivoFijo> TransferenciaActivoFijo2 { get; set; }
 
-        public virtual ICollection<EmpleadoNepotismo> EmpleadoNepotismo { get; set; }
+        public virtual ICollection<EmpleadoNepotismo> EmpleadoNepotismoEmpleado { get; set; }
 
-        //public virtual ICollection<EmpleadoNepotismo> EmpleadoNepotismo1 { get; set; }
+        public virtual ICollection<EmpleadoNepotismo> EmpleadoNepotismoFamiliar { get; set; }
 
         public virtual ICollection<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
 

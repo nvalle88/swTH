@@ -1,5 +1,6 @@
 namespace bd.swth.entidades.Negocio
 {
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
 
     public partial class EmpleadoFamiliar
@@ -22,6 +23,9 @@ namespace bd.swth.entidades.Negocio
         [Display(Name = "Parentesco:")]
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int IdParentesco { get; set; }
-        public virtual Parentesco Parentesco { get; set; } 
+        public virtual Parentesco Parentesco { get; set; }
+
+        public virtual ICollection <EmpleadoNepotismo> EmpleadoNepotismo { get; set; }
+
     }
 }
