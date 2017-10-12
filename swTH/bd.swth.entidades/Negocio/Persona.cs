@@ -22,6 +22,11 @@ namespace bd.swth.entidades.Negocio
         [StringLength(20, MinimumLength = 2, ErrorMessage = "El {0} no puede tener más de {1} y menos de {2}")]
         public string Identificacion { get; set; }
 
+        public string CallePrincipal { get; set; }
+        public string CalleSecundaria { get; set; }
+        public string Referencia { get; set; }
+        public string Numero { get; set; }
+
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "Nombres:")]
         [StringLength(100, MinimumLength = 2, ErrorMessage = "El {0} no puede tener más de {1} y menos de {2}")]
@@ -65,6 +70,9 @@ namespace bd.swth.entidades.Negocio
       
         public int? IdNacionalidadIndigena { get; set; }
         public virtual NacionalidadIndigena NacionalidadIndigena { get; set; }
+
+        public int? IdParroquia { get; set; }
+        public virtual Parroquia Parroquia { get; set; }
 
         [Display(Name = "Género:")]
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]

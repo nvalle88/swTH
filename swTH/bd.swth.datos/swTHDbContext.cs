@@ -694,8 +694,7 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .HasColumnName("Name");
+                    .HasMaxLength(50);
 
                 entity.HasOne(d => d.Provincia)
                     .WithMany(p => p.Ciudad)
@@ -2626,6 +2625,8 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdPersona)
                     .HasName("PK_Persona");
 
+                entity.HasKey(e => e.IdParroquia);
+
                 entity.HasIndex(e => e.IdCandidato)
                     .HasName("IX_Persona_IdCanditato");
 
@@ -2658,6 +2659,11 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.CorreoPrivado).IsRequired();
 
+                entity.Property(e => e.CallePrincipal).HasMaxLength(150);
+                entity.Property(e => e.CalleSecundaria).HasMaxLength(150);
+                entity.Property(e => e.Referencia).HasMaxLength(150);
+                entity.Property(e => e.Numero).HasMaxLength(50);
+
                 entity.Property(e => e.Identificacion)
                     .IsRequired()
                     .HasMaxLength(20);
@@ -2681,6 +2687,10 @@ namespace bd.swth.datos
                 entity.HasOne(d => d.Candidato)
                     .WithMany(p => p.Persona)
                     .HasForeignKey(d => d.IdCandidato);
+
+                entity.HasOne(d => d.Parroquia)
+                    .WithMany(p => p.Persona)
+                    .HasForeignKey(d => d.IdParroquia);
 
                 entity.HasOne(d => d.EstadoCivil)
                     .WithMany(p => p.Persona)
@@ -2803,6 +2813,10 @@ namespace bd.swth.datos
                 entity.Property(e => e.Observaciones)
                     .IsRequired()
                     .HasMaxLength(500);
+
+                entity.Property(e => e.NoSenescyt)
+                    .IsRequired()
+                    .HasMaxLength(50);
 
                 entity.HasOne(d => d.Persona)
                     .WithMany(p => p.PersonaEstudio)
