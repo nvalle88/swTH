@@ -56,7 +56,7 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.Destreza> Destreza { get; set; }
         public virtual DbSet<DetalleExamenInduccion> DetalleExamenInduccion { get; set; }
         public virtual DbSet<DocumentosParentescodos> DocumentosParentescodos { get; set; }
-        public virtual DbSet<Empleado> Empleado { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Empleado> Empleado { get; set; }
         public virtual DbSet<EmpleadoContactoEmergencia> EmpleadoContactoEmergencia { get; set; }
         public virtual DbSet<EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
         public virtual DbSet<EmpleadoFormularioCapacitacion> EmpleadoFormularioCapacitacion { get; set; }
@@ -414,6 +414,9 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdCandidatoConcurso)
                     .HasName("PK_CandidatoConcurso");
 
+                entity.HasKey(e => e.IdPersona);
+                 
+
                 entity.HasIndex(e => e.IdCanditato)
                     .HasName("IX_CandidatoConcurso_IdCanditato");
 
@@ -425,6 +428,11 @@ namespace bd.swth.datos
                     .HasMaxLength(20);
 
                 entity.HasOne(d => d.Canditato)
+                    .WithMany(p => p.CandidatoConcurso)
+                    .HasForeignKey(d => d.IdCanditato)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(d => d.Persona)
                     .WithMany(p => p.CandidatoConcurso)
                     .HasForeignKey(d => d.IdCanditato)
                     .OnDelete(DeleteBehavior.Restrict);
@@ -695,7 +703,7 @@ namespace bd.swth.datos
                 entity.Property(e => e.Nombre)
                     .IsRequired()
                     .HasMaxLength(50)
-                    .HasColumnName("Name");
+                    .HasColumnName("Nombre");
 
                 entity.HasOne(d => d.Provincia)
                     .WithMany(p => p.Ciudad)
@@ -1160,10 +1168,23 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdEmpleado)
                     .HasName("IX_EmpleadoNepotismo_IdEmpleado");
 
+                entity.HasIndex(e => e.IdEmpleadoFamiliar);
+
                 entity.HasOne(d => d.Empleado)
-                    .WithMany(p => p.EmpleadoNepotismo)
+                    .WithMany(p => p.EmpleadoNepotismoEmpleado)
                     .HasForeignKey(d => d.IdEmpleado)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(d => d.EmpleadoFamiliar)
+                    .WithMany(p => p.EmpleadoNepotismoFamiliar)
+                    .HasForeignKey(d => d.IdEmpleadoFamiliar)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+
+
+
+
+
             });
 
             modelBuilder.Entity<EmpleadoSaldoVacaciones>(entity =>
@@ -2603,9 +2624,6 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdPersona)
                     .HasName("PK_Persona");
 
-                entity.HasIndex(e => e.IdCandidato)
-                    .HasName("IX_Persona_IdCanditato");
-
                 entity.HasIndex(e => e.IdEstadoCivil)
                     .HasName("IX_Persona_IdEstadoCivil");
 
@@ -2652,11 +2670,7 @@ namespace bd.swth.datos
                 entity.Property(e => e.TelefonoPrivado)
                     .IsRequired()
                     .HasMaxLength(20);
-
-                entity.HasOne(d => d.Candidato)
-                    .WithMany(p => p.Persona)
-                    .HasForeignKey(d => d.IdCandidato);
-
+             
                 entity.HasOne(d => d.EstadoCivil)
                     .WithMany(p => p.Persona)
                     .HasForeignKey(d => d.IdEstadoCivil);
