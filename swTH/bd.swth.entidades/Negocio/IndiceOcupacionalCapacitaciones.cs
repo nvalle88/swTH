@@ -19,8 +19,7 @@ namespace bd.swth.entidades.Negocio
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int IdCapacitacion { get; set; }
         public virtual Capacitacion Capacitacion { get; set; }
-
-        public virtual ICollection<ExperienciaLaboralRequerida> ExperienciaLaboralRequerida { get; set; }
+        
 
     }
 }

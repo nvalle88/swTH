@@ -1746,34 +1746,57 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdValidacionJefe);
             });
 
+            
+
+
             modelBuilder.Entity<ExperienciaLaboralRequerida>(entity =>
             {
                 entity.HasKey(e => e.IdExperienciaLaboralRequerida)
-                    .HasName("PK_ExperienciaLaboralRequerida");
+                    .HasName("PK230");
 
                 entity.HasIndex(e => e.IdAnoExperiencia)
-                    .HasName("IX_ExperienciaLaboralRequerida_IdAnoExperiencia");
+                    .HasName("Ref228351");
 
                 entity.HasIndex(e => e.IdEspecificidadExperiencia)
-                    .HasName("IX_ExperienciaLaboralRequerida_IdEspecificidadExperiencia");
+                    .HasName("Ref229350");
 
                 entity.HasIndex(e => e.IdEstudio)
-                    .HasName("IX_ExperienciaLaboralRequerida_IdEstudio");
+                    .HasName("Ref214352");
 
                 entity.HasOne(d => d.AnoExperiencia)
                     .WithMany(p => p.ExperienciaLaboralRequerida)
                     .HasForeignKey(d => d.IdAnoExperiencia)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefAnoExperiencia351");
 
                 entity.HasOne(d => d.EspecificidadExperiencia)
                     .WithMany(p => p.ExperienciaLaboralRequerida)
                     .HasForeignKey(d => d.IdEspecificidadExperiencia)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefEspecificidadExperiencia350");
 
                 entity.HasOne(d => d.Estudio)
                     .WithMany(p => p.ExperienciaLaboralRequerida)
                     .HasForeignKey(d => d.IdEstudio)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefEstudio352");
+            });
+
+
+            modelBuilder.Entity<IndiceOcupacionalExperienciaLaboralRequerida>(entity =>
+            {
+                entity.HasKey(e => e.IdIndiceOcupacionalExperienciaLaboralRequerida)
+                    .HasName("PK_IndiceOcupacionalExperienciaLaboralRequerida");
+
+                entity.HasOne(d => d.ExperienciaLaboralRequerida)
+                    .WithMany(p => p.IndiceOcupacionalExperienciaLaboralRequerida)
+                    .HasForeignKey(d => d.IdExperienciaLaboralRequerida)
+                    .HasConstraintName("FK_IndiceOcupacionalExperienciaLaboralRequerida_ExperienciaLaboralRequerida");
+
+                entity.HasOne(d => d.IndiceOcupacional)
+                    .WithMany(p => p.IndiceOcupacionalExperienciaLaboralRequerida)
+                    .HasForeignKey(d => d.IdIndiceOcupacional)
+                    .HasConstraintName("FK_IndiceOcupacionalExperienciaLaboralRequerida_IndiceOcupacional");
             });
 
             modelBuilder.Entity<Factor>(entity =>
@@ -2630,6 +2653,8 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdEtnia)
                     .HasName("IX_Persona_IdEtnia");
 
+                entity.HasIndex(e => e.IdNacionalidadIndigena);
+
                 entity.HasIndex(e => e.IdGenero)
                     .HasName("IX_Persona_IdGenero");
 
@@ -2678,6 +2703,10 @@ namespace bd.swth.datos
                 entity.HasOne(d => d.Etnia)
                     .WithMany(p => p.Persona)
                     .HasForeignKey(d => d.IdEtnia);
+
+                entity.HasOne(d => d.NacionalidadIndigena)
+                    .WithMany(p => p.Persona)
+                    .HasForeignKey(d => d.IdNacionalidadIndigena);
 
                 entity.HasOne(d => d.Genero)
                     .WithMany(p => p.Persona)

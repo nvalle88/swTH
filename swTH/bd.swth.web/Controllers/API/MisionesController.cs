@@ -53,6 +53,76 @@ namespace bd.swth.web.Controllers.API
 
 
         [HttpPost]
+        [Route("ListarElementosMisionesIndiceOcupacional")]
+        public async Task<List<MisionIndiceOcupacional>> ListarElementosIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+
+                List<MisionIndiceOcupacional> ListaMision = await db.MisionIndiceOcupacional
+                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                   .ToListAsync();
+               
+
+                return ListaMision;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<MisionIndiceOcupacional>();
+            }
+        }
+
+
+        [HttpPost]
+        [Route("ListarMisionNoAsignadasIndiceOcupacional")]
+        public async Task<List<Mision>> ListarMisionNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+                var ListaMision = await db.Mision
+                                   .Where(m => !db.MisionIndiceOcupacional
+                                                   .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                   .Select(iom => iom.IdMision)
+                                                   .Contains(m.IdMision))
+                                          .ToListAsync();
+
+
+
+                return ListaMision;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<Mision>();
+            }
+        }
+
+
+
+
+
+
+
+        [HttpPost]
         [Route("EliminarIncideOcupacionalMision")]
         public async Task<Response> EliminarIncideOcupacionalMision([FromBody] MisionIndiceOcupacional misionIndiceOcupacional)
         {
