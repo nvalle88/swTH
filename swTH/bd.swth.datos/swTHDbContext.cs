@@ -431,7 +431,7 @@ namespace bd.swth.datos
 
                 entity.HasOne(d => d.Persona)
                     .WithMany(p => p.CandidatoConcurso)
-                    .HasForeignKey(d => d.IdCanditato)
+                    .HasForeignKey(d => d.IdCandidato)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(d => d.PartidasFase)
