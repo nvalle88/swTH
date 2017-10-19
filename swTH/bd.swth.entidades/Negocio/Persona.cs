@@ -87,14 +87,7 @@ namespace bd.swth.entidades.Negocio
         public int? IdTipoIdentificacion { get; set; }
         public virtual TipoIdentificacion TipoIdentificacion { get; set; }
 
-        [Display(Name = "Tipo de identificación:")]
-        [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
-        public int? IdCandidato { get; set; }
-        public virtual Canditato Candidato { get; set; }
-
-
-
-
+       
         [Display(Name = "Nacionalidad:")]
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public virtual Nacionalidad Nacionalidad { get; set; }
