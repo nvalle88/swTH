@@ -26,6 +26,31 @@ namespace bd.swrm.web.Controllers.API
             this.db = db;
         }
 
+
+        [HttpPost]
+        [Route("ListarProvinciaPorPais")]
+        public async Task<List<Provincia>> GetProvincia([FromBody] Pais pais)
+        {
+            try
+            {
+                return await db.Provincia.Where(x => x.IdPais==pais.IdPais).OrderBy(x=>x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<Provincia>();
+            }
+        }
+
         // GET: api/Provincia
         [HttpGet]
         [Route("ListarProvincia")]

@@ -56,7 +56,7 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.Destreza> Destreza { get; set; }
         public virtual DbSet<DetalleExamenInduccion> DetalleExamenInduccion { get; set; }
         public virtual DbSet<DocumentosParentescodos> DocumentosParentescodos { get; set; }
-        public virtual DbSet<Empleado> Empleado { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Empleado> Empleado { get; set; }
         public virtual DbSet<EmpleadoContactoEmergencia> EmpleadoContactoEmergencia { get; set; }
         public virtual DbSet<EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
         public virtual DbSet<EmpleadoFormularioCapacitacion> EmpleadoFormularioCapacitacion { get; set; }
@@ -429,6 +429,11 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdCandidato)
                     .OnDelete(DeleteBehavior.Restrict);
 
+                entity.HasOne(d => d.Persona)
+                    .WithMany(p => p.CandidatoConcurso)
+                    .HasForeignKey(d => d.IdCanditato)
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 entity.HasOne(d => d.PartidasFase)
                     .WithMany(p => p.CandidatoConcurso)
                     .HasForeignKey(d => d.IdPartidasFase)
@@ -694,8 +699,7 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .HasColumnName("Name");
+                    .HasMaxLength(50);
 
                 entity.HasOne(d => d.Provincia)
                     .WithMany(p => p.Ciudad)
@@ -1160,10 +1164,23 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdEmpleado)
                     .HasName("IX_EmpleadoNepotismo_IdEmpleado");
 
+                entity.HasIndex(e => e.IdEmpleadoFamiliar);
+
                 entity.HasOne(d => d.Empleado)
-                    .WithMany(p => p.EmpleadoNepotismo)
+                    .WithMany(p => p.EmpleadoNepotismoEmpleado)
                     .HasForeignKey(d => d.IdEmpleado)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(d => d.EmpleadoFamiliar)
+                    .WithMany(p => p.EmpleadoNepotismoFamiliar)
+                    .HasForeignKey(d => d.IdEmpleadoFamiliar)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+
+
+
+
+
             });
 
             modelBuilder.Entity<EmpleadoSaldoVacaciones>(entity =>
@@ -2634,6 +2651,8 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdEtnia)
                     .HasName("IX_Persona_IdEtnia");
 
+                entity.HasIndex(e => e.IdNacionalidadIndigena);
+
                 entity.HasIndex(e => e.IdGenero)
                     .HasName("IX_Persona_IdGenero");
 
@@ -2654,6 +2673,11 @@ namespace bd.swth.datos
                     .HasMaxLength(100);
 
                 entity.Property(e => e.CorreoPrivado).IsRequired();
+
+                entity.Property(e => e.CallePrincipal).HasMaxLength(150);
+                entity.Property(e => e.CalleSecundaria).HasMaxLength(150);
+                entity.Property(e => e.Referencia).HasMaxLength(150);
+                entity.Property(e => e.Numero).HasMaxLength(50);
 
                 entity.Property(e => e.Identificacion)
                     .IsRequired()
@@ -2683,6 +2707,10 @@ namespace bd.swth.datos
                 entity.HasOne(d => d.Etnia)
                     .WithMany(p => p.Persona)
                     .HasForeignKey(d => d.IdEtnia);
+
+                entity.HasOne(d => d.NacionalidadIndigena)
+                    .WithMany(p => p.Persona)
+                    .HasForeignKey(d => d.IdNacionalidadIndigena);
 
                 entity.HasOne(d => d.Genero)
                     .WithMany(p => p.Persona)
@@ -2793,6 +2821,10 @@ namespace bd.swth.datos
                 entity.Property(e => e.Observaciones)
                     .IsRequired()
                     .HasMaxLength(500);
+
+                entity.Property(e => e.NoSenescyt)
+                    .IsRequired()
+                    .HasMaxLength(50);
 
                 entity.HasOne(d => d.Persona)
                     .WithMany(p => p.PersonaEstudio)

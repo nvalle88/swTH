@@ -25,7 +25,9 @@ namespace bd.swth.entidades.Negocio
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "¿Trabajó en la Superintendencia de InstitucionesFinancieras?")]
         public bool TrabajoSuperintendenciaBanco { get; set; }
-        
+
+        public bool FondosReservas { get; set; }
+
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "¿Declaración jurada?")]
         public bool DeclaracionJurada { get; set; }
@@ -130,9 +132,9 @@ namespace bd.swth.entidades.Negocio
 
         //public virtual ICollection<TransferenciaActivoFijo> TransferenciaActivoFijo2 { get; set; }
 
-        public virtual ICollection<EmpleadoNepotismo> EmpleadoNepotismo { get; set; }
+        public virtual ICollection<EmpleadoNepotismo> EmpleadoNepotismoEmpleado { get; set; }
 
-        //public virtual ICollection<EmpleadoNepotismo> EmpleadoNepotismo1 { get; set; }
+        public virtual ICollection<EmpleadoNepotismo> EmpleadoNepotismoFamiliar { get; set; }
 
         public virtual ICollection<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
 

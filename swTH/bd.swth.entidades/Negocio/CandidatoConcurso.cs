@@ -33,5 +33,9 @@ namespace bd.swth.entidades.Negocio
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int IdPartidasFase { get; set; }
         public virtual PartidasFase PartidasFase { get; set; }
+
+   
+        public int IdPersona { get; set; }
+        public virtual Persona Persona { get; set; }
     }
 }

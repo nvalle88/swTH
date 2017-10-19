@@ -7,33 +7,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
-using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Personas")]
-    public class PersonasController : Controller
+    [Route("api/Empleados")]
+    public class EmpleadosController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public PersonasController(SwTHDbContext db)
+        public EmpleadosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarPersonas")]
-        public async Task<List<Persona>> GetPersonas()
+        [Route("ListarEmpleados")]
+        public async Task<List<Empleado>> GetEmpleados()
         {
             try
             {
-                return await db.Persona.Include(x => x.Sexo).Include(x => x.TipoIdentificacion).Include(x => x.EstadoCivil).Include(x => x.Genero).Include(x => x.Nacionalidad).Include(x => x.TipoSangre).Include(x => x.Etnia).OrderBy(x => x.Nombres).ToListAsync();
+                return await db.Empleado.Include(x => x.Persona).Include(x => x.CiudadNacimiento).Include(x => x.ProvinciaSufragio).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Persona>();
+                return new List<Empleado>();
             }
         }
 
-        // GET: api/Personas/5
+        // GET: api/Empleados/5
         [HttpGet("{id}")]
-        public async Task<Response> GetPersona([FromRoute] int id)
+        public async Task<Response> GetEmpleado([FromRoute] int id)
         {
             try
             {
@@ -66,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var Persona = await db.Persona.SingleOrDefaultAsync(m => m.IdPersona == id);
+                var Empleado = await db.Empleado.SingleOrDefaultAsync(m => m.IdEmpleado == id);
 
-                if (Persona == null)
+                if (Empleado == null)
                 {
                     return new Response
                     {
@@ -81,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = Persona,
+                    Resultado = Empleado,
                 };
             }
             catch (Exception ex)
@@ -104,93 +104,11 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/Personas/5
-        [HttpPut("{id}")]
-        public async Task<Response> PutPersona([FromRoute] int id, [FromBody] Persona Persona)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
-
-                var existe = Existe(Persona);
-                var PersonaActualizar = (Persona)existe.Resultado;
-                if (existe.IsSuccess)
-                {
-                    if (PersonaActualizar.IdPersona == Persona.IdPersona)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
-                    };
-                }
-                var persona = db.Persona.Find(Persona.IdPersona);
-
-                persona.Nombres = Persona.Nombres;
-                persona.FechaNacimiento = Persona.FechaNacimiento;
-                persona.IdSexo = Persona.IdSexo;
-                persona.IdTipoIdentificacion = Persona.IdTipoIdentificacion;
-                persona.IdEstadoCivil = Persona.IdEstadoCivil;
-                persona.IdGenero = Persona.IdGenero;
-                persona.IdNacionalidad = Persona.IdNacionalidad;
-                persona.IdTipoSangre = Persona.IdTipoSangre;
-                persona.IdEtnia = Persona.IdEtnia;
-                persona.Identificacion = Persona.Identificacion;
-                persona.Nombres = Persona.Nombres;
-                persona.Apellidos = Persona.Apellidos;
-                persona.TelefonoPrivado = Persona.TelefonoPrivado;
-                persona.TelefonoCasa = Persona.TelefonoCasa;
-                persona.CorreoPrivado = Persona.CorreoPrivado;
-                persona.LugarTrabajo = Persona.LugarTrabajo;
-
-                db.Persona.Update(persona);
-                await db.SaveChangesAsync();
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                };
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Excepcion,
-                };
-            }
-
-        }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarPersona")]
-        public async Task<Response> PostPersona([FromBody] Persona Persona)
+        [Route("InsertarEmpleado")]
+        public async Task<Response> PostEmpleado([FromBody] Empleado Empleado)
         {
             try
             {
@@ -203,10 +121,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(Persona);
+                var respuesta = Existe(Empleado);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Persona.Add(Persona);
+                    db.Empleado.Add(Empleado);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -244,7 +162,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeletePersona([FromRoute] int id)
+        public async Task<Response> DeleteEmpleado([FromRoute] int id)
         {
             try
             {
@@ -257,7 +175,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.Persona.SingleOrDefaultAsync(m => m.IdPersona == id);
+                var respuesta = await db.Empleado.SingleOrDefaultAsync(m => m.IdEmpleado == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -266,7 +184,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.Persona.Remove(respuesta);
+                db.Empleado.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -295,17 +213,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(Persona Persona)
+        private Response Existe(Empleado Empleado)
         {
-            var bdd = Persona.Identificacion;
-            var Personarespuesta = db.Persona.Where(p => p.Identificacion == bdd).FirstOrDefault();
-            if (Personarespuesta != null)
+            var bdd = Empleado.IdPersona;
+            var Empleadorespuesta = db.Empleado.Where(p => p.IdPersona == bdd).FirstOrDefault();
+            if (Empleadorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = Personarespuesta,
+                    Resultado = Empleadorespuesta,
                 };
 
             }
@@ -313,15 +231,15 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = Personarespuesta,
+                Resultado = Empleadorespuesta,
             };
         }
 
-        //Persona-Discapacidad
+        //Empleado-Contacto-Emergencia
 
         [HttpPost]
-        [Route("InsertarPersonaDiscapacidad")]
-        public async Task<Response> InsertarPersonaDiscapacidad([FromBody] PersonaDiscapacidad personaDiscapacidad)
+        [Route("InsertarEmpleadoContactoEmergencia")]
+        public async Task<Response> InsertarEmpleadoContactoEmergencia([FromBody] EmpleadoContactoEmergencia empleadoContactoEmergencia)
         {
             try
             {
@@ -333,7 +251,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ModeloInvalido,
                     };
                 }
-                db.PersonaDiscapacidad.Add(personaDiscapacidad);
+                db.EmpleadoContactoEmergencia.Add(empleadoContactoEmergencia);
                 await db.SaveChangesAsync();
                 return new Response
                 {
@@ -362,8 +280,8 @@ namespace bd.swth.web.Controllers.API
         }
 
         [HttpPost]
-        [Route("EliminarPersonaDiscapacidad")]
-        public async Task<Response> EliminarPersonaDiscapacidad([FromBody] PersonaDiscapacidad personaDiscapacidad)
+        [Route("EliminarEmpleadoContactoEmergencia")]
+        public async Task<Response> EliminarEmpleadoContactoEmergencia([FromBody] EmpleadoContactoEmergencia empleadoContactoEmergencia)
         {
             try
             {
@@ -376,7 +294,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.PersonaDiscapacidad.SingleOrDefaultAsync(m => m.IdPersonaDiscapacidad == personaDiscapacidad.IdPersonaDiscapacidad && m.IdPersona == personaDiscapacidad.IdPersona);
+                var respuesta = await db.EmpleadoContactoEmergencia.SingleOrDefaultAsync(m => m.IdEmpleadoContactoEmergencia == empleadoContactoEmergencia.IdEmpleadoContactoEmergencia && m.IdEmpleado == empleadoContactoEmergencia.IdEmpleado);
 
                 if (respuesta == null)
                 {
@@ -386,7 +304,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.PersonaDiscapacidad.Remove(respuesta);
+                db.EmpleadoContactoEmergencia.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -415,11 +333,11 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        //Persona-Enfermedad
+        //Èmpleado-Familiar
 
         [HttpPost]
-        [Route("InsertarPersonaEnfermedad")]
-        public async Task<Response> InsertarPersonaEnfermedad([FromBody] PersonaEnfermedad personaEnfermedad)
+        [Route("InsertarEmpleadoFamiliar")]
+        public async Task<Response> InsertarEmpleadoFamiliar([FromBody] EmpleadoFamiliar empleadoFamiliar)
         {
             try
             {
@@ -431,7 +349,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ModeloInvalido,
                     };
                 }
-                db.PersonaEnfermedad.Add(personaEnfermedad);
+                db.EmpleadoFamiliar.Add(empleadoFamiliar);
                 await db.SaveChangesAsync();
                 return new Response
                 {
@@ -460,8 +378,8 @@ namespace bd.swth.web.Controllers.API
         }
 
         [HttpPost]
-        [Route("EliminarPersonaEnfermedad")]
-        public async Task<Response> EliminarPersonaEnfermedad([FromBody] PersonaEnfermedad personaEnfermedad)
+        [Route("EliminarEmpleadoFamiliar")]
+        public async Task<Response> EliminarEmpleadoFamiliar([FromBody] EmpleadoFamiliar empleadoFamiliar)
         {
             try
             {
@@ -474,7 +392,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.PersonaEnfermedad.SingleOrDefaultAsync(m => m.IdPersonaEnfermedad == personaEnfermedad.IdPersonaEnfermedad && m.IdPersona == personaEnfermedad.IdPersona);
+                var respuesta = await db.EmpleadoFamiliar.SingleOrDefaultAsync(m => m.IdEmpleadoFamiliar == empleadoFamiliar.IdEmpleadoFamiliar && m.IdEmpleado == empleadoFamiliar.IdEmpleado);
 
                 if (respuesta == null)
                 {
@@ -484,7 +402,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.PersonaEnfermedad.Remove(respuesta);
+                db.EmpleadoFamiliar.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -513,11 +431,11 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        //Persona - Estudio
+        //Èmpleado-Nepotismo
 
         [HttpPost]
-        [Route("InsertarPersonaEstudio")]
-        public async Task<Response> InsertarPersonaEstudio([FromBody] PersonaEstudio personaEstudio)
+        [Route("InsertarEmpleadoNepotismo")]
+        public async Task<Response> InsertarEmpleadoNepotismo([FromBody] EmpleadoNepotismo empleadoNepotismo)
         {
             try
             {
@@ -529,7 +447,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ModeloInvalido,
                     };
                 }
-                db.PersonaEstudio.Add(personaEstudio);
+                db.EmpleadoNepotismo.Add(empleadoNepotismo);
                 await db.SaveChangesAsync();
                 return new Response
                 {
@@ -558,8 +476,8 @@ namespace bd.swth.web.Controllers.API
         }
 
         [HttpPost]
-        [Route("EliminarPersonaEstudio")]
-        public async Task<Response> EliminarPersonaEstudio([FromBody] PersonaEstudio personaEstudio)
+        [Route("EliminarEmpleadoNepotismo")]
+        public async Task<Response> EliminarEmpleadoNepotismo([FromBody] EmpleadoNepotismo empleadoNepotismo)
         {
             try
             {
@@ -572,7 +490,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.PersonaEstudio.SingleOrDefaultAsync(m => m.IdPersonaEstudio == personaEstudio.IdPersonaEstudio && m.IdPersona == personaEstudio.IdPersona);
+                var respuesta = await db.EmpleadoNepotismo.SingleOrDefaultAsync(m => m.IdEmpleadoNepotismo == empleadoNepotismo.IdEmpleadoNepotismo && m.IdEmpleado == empleadoNepotismo.IdEmpleado);
 
                 if (respuesta == null)
                 {
@@ -582,7 +500,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.PersonaEstudio.Remove(respuesta);
+                db.EmpleadoNepotismo.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -612,19 +530,29 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+        //Èmpleado-Datos-Bancarios
+
         [HttpPost]
-        [Route("ListarEstudiosNoAsignadosPersona")]
-        public async Task<List<Estudio>> ListarEstudiosNoAsignadosPersona([FromBody]Persona persona)
+        [Route("InsertarEmpleadoDatosBancarios")]
+        public async Task<Response> InsertarEmpleadoDatosBancarios([FromBody] DatosBancarios datosBancarios)
         {
             try
             {
-                var Lista = await db.Estudio
-                                   .Where(ac => !db.PersonaEstudio
-                                                   .Where(a => a.Persona.IdPersona == persona.IdPersona)
-                                                   .Select(ioac => ioac.Titulo.Estudio.IdEstudio)
-                                                   .Contains(ac.IdEstudio))
-                                          .ToListAsync();
-                return Lista;
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+                db.DatosBancarios.Add(datosBancarios);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio
+                };
             }
             catch (Exception ex)
             {
@@ -638,8 +566,67 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Estudio>();
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
             }
         }
+
+        [HttpPost]
+        [Route("EliminarEmpleadoDatosBancarios")]
+        public async Task<Response> EliminarEmpleadoDatosBancarios([FromBody] DatosBancarios datosBancarios)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.DatosBancarios.SingleOrDefaultAsync(m => m.IdDatosBancarios == datosBancarios.IdDatosBancarios && m.IdEmpleado == datosBancarios.IdEmpleado);
+
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.DatosBancarios.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
     }
 }
