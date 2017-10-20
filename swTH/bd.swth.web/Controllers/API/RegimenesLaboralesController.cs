@@ -25,6 +25,9 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+
+
+
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarRegimenesLaborales")]

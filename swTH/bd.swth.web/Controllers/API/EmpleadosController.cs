@@ -12,6 +12,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.ObjectTransfer;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -108,56 +109,76 @@ namespace bd.swth.web.Controllers.API
         // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarEmpleado")]
-        public async Task<Response> PostEmpleado([FromBody] Empleado Empleado)
+        public async Task<Response> PostEmpleado([FromBody] EmpleadoViewModel empleadoViewModel)
         {
-            try
+
+            using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                if (!ModelState.IsValid)
+                try
                 {
+                    //Insertar persona y recuperar el Id con el que ha sido insertado
+                    var persona = await db.Persona.AddAsync(empleadoViewModel.Persona);
+                    await db.SaveChangesAsync();
+
+                    //Insertar empleado con el Id persona recuperado y recuperar el Id de Empleado
+
+                    empleadoViewModel.Empleado.IdPersona = persona.Entity.IdPersona;
+
+                    var empleado = await db.Empleado.AddAsync(empleadoViewModel.Empleado);
+                    await db.SaveChangesAsync();
+
+                    //Insertar datos bancarios del empleado insertado con aterioridad
+                    empleadoViewModel.DatosBancarios.IdEmpleado = empleado.Entity.IdEmpleado;
+
+                    await db.DatosBancarios.AddAsync(empleadoViewModel.DatosBancarios);
+                    await db.SaveChangesAsync();
+
+
+                    //Insertar familiares del empleado
+
+                    foreach (var empleadoFamiliar in empleadoViewModel.EmpleadoFamiliar)
+                    {
+                        //Insertar persona familiar y obtener su id
+                        var personafamiliar = await db.Persona.AddAsync(empleadoFamiliar.Persona);
+                        await db.SaveChangesAsync();
+
+                        //insertar EmpleadoFamiliar  con el Id de persona insertada anteriormente
+                        empleadoFamiliar.IdEmpleado = empleado.Entity.IdEmpleado;
+                        await db.EmpleadoFamiliar.AddAsync(empleadoFamiliar);
+                        await db.SaveChangesAsync();
+
+                    }
+
+                    transaction.Commit();
+
+                    return new Response
+                    {
+                        IsSuccess=true,
+                        Message=Mensaje.Satisfactorio,
+                    };
+                }
+                catch (Exception ex)
+                {
+
+                    transaction.Rollback();
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    {
+                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                        ExceptionTrace = ex,
+                        Message = Mensaje.Excepcion,
+                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                        UserName = "",
+
+                    });
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = ""
+                        Message = Mensaje.Error,
                     };
                 }
-
-                var respuesta = Existe(Empleado);
-                if (!respuesta.IsSuccess)
-                {
-                    db.Empleado.Add(Empleado);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro,
-                };
-
             }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
         }
 
         // DELETE: api/BasesDatos/5
