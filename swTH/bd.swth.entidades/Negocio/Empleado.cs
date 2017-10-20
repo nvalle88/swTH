@@ -29,10 +29,6 @@ namespace bd.swth.entidades.Negocio
         public bool FondosReservas { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
-        [Display(Name = "Nepotismo:")]
-        public bool Nepotismo { get; set; }
-
-        [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "¿Declaración jurada?")]
         public bool DeclaracionJurada { get; set; }
 
