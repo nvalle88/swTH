@@ -4,62 +4,38 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
-using Microsoft.EntityFrameworkCore;
-using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TiposDeNombramiento")]
-    public class TiposDeNombramientoController : Controller
+    [Route("api/PlanesGestionCambio")]
+    public class PlanesGestionCambioController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TiposDeNombramientoController(SwTHDbContext db)
+        public PlanesGestionCambioController(SwTHDbContext db)
         {
             this.db = db;
+            
         }
 
-
-        [HttpPost]
-        [Route("ListarTiposDeNombramientoPorRelacion")]
-        public async Task<List<TipoNombramiento>> ListarTiposDeNombramientoPorRelacion([FromBody] RelacionLaboral relacionLaboral)
-        {
-            try
-            {
-                return await db.TipoNombramiento.Where(x => x.IdRelacionLaboral==relacionLaboral.IdRelacionLaboral).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<TipoNombramiento>();
-            }
-        }
-
-
-        // GET: api/BasesDatos
+        // GET: api/PlanesGestionCambio
         [HttpGet]
-        [Route("ListarTiposDeNombramiento")]
-        public async Task<List<TipoNombramiento>> GetCapacitacionesTemarios()
+        [Route("ListarPlanesGestionCambio")]
+        public async Task<List<PlanGestionCambio>> GetNacionalidadesIndigenas()
         {
             try
             {
-                return await db.TipoNombramiento.Include(x => x.RelacionLaboral).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.PlanGestionCambio.Include(x => x.EmpleadoRealizadoPor.Persona).Include(x => x.EmpleadoAprobadoPor.Persona).OrderBy(x => x.Titulo).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -73,13 +49,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<TipoNombramiento>();
+                return new List<PlanGestionCambio>();
             }
         }
 
-        // GET: api/BasesDatos/5
+        // GET: api/PlanesGestionCambio/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoNombramiento([FromRoute] int id)
+        public async Task<Response> GetPlanGestionCambio([FromRoute] int id)
         {
             try
             {
@@ -92,9 +68,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoNombramiento = await db.TipoNombramiento.SingleOrDefaultAsync(m => m.IdTipoNombramiento == id);
+                var PlanGestionCambio = await db.PlanGestionCambio.SingleOrDefaultAsync(m => m.IdPlanGestionCambio == id);
 
-                if (TipoNombramiento == null)
+                if (PlanGestionCambio == null)
                 {
                     return new Response
                     {
@@ -107,7 +83,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoNombramiento,
+                    Resultado = PlanGestionCambio,
                 };
             }
             catch (Exception ex)
@@ -130,9 +106,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/BasesDatos/5
+        // PUT: api/PlanesGestionCambio/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoNombramiento([FromRoute] int id, [FromBody] TipoNombramiento TipoNombramiento)
+        public async Task<Response> PutPlanGestionCambio([FromRoute] int id, [FromBody] PlanGestionCambio planGestionCambio)
         {
             try
             {
@@ -145,11 +121,20 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(TipoNombramiento);
-                var TipoNombramientoActualizar = (TipoNombramiento)existe.Resultado;
+                if (planGestionCambio.FechaInicio > planGestionCambio.FechaFin)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "la fecha de inicio no puede ser mayor que la fecha fin"
+                    };
+                }
+
+                var existe = Existe(planGestionCambio);
+                var PlanGestionCambioActualizar = (PlanGestionCambio)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (TipoNombramientoActualizar.IdTipoNombramiento == TipoNombramiento.IdTipoNombramiento)
+                    if (PlanGestionCambioActualizar.IdPlanGestionCambio == planGestionCambio.IdPlanGestionCambio)
                     {
                         return new Response
                         {
@@ -162,11 +147,15 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
-                var tiponombramiento = db.TipoNombramiento.Find(TipoNombramiento.IdTipoNombramiento);
+                var PlanGestionCambio = db.PlanGestionCambio.Find(planGestionCambio.IdPlanGestionCambio);
 
-                tiponombramiento.IdRelacionLaboral = TipoNombramiento.IdRelacionLaboral;
-                tiponombramiento.Nombre = TipoNombramiento.Nombre;
-                db.TipoNombramiento.Update(tiponombramiento);
+                PlanGestionCambio.Titulo = planGestionCambio.Titulo;
+                PlanGestionCambio.Descripcion = planGestionCambio.Descripcion;
+                PlanGestionCambio.FechaInicio = planGestionCambio.FechaInicio;
+                PlanGestionCambio.FechaFin = planGestionCambio.FechaFin;
+                PlanGestionCambio.RealizadoPor = planGestionCambio.RealizadoPor;
+                PlanGestionCambio.AprobadoPor = planGestionCambio.AprobadoPor;
+                db.PlanGestionCambio.Update(PlanGestionCambio);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -198,10 +187,10 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/BasesDatos
+        // POST: api/PlanesGestionCambio
         [HttpPost]
-        [Route("InsertarTipoNombramiento")]
-        public async Task<Response> PostTipoNombramiento([FromBody] TipoNombramiento TipoNombramiento)
+        [Route("InsertarPlanGestionCambio")]
+        public async Task<Response> PostPlanGestionCambio([FromBody] PlanGestionCambio PlanGestionCambio)
         {
             try
             {
@@ -214,10 +203,20 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(TipoNombramiento);
+                if (PlanGestionCambio.FechaInicio > PlanGestionCambio.FechaFin)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha de inicio no puede ser mayor que la fecha fin"
+                    };
+                }
+
+
+                var respuesta = Existe(PlanGestionCambio);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoNombramiento.Add(TipoNombramiento);
+                    db.PlanGestionCambio.Add(PlanGestionCambio);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -253,9 +252,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        // DELETE: api/PlanesGestionCambio/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoNombramiento([FromRoute] int id)
+        public async Task<Response> DeletePlanGestionCambio([FromRoute] int id)
         {
             try
             {
@@ -268,7 +267,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TipoNombramiento.SingleOrDefaultAsync(m => m.IdTipoNombramiento == id);
+                var respuesta = await db.PlanGestionCambio.SingleOrDefaultAsync(m => m.IdPlanGestionCambio == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -277,7 +276,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoNombramiento.Remove(respuesta);
+                db.PlanGestionCambio.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -306,17 +305,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(TipoNombramiento TipoNombramiento)
+        private Response Existe(PlanGestionCambio PlanGestionCambio)
         {
-            var bdd = TipoNombramiento.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoNombramientorespuesta = db.TipoNombramiento.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdRelacionLaboral == TipoNombramiento.IdRelacionLaboral).FirstOrDefault();
-            if (TipoNombramientorespuesta != null)
+            var bdd = PlanGestionCambio.Titulo.ToUpper().TrimEnd().TrimStart();
+            var PlanGestionCambiorespuesta = db.PlanGestionCambio.Where(p => p.Titulo.ToUpper().TrimStart().TrimEnd() == bdd && p.RealizadoPor == PlanGestionCambio.RealizadoPor && p.AprobadoPor == PlanGestionCambio.AprobadoPor).FirstOrDefault();
+            if (PlanGestionCambiorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = TipoNombramientorespuesta,
+                    Resultado = PlanGestionCambiorespuesta,
                 };
 
             }
@@ -324,9 +323,8 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoNombramientorespuesta,
+                Resultado = PlanGestionCambiorespuesta,
             };
         }
-
     }
 }

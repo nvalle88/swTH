@@ -23,16 +23,16 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.ActividadesEsenciales> ActividadesEsenciales { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ComportamientoObservable> ComportamientoObservable { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalExperienciaLaboralRequerida> IndiceOcupacionalExperienciaLaboralRequerida { get; set; }
-        public virtual DbSet<ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
         public virtual DbSet<AdministracionTalentoHumano> AdministracionTalentoHumano { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AnoExperiencia> AnoExperiencia { get; set; }
         public virtual DbSet<AprobacionViatico> AprobacionViatico { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AreaConocimiento> AreaConocimiento { get; set; }
-        public virtual DbSet<AvanceGestionCambio> AvanceGestionCambio { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.AvanceGestionCambio> AvanceGestionCambio { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSO> BrigadaSSO { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSORol> BrigadaSsorol { get; set; }
         public virtual DbSet<CandidatoConcurso> CandidatoConcurso { get; set; }
-        public virtual DbSet<Canditato> Canditato { get; set; }
+        public virtual DbSet<Candidato> Canditato { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Capacitacion> Capacitacion { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionAreaConocimiento> CapacitacionAreaConocimiento { get; set; }
         public virtual DbSet<CapacitacionEncuesta> CapacitacionEncuesta { get; set; }
@@ -147,7 +147,7 @@ namespace bd.swth.datos
         public virtual DbSet<PersonaEnfermedad> PersonaEnfermedad { get; set; }
         public virtual DbSet<PersonaEstudio> PersonaEstudio { get; set; }
         public virtual DbSet<PersonaPaquetesInformaticos> PersonaPaquetesInformaticos { get; set; }
-        public virtual DbSet<PlanGestionCambio> PlanGestionCambio { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.PlanGestionCambio> PlanGestionCambio { get; set; }
         public virtual DbSet<PlanificacionHE> PlanificacionHE { get; set; }
         public virtual DbSet<Pregunta> Pregunta { get; set; }
         public virtual DbSet<PreguntaRespuesta> PreguntaRespuesta { get; set; }
@@ -414,11 +414,8 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdCandidatoConcurso)
                     .HasName("PK_CandidatoConcurso");
 
-                entity.HasKey(e => e.IdPersona);
-                 
-
-                entity.HasIndex(e => e.IdCanditato)
-                    .HasName("IX_CandidatoConcurso_IdCanditato");
+                entity.HasIndex(e => e.IdCandidato)
+                    .HasName("IX_CandidatoConcurso_IdCandidato");
 
                 entity.HasIndex(e => e.IdPartidasFase)
                     .HasName("IX_CandidatoConcurso_IdPartidasFase");
@@ -427,14 +424,14 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasMaxLength(20);
 
-                entity.HasOne(d => d.Canditato)
+                entity.HasOne(d => d.Candidato)
                     .WithMany(p => p.CandidatoConcurso)
-                    .HasForeignKey(d => d.IdCanditato)
+                    .HasForeignKey(d => d.IdCandidato)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(d => d.Persona)
                     .WithMany(p => p.CandidatoConcurso)
-                    .HasForeignKey(d => d.IdCanditato)
+                    .HasForeignKey(d => d.IdCandidato)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(d => d.PartidasFase)
@@ -443,10 +440,10 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<Canditato>(entity =>
+            modelBuilder.Entity<Candidato>(entity =>
             {
-                entity.HasKey(e => e.IdCanditato)
-                    .HasName("PK_Canditato");
+                entity.HasKey(e => e.IdCandidato)
+                    .HasName("PK_Candidato");
             });
 
             modelBuilder.Entity<Capacitacion>(entity =>
@@ -2646,6 +2643,8 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdPersona)
                     .HasName("PK_Persona");
 
+             
+
                 entity.HasIndex(e => e.IdEstadoCivil)
                     .HasName("IX_Persona_IdEstadoCivil");
 
@@ -2699,7 +2698,8 @@ namespace bd.swth.datos
                 entity.Property(e => e.TelefonoPrivado)
                     .IsRequired()
                     .HasMaxLength(20);
-             
+                
+
                 entity.HasOne(d => d.EstadoCivil)
                     .WithMany(p => p.Persona)
                     .HasForeignKey(d => d.IdEstadoCivil);
