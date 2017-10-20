@@ -60,6 +60,30 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("ListarCiudadPorProvincia")]
+        public async Task<List<Ciudad>> GetCiudad([FromBody] Provincia provincia)
+        {
+            try
+            {
+                return await db.Ciudad.Where(x => x.IdProvincia == provincia.IdProvincia).OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<Ciudad>();
+            }
+        }
+
 
         // GET: api/Ciudad
         [HttpGet]

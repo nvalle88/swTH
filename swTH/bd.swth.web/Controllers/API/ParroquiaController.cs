@@ -51,6 +51,31 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("ListarParroquiaPorCiudad")]
+        public async Task<List<Parroquia>> GetParroquia([FromBody] Ciudad ciudad)
+        {
+            try
+            {
+                return await db.Parroquia.Where(x => x.IdCiudad == ciudad.IdCiudad).OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<Parroquia>();
+            }
+        }
+
         // GET: api/Parroquia/5
         [HttpGet("{id}")]
         public async Task<Response> GetParroquia([FromRoute] int id)
