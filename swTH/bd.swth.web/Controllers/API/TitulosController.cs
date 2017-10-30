@@ -10,92 +10,30 @@ using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/AreasConocimientos")]
-    public class AreasConocimientosController : Controller
+    [Route("api/Titulos")]
+    public class TitulosController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public AreasConocimientosController(SwTHDbContext db)
+        public TitulosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
-
-        [HttpPost]
-        [Route("ListarAreasConocimientosNoAsignadasIndiceOcupacional")]
-        public async Task<List<AreaConocimiento>> ListarAreasConocimientosNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
-        {
-            try
-            {
-                var Lista =await db.AreaConocimiento
-                                   .Where(ac => !db.IndiceOcupacionalAreaConocimiento
-                                                   .Where(a=>a.IndiceOcupacional.IdIndiceOcupacional==indiceOcupacional.IdIndiceOcupacional)
-                                                   .Select(ioac => ioac.IdAreaConocimiento)
-                                                   .Contains(ac.IdAreaConocimiento))
-                                          .ToListAsync();
-                return Lista;
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<AreaConocimiento>();
-            }
-        }
-
-        [HttpPost]
-        [Route("ListarAreasConocimientosporEstudio")]
-        public async Task<List<AreaConocimiento>> ListarAreasConocimientosporEstudio([FromBody]Estudio estudio)
-        {
-            try
-            {
-                var Lista = await db.AreaConocimiento
-                                   .Where(ac => db.Titulo
-                                                   .Where(a => a.IdEstudio == estudio.IdEstudio)
-                                                   .Select(ioac => ioac.IdAreaConocimiento)
-                                                   .Contains(ac.IdAreaConocimiento))
-                                          .ToListAsync();
-                return Lista;
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<AreaConocimiento>();
-            }
-        }
-
-
         [HttpGet]
-        [Route("ListarAreasConocimientos")]
-        public async Task<List<AreaConocimiento>> GetAreasConocimientos()
+        [Route("ListarTitulos")]
+        public async Task<List<Titulo>> GetTitulos()
         {
             try
             {
-                return await db.AreaConocimiento.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.Titulo.Include(x => x.AreaConocimiento).Include(x => x.Estudio).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -109,47 +47,24 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<AreaConocimiento>();
+                return new List<Titulo>();
             }
         }
-
-
-
 
 
         [HttpPost]
-        [Route("EliminarIncideOcupacionalAreaConocimiento")]
-        public async Task<Response> EliminarIncideOcupacionalAreaConocimiento([FromBody] IndiceOcupacionalAreaConocimiento indiceOcupacionalAreaConocimiento)
+        [Route("ListarTitulosporAreaConocimiento")]
+        public async Task<List<Titulo>> ListarTitulosporAreaConocimiento([FromBody]Titulo titulo)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
-
-                var respuesta = await db.IndiceOcupacionalAreaConocimiento.SingleOrDefaultAsync(m => m.IdAreaConocimiento == indiceOcupacionalAreaConocimiento.IdAreaConocimiento
-                                      && m.IdIndiceOcupacional == indiceOcupacionalAreaConocimiento.IdIndiceOcupacional);
-                if (respuesta == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-                db.IndiceOcupacionalAreaConocimiento.Remove(respuesta);
-                await db.SaveChangesAsync();
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                };
+                var Lista = await db.Titulo
+                                   .Where(ac => db.Titulo
+                                                   .Where(a => a.IdAreaConocimiento == titulo.IdAreaConocimiento && a.IdEstudio == titulo.IdEstudio)
+                                                   .Select(ioac => ioac.IdTitulo)
+                                                   .Contains(ac.IdTitulo))
+                                          .ToListAsync();
+                return Lista;
             }
             catch (Exception ex)
             {
@@ -163,20 +78,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
+                return new List<Titulo>();
             }
         }
-
-
-
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetAreaConocimiento([FromRoute] int id)
+        public async Task<Response> GetTitulo([FromRoute] int id)
         {
             try
             {
@@ -189,9 +97,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var AreaConocimiento = await db.AreaConocimiento.SingleOrDefaultAsync(m => m.IdAreaConocimiento == id);
+                var Titulo = await db.Titulo.SingleOrDefaultAsync(m => m.IdTitulo == id);
 
-                if (AreaConocimiento == null)
+                if (Titulo == null)
                 {
                     return new Response
                     {
@@ -204,7 +112,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = AreaConocimiento,
+                    Resultado = Titulo,
                 };
             }
             catch (Exception ex)
@@ -229,7 +137,7 @@ namespace bd.swth.web.Controllers.API
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutAreaConocimiento([FromRoute] int id, [FromBody] AreaConocimiento AreaConocimiento)
+        public async Task<Response> PutTitulo([FromRoute] int id, [FromBody] Titulo Titulo)
         {
             try
             {
@@ -242,26 +150,25 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-
-                var existe = Existe(AreaConocimiento);
+                var existe = Existe(Titulo);
                 if (existe.IsSuccess)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
+                        Message = "Existe una brigada de salud y seguridad ocupacional con igual rol",
                     };
                 }
 
-                var AreaConocimientoActualizar = await db.AreaConocimiento.Where(x => x.IdAreaConocimiento == id).FirstOrDefaultAsync();
-                if (AreaConocimientoActualizar != null)
+                var TituloActualizar = await db.Titulo.Where(x => x.IdTitulo == id).FirstOrDefaultAsync();
+                if (TituloActualizar != null)
                 {
                     try
                     {
 
-                        AreaConocimientoActualizar.Descripcion = AreaConocimiento.Descripcion;
-                        db.AreaConocimiento.Update(AreaConocimientoActualizar);
+                        TituloActualizar.Nombre = Titulo.Nombre;
+                        TituloActualizar.IdAreaConocimiento = Titulo.IdAreaConocimiento;
+                        db.Titulo.Update(TituloActualizar);
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -291,13 +198,10 @@ namespace bd.swth.web.Controllers.API
                     }
                 }
 
-
-
-
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.ExisteRegistro
+                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol",
                 };
             }
             catch (Exception)
@@ -305,15 +209,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarAreaConocimiento")]
-        public async Task<Response> PostAreaConocimiento([FromBody] AreaConocimiento AreaConocimiento)
+        [Route("InsertarTitulo")]
+        public async Task<Response> PostTitulo([FromBody] Titulo Titulo)
         {
             try
             {
@@ -326,10 +230,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(AreaConocimiento);
+                var respuesta = Existe(Titulo);
                 if (!respuesta.IsSuccess)
                 {
-                    db.AreaConocimiento.Add(AreaConocimiento);
+                    db.Titulo.Add(Titulo);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -341,7 +245,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol"
                 };
 
             }
@@ -367,7 +271,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteAreaConocimiento([FromRoute] int id)
+        public async Task<Response> DeleteTitulo([FromRoute] int id)
         {
             try
             {
@@ -380,7 +284,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.AreaConocimiento.SingleOrDefaultAsync(m => m.IdAreaConocimiento == id);
+                var respuesta = await db.Titulo.SingleOrDefaultAsync(m => m.IdTitulo == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -389,7 +293,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.AreaConocimiento.Remove(respuesta);
+                db.Titulo.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -418,16 +322,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(AreaConocimiento AreaConocimiento)
+        private Response Existe(Titulo Titulo)
         {
-            var bdd = AreaConocimiento.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var AreaConocimientorespuesta = db.AreaConocimiento.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (AreaConocimientorespuesta != null)
+            var bdd = Titulo.Nombre.ToUpper().TrimEnd().TrimStart();
+            var Titulorespuesta = db.Titulo.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (Titulorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
+                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol",
                     Resultado = null,
                 };
 
@@ -436,7 +340,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = AreaConocimientorespuesta,
+                Resultado = Titulorespuesta,
             };
         }
     }

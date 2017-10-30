@@ -57,9 +57,6 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
-
-
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarEstudios")]

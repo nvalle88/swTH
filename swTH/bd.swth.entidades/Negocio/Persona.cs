@@ -59,6 +59,11 @@ namespace bd.swth.entidades.Negocio
         [StringLength(500, MinimumLength = 2, ErrorMessage = "El {0} no puede tener más de {1} y menos de {2}")]
         public string LugarTrabajo { get; set; }
 
+        [Required(ErrorMessage = "Debe introducir {0}")]
+        [Display(Name = "Ocupación:")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "El {0} no puede tener más de {1} y menos de {2}")]
+        public string Ocupacion { get; set; }
+
 
         //Propiedades Virtuales Referencias a otras clases
 
@@ -122,6 +127,13 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<EmpleadoContactoEmergencia> EmpleadoContactoEmergencia { get; set; }
 
         public virtual ICollection<EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
+
+
+
+
+
+        public virtual PersonaSustituto PersonaSustitutoPersona { get; set; }
+        public virtual PersonaSustituto PersonaPersonaSustituto { get; set; }
 
     }
 }
