@@ -26,7 +26,6 @@ namespace bd.swrm.web.Controllers.API
             this.db = db;
         }
 
-
         [HttpPost]
         [Route("ListarCiudadPorPais")]
         public async Task<List<Ciudad>> ListarCiudadPorPais([FromBody] Pais pais)
@@ -38,7 +37,7 @@ namespace bd.swrm.web.Controllers.API
 
                 foreach (var item in provincias)
                 {
-                  var listaCiudad=await db.Ciudad.Where(x => x.IdProvincia == item.IdProvincia).ToListAsync();
+                  var listaCiudad=await db.Ciudad.Include(x=> x.Provincia).ThenInclude(x=> x.Pais).Where(x => x.IdProvincia == item.IdProvincia).ToListAsync();
                     listaSalida.AddRange(listaCiudad); 
                 }
 
@@ -66,7 +65,7 @@ namespace bd.swrm.web.Controllers.API
         {
             try
             {
-                return await db.Ciudad.Where(x => x.IdProvincia == provincia.IdProvincia).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Ciudad.Include(x => x.Provincia).ThenInclude(x => x.Pais).Where(x => x.IdProvincia == provincia.IdProvincia).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -92,7 +91,7 @@ namespace bd.swrm.web.Controllers.API
         {
             try
             {
-                return await db.Ciudad.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Ciudad.Include(x => x.Provincia).ThenInclude(x => x.Pais).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -125,7 +124,7 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var ciudad = await db.Ciudad.SingleOrDefaultAsync(m => m.IdCiudad == id);
+                var ciudad = await db.Ciudad.Include(c=> c.Provincia).ThenInclude(c=> c.Pais).SingleOrDefaultAsync(m => m.IdCiudad == id);
 
                 if (ciudad == null)
                 {
