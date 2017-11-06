@@ -26,6 +26,32 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+
+        [HttpPost]
+        [Route("ListarTiposDeNombramientoPorRelacion")]
+        public async Task<List<TipoNombramiento>> ListarTiposDeNombramientoPorRelacion([FromBody] RelacionLaboral relacionLaboral)
+        {
+            try
+            {
+                return await db.TipoNombramiento.Where(x => x.IdRelacionLaboral==relacionLaboral.IdRelacionLaboral).OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<TipoNombramiento>();
+            }
+        }
+
+
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarTiposDeNombramiento")]

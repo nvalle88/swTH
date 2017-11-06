@@ -197,7 +197,7 @@ namespace bd.swth.datos
         public virtual DbSet<TipoSangre> TipoSangre { get; set; }
         public virtual DbSet<TipoTransporte> TipoTransporte { get; set; }
         public virtual DbSet<TipoViatico> TipoViatico { get; set; }
-        public virtual DbSet<Titulo> Titulo { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Titulo> Titulo { get; set; }
         public virtual DbSet<TrabajoEquipoIniciativaLiderazgo> TrabajoEquipoIniciativaLiderazgo { get; set; }
         public virtual DbSet<TrayectoriaLaboral> TrayectoriaLaboral { get; set; }
         public virtual DbSet<ValidacionInmediatoSuperior> ValidacionInmediatoSuperior { get; set; }
@@ -1106,6 +1106,76 @@ namespace bd.swth.datos
                     .WithMany(p => p.EmpleadoIE)
                     .HasForeignKey(d => d.IdIngresoEgresoRMU)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<PersonaSustituto>(entity =>
+            {
+                entity.HasKey(e => e.IdPersonaSustituto)
+                    .HasName("PK_PersonaSustituto");
+
+                entity.HasIndex(e => e.IdPersona)
+                    .HasName("IX_PersonaSustituto")
+                    .IsUnique();
+
+                entity.HasIndex(e => e.IdPersonaDiscapacidad)
+                    .HasName("IX_PersonaSustituto_1")
+                    .IsUnique();
+
+                entity.HasOne(d => d.Parentesco)
+                    .WithMany(p => p.PersonaSustituto)
+                    .HasForeignKey(d => d.IdParentesco)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_PersonaSustituto_Parentesco");
+
+                entity.HasOne(d => d.Persona)
+                    .WithOne(p => p.PersonaSustitutoPersona)
+                    .HasForeignKey<PersonaSustituto>(d => d.IdPersona)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_PersonaSustituto_Persona");
+
+                entity.HasOne(d => d.PersonaDiscapacidad)
+                    .WithOne(p => p.PersonaPersonaSustituto)
+                    .HasForeignKey<PersonaSustituto>(d => d.IdPersonaDiscapacidad)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_PersonaSustituto_Persona1");
+            });
+
+            modelBuilder.Entity<EnfermedadSustituto>(entity =>
+            {
+                entity.HasKey(e => e.IdEnfermedadSustituto)
+                    .HasName("PK_EnfermedadSustituto");
+
+                entity.HasOne(d => d.PersonaSustituto)
+                    .WithMany(p => p.EnfermedadSustituto)
+                    .HasForeignKey(d => d.IdPersonaSustituto)
+                    .HasConstraintName("FK_EnfermedadSustituto_PersonaSustituto");
+
+                entity.HasOne(d => d.TipoEnfermedad)
+                    .WithMany(p => p.EnfermedadSustituto)
+                    .HasForeignKey(d => d.IdTipoEnfermedad)
+                    .HasConstraintName("FK_EnfermedadSustituto_TipoEnfermedad");
+            });
+
+            modelBuilder.Entity<DiscapacidadSustituto>(entity =>
+            {
+                entity.HasKey(e => e.IdDiscapacidadSustituto)
+                    .HasName("PK_DiscapacidadSustituto");
+
+                entity.Property(e => e.NumeroCarnet)
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
+
+                entity.HasOne(d => d.PersonaSustituto)
+                    .WithMany(p => p.DiscapacidadSustituto)
+                    .HasForeignKey(d => d.IdPersonaSustituto)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_DiscapacidadSustituto_PersonaSustituto");
+
+                entity.HasOne(d => d.TipoDiscapacidad)
+                    .WithMany(p => p.DiscapacidadSustituto)
+                    .HasForeignKey(d => d.IdTipoDiscapacidad)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_DiscapacidadSustituto_TipoDiscapacidad");
             });
 
             modelBuilder.Entity<EmpleadoImpuestoRenta>(entity =>

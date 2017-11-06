@@ -4,36 +4,67 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
-using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
-namespace bd.swrm.web.Controllers.API
+namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Provincia")]
-    public class ProvinciaController : Controller
+    [Route("api/Titulos")]
+    public class TitulosController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public ProvinciaController(SwTHDbContext db)
+        public TitulosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
+        // GET: api/BasesDatos
+        [HttpGet]
+        [Route("ListarTitulos")]
+        public async Task<List<Titulo>> GetTitulos()
+        {
+            try
+            {
+                return await db.Titulo.Include(x => x.AreaConocimiento).Include(x => x.Estudio).OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<Titulo>();
+            }
+        }
+
 
         [HttpPost]
-        [Route("ListarProvinciaPorPais")]
-        public async Task<List<Provincia>> GetProvincia([FromBody] Pais pais)
+        [Route("ListarTitulosporAreaConocimiento")]
+        public async Task<List<Titulo>> ListarTitulosporAreaConocimiento([FromBody]Titulo titulo)
         {
             try
             {
-                return await db.Provincia.Include(c=> c.Pais).Where(x => x.IdPais==pais.IdPais).OrderBy(x=>x.Nombre).ToListAsync();
+                var Lista = await db.Titulo
+                                   .Where(ac => db.Titulo
+                                                   .Where(a => a.IdAreaConocimiento == titulo.IdAreaConocimiento && a.IdEstudio == titulo.IdEstudio)
+                                                   .Select(ioac => ioac.IdTitulo)
+                                                   .Contains(ac.IdTitulo))
+                                          .ToListAsync();
+                return Lista;
             }
             catch (Exception ex)
             {
@@ -47,38 +78,13 @@ namespace bd.swrm.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Provincia>();
+                return new List<Titulo>();
             }
         }
 
-        // GET: api/Provincia
-        [HttpGet]
-        [Route("ListarProvincia")]
-        public async Task<List<Provincia>> GetProvincia()
-        {
-            try
-            {
-                return await db.Provincia.Include(c=> c.Pais).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<Provincia>();
-            }
-        }
-
-        // GET: api/Provincia/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetProvincia([FromRoute] int id)
+        public async Task<Response> GetTitulo([FromRoute] int id)
         {
             try
             {
@@ -91,9 +97,9 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var provincia = await db.Provincia.Include(c=> c.Pais).SingleOrDefaultAsync(m => m.IdProvincia == id);
+                var Titulo = await db.Titulo.SingleOrDefaultAsync(m => m.IdTitulo == id);
 
-                if (provincia == null)
+                if (Titulo == null)
                 {
                     return new Response
                     {
@@ -106,7 +112,7 @@ namespace bd.swrm.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = provincia,
+                    Resultado = Titulo,
                 };
             }
             catch (Exception ex)
@@ -129,9 +135,9 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // PUT: api/Provincia/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutProvincia([FromRoute] int id, [FromBody] Provincia provincia)
+        public async Task<Response> PutTitulo([FromRoute] int id, [FromBody] Titulo Titulo)
         {
             try
             {
@@ -144,13 +150,25 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var provinciaActualizar = await db.Provincia.Where(x => x.IdProvincia == id).FirstOrDefaultAsync();
-                if (provinciaActualizar != null)
+                var existe = Existe(Titulo);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Existe una brigada de salud y seguridad ocupacional con igual rol",
+                    };
+                }
+
+                var TituloActualizar = await db.Titulo.Where(x => x.IdTitulo == id).FirstOrDefaultAsync();
+                if (TituloActualizar != null)
                 {
                     try
                     {
-                        provinciaActualizar.Nombre = provincia.Nombre;
-                        db.Provincia.Update(provinciaActualizar);
+
+                        TituloActualizar.Nombre = Titulo.Nombre;
+                        TituloActualizar.IdAreaConocimiento = Titulo.IdAreaConocimiento;
+                        db.Titulo.Update(TituloActualizar);
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -179,10 +197,11 @@ namespace bd.swrm.web.Controllers.API
                         };
                     }
                 }
+
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol",
                 };
             }
             catch (Exception)
@@ -195,10 +214,10 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // POST: api/Provincia
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarProvincia")]
-        public async Task<Response> PostProvincia([FromBody] Provincia provincia)
+        [Route("InsertarTitulo")]
+        public async Task<Response> PostTitulo([FromBody] Titulo Titulo)
         {
             try
             {
@@ -207,14 +226,14 @@ namespace bd.swrm.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = ""
                     };
                 }
 
-                var respuesta = Existe(provincia);
+                var respuesta = Existe(Titulo);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Provincia.Add(provincia);
+                    db.Titulo.Add(Titulo);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -226,7 +245,7 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol"
                 };
 
             }
@@ -250,9 +269,9 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        // DELETE: api/Provincia/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteProvincia([FromRoute] int id)
+        public async Task<Response> DeleteTitulo([FromRoute] int id)
         {
             try
             {
@@ -265,7 +284,7 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.Provincia.SingleOrDefaultAsync(m => m.IdProvincia == id);
+                var respuesta = await db.Titulo.SingleOrDefaultAsync(m => m.IdTitulo == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -274,7 +293,7 @@ namespace bd.swrm.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.Provincia.Remove(respuesta);
+                db.Titulo.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -303,21 +322,16 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
-        private bool ProvinciaExists(string nombre)
+        private Response Existe(Titulo Titulo)
         {
-            return db.Provincia.Any(e => e.Nombre == nombre);
-        }
-
-        public Response Existe(Provincia provincia)
-        {
-            var bdd = provincia.Nombre.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.Provincia.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            var bdd = Titulo.Nombre.ToUpper().TrimEnd().TrimStart();
+            var Titulorespuesta = db.Titulo.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (Titulorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
+                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol",
                     Resultado = null,
                 };
 
@@ -326,9 +340,8 @@ namespace bd.swrm.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
+                Resultado = Titulorespuesta,
             };
         }
-
     }
 }

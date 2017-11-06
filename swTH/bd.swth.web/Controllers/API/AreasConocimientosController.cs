@@ -58,6 +58,36 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("ListarAreasConocimientosporEstudio")]
+        public async Task<List<AreaConocimiento>> ListarAreasConocimientosporEstudio([FromBody]Estudio estudio)
+        {
+            try
+            {
+                var Lista = await db.AreaConocimiento
+                                   .Where(ac => db.Titulo
+                                                   .Where(a => a.IdEstudio == estudio.IdEstudio)
+                                                   .Select(ioac => ioac.IdAreaConocimiento)
+                                                   .Contains(ac.IdAreaConocimiento))
+                                          .ToListAsync();
+                return Lista;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<AreaConocimiento>();
+            }
+        }
+
 
         [HttpGet]
         [Route("ListarAreasConocimientos")]

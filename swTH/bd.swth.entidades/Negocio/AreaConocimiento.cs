@@ -17,5 +17,7 @@ namespace bd.swth.entidades.Negocio
         //Propiedades Virtuales Referencias a otras clases
 
         public virtual ICollection<IndiceOcupacionalAreaConocimiento> IndiceOcupacionalAreaConocimiento { get; set; }
+        public virtual ICollection<Titulo> Titulo { get; set; }
+
     }
 }
