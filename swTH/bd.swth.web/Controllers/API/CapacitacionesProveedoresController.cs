@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.CapacitacionProveedor.Include(x => x.CapacitacionRecibida).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.CapacitacionProveedor.Include(x => x.Pais).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
