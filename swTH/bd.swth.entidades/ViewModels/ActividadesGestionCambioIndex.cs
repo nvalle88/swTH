@@ -1,25 +1,29 @@
-namespace bd.swth.entidades.Negocio
+﻿using bd.swth.entidades.Negocio;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
+
+namespace bd.swth.entidades.ViewModels
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-
-
-    public partial class ActividadesGestionCambio
+    public partial class ActividadesGestionCambioIndex
     {
         [Key]
         public int IdActividadesGestionCambio { get; set; }
-        
+
         public DateTime FechaInicio { get; set; }
-        
+
         public DateTime FechaFin { get; set; }
 
         public int Indicador { get; set; }
-        
+
         public bool Porciento { get; set; }
 
         public string Descripcion { get; set; }
 
+        public decimal? Suma  { get; set; }
+
+        public decimal? Porcentaje { get; set; }
 
         //Propiedades Virtuales Referencias a otras clases
 
@@ -29,6 +33,6 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<AvanceGestionCambio> AvanceGestionCambio { get; set; }
 
-        
+
     }
 }

@@ -121,14 +121,57 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (planGestionCambio.FechaInicio > planGestionCambio.FechaFin)
+                if (planGestionCambio.FechaInicio <= DateTime.Today)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "la fecha de inicio no puede ser mayor que la fecha fin"
+                        Message = "La fecha de inicio no puede ser menor o igual que la fecha de hoy"
                     };
                 }
+
+                if (planGestionCambio.FechaFin <= DateTime.Today)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha fin no puede ser menor o igual que la fecha de hoy"
+                    };
+                }
+
+                if (planGestionCambio.FechaInicio >= planGestionCambio.FechaFin)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha de inicio no puede ser mayor o igual que la fecha fin"
+                    };
+                }
+
+                string fechaInicio = planGestionCambio.FechaInicio.DayOfWeek.ToString();
+
+                if (fechaInicio.Equals("Saturday") || fechaInicio.Equals("Sunday"))
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha de inicio no puede ser fin de semana"
+                    };
+                }
+
+
+                string fechaFin = planGestionCambio.FechaFin.DayOfWeek.ToString();
+
+                if (fechaFin.Equals("Saturday") || fechaFin.Equals("Sunday"))
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha fin no puede ser fin de semana"
+                    };
+                }
+
+                
 
                 var existe = Existe(planGestionCambio);
                 var PlanGestionCambioActualizar = (PlanGestionCambio)existe.Resultado;
@@ -203,12 +246,53 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (PlanGestionCambio.FechaInicio > PlanGestionCambio.FechaFin)
+                if (PlanGestionCambio.FechaInicio <= DateTime.Today )
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "La fecha de inicio no puede ser mayor que la fecha fin"
+                        Message = "La fecha de inicio no puede ser menor o igual que la fecha de hoy"
+                    };
+                }
+
+                if (PlanGestionCambio.FechaFin <= DateTime.Today)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha fin no puede ser menor o igual que la fecha de hoy"
+                    };
+                }
+
+                if (PlanGestionCambio.FechaInicio >= PlanGestionCambio.FechaFin)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha de inicio no puede ser mayor o igual que la fecha fin"
+                    };
+                }
+
+                string fechaInicio=PlanGestionCambio.FechaInicio.DayOfWeek.ToString();
+
+                if (fechaInicio.Equals("Saturday") || fechaInicio.Equals("Sunday"))
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha de inicio no puede ser fin de semana"
+                    };
+                }
+
+
+                string fechaFin = PlanGestionCambio.FechaFin.DayOfWeek.ToString();
+
+                if (fechaFin.Equals("Saturday") || fechaFin.Equals("Sunday"))
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha fin no puede ser fin de semana"
                     };
                 }
 
@@ -308,7 +392,7 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(PlanGestionCambio PlanGestionCambio)
         {
             var bdd = PlanGestionCambio.Titulo.ToUpper().TrimEnd().TrimStart();
-            var PlanGestionCambiorespuesta = db.PlanGestionCambio.Where(p => p.Titulo.ToUpper().TrimStart().TrimEnd() == bdd && p.RealizadoPor == PlanGestionCambio.RealizadoPor && p.AprobadoPor == PlanGestionCambio.AprobadoPor).FirstOrDefault();
+            var PlanGestionCambiorespuesta = db.PlanGestionCambio.Where(p => p.Titulo.ToUpper().TrimStart().TrimEnd() == bdd && p.FechaInicio == PlanGestionCambio.FechaInicio && p.FechaFin == PlanGestionCambio.FechaFin &&  p.RealizadoPor == PlanGestionCambio.RealizadoPor  && p.AprobadoPor == PlanGestionCambio.AprobadoPor).FirstOrDefault();
             if (PlanGestionCambiorespuesta != null)
             {
                 return new Response

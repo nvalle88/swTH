@@ -16,7 +16,7 @@ namespace bd.swth.entidades.Negocio
         //Propiedades Virtuales Referencias a otras clases
 
         public virtual ICollection<EmpleadoContactoEmergencia> EmpleadoContactoEmergencia { get; set; }
-
+        public virtual ICollection<PersonaSustituto> PersonaSustituto { get; set; }
         public virtual ICollection<EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
     }
 }

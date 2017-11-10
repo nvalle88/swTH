@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.Sucursal.OrderBy(x => x.Nombre).Include(X => X.Ciudad).ToListAsync();
+                return await db.Sucursal.OrderBy(x => x.Nombre).Include(X => X.Ciudad).ThenInclude(x=> x.Provincia).ThenInclude(x=> x.Pais).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -66,7 +66,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var sucursal = await db.Sucursal.SingleOrDefaultAsync(m => m.IdSucursal == id);
+                var sucursal = await db.Sucursal.Include(c=> c.Ciudad).ThenInclude(c=> c.Provincia).ThenInclude(c=> c.Pais).SingleOrDefaultAsync(m => m.IdSucursal == id);
 
                 if (sucursal == null)
                 {
