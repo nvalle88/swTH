@@ -33,7 +33,7 @@ namespace bd.swrm.web.Controllers.API
         {
             try
             {
-                return await db.Provincia.Where(x => x.IdPais==pais.IdPais).OrderBy(x=>x.Nombre).ToListAsync();
+                return await db.Provincia.Include(c=> c.Pais).Where(x => x.IdPais==pais.IdPais).OrderBy(x=>x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -58,7 +58,7 @@ namespace bd.swrm.web.Controllers.API
         {
             try
             {
-                return await db.Provincia.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Provincia.Include(c=> c.Pais).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -91,7 +91,7 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var provincia = await db.Provincia.SingleOrDefaultAsync(m => m.IdProvincia == id);
+                var provincia = await db.Provincia.Include(c=> c.Pais).SingleOrDefaultAsync(m => m.IdProvincia == id);
 
                 if (provincia == null)
                 {

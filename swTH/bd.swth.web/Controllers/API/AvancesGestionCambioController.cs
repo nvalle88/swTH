@@ -12,6 +12,7 @@ using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -26,10 +27,10 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/AvancesGestionCambio
+        // GET: api/AvanceGestionCambio
         [HttpGet]
         [Route("ListarAvancesGestionCambio")]
-        public async Task<List<AvanceGestionCambio>> GetAvancesGestionCambio()
+        public async Task<List<AvanceGestionCambio>> GetAvanceGestionCambio()
         {
             try
             {
@@ -50,16 +51,15 @@ namespace bd.swth.web.Controllers.API
                 return new List<AvanceGestionCambio>();
             }
         }
-
-
-        // GET: api/AvancesGestionCambio
-        [HttpGet]
-        [Route("ListarAvancesGestionCambioconIdActividad")]
-        public async Task<List<AvanceGestionCambio>> GetAvancesGestionCambioconIdActividad(int idActividadesGestionCambio)
+        //int IdPlanGestionCambio - ListarAvanceGestionCambioconIdPlan
+        // POST: api/AvanceGestionCambio
+        [HttpPost]
+        [Route("ListarAvanceGestionCambioconIdActividad")]
+        public async Task<List<AvanceGestionCambio>> ListarAvanceGestionCambioconIdActividad([FromBody] AvanceGestionCambio AvanceGestionCambio)
         {
             try
             {
-                return await db.AvanceGestionCambio.Where(m => m.IdActividadesGestionCambio == idActividadesGestionCambio).ToListAsync();
+                return await db.AvanceGestionCambio.Where(m => m.IdActividadesGestionCambio == AvanceGestionCambio.IdActividadesGestionCambio).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -78,7 +78,48 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        // GET: api/AvancesGestionCambio/5
+        //int IdActividadesGestionCambio - ActividadesGestionCambioconIdActividad
+        // POST: api/ActividadesGestionCambio
+        [HttpPost]
+        [Route("AvanceGestionCambioSumaIndicadorReal")]
+        public async Task<Response> AvanceGestionCambioSumaIndicadorReal([FromBody] ActividadesGestionCambio actividadesGestionCambio)
+        {
+            try
+            {
+                
+                var sumaAvance = new AvanceGestionCambioModel
+                {
+                    Suma = db.AvanceGestionCambio.Where(m => m.IdActividadesGestionCambio == actividadesGestionCambio.IdActividadesGestionCambio).Sum(m => m.Indicadorreal)
+                };
+
+                var response = new Response
+                {
+                    IsSuccess = true,
+                    Resultado = sumaAvance,
+                };
+
+                return response;
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response { };
+            }
+        }
+
+
+
+        // GET: api/AvanceGestionCambio/5
         [HttpGet("{id}")]
         public async Task<Response> GetAvanceGestionCambio([FromRoute] int id)
         {
@@ -131,7 +172,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/AvancesGestionCambio/5
+
+
+
+        // PUT: api/AvanceGestionCambio/5
         [HttpPut("{id}")]
         public async Task<Response> PutAvanceGestionCambio([FromRoute] int id, [FromBody] AvanceGestionCambio avanceGestionCambio)
         {
@@ -143,6 +187,51 @@ namespace bd.swth.web.Controllers.API
                     {
                         IsSuccess = false,
                         Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+
+
+                if (avanceGestionCambio.Indicadorreal == 0)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "El indicador real no puede ser cero"
+                    };
+                }
+
+
+                if (avanceGestionCambio.Fecha <= DateTime.Today)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha de inicio no puede ser menor o igual que la fecha de hoy"
+                    };
+                }
+
+                string fecha = avanceGestionCambio.Fecha.DayOfWeek.ToString();
+
+                if (fecha.Equals("Saturday") || fecha.Equals("Sunday"))
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha de inicio no puede ser fin de semana"
+                    };
+                }
+
+
+                ActividadesGestionCambio Actividades = db.ActividadesGestionCambio.Find(avanceGestionCambio.IdActividadesGestionCambio);
+
+                if (Actividades.FechaInicio > avanceGestionCambio.Fecha)
+                {
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha del avance no puede ser menor a la fecha inicio de las actividades"
                     };
                 }
 
@@ -165,9 +254,10 @@ namespace bd.swth.web.Controllers.API
                 }
                 var AvanceGestionCambio = db.AvanceGestionCambio.Find(avanceGestionCambio.IdAvanceGestionCambio);
 
-                AvanceGestionCambio.Fecha = AvanceGestionCambio.Fecha;
-                AvanceGestionCambio.Indicadorreal = AvanceGestionCambio.Indicadorreal;
-                AvanceGestionCambio.IdActividadesGestionCambio = AvanceGestionCambio.IdActividadesGestionCambio;
+                AvanceGestionCambio.Fecha = avanceGestionCambio.Fecha;
+                AvanceGestionCambio.Indicadorreal = avanceGestionCambio.Indicadorreal;
+                AvanceGestionCambio.IdActividadesGestionCambio = avanceGestionCambio.IdActividadesGestionCambio;
+
                 db.AvanceGestionCambio.Update(AvanceGestionCambio);
                 await db.SaveChangesAsync();
 
@@ -200,7 +290,7 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/BasesDatos
+        // POST: api/AvanceGestionCambio
         [HttpPost]
         [Route("InsertarAvanceGestionCambio")]
         public async Task<Response> PostAvanceGestionCambio([FromBody] AvanceGestionCambio AvanceGestionCambio)
@@ -213,6 +303,49 @@ namespace bd.swth.web.Controllers.API
                     {
                         IsSuccess = false,
                         Message = ""
+                    };
+                }
+
+
+                if (AvanceGestionCambio.Indicadorreal == 0)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "El indicador real no puede ser cero"
+                    };
+                }
+
+
+                if (AvanceGestionCambio.Fecha <= DateTime.Today)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha de inicio no puede ser menor o igual que la fecha de hoy"
+                    };
+                }
+               
+                string fecha = AvanceGestionCambio.Fecha.DayOfWeek.ToString();
+
+                if (fecha.Equals("Saturday") || fecha.Equals("Sunday"))
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha de inicio no puede ser fin de semana"
+                    };
+                }
+
+                ActividadesGestionCambio Actividades = db.ActividadesGestionCambio.Find(AvanceGestionCambio.IdActividadesGestionCambio);
+
+                if (Actividades.FechaInicio > AvanceGestionCambio.Fecha)
+                {
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "La fecha del avance no puede ser menor a la fecha inicio de las actividades"
                     };
                 }
 
@@ -255,7 +388,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/AvancesGestionCambio/5
+        // DELETE: api/AvanceGestionCambio/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteAvanceGestionCambio([FromRoute] int id)
         {
@@ -310,8 +443,11 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(AvanceGestionCambio AvanceGestionCambio)
         {
-            var bdd = AvanceGestionCambio.Fecha;
-            var AvanceGestionCambiorespuesta = db.AvanceGestionCambio.Where(p => p.Fecha== bdd && p.IdActividadesGestionCambio == AvanceGestionCambio.IdActividadesGestionCambio).FirstOrDefault();
+
+            var AvanceGestionCambiorespuesta = db.AvanceGestionCambio.Where(p => p.Fecha == AvanceGestionCambio.Fecha &&
+                                                                                      p.Indicadorreal == AvanceGestionCambio.Indicadorreal &&
+                                                                                      p.IdActividadesGestionCambio == AvanceGestionCambio.IdActividadesGestionCambio
+                                                                                      ).FirstOrDefault();
             if (AvanceGestionCambiorespuesta != null)
             {
                 return new Response
@@ -329,5 +465,6 @@ namespace bd.swth.web.Controllers.API
                 Resultado = AvanceGestionCambiorespuesta,
             };
         }
+        
     }
 }

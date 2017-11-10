@@ -229,27 +229,27 @@ namespace bd.swth.web.Controllers.API
                     var empleado = await db.Empleado.AddAsync(empleadoViewModel.Empleado);
                     await db.SaveChangesAsync();
 
-                    //Insertar datos bancarios del empleado insertado con aterioridad
-                    empleadoViewModel.DatosBancarios.IdEmpleado = empleado.Entity.IdEmpleado;
+                    ////Insertar datos bancarios del empleado insertado con aterioridad
+                    //empleadoViewModel.DatosBancarios.IdEmpleado = empleado.Entity.IdEmpleado;
 
-                    await db.DatosBancarios.AddAsync(empleadoViewModel.DatosBancarios);
-                    await db.SaveChangesAsync();
+                    //await db.DatosBancarios.AddAsync(empleadoViewModel.DatosBancarios);
+                    //await db.SaveChangesAsync();
 
 
-                    //Insertar familiares del empleado
+                    ////Insertar familiares del empleado
 
-                    foreach (var empleadoFamiliar in empleadoViewModel.EmpleadoFamiliar)
-                    {
-                        //Insertar persona familiar y obtener su id
-                        var personafamiliar = await db.Persona.AddAsync(empleadoFamiliar.Persona);
-                        await db.SaveChangesAsync();
+                    //foreach (var empleadoFamiliar in empleadoViewModel.EmpleadoFamiliar)
+                    //{
+                    //    //Insertar persona familiar y obtener su id
+                    //    var personafamiliar = await db.Persona.AddAsync(empleadoFamiliar.Persona);
+                    //    await db.SaveChangesAsync();
 
-                        //insertar EmpleadoFamiliar  con el Id de persona insertada anteriormente
-                        empleadoFamiliar.IdEmpleado = empleado.Entity.IdEmpleado;
-                        await db.EmpleadoFamiliar.AddAsync(empleadoFamiliar);
-                        await db.SaveChangesAsync();
+                    //    //insertar EmpleadoFamiliar  con el Id de persona insertada anteriormente
+                    //    empleadoFamiliar.IdEmpleado = empleado.Entity.IdEmpleado;
+                    //    await db.EmpleadoFamiliar.AddAsync(empleadoFamiliar);
+                    //    await db.SaveChangesAsync();
 
-                    }
+                    //}
 
                     transaction.Commit();
 
