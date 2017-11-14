@@ -27,14 +27,36 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        //public class listaEmpleadoViewModel
+        //{
+        //    public int IdEmpleado { get; set; }
+        //    public string NombreApellido { get; set;}
+        //}
+
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarEmpleados")]
-        public async Task<List<Empleado>> GetEmpleados()
+        public async Task<List<ListaEmpleadoViewModel>> GetEmpleados()
         {
             try
             {
-                return await db.Empleado.Include(x => x.Persona).Include(x => x.CiudadNacimiento).Include(x => x.ProvinciaSufragio).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).ToListAsync();
+                //return await db.Empleado.Include(x => x.Persona).Include(x => x.CiudadNacimiento).Include(x => x.ProvinciaSufragio).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).ToListAsync();
+                var lista= await db.Empleado.Include(x => x.Persona).OrderBy(x => x.FechaIngreso).ToListAsync();
+                var listaSalida = new List<ListaEmpleadoViewModel>();
+                foreach (var item in lista)
+                {
+                    listaSalida.Add(new ListaEmpleadoViewModel
+                    {
+                        IdEmpleado=item.IdEmpleado,
+                        NombreApellido=string.Format("{0} {1}",item.Persona.Nombres,item.Persona.Apellidos),
+                        Identificacion = item.Persona.Identificacion,
+                        TelefonoPrivado = item.Persona.TelefonoPrivado,
+                        CorreoPrivado = item.Persona.CorreoPrivado
+                       
+                    });
+                }
+                return listaSalida;
+
             }
             catch (Exception ex)
             {
@@ -48,7 +70,7 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Empleado>();
+                return new List<ListaEmpleadoViewModel>();
             }
         }
 
@@ -104,6 +126,86 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+
+        //[HttpPut("{id}")]
+        //public async Task<Response> PutEmpleado([FromRoute] int id, [FromBody] EmpleadoViewModel empleadoViewModel)
+        //{
+        //    try
+        //    {
+        //        if (!ModelState.IsValid)
+        //        {
+        //            return new Response
+        //            {
+        //                IsSuccess = false,
+        //                Message = Mensaje.ModeloInvalido
+        //            };
+        //        }
+
+        //        var existe = Existe(empleadoViewModel);
+        //        if (existe.IsSuccess)
+        //        {
+        //            return new Response
+        //            {
+        //                IsSuccess = false,
+        //                Message = Mensaje.ExisteRegistro,
+        //            };
+        //        }
+
+        //        var empleadoActualizar = await db.Empleado.Where(x => x.IdEmpleado == id).FirstOrDefaultAsync();
+        //        var personaActualizar = await db.Persona.Where(x => x.IdPersona == id).FirstOrDefaultAsync();
+
+        //        if (empleadoActualizar != null)
+        //        {
+        //            try
+        //            {
+        //                //empleadoActualizar.Nombre = empleadoViewModel.Nombre;
+        //                await db.SaveChangesAsync();
+
+        //                return new Response
+        //                {
+        //                    IsSuccess = true,
+        //                    Message = Mensaje.Satisfactorio,
+        //                };
+
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+        //                {
+        //                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+        //                    ExceptionTrace = ex,
+        //                    Message = Mensaje.Excepcion,
+        //                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+        //                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+        //                    UserName = "",
+
+        //                });
+        //                return new Response
+        //                {
+        //                    IsSuccess = false,
+        //                    Message = Mensaje.Error,
+        //                };
+        //            }
+        //        }
+
+
+
+
+        //        return new Response
+        //        {
+        //            IsSuccess = false,
+        //            Message = Mensaje.ExisteRegistro
+        //        };
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return new Response
+        //        {
+        //            IsSuccess = false,
+        //            Message = Mensaje.Excepcion
+        //        };
+        //    }
+        //}
 
 
         // POST: api/BasesDatos
@@ -234,27 +336,27 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(Empleado Empleado)
-        {
-            var bdd = Empleado.IdPersona;
-            var Empleadorespuesta = db.Empleado.Where(p => p.IdPersona == bdd).FirstOrDefault();
-            if (Empleadorespuesta != null)
-            {
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
-                    Resultado = Empleadorespuesta,
-                };
+        //private Response Existe(EmpleadoViewModel empleadoViewModel)
+        //{
+        //    var bdd = Empleado.IdPersona;
+        //    var Empleadorespuesta = db.Empleado.Where(p => p.IdPersona == bdd).FirstOrDefault();
+        //    if (Empleadorespuesta != null)
+        //    {
+        //        return new Response
+        //        {
+        //            IsSuccess = true,
+        //            Message = Mensaje.ExisteRegistro,
+        //            Resultado = Empleadorespuesta,
+        //        };
 
-            }
+        //    }
 
-            return new Response
-            {
-                IsSuccess = false,
-                Resultado = Empleadorespuesta,
-            };
-        }
+        //    return new Response
+        //    {
+        //        IsSuccess = false,
+        //        Resultado = Empleadorespuesta,
+        //    };
+        //}
 
         //Empleado-Contacto-Emergencia
 
