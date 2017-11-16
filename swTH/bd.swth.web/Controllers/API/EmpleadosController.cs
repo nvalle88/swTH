@@ -116,38 +116,109 @@ namespace bd.swth.web.Controllers.API
             {
                 try
                 {
-                    //Insertar persona y recuperar el Id con el que ha sido insertado
+                    //1. Insertar Persona 
                     var persona = await db.Persona.AddAsync(empleadoViewModel.Persona);
                     await db.SaveChangesAsync();
 
-                    //Insertar empleado con el Id persona recuperado y recuperar el Id de Empleado
-
+                    //2. Insertar Empleado (Inicializado : IdPersona, IdDependencia)
                     empleadoViewModel.Empleado.IdPersona = persona.Entity.IdPersona;
-
+                    empleadoViewModel.Empleado.IdDependencia = 1;
                     var empleado = await db.Empleado.AddAsync(empleadoViewModel.Empleado);
                     await db.SaveChangesAsync();
 
-                    ////Insertar datos bancarios del empleado insertado con aterioridad
-                    //empleadoViewModel.DatosBancarios.IdEmpleado = empleado.Entity.IdEmpleado;
+                    //3. Insertar Datos Bancarios (Inicializado : IdEmpleado)
+                    empleadoViewModel.DatosBancarios.IdEmpleado = empleado.Entity.IdEmpleado;
+                    await db.DatosBancarios.AddAsync(empleadoViewModel.DatosBancarios);
+                    await db.SaveChangesAsync();
 
-                    //await db.DatosBancarios.AddAsync(empleadoViewModel.DatosBancarios);
-                    //await db.SaveChangesAsync();
+                    //4. Insertar Empleado Contacto Emergencia  (Inicializado : IdPersona, IdEmpleado)
+                    empleadoViewModel.EmpleadoContactoEmergencia.IdPersona = persona.Entity.IdPersona;
+                    empleadoViewModel.EmpleadoContactoEmergencia.IdEmpleado = empleado.Entity.IdEmpleado;
+                    await db.EmpleadoContactoEmergencia.AddAsync(empleadoViewModel.EmpleadoContactoEmergencia);
+                    await db.SaveChangesAsync();
 
+                    //5. Insertar Indice Ocupacional Modalidad Partida  (Inicializado : IdIndiceOcupacional, IdEmpleado)
+                    empleadoViewModel.IndiceOcupacionalModalidadPartida.IdIndiceOcupacional = 1;
+                    empleadoViewModel.IndiceOcupacionalModalidadPartida.IdEmpleado = 1;
+                    await db.IndiceOcupacionalModalidadPartida.AddAsync(empleadoViewModel.IndiceOcupacionalModalidadPartida);
+                    await db.SaveChangesAsync();
 
-                    ////Insertar familiares del empleado
+                    //6. Insertar Persona Estudio (Inicializado : IdPersona)
+                    foreach (var personaEstudio in empleadoViewModel.PersonaEstudio)
+                    {
+                        personaEstudio.IdPersona = persona.Entity.IdPersona;
+                        await db.PersonaEstudio.AddAsync(personaEstudio);
+                        await db.SaveChangesAsync();
+                    }
 
-                    //foreach (var empleadoFamiliar in empleadoViewModel.EmpleadoFamiliar)
-                    //{
-                    //    //Insertar persona familiar y obtener su id
-                    //    var personafamiliar = await db.Persona.AddAsync(empleadoFamiliar.Persona);
-                    //    await db.SaveChangesAsync();
+                    // 7. Insertar Trayectoria Laboral (Inicializado : IdPersona)
+                    foreach (var trayectoriaLaboral in empleadoViewModel.TrayectoriaLaboral)
+                    {
+                        trayectoriaLaboral.IdPersona = persona.Entity.IdPersona;
+                        await db.TrayectoriaLaboral.AddAsync(trayectoriaLaboral);
+                        await db.SaveChangesAsync();
+                    }
 
-                    //    //insertar EmpleadoFamiliar  con el Id de persona insertada anteriormente
-                    //    empleadoFamiliar.IdEmpleado = empleado.Entity.IdEmpleado;
-                    //    await db.EmpleadoFamiliar.AddAsync(empleadoFamiliar);
-                    //    await db.SaveChangesAsync();
+                    // 8. Insertar Persona Discapacidad (Inicializado : IdPersona)
+                    foreach (var personaDiscapacidad in empleadoViewModel.PersonaDiscapacidad)
+                    {
+                        personaDiscapacidad.IdPersona = persona.Entity.IdPersona;
+                        await db.PersonaDiscapacidad.AddAsync(personaDiscapacidad);
+                        await db.SaveChangesAsync();
+                    }
 
-                    //}
+                    // 9. Insertar Persona Enfermedad (Inicializado : IdPersona)
+                    foreach (var personaEnfermedad in empleadoViewModel.PersonaEnfermedad)
+                    {
+                        personaEnfermedad.IdPersona = persona.Entity.IdPersona;
+                        await db.PersonaEnfermedad.AddAsync(personaEnfermedad);
+                        await db.SaveChangesAsync();
+                    }
+
+                    // 10. Insertar Persona Sustituto (Inicializado : IdPersona, IdPersonaDiscapacidad)
+                    //10.1. Insertar Persona Discapacidad
+                    var objetoPersonaSustitutoDiscapacidad = await db.Persona.AddAsync(empleadoViewModel.PersonaSustituto.PersonaDiscapacidad);
+                    await db.SaveChangesAsync();
+
+                    // 10.2. Insertar Persona Sustituto
+                    empleadoViewModel.PersonaSustituto.IdPersona = persona.Entity.IdPersona;
+                    empleadoViewModel.PersonaSustituto.IdPersonaDiscapacidad = objetoPersonaSustitutoDiscapacidad.Entity.IdPersona;
+                    var personaSustituto = empleadoViewModel.PersonaSustituto;
+                    await db.PersonaSustituto.AddAsync(empleadoViewModel.PersonaSustituto);
+                    await db.SaveChangesAsync();
+                    
+
+                    // 10.3. Insertar Discapacidad Sustituto (Inicializado : IdPersonaSustituto)
+                    foreach (var discapacidadSustituto in empleadoViewModel.DiscapacidadSustituto)
+                    {
+                        discapacidadSustituto.IdPersonaSustituto = personaSustituto.IdPersonaSustituto;
+                        await db.DiscapacidadSustituto.AddAsync(discapacidadSustituto);
+                        await db.SaveChangesAsync();
+                    }
+
+                    //10.4. Insertar Enfermedad Sustituto(Inicializado : IdPersonaSustituto)
+                    foreach (var enfermedadSustituto in empleadoViewModel.EnfermedadSustituto)
+                    {
+                        enfermedadSustituto.IdPersonaSustituto = enfermedadSustituto.IdPersonaSustituto;
+                        await db.EnfermedadSustituto.AddAsync(enfermedadSustituto);
+                        await db.SaveChangesAsync();
+                    }
+
+                    // 11.  Insertar Familiares Empleado
+                    foreach (var empleadoFamiliar in empleadoViewModel.EmpleadoFamiliar)
+                    {
+                        //11.1. Insertar Persona 
+                        var personafamiliar = await db.Persona.AddAsync(empleadoFamiliar.Persona);
+                        await db.SaveChangesAsync();
+
+                        //11.2.  Insertar Empleado Familiar (I.icializado : IdPersona, IdEmpleado)
+                        empleadoFamiliar.IdEmpleado = empleado.Entity.IdEmpleado;
+                        empleadoFamiliar.IdPersona = personafamiliar.Entity.IdPersona;
+                        await db.EmpleadoFamiliar.AddAsync(empleadoFamiliar);
+                        await db.SaveChangesAsync();
+
+                    }
+
 
                     transaction.Commit();
 

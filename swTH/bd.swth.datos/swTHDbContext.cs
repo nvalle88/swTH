@@ -55,6 +55,7 @@ namespace bd.swth.datos
         public virtual DbSet<DependenciaDocumento> DependenciaDocumento { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Destreza> Destreza { get; set; }
         public virtual DbSet<DetalleExamenInduccion> DetalleExamenInduccion { get; set; }
+        public virtual DbSet<DiscapacidadSustituto> DiscapacidadSustituto { get; set; }
         public virtual DbSet<DocumentosParentescodos> DocumentosParentescodos { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Empleado> Empleado { get; set; }
         public virtual DbSet<EmpleadoContactoEmergencia> EmpleadoContactoEmergencia { get; set; }
@@ -67,6 +68,7 @@ namespace bd.swth.datos
         public virtual DbSet<EmpleadoNepotismo> EmpleadoNepotismo { get; set; }
         public virtual DbSet<EmpleadoSaldoVacaciones> EmpleadoSaldoVacaciones { get; set; }
         public virtual DbSet<EmpleadosFormularioDevengacion> EmpleadosFormularioDevengacion { get; set; }
+        public virtual DbSet<EnfermedadSustituto> EnfermedadSustituto { get; set; }
         public virtual DbSet<EscalaEvaluacionTotal> EscalaEvaluacionTotal { get; set; }
         public virtual DbSet<EscalaGrados> EscalaGrados { get; set; }
         public virtual DbSet<EspecificidadExperiencia> EspecificidadExperiencia { get; set; }
@@ -146,6 +148,7 @@ namespace bd.swth.datos
         public virtual DbSet<PersonaDiscapacidad> PersonaDiscapacidad { get; set; }
         public virtual DbSet<PersonaEnfermedad> PersonaEnfermedad { get; set; }
         public virtual DbSet<PersonaEstudio> PersonaEstudio { get; set; }
+        public virtual DbSet<PersonaSustituto> PersonaSustituto { get; set; }
         public virtual DbSet<PersonaPaquetesInformaticos> PersonaPaquetesInformaticos { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.PlanGestionCambio> PlanGestionCambio { get; set; }
         public virtual DbSet<PlanificacionHE> PlanificacionHE { get; set; }
@@ -1144,6 +1147,8 @@ namespace bd.swth.datos
             {
                 entity.HasKey(e => e.IdEnfermedadSustituto)
                     .HasName("PK_EnfermedadSustituto");
+
+                entity.Property(e => e.InstitucionEmite).HasColumnType("varchar(100)");
 
                 entity.HasOne(d => d.PersonaSustituto)
                     .WithMany(p => p.EnfermedadSustituto)
