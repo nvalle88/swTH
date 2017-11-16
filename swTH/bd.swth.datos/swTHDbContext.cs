@@ -472,39 +472,39 @@ namespace bd.swth.datos
             modelBuilder.Entity<CapacitacionEncuesta>(entity =>
             {
                 entity.HasKey(e => e.IdCapacitacionEncuesta)
-                    .HasName("PK_CapacitacionEncuesta");
+                    .HasName("PK171");
 
                 entity.HasIndex(e => e.IdCapacitacionRecibida)
-                    .HasName("IX_CapacitacionEncuesta_IdCapacitacionRecibida");
+                    .HasName("Ref315470");
 
                 entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("IX_CapacitacionEncuesta_IdEmpleado");
-
-                entity.Property(e => e.IdCapacitacionEncuesta).HasMaxLength(450);
+                    .HasName("Ref15485");
 
                 entity.Property(e => e.Descripcion)
                     .IsRequired()
-                    .HasMaxLength(20);
+                    .HasColumnType("varchar(20)");
 
                 entity.HasOne(d => d.CapacitacionRecibida)
                     .WithMany(p => p.CapacitacionEncuesta)
                     .HasForeignKey(d => d.IdCapacitacionRecibida)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefCapacitacionRecibida470");
 
                 entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.CapacitacionEncuesta)
                     .HasForeignKey(d => d.IdEmpleado)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefEmpleado485");
             });
 
             modelBuilder.Entity<CapacitacionModalidad>(entity =>
             {
                 entity.HasKey(e => e.IdCapacitacionModalidad)
-                    .HasName("PK_CapacitacionModalidad");
+                    .HasName("PK178");
 
                 entity.Property(e => e.Descripcion)
                     .IsRequired()
-                    .HasMaxLength(20);
+                    .HasColumnType("varchar(20)");
             });
 
             modelBuilder.Entity<CapacitacionPlanificacion>(entity =>
@@ -542,94 +542,91 @@ namespace bd.swth.datos
             modelBuilder.Entity<CapacitacionPregunta>(entity =>
             {
                 entity.HasKey(e => e.IdCapacitacionPregunta)
-                    .HasName("PK_CapacitacionPregunta");
-
-                entity.HasIndex(e => e.IdCapacitacionEncuesta)
-                    .HasName("IX_CapacitacionPregunta_IdCapacitacionEncuesta");
+                    .HasName("PK172");
 
                 entity.HasIndex(e => e.IdCapacitacionTipoPregunta)
-                    .HasName("IX_CapacitacionPregunta_IdCapacitacionTipoPregunta");
+                    .HasName("Ref319473");
 
                 entity.Property(e => e.Descripcion)
                     .IsRequired()
-                    .HasMaxLength(150);
-
-                entity.Property(e => e.IdCapacitacionEncuesta).HasMaxLength(450);
+                    .HasColumnType("text");
 
                 entity.HasOne(d => d.CapacitacionEncuesta)
                     .WithMany(p => p.CapacitacionPregunta)
-                    .HasForeignKey(d => d.IdCapacitacionEncuesta);
+                    .HasForeignKey(d => d.IdCapacitacionEncuesta)
+                    .HasConstraintName("FK_CapacitacionPregunta_CapacitacionEncuesta");
+
+                entity.HasOne(d => d.CapacitacionRespuesta)
+                    .WithMany(p => p.CapacitacionPregunta)
+                    .HasForeignKey(d => d.IdCapacitacionRespuesta)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_CapacitacionPregunta_CapacitacionRespuesta");
 
                 entity.HasOne(d => d.CapacitacionTipoPregunta)
                     .WithMany(p => p.CapacitacionPregunta)
                     .HasForeignKey(d => d.IdCapacitacionTipoPregunta)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefCapacitacionTipoPregunta473");
             });
 
             modelBuilder.Entity<CapacitacionProveedor>(entity =>
             {
                 entity.HasKey(e => e.IdCapacitacionProveedor)
-                    .HasName("PK_CapacitacionProveedor");
+                    .HasName("PK175");
 
                 entity.HasIndex(e => e.IdCapacitacionRecibida)
-                    .HasName("IX_CapacitacionProveedor_IdCapacitacionRecibida");
+                    .HasName("Ref315476");
 
-                entity.Property(e => e.Direccion)
-                    .IsRequired()
-                    .HasMaxLength(150);
+                entity.Property(e => e.Direccion).HasColumnType("varchar(40)");
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
-                    .HasMaxLength(60);
+                    .HasColumnType("varchar(20)");
 
-                entity.Property(e => e.Telefono)
-                    .IsRequired()
-                    .HasMaxLength(15);
+                entity.Property(e => e.Telefono).HasColumnType("varchar(20)");
 
-                entity.HasOne(d => d.CapacitacionRecibida)
+                entity.HasOne(d => d.Pais)
                     .WithMany(p => p.CapacitacionProveedor)
-                    .HasForeignKey(d => d.IdCapacitacionRecibida)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasForeignKey(d => d.IdPais)
+                    .HasConstraintName("FK_CapacitacionProveedor_Pais");
             });
 
             modelBuilder.Entity<CapacitacionRecibida>(entity =>
             {
                 entity.HasKey(e => e.IdCapacitacionRecibida)
-                    .HasName("PK_CapacitacionRecibida");
+                    .HasName("PK170");
 
-                entity.HasIndex(e => e.IdCapacitacionTemario)
-                    .HasName("IX_CapacitacionRecibida_IdCapacitacionTemario");
+                entity.HasIndex(e => e.CostoReal)
+                    .HasName("Ref313481");
 
                 entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("IX_CapacitacionRecibida_IdEmpleado");
+                    .HasName("Ref15483");
 
-                entity.HasOne(d => d.CapacitacionTemario)
+                entity.Property(e => e.CostoReal).HasColumnType("decimal");
+
+                entity.Property(e => e.Fecha).HasColumnType("datetime");
+
+                entity.HasOne(d => d.CapacitacionTemarioProveedor)
                     .WithMany(p => p.CapacitacionRecibida)
-                    .HasForeignKey(d => d.IdCapacitacionTemario)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasForeignKey(d => d.IdCapacitacionTemarioProveedor)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_CapacitacionRecibida_CapacitacionTemarioProveedor");
 
                 entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.CapacitacionRecibida)
                     .HasForeignKey(d => d.IdEmpleado)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefEmpleado483");
             });
 
             modelBuilder.Entity<CapacitacionRespuesta>(entity =>
             {
                 entity.HasKey(e => e.IdCapacitacionRespuesta)
-                    .HasName("PK_CapacitacionRespuesta");
-
-                entity.HasIndex(e => e.IdCapacitacionPregunta)
-                    .HasName("IX_CapacitacionRespuesta_IdCapacitacionPregunta");
+                    .HasName("PK173");
 
                 entity.Property(e => e.Descripcion)
                     .IsRequired()
-                    .HasMaxLength(20);
-
-                entity.HasOne(d => d.CapacitacionPregunta)
-                    .WithMany(p => p.CapacitacionRespuesta)
-                    .HasForeignKey(d => d.IdCapacitacionPregunta)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasColumnType("varchar(60)");
             });
 
             modelBuilder.Entity<CapacitacionTemario>(entity =>
@@ -653,43 +650,46 @@ namespace bd.swth.datos
             modelBuilder.Entity<CapacitacionTemarioProveedor>(entity =>
             {
                 entity.HasKey(e => e.IdCapacitacionTemarioProveedor)
-                    .HasName("PK_CapacitacionTemarioProveedor");
+                    .HasName("PK177");
 
                 entity.HasIndex(e => e.IdCapacitacionModalidad)
-                    .HasName("IX_CapacitacionTemarioProveedor_IdCapacitacionModalidad");
+                    .HasName("Ref322477");
 
                 entity.HasIndex(e => e.IdCapacitacionProveedor)
-                    .HasName("IX_CapacitacionTemarioProveedor_IdCapacitacionProveedor");
+                    .HasName("Ref320475");
 
                 entity.HasIndex(e => e.IdCapacitacionTemario)
-                    .HasName("IX_CapacitacionTemarioProveedor_IdCapacitacionTemario");
+                    .HasName("Ref313474");
 
                 entity.Property(e => e.Costo).HasColumnType("decimal");
 
                 entity.HasOne(d => d.CapacitacionModalidad)
                     .WithMany(p => p.CapacitacionTemarioProveedor)
                     .HasForeignKey(d => d.IdCapacitacionModalidad)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefCapacitacionModalidad477");
 
                 entity.HasOne(d => d.CapacitacionProveedor)
                     .WithMany(p => p.CapacitacionTemarioProveedor)
                     .HasForeignKey(d => d.IdCapacitacionProveedor)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_CapacitacionTemarioProveedor_CapacitacionProveedor");
 
                 entity.HasOne(d => d.CapacitacionTemario)
                     .WithMany(p => p.CapacitacionTemarioProveedor)
                     .HasForeignKey(d => d.IdCapacitacionTemario)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_CapacitacionTemarioProveedor_CapacitacionTemario");
             });
 
             modelBuilder.Entity<CapacitacionTipoPregunta>(entity =>
             {
                 entity.HasKey(e => e.IdCapacitacionTipoPregunta)
-                    .HasName("PK_CapacitacionTipoPregunta");
+                    .HasName("PK174");
 
                 entity.Property(e => e.Descripcion)
                     .IsRequired()
-                    .HasMaxLength(50);
+                    .HasColumnType("varchar(100)");
             });
 
             modelBuilder.Entity<Ciudad>(entity =>
