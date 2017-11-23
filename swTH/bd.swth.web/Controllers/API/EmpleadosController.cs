@@ -41,18 +41,18 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 //return await db.Empleado.Include(x => x.Persona).Include(x => x.CiudadNacimiento).Include(x => x.ProvinciaSufragio).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).ToListAsync();
-                var lista= await db.Empleado.Include(x => x.Persona).OrderBy(x => x.FechaIngreso).ToListAsync();
+                var lista = await db.Empleado.Include(x => x.Persona).OrderBy(x => x.FechaIngreso).ToListAsync();
                 var listaSalida = new List<ListaEmpleadoViewModel>();
                 foreach (var item in lista)
                 {
                     listaSalida.Add(new ListaEmpleadoViewModel
                     {
-                        IdEmpleado=item.IdEmpleado,
-                        NombreApellido=string.Format("{0} {1}",item.Persona.Nombres,item.Persona.Apellidos),
+                        IdEmpleado = item.IdEmpleado,
+                        NombreApellido = string.Format("{0} {1}", item.Persona.Nombres, item.Persona.Apellidos),
                         Identificacion = item.Persona.Identificacion,
                         TelefonoPrivado = item.Persona.TelefonoPrivado,
                         CorreoPrivado = item.Persona.CorreoPrivado
-                       
+
                     });
                 }
                 return listaSalida;
@@ -218,6 +218,108 @@ namespace bd.swth.web.Controllers.API
             {
                 try
                 {
+
+
+
+                    string fechaIndiceOcupacional = empleadoViewModel.IndiceOcupacionalModalidadPartida.Fecha.DayOfWeek.ToString();
+
+                    if (fechaIndiceOcupacional.Equals("Saturday") || fechaIndiceOcupacional.Equals("Sunday"))
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "La fecha de tipo de nombramiento no puede ser fin de semana"
+                        };
+                    }
+
+
+                    string fechaIngresoEmpleado = empleadoViewModel.Empleado.FechaIngreso.DayOfWeek.ToString();
+
+                    if (fechaIngresoEmpleado.Equals("Saturday") || fechaIngresoEmpleado.Equals("Sunday"))
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "La fecha de ingreso a la institución no puede ser fin de semana"
+                        };
+                    }
+
+                    string fechaIngresoSectorPublico = empleadoViewModel.Empleado.FechaIngresoSectorPublico.DayOfWeek.ToString();
+
+                    if (fechaIngresoSectorPublico.Equals("Saturday") || fechaIngresoSectorPublico.Equals("Sunday"))
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "La fecha de ingreso al sector público no puede ser fin de semana"
+                        };
+                    }
+
+                    if (empleadoViewModel.Empleado.FechaIngresoSectorPublico > empleadoViewModel.Empleado.FechaIngreso)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "La fecha de ingreso del sector público no puede ser mayor que la fecha de ingreso"
+                        };
+                    }
+
+                    foreach (var trayectoria in empleadoViewModel.TrayectoriaLaboral)
+                    {
+                        if (trayectoria.FechaInicio <= DateTime.Today)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = "La fecha inicio no puede ser menor o igual que la fecha de hoy"
+                            };
+                        }
+
+                        if (trayectoria.FechaFin <= DateTime.Today)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = "La fecha inicio no puede ser menor o igual que la fecha de hoy"
+                            };
+                        }
+
+
+                        if (trayectoria.FechaInicio > trayectoria.FechaFin)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = "La fecha de inicio no puede ser mayor que la fecha fin"
+                            };
+                        }
+
+                        string fechaInicio = trayectoria.FechaInicio.DayOfWeek.ToString();
+
+                        if (fechaInicio.Equals("Saturday") || fechaInicio.Equals("Sunday"))
+                        {
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = "La fecha de inicio no puede ser fin de semana"
+                            };
+                        }
+
+
+                        string fechaFin = trayectoria.FechaFin.DayOfWeek.ToString();
+
+                        if (fechaFin.Equals("Saturday") || fechaFin.Equals("Sunday"))
+                        {
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = "La fecha fin no puede ser fin de semana"
+                            };
+                        }
+                    }
+
+
+
                     //1. Insertar Persona 
                     var persona = await db.Persona.AddAsync(empleadoViewModel.Persona);
                     await db.SaveChangesAsync();
@@ -288,7 +390,7 @@ namespace bd.swth.web.Controllers.API
                     var personaSustituto = empleadoViewModel.PersonaSustituto;
                     await db.PersonaSustituto.AddAsync(empleadoViewModel.PersonaSustituto);
                     await db.SaveChangesAsync();
-                    
+
 
                     // 10.3. Insertar Discapacidad Sustituto (Inicializado : IdPersonaSustituto)
                     foreach (var discapacidadSustituto in empleadoViewModel.DiscapacidadSustituto)
@@ -326,8 +428,9 @@ namespace bd.swth.web.Controllers.API
 
                     return new Response
                     {
-                        IsSuccess=true,
-                        Message=Mensaje.Satisfactorio,
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                        Resultado = empleadoViewModel
                     };
                 }
                 catch (Exception ex)

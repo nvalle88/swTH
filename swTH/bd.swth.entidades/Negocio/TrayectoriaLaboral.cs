@@ -13,9 +13,9 @@ namespace bd.swth.entidades.Negocio
 
         public int IdPersona { get; set; }
 
-        public DateTime? FechaInicio { get; set; }
+        public DateTime FechaInicio { get; set; }
 
-        public DateTime? FechaFin { get; set; }
+        public DateTime FechaFin { get; set; }
 
         [StringLength(100)]
         public string Empresa { get; set; }

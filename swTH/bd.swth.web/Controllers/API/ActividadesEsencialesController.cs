@@ -295,10 +295,13 @@ namespace bd.swth.web.Controllers.API
                 {
                     db.ActividadesEsenciales.Add(ActividadesEsenciales);
                     await db.SaveChangesAsync();
+
+
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = Mensaje.Satisfactorio,
+                        Resultado= ActividadesEsenciales
                     };
                 }
 
