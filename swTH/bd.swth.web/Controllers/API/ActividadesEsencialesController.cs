@@ -232,6 +232,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             IsSuccess = true,
                             Message = Mensaje.Satisfactorio,
+                            Resultado = ActividadesEsencialesActualizar
                         };
 
                     }
