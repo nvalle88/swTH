@@ -130,265 +130,275 @@ namespace bd.swth.web.Controllers.API
 
             using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                try
-                {
+                    try
+                    {
                     
-                    string fechaIndiceOcupacional = empleadoViewModel.IndiceOcupacionalModalidadPartida.Fecha.DayOfWeek.ToString();
+                        string fechaIndiceOcupacional = empleadoViewModel.IndiceOcupacionalModalidadPartida.Fecha.DayOfWeek.ToString();
 
-                    if (fechaIndiceOcupacional.Equals("Saturday") || fechaIndiceOcupacional.Equals("Sunday"))
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "La fecha de tipo de nombramiento no puede ser fin de semana"
-                        };
-                    }
-
-                    if (empleadoViewModel.IndiceOcupacionalModalidadPartida.Fecha > DateTime.Today)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "La fecha de tipo de nombramiento no puede ser mayor que la fecha de hoy"
-                        };
-                    }
-
-                    string fechaIngresoEmpleado = empleadoViewModel.Empleado.FechaIngreso.DayOfWeek.ToString();
-
-                    if (fechaIngresoEmpleado.Equals("Saturday") || fechaIngresoEmpleado.Equals("Sunday"))
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "La fecha de ingreso del empleado no puede ser fin de semana"
-                        };
-                    }
-
-                    if (empleadoViewModel.Empleado.FechaIngreso > DateTime.Today)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "La fecha de ingreso del empleado no puede ser mayor que la fecha de hoy"
-                        };
-                    }
-
-                    string fechaIngresoSectorPublico = empleadoViewModel.Empleado.FechaIngresoSectorPublico.DayOfWeek.ToString();
-
-                    if (fechaIngresoSectorPublico.Equals("Saturday") || fechaIngresoSectorPublico.Equals("Sunday"))
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "La fecha de ingreso al sector público del empleado  no puede ser fin de semana"
-                        };
-                    }
-
-                    if (empleadoViewModel.Empleado.FechaIngresoSectorPublico > empleadoViewModel.Empleado.FechaIngreso)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "La fecha de ingreso del sector público del empleado no puede ser mayor que la fecha de ingreso"
-                        };
-                    }
-
-
-                    if (empleadoViewModel.Empleado.FechaIngresoSectorPublico > DateTime.Today)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "La fecha de ingreso del sector público del empleado no puede ser mayor que la fecha de hoy"
-                        };
-                    }
-
-                    if (empleadoViewModel.Empleado.DiasImposiciones<=0 || empleadoViewModel.Empleado.DiasImposiciones>31)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Los días de imposición no pueden ser menor o igual a cero o mayor a treinta y un días"
-                        };
-                    }
-
-                    if (empleadoViewModel.Empleado.MesesImposiciones <= 0 || empleadoViewModel.Empleado.MesesImposiciones > 12)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = "Los meses de imposición no pueden ser menor o igual a cero o mayor a doce meses"
-                        };
-                    }
-
-                    foreach (var trayectoria in empleadoViewModel.TrayectoriaLaboral)
-                    {
-
-                        if (trayectoria.FechaInicio > DateTime.Today)
+                        if (fechaIndiceOcupacional.Equals("Saturday") || fechaIndiceOcupacional.Equals("Sunday"))
                         {
                             return new Response
                             {
                                 IsSuccess = false,
-                                Message = "La fecha de inicio de la trayectoria laboral del empleado no puede ser mayor que la fecha de hoy"
+                                Message = "La fecha de tipo de nombramiento no puede ser fin de semana"
                             };
                         }
 
-                        if (trayectoria.FechaFin > DateTime.Today)
+                        if (empleadoViewModel.IndiceOcupacionalModalidadPartida.Fecha > DateTime.Today)
                         {
                             return new Response
                             {
                                 IsSuccess = false,
-                                Message = "La fecha fin de la trayectoria laboral del empleado no puede ser mayor que la fecha de hoy"
+                                Message = "La fecha de tipo de nombramiento no puede ser mayor que la fecha de hoy"
                             };
                         }
 
+                        string fechaIngresoEmpleado = empleadoViewModel.Empleado.FechaIngreso.DayOfWeek.ToString();
 
-                        if (trayectoria.FechaInicio > trayectoria.FechaFin)
+                        if (fechaIngresoEmpleado.Equals("Saturday") || fechaIngresoEmpleado.Equals("Sunday"))
                         {
                             return new Response
                             {
                                 IsSuccess = false,
-                                Message = "La fecha de inicio de la trayectoria laboral no puede ser mayor que la fecha fin"
+                                Message = "La fecha de ingreso del empleado no puede ser fin de semana"
                             };
                         }
 
-                        string fechaInicio = trayectoria.FechaInicio.DayOfWeek.ToString();
-
-                        if (fechaInicio.Equals("Saturday") || fechaInicio.Equals("Sunday"))
+                        if (empleadoViewModel.Empleado.FechaIngreso > DateTime.Today)
                         {
                             return new Response
                             {
                                 IsSuccess = false,
-                                Message = "La fecha de inicio de la trayectoria laboral no puede ser fin de semana"
+                                Message = "La fecha de ingreso del empleado no puede ser mayor que la fecha de hoy"
                             };
                         }
 
+                        string fechaIngresoSectorPublico = empleadoViewModel.Empleado.FechaIngresoSectorPublico.DayOfWeek.ToString();
 
-                        string fechaFin = trayectoria.FechaFin.DayOfWeek.ToString();
-
-                        if (fechaFin.Equals("Saturday") || fechaFin.Equals("Sunday"))
+                        if (fechaIngresoSectorPublico.Equals("Saturday") || fechaIngresoSectorPublico.Equals("Sunday"))
                         {
                             return new Response
                             {
                                 IsSuccess = false,
-                                Message = "La fecha fin de la trayectoria laboral no puede ser fin de semana"
+                                Message = "La fecha de ingreso al sector público del empleado  no puede ser fin de semana"
                             };
                         }
-                    }
 
+                        if (empleadoViewModel.Empleado.FechaIngresoSectorPublico > empleadoViewModel.Empleado.FechaIngreso)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = "La fecha de ingreso del sector público del empleado no puede ser mayor que la fecha de ingreso"
+                            };
+                        }
+
+
+                        if (empleadoViewModel.Empleado.FechaIngresoSectorPublico > DateTime.Today)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = "La fecha de ingreso del sector público del empleado no puede ser mayor que la fecha de hoy"
+                            };
+                        }
+
+                        if (empleadoViewModel.Empleado.DiasImposiciones<=0 || empleadoViewModel.Empleado.DiasImposiciones>31)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = "Los días de imposición no pueden ser menor o igual a cero o mayor a treinta y un días"
+                            };
+                        }
+
+                        if (empleadoViewModel.Empleado.MesesImposiciones <= 0 || empleadoViewModel.Empleado.MesesImposiciones > 12)
+                        {
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = "Los meses de imposición no pueden ser menor o igual a cero o mayor a doce meses"
+                            };
+                        }
+
+                        foreach (var trayectoria in empleadoViewModel.TrayectoriaLaboral)
+                        {
+
+                            if (trayectoria.FechaInicio > DateTime.Today)
+                            {
+                                return new Response
+                                {
+                                    IsSuccess = false,
+                                    Message = "La fecha de inicio de la trayectoria laboral del empleado no puede ser mayor que la fecha de hoy"
+                                };
+                            }
+
+                            if (trayectoria.FechaFin > DateTime.Today)
+                            {
+                                return new Response
+                                {
+                                    IsSuccess = false,
+                                    Message = "La fecha fin de la trayectoria laboral del empleado no puede ser mayor que la fecha de hoy"
+                                };
+                            }
+
+
+                            if (trayectoria.FechaInicio > trayectoria.FechaFin)
+                            {
+                                return new Response
+                                {
+                                    IsSuccess = false,
+                                    Message = "La fecha de inicio de la trayectoria laboral no puede ser mayor que la fecha fin"
+                                };
+                            }
+
+                            string fechaInicio = trayectoria.FechaInicio.DayOfWeek.ToString();
+
+                            if (fechaInicio.Equals("Saturday") || fechaInicio.Equals("Sunday"))
+                            {
+                                return new Response
+                                {
+                                    IsSuccess = false,
+                                    Message = "La fecha de inicio de la trayectoria laboral no puede ser fin de semana"
+                                };
+                            }
+
+
+                            string fechaFin = trayectoria.FechaFin.DayOfWeek.ToString();
+
+                            if (fechaFin.Equals("Saturday") || fechaFin.Equals("Sunday"))
+                            {
+                                return new Response
+                                {
+                                    IsSuccess = false,
+                                    Message = "La fecha fin de la trayectoria laboral no puede ser fin de semana"
+                                };
+                            }
+                        }
+
+                    var respuesta = Existe(empleadoViewModel);
+                    if (!respuesta.IsSuccess)
+                    {
+          
+                        //1. Insertar Persona 
+                        var persona = await db.Persona.AddAsync(empleadoViewModel.Persona);
+                        await db.SaveChangesAsync();
+
+                        //2. Insertar Empleado (Inicializado : IdPersona, IdDependencia)
+                        empleadoViewModel.Empleado.IdPersona = persona.Entity.IdPersona;
+                        empleadoViewModel.Empleado.IdDependencia = 1;
+                        var empleado = await db.Empleado.AddAsync(empleadoViewModel.Empleado);
+                        await db.SaveChangesAsync();
+
+                        //3. Insertar Datos Bancarios (Inicializado : IdEmpleado)
+                        empleadoViewModel.DatosBancarios.IdEmpleado = empleado.Entity.IdEmpleado;
+                        await db.DatosBancarios.AddAsync(empleadoViewModel.DatosBancarios);
+                        await db.SaveChangesAsync();
+
+                        //4. Insertar Empleado Contacto Emergencia  (Inicializado : IdPersona, IdEmpleado)
+                        empleadoViewModel.EmpleadoContactoEmergencia.IdPersona = persona.Entity.IdPersona;
+                        empleadoViewModel.EmpleadoContactoEmergencia.IdEmpleado = empleado.Entity.IdEmpleado;
+                        await db.EmpleadoContactoEmergencia.AddAsync(empleadoViewModel.EmpleadoContactoEmergencia);
+                        await db.SaveChangesAsync();
+
+                        //5. Insertar Indice Ocupacional Modalidad Partida  (Inicializado : IdIndiceOcupacional, IdEmpleado)
+                        empleadoViewModel.IndiceOcupacionalModalidadPartida.IdIndiceOcupacional = 1;
+                        empleadoViewModel.IndiceOcupacionalModalidadPartida.IdEmpleado = 1;
+                        await db.IndiceOcupacionalModalidadPartida.AddAsync(empleadoViewModel.IndiceOcupacionalModalidadPartida);
+                        await db.SaveChangesAsync();
+
+                        //6. Insertar Persona Estudio (Inicializado : IdPersona)
+                        foreach (var personaEstudio in empleadoViewModel.PersonaEstudio)
+                        {
+                            personaEstudio.IdPersona = persona.Entity.IdPersona;
+                            await db.PersonaEstudio.AddAsync(personaEstudio);
+                            await db.SaveChangesAsync();
+                        }
+
+                        // 7. Insertar Trayectoria Laboral (Inicializado : IdPersona)
+                        foreach (var trayectoriaLaboral in empleadoViewModel.TrayectoriaLaboral)
+                        {
+                            trayectoriaLaboral.IdPersona = persona.Entity.IdPersona;
+                            await db.TrayectoriaLaboral.AddAsync(trayectoriaLaboral);
+                            await db.SaveChangesAsync();
+                        }
+
+                        // 8. Insertar Persona Discapacidad (Inicializado : IdPersona)
+                        foreach (var personaDiscapacidad in empleadoViewModel.PersonaDiscapacidad)
+                        {
+                            personaDiscapacidad.IdPersona = persona.Entity.IdPersona;
+                            await db.PersonaDiscapacidad.AddAsync(personaDiscapacidad);
+                            await db.SaveChangesAsync();
+                        }
+
+                        // 9. Insertar Persona Enfermedad (Inicializado : IdPersona)
+                        foreach (var personaEnfermedad in empleadoViewModel.PersonaEnfermedad)
+                        {
+                            personaEnfermedad.IdPersona = persona.Entity.IdPersona;
+                            await db.PersonaEnfermedad.AddAsync(personaEnfermedad);
+                            await db.SaveChangesAsync();
+                        }
+
+                        // 10. Insertar Persona Sustituto (Inicializado : IdPersona, IdPersonaDiscapacidad)
+                        //10.1. Insertar Persona Discapacidad
+                        var objetoPersonaSustitutoDiscapacidad = await db.Persona.AddAsync(empleadoViewModel.PersonaSustituto.PersonaDiscapacidad);
+                        await db.SaveChangesAsync();
+
+                        // 10.2. Insertar Persona Sustituto
+                        empleadoViewModel.PersonaSustituto.IdPersona = persona.Entity.IdPersona;
+                        empleadoViewModel.PersonaSustituto.IdPersonaDiscapacidad = objetoPersonaSustitutoDiscapacidad.Entity.IdPersona;
+                        var personaSustituto = empleadoViewModel.PersonaSustituto;
+                        await db.PersonaSustituto.AddAsync(empleadoViewModel.PersonaSustituto);
+                        await db.SaveChangesAsync();
+
+
+                        // 10.3. Insertar Discapacidad Sustituto (Inicializado : IdPersonaSustituto)
+                        foreach (var discapacidadSustituto in empleadoViewModel.DiscapacidadSustituto)
+                        {
+                            discapacidadSustituto.IdPersonaSustituto = personaSustituto.IdPersonaSustituto;
+                            await db.DiscapacidadSustituto.AddAsync(discapacidadSustituto);
+                            await db.SaveChangesAsync();
+                        }
+
+                        //10.4. Insertar Enfermedad Sustituto(Inicializado : IdPersonaSustituto)
+                        foreach (var enfermedadSustituto in empleadoViewModel.EnfermedadSustituto)
+                        {
+                            enfermedadSustituto.IdPersonaSustituto = enfermedadSustituto.IdPersonaSustituto;
+                            await db.EnfermedadSustituto.AddAsync(enfermedadSustituto);
+                            await db.SaveChangesAsync();
+                        }
+
+                        // 11.  Insertar Familiares Empleado
+                        foreach (var empleadoFamiliar in empleadoViewModel.EmpleadoFamiliar)
+                        {
+                            //11.1. Insertar Persona 
+                            var personafamiliar = await db.Persona.AddAsync(empleadoFamiliar.Persona);
+                            await db.SaveChangesAsync();
+
+                            //11.2.  Insertar Empleado Familiar (I.icializado : IdPersona, IdEmpleado)
+                            empleadoFamiliar.IdEmpleado = empleado.Entity.IdEmpleado;
+                            empleadoFamiliar.IdPersona = personafamiliar.Entity.IdPersona;
+                            await db.EmpleadoFamiliar.AddAsync(empleadoFamiliar);
+                            await db.SaveChangesAsync();
+
+                        }
                     
+                        transaction.Commit();
 
-                    //1. Insertar Persona 
-                    var persona = await db.Persona.AddAsync(empleadoViewModel.Persona);
-                    await db.SaveChangesAsync();
-
-                    //2. Insertar Empleado (Inicializado : IdPersona, IdDependencia)
-                    empleadoViewModel.Empleado.IdPersona = persona.Entity.IdPersona;
-                    empleadoViewModel.Empleado.IdDependencia = 1;
-                    var empleado = await db.Empleado.AddAsync(empleadoViewModel.Empleado);
-                    await db.SaveChangesAsync();
-
-                    //3. Insertar Datos Bancarios (Inicializado : IdEmpleado)
-                    empleadoViewModel.DatosBancarios.IdEmpleado = empleado.Entity.IdEmpleado;
-                    await db.DatosBancarios.AddAsync(empleadoViewModel.DatosBancarios);
-                    await db.SaveChangesAsync();
-
-                    //4. Insertar Empleado Contacto Emergencia  (Inicializado : IdPersona, IdEmpleado)
-                    empleadoViewModel.EmpleadoContactoEmergencia.IdPersona = persona.Entity.IdPersona;
-                    empleadoViewModel.EmpleadoContactoEmergencia.IdEmpleado = empleado.Entity.IdEmpleado;
-                    await db.EmpleadoContactoEmergencia.AddAsync(empleadoViewModel.EmpleadoContactoEmergencia);
-                    await db.SaveChangesAsync();
-
-                    //5. Insertar Indice Ocupacional Modalidad Partida  (Inicializado : IdIndiceOcupacional, IdEmpleado)
-                    empleadoViewModel.IndiceOcupacionalModalidadPartida.IdIndiceOcupacional = 1;
-                    empleadoViewModel.IndiceOcupacionalModalidadPartida.IdEmpleado = 1;
-                    await db.IndiceOcupacionalModalidadPartida.AddAsync(empleadoViewModel.IndiceOcupacionalModalidadPartida);
-                    await db.SaveChangesAsync();
-
-                    //6. Insertar Persona Estudio (Inicializado : IdPersona)
-                    foreach (var personaEstudio in empleadoViewModel.PersonaEstudio)
-                    {
-                        personaEstudio.IdPersona = persona.Entity.IdPersona;
-                        await db.PersonaEstudio.AddAsync(personaEstudio);
-                        await db.SaveChangesAsync();
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                            Resultado = empleadoViewModel
+                        };
                     }
-
-                    // 7. Insertar Trayectoria Laboral (Inicializado : IdPersona)
-                    foreach (var trayectoriaLaboral in empleadoViewModel.TrayectoriaLaboral)
-                    {
-                        trayectoriaLaboral.IdPersona = persona.Entity.IdPersona;
-                        await db.TrayectoriaLaboral.AddAsync(trayectoriaLaboral);
-                        await db.SaveChangesAsync();
-                    }
-
-                    // 8. Insertar Persona Discapacidad (Inicializado : IdPersona)
-                    foreach (var personaDiscapacidad in empleadoViewModel.PersonaDiscapacidad)
-                    {
-                        personaDiscapacidad.IdPersona = persona.Entity.IdPersona;
-                        await db.PersonaDiscapacidad.AddAsync(personaDiscapacidad);
-                        await db.SaveChangesAsync();
-                    }
-
-                    // 9. Insertar Persona Enfermedad (Inicializado : IdPersona)
-                    foreach (var personaEnfermedad in empleadoViewModel.PersonaEnfermedad)
-                    {
-                        personaEnfermedad.IdPersona = persona.Entity.IdPersona;
-                        await db.PersonaEnfermedad.AddAsync(personaEnfermedad);
-                        await db.SaveChangesAsync();
-                    }
-
-                    // 10. Insertar Persona Sustituto (Inicializado : IdPersona, IdPersonaDiscapacidad)
-                    //10.1. Insertar Persona Discapacidad
-                    var objetoPersonaSustitutoDiscapacidad = await db.Persona.AddAsync(empleadoViewModel.PersonaSustituto.PersonaDiscapacidad);
-                    await db.SaveChangesAsync();
-
-                    // 10.2. Insertar Persona Sustituto
-                    empleadoViewModel.PersonaSustituto.IdPersona = persona.Entity.IdPersona;
-                    empleadoViewModel.PersonaSustituto.IdPersonaDiscapacidad = objetoPersonaSustitutoDiscapacidad.Entity.IdPersona;
-                    var personaSustituto = empleadoViewModel.PersonaSustituto;
-                    await db.PersonaSustituto.AddAsync(empleadoViewModel.PersonaSustituto);
-                    await db.SaveChangesAsync();
-
-
-                    // 10.3. Insertar Discapacidad Sustituto (Inicializado : IdPersonaSustituto)
-                    foreach (var discapacidadSustituto in empleadoViewModel.DiscapacidadSustituto)
-                    {
-                        discapacidadSustituto.IdPersonaSustituto = personaSustituto.IdPersonaSustituto;
-                        await db.DiscapacidadSustituto.AddAsync(discapacidadSustituto);
-                        await db.SaveChangesAsync();
-                    }
-
-                    //10.4. Insertar Enfermedad Sustituto(Inicializado : IdPersonaSustituto)
-                    foreach (var enfermedadSustituto in empleadoViewModel.EnfermedadSustituto)
-                    {
-                        enfermedadSustituto.IdPersonaSustituto = enfermedadSustituto.IdPersonaSustituto;
-                        await db.EnfermedadSustituto.AddAsync(enfermedadSustituto);
-                        await db.SaveChangesAsync();
-                    }
-
-                    // 11.  Insertar Familiares Empleado
-                    foreach (var empleadoFamiliar in empleadoViewModel.EmpleadoFamiliar)
-                    {
-                        //11.1. Insertar Persona 
-                        var personafamiliar = await db.Persona.AddAsync(empleadoFamiliar.Persona);
-                        await db.SaveChangesAsync();
-
-                        //11.2.  Insertar Empleado Familiar (I.icializado : IdPersona, IdEmpleado)
-                        empleadoFamiliar.IdEmpleado = empleado.Entity.IdEmpleado;
-                        empleadoFamiliar.IdPersona = personafamiliar.Entity.IdPersona;
-                        await db.EmpleadoFamiliar.AddAsync(empleadoFamiliar);
-                        await db.SaveChangesAsync();
-
-                    }
-                    
-                    transaction.Commit();
 
                     return new Response
                     {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                        Resultado = empleadoViewModel
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
                     };
+                    
                 }
                 catch (Exception ex)
                 {
@@ -636,60 +646,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        [HttpPost]
-        [Route("EliminarEmpleadoContactoEmergencia")]
-        public async Task<Response> EliminarEmpleadoContactoEmergencia([FromBody] EmpleadoContactoEmergencia empleadoContactoEmergencia)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
-
-                var respuesta = await db.EmpleadoContactoEmergencia.SingleOrDefaultAsync(m => m.IdEmpleadoContactoEmergencia == empleadoContactoEmergencia.IdEmpleadoContactoEmergencia && m.IdEmpleado == empleadoContactoEmergencia.IdEmpleado);
-
-                if (respuesta == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-                db.EmpleadoContactoEmergencia.Remove(respuesta);
-                await db.SaveChangesAsync();
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
+       
         [HttpPost]
         [Route("InsertarEmpleadoFamiliar")]
         public async Task<Response> InsertarEmpleadoFamiliar([FromBody] EmpleadoFamiliar empleadoFamiliar)
@@ -732,60 +689,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        [HttpPost]
-        [Route("EliminarEmpleadoFamiliar")]
-        public async Task<Response> EliminarEmpleadoFamiliar([FromBody] EmpleadoFamiliar empleadoFamiliar)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
-
-                var respuesta = await db.EmpleadoFamiliar.SingleOrDefaultAsync(m => m.IdEmpleadoFamiliar == empleadoFamiliar.IdEmpleadoFamiliar && m.IdEmpleado == empleadoFamiliar.IdEmpleado);
-
-                if (respuesta == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-                db.EmpleadoFamiliar.Remove(respuesta);
-                await db.SaveChangesAsync();
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
+        
  
         [HttpPost]
         [Route("InsertarEmpleadoNepotismo")]
@@ -829,59 +733,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        [HttpPost]
-        [Route("EliminarEmpleadoNepotismo")]
-        public async Task<Response> EliminarEmpleadoNepotismo([FromBody] EmpleadoNepotismo empleadoNepotismo)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
-
-                var respuesta = await db.EmpleadoNepotismo.SingleOrDefaultAsync(m => m.IdEmpleadoNepotismo == empleadoNepotismo.IdEmpleadoNepotismo && m.IdEmpleado == empleadoNepotismo.IdEmpleado);
-
-                if (respuesta == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-                db.EmpleadoNepotismo.Remove(respuesta);
-                await db.SaveChangesAsync();
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
+        
 
         [HttpPost]
         [Route("InsertarEmpleadoDatosBancarios")]
@@ -925,58 +777,28 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        [HttpPost]
-        [Route("EliminarEmpleadoDatosBancarios")]
-        public async Task<Response> EliminarEmpleadoDatosBancarios([FromBody] DatosBancarios datosBancarios)
+        private Response Existe(EmpleadoViewModel empleadoViewModel)
         {
-            try
+            var identificacion = empleadoViewModel.Persona.Identificacion.ToUpper().TrimEnd().TrimStart();
+            var nombres = empleadoViewModel.Persona.Nombres.ToUpper().TrimEnd().TrimStart();
+            var apellidos = empleadoViewModel.Persona.Apellidos.ToUpper().TrimEnd().TrimStart();
+            var Empleadorespuesta = db.Persona.Where(p => p.Nombres.ToUpper().TrimStart().TrimEnd() == nombres && p.Apellidos == apellidos && p.Identificacion==identificacion).FirstOrDefault();
+            if (Empleadorespuesta != null)
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
-
-                var respuesta = await db.DatosBancarios.SingleOrDefaultAsync(m => m.IdDatosBancarios == datosBancarios.IdDatosBancarios && m.IdEmpleado == datosBancarios.IdEmpleado);
-
-                if (respuesta == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-                db.DatosBancarios.Remove(respuesta);
-                await db.SaveChangesAsync();
-
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = Empleadorespuesta,
                 };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
             }
+
+            return new Response
+            {
+                IsSuccess = false,
+                Resultado = Empleadorespuesta,
+            };
         }
 
     }
