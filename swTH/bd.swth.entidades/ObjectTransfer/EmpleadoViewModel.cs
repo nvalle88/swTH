@@ -13,7 +13,6 @@ namespace bd.swth.entidades.ObjectTransfer
         public List<PersonaEstudio> PersonaEstudio { get; set; }
         public List<PersonaDiscapacidad> PersonaDiscapacidad { get; set; }
         public List<PersonaEnfermedad> PersonaEnfermedad { get; set; }
-        //List<EmpleadoFamiliar> Empleadofamiliar { get; set; }
         public Empleado Empleado { get; set; }
         public DatosBancarios DatosBancarios { get; set; }
         public List<TrayectoriaLaboral> TrayectoriaLaboral { get; set; }

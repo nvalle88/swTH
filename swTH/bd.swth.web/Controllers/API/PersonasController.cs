@@ -297,8 +297,10 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(Persona Persona)
         {
-            var bdd = Persona.Identificacion;
-            var Personarespuesta = db.Persona.Where(p => p.Identificacion == bdd).FirstOrDefault();
+            var identificacion = Persona.Identificacion;
+            var nombres = Persona.Identificacion;
+            var apellidos = Persona.Identificacion;
+            var Personarespuesta = db.Persona.Where(p => p.Identificacion == identificacion && p.Nombres==nombres && p.Apellidos==apellidos).FirstOrDefault();
             if (Personarespuesta != null)
             {
                 return new Response
