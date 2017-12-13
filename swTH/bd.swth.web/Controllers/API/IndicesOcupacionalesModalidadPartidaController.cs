@@ -53,6 +53,42 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("IndiceOcupacionalModalidadPartidaPorIdEmpleado")]
+        public async Task<Response> IndiceOcupacionalModalidadPartidaPorIdEmpleado([FromBody] IndiceOcupacionalModalidadPartida indiceOcupacionalModalidadPartida)
+        {
+            try
+            {
+                var IndiceOcupacionalModalidadPartida = await db.IndiceOcupacionalModalidadPartida.SingleOrDefaultAsync(m => m.IdEmpleado == indiceOcupacionalModalidadPartida.IdEmpleado);
+
+                var response = new Response
+                {
+                    IsSuccess = true,
+                    Resultado = IndiceOcupacionalModalidadPartida,
+                };
+
+                return response;
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
+                return new Response { };
+            }
+        }
+
+
+
         // GET: api/IndiceOcupacionalModalidadPartida/5
         [HttpGet("{id}")]
         public async Task<Response> GetIndiceOcupacionalModalidadPartida([FromRoute] int id)

@@ -53,13 +53,24 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        
+
         [HttpPost]
-        [Route("ListarDatosBancariosPorIdEmpleado")]
-        public async Task<List<DatosBancarios>> GetDatosBancariosPorIdEmpleado([FromBody] int id)
+        [Route("DatosBancariosPorIdEmpleado")]
+        public async Task<Response> DatosBancariosPorIdEmpleado([FromBody] DatosBancarios datosBancarios)
         {
             try
             {
-                return await db.DatosBancarios.Include(c => c.Empleado).Include(c => c.InstitucionFinanciera).Where(x => x.IdEmpleado == id).OrderBy(x => x.NumeroCuenta).ToListAsync();
+                var DatosBancarios = await db.DatosBancarios.SingleOrDefaultAsync(m => m.IdEmpleado == datosBancarios.IdEmpleado);
+
+                var response = new Response
+                {
+                    IsSuccess = true,
+                    Resultado = DatosBancarios,
+                };
+
+                return response;
+
             }
             catch (Exception ex)
             {
@@ -73,7 +84,7 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<DatosBancarios>();
+                return new Response { };
             }
         }
 
@@ -163,11 +174,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
                 var DatosBancarios = db.DatosBancarios.Find(datosBancarios.IdDatosBancarios);
-
-                DatosBancarios.IdEmpleado = 11;
-                DatosBancarios.IdInstitucionFinanciera = DatosBancarios.IdInstitucionFinanciera;
-                DatosBancarios.NumeroCuenta = DatosBancarios.NumeroCuenta;
-                DatosBancarios.Ahorros = DatosBancarios.Ahorros;
+                
+                DatosBancarios.IdInstitucionFinanciera = datosBancarios.IdInstitucionFinanciera;
+                DatosBancarios.NumeroCuenta = datosBancarios.NumeroCuenta;
+                DatosBancarios.Ahorros = datosBancarios.Ahorros;
 
                 db.DatosBancarios.Update(DatosBancarios);
                 await db.SaveChangesAsync();

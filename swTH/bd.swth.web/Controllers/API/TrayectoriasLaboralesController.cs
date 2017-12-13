@@ -12,27 +12,29 @@ using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/EmpleadosContactosEmergencias")]
-    public class EmpleadosContactosEmergenciasController : Controller
+    [Route("api/TrayectoriasLaborales")]
+    public class TrayectoriasLaboralesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public EmpleadosContactosEmergenciasController(SwTHDbContext db)
+        public TrayectoriasLaboralesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/EmpleadoContactoEmergencia
+        
+        // GET: api/TrayectoriaLaboral
         [HttpGet]
-        [Route("ListarEmpleadosContactosEmergencias")]
-        public async Task<List<EmpleadoContactoEmergencia>> GetEmpleadosContactosEmergencias()
+        [Route("ListarTrayectoriasLaborales")]
+        public async Task<List<TrayectoriaLaboral>> GetTrayectoriasLaborales()
         {
             try
             {
-                return await db.EmpleadoContactoEmergencia.Include(x => x.Persona).Include(x => x.Empleado).Include(x => x.Parentesco).OrderBy(x => x.IdEmpleadoContactoEmergencia).ToListAsync();
+                return await db.TrayectoriaLaboral.Include(x => x.Persona).OrderBy(x => x.Empresa).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -46,50 +48,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<EmpleadoContactoEmergencia>();
+                return new List<TrayectoriaLaboral>();
             }
         }
 
-
-        [HttpPost]
-        [Route("EmpleadosContactosEmergenciasPorIdEmpleado")]
-        public async Task<Response> EmpleadosContactosEmergenciasPorIdEmpleado([FromBody] EmpleadoContactoEmergencia empleadoContactoEmergencia)
-        {
-            try
-            {
-                var EmpleadoContactoEmergencia = await db.EmpleadoContactoEmergencia.SingleOrDefaultAsync(m => m.IdEmpleado == empleadoContactoEmergencia.IdEmpleado);
-
-                var response = new Response
-                {
-                    IsSuccess = true,
-                    Resultado = EmpleadoContactoEmergencia,
-                };
-
-                return response;
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
-                return new Response { };
-            }
-        }
-
-
-
-        // GET: api/EmpleadoContactoEmergencia/5
+        // GET: api/TrayectoriaLaboral/5
         [HttpGet("{id}")]
-        public async Task<Response> GetEmpleadoContactoEmergencia([FromRoute] int id)
+        public async Task<Response> GetTrayectoriaLaboral([FromRoute] int id)
         {
             try
             {
@@ -102,9 +67,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EmpleadoContactoEmergencia = await db.EmpleadoContactoEmergencia.SingleOrDefaultAsync(m => m.IdEmpleadoContactoEmergencia == id);
+                var TrayectoriaLaboral = await db.TrayectoriaLaboral.SingleOrDefaultAsync(m => m.IdTrayectoriaLaboral == id);
 
-                if (EmpleadoContactoEmergencia == null)
+                if (TrayectoriaLaboral == null)
                 {
                     return new Response
                     {
@@ -117,7 +82,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = EmpleadoContactoEmergencia,
+                    Resultado = TrayectoriaLaboral,
                 };
             }
             catch (Exception ex)
@@ -140,9 +105,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/EmpleadoContactoEmergencia/5
+        // PUT: api/TrayectoriaLaboral/5
         [HttpPut("{id}")]
-        public async Task<Response> PutEmpleadoContactoEmergencia([FromRoute] int id, [FromBody] EmpleadoContactoEmergencia empleadoContactoEmergencia)
+        public async Task<Response> PutTrayectoriaLaboral([FromRoute] int id, [FromBody] TrayectoriaLaboral trayectoriaLaboral)
         {
             try
             {
@@ -155,12 +120,11 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                var existe = Existe(empleadoContactoEmergencia);
-                var EmpleadoContactoEmergenciaActualizar = (EmpleadoContactoEmergencia)existe.Resultado;
+                var existe = Existe(trayectoriaLaboral);
+                var TrayectoriaLaboralActualizar = (TrayectoriaLaboral)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (EmpleadoContactoEmergenciaActualizar.IdEmpleado == id)
+                    if (TrayectoriaLaboralActualizar.IdTrayectoriaLaboral == trayectoriaLaboral.IdTrayectoriaLaboral)
                     {
                         return new Response
                         {
@@ -173,12 +137,17 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
-                var EmpleadoContactoEmergencia = db.EmpleadoContactoEmergencia.Find(empleadoContactoEmergencia.IdEmpleadoContactoEmergencia);
+                var TrayectoriaLaboral = db.TrayectoriaLaboral.Find(trayectoriaLaboral.IdTrayectoriaLaboral);
+                
+                TrayectoriaLaboral.IdPersona = TrayectoriaLaboral.IdPersona;
+                TrayectoriaLaboral.FechaInicio = TrayectoriaLaboral.FechaInicio;
+                TrayectoriaLaboral.FechaFin = TrayectoriaLaboral.FechaFin;
+                TrayectoriaLaboral.Empresa = TrayectoriaLaboral.Empresa;
+                TrayectoriaLaboral.PuestoTrabajo = TrayectoriaLaboral.PuestoTrabajo;
+                TrayectoriaLaboral.DescripcionFunciones = TrayectoriaLaboral.DescripcionFunciones;
 
-                EmpleadoContactoEmergencia.IdPersona = empleadoContactoEmergencia.IdPersona;
-                EmpleadoContactoEmergencia.IdEmpleado = id;
-                EmpleadoContactoEmergencia.IdParentesco = empleadoContactoEmergencia.IdParentesco;
-                db.EmpleadoContactoEmergencia.Update(EmpleadoContactoEmergencia);
+                db.TrayectoriaLaboral.Update(TrayectoriaLaboral);
+
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -210,10 +179,10 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/EmpleadoContactoEmergencia
+        // POST: api/TrayectoriaLaboral
         [HttpPost]
-        [Route("InsertarEmpleadoContactoEmergencia")]
-        public async Task<Response> PostEmpleadoContactoEmergencia([FromBody] EmpleadoContactoEmergencia EmpleadoContactoEmergencia)
+        [Route("InsertarTrayectoriaLaboral")]
+        public async Task<Response> PostTrayectoriaLaboral([FromBody] TrayectoriaLaboral TrayectoriaLaboral)
         {
             try
             {
@@ -226,10 +195,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(EmpleadoContactoEmergencia);
+                var respuesta = Existe(TrayectoriaLaboral);
                 if (!respuesta.IsSuccess)
                 {
-                    db.EmpleadoContactoEmergencia.Add(EmpleadoContactoEmergencia);
+                    db.TrayectoriaLaboral.Add(TrayectoriaLaboral);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -265,9 +234,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/EmpleadoContactoEmergencia/5
+        // DELETE: api/TrayectoriaLaboral/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteEmpleadoContactoEmergencia([FromRoute] int id)
+        public async Task<Response> DeleteTrayectoriaLaboral([FromRoute] int id)
         {
             try
             {
@@ -280,7 +249,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.EmpleadoContactoEmergencia.SingleOrDefaultAsync(m => m.IdEmpleadoContactoEmergencia == id);
+                var respuesta = await db.TrayectoriaLaboral.SingleOrDefaultAsync(m => m.IdTrayectoriaLaboral == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -289,7 +258,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.EmpleadoContactoEmergencia.Remove(respuesta);
+                db.TrayectoriaLaboral.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -318,17 +287,19 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(EmpleadoContactoEmergencia EmpleadoContactoEmergencia)
+        private Response Existe(TrayectoriaLaboral TrayectoriaLaboral)
         {
-           
-            var EmpleadoContactoEmergenciarespuesta = db.EmpleadoContactoEmergencia.Where(p => p.IdPersona == EmpleadoContactoEmergencia.IdPersona && p.IdEmpleado==EmpleadoContactoEmergencia.IdEmpleado&&p.IdParentesco== EmpleadoContactoEmergencia.IdParentesco).FirstOrDefault();
-            if (EmpleadoContactoEmergenciarespuesta != null)
+            var fechaInicio = TrayectoriaLaboral.FechaInicio;
+            var fechaFin = TrayectoriaLaboral.FechaFin;
+            var TrayectoriaLaboralrespuesta = db.TrayectoriaLaboral.Where(p => p.FechaInicio == fechaInicio && p.FechaFin == fechaFin).FirstOrDefault();
+
+            if (TrayectoriaLaboralrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = EmpleadoContactoEmergenciarespuesta,
+                    Resultado = TrayectoriaLaboralrespuesta,
                 };
 
             }
@@ -336,7 +307,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = EmpleadoContactoEmergenciarespuesta,
+                Resultado = TrayectoriaLaboralrespuesta,
             };
         }
     }

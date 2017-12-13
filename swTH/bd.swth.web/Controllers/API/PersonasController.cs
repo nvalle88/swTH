@@ -66,7 +66,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var Persona = await db.Persona.SingleOrDefaultAsync(m => m.IdPersona == id);
+                var Persona = await db.Persona.Where(m => m.IdPersona == id).Include(x=>x.Parroquia).ThenInclude(x=>x.Ciudad).ThenInclude(x=>x.Provincia).ThenInclude(x=>x.Pais).FirstOrDefaultAsync();
 
                 if (Persona == null)
                 {
