@@ -4,62 +4,38 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
-using Microsoft.EntityFrameworkCore;
-using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TiposAccionesPersonales")]
-    public class TiposAccionesPersonalesController : Controller
+    [Route("api/PiesFirma")]
+    public class PiesFirmaController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TiposAccionesPersonalesController(SwTHDbContext db)
+        public PiesFirmaController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-
-        [HttpPost]
-        [Route("ListarTiposAccionesPersonalesPorEstado")]
-        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEstado([FromBody] EstadoTipoAccionPersonal estadoTipoAccionPersonal)
-        {
-            try
-            {
-                return await db.TipoAccionPersonal.Where(x => x.IdEstadoTipoAccionPersonal == estadoTipoAccionPersonal.IdEstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<TipoAccionPersonal>();
-            }
-        }
-
-
-        // GET: api/TipoAccionPersonal
+        
+        // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTiposAccionesPersonales")]
-        public async Task<List<TipoAccionPersonal>> GetTiposAccionesPersonales()
+        [Route("ListarPiesFirma")]
+        public async Task<List<PieFirma>> GetPiesFirma()
         {
             try
             {
-                return await db.TipoAccionPersonal.Include(x => x.EstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.PieFirma.Include(x => x.TipoAccionPersonal).Include(x => x.IndiceOcupacional).OrderBy(x => x.IdPieFirma).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -73,13 +49,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<TipoAccionPersonal>();
+                return new List<PieFirma>();
             }
         }
 
-        // GET: api/TipoAccionPersonal/5
+        // GET: api/PieFirma/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoAccionPersonal([FromRoute] int id)
+        public async Task<Response> GetPieFirma([FromRoute] int id)
         {
             try
             {
@@ -92,9 +68,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoAccionPersonal = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
+                var PieFirma = await db.PieFirma.SingleOrDefaultAsync(m => m.IdPieFirma == id);
 
-                if (TipoAccionPersonal == null)
+                if (PieFirma == null)
                 {
                     return new Response
                     {
@@ -107,7 +83,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoAccionPersonal,
+                    Resultado = PieFirma,
                 };
             }
             catch (Exception ex)
@@ -130,9 +106,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/TipoAccionPersonal/5
+        // PUT: api/PieFirma/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoAccionPersonal([FromRoute] int id, [FromBody] TipoAccionPersonal tipoAccionPersonal)
+        public async Task<Response> PutPieFirma([FromRoute] int id, [FromBody] PieFirma pieFirma)
         {
             try
             {
@@ -145,11 +121,11 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(tipoAccionPersonal);
-                var TipoAccionPersonalActualizar = (TipoAccionPersonal)existe.Resultado;
+                var existe = Existe(pieFirma);
+                var PieFirmaActualizar = (PieFirma)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (TipoAccionPersonalActualizar.IdTipoAccionPersonal == tipoAccionPersonal.IdTipoAccionPersonal)
+                    if (PieFirmaActualizar.IdPieFirma == pieFirma.IdPieFirma)
                     {
                         return new Response
                         {
@@ -162,22 +138,12 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
-                var TipoAccionPersonal = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
-                
-                TipoAccionPersonal.Nombre = tipoAccionPersonal.Nombre;
-                TipoAccionPersonal.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
-                TipoAccionPersonal.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
-                TipoAccionPersonal.NHorasMaximo = tipoAccionPersonal.NHorasMaximo;
-                TipoAccionPersonal.NHorasMinimo = tipoAccionPersonal.NHorasMinimo;
-                TipoAccionPersonal.DiasHabiles = tipoAccionPersonal.DiasHabiles;
-                TipoAccionPersonal.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
-                TipoAccionPersonal.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
-                TipoAccionPersonal.Matriz = tipoAccionPersonal.Matriz;
-                TipoAccionPersonal.Descripcion = TipoAccionPersonal.Descripcion;
-                TipoAccionPersonal.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
-                TipoAccionPersonal.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
-                TipoAccionPersonal.IdEstadoTipoAccionPersonal = tipoAccionPersonal.IdEstadoTipoAccionPersonal;
-                db.TipoAccionPersonal.Update(TipoAccionPersonal);
+                var PieFirma = db.PieFirma.Find(pieFirma.IdPieFirma);
+
+                PieFirma.IdTipoAccionPersonal = pieFirma.IdTipoAccionPersonal;
+                PieFirma.IdIndiceOcupacional = pieFirma.IdIndiceOcupacional;
+                PieFirma.Nivel = pieFirma.Nivel;
+                db.PieFirma.Update(PieFirma);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -209,10 +175,10 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/TipoAccionPersonal
+        // POST: api/PieFirma
         [HttpPost]
-        [Route("InsertarTipoAccionPersonal")]
-        public async Task<Response> PostTipoAccionPersonal([FromBody] TipoAccionPersonal TipoAccionPersonal)
+        [Route("InsertarPieFirma")]
+        public async Task<Response> PostPieFirma([FromBody] PieFirma PieFirma)
         {
             try
             {
@@ -225,10 +191,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(TipoAccionPersonal);
+                var respuesta = Existe(PieFirma);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoAccionPersonal.Add(TipoAccionPersonal);
+                    db.PieFirma.Add(PieFirma);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -264,9 +230,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/TipoAccionPersonal/5
+        // DELETE: api/PieFirma/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoAccionPersonal([FromRoute] int id)
+        public async Task<Response> DeletePieFirma([FromRoute] int id)
         {
             try
             {
@@ -279,7 +245,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
+                var respuesta = await db.PieFirma.SingleOrDefaultAsync(m => m.IdPieFirma == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -288,7 +254,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoAccionPersonal.Remove(respuesta);
+                db.PieFirma.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -317,18 +283,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(TipoAccionPersonal TipoAccionPersonal)
+        private Response Existe(PieFirma PieFirma)
         {
-            var nombre = TipoAccionPersonal.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoAccionPersonalrespuesta = db.TipoAccionPersonal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombre && p.IdEstadoTipoAccionPersonal == TipoAccionPersonal.IdEstadoTipoAccionPersonal).FirstOrDefault();
-
-            if (TipoAccionPersonalrespuesta != null)
+            
+            var PieFirmarespuesta = db.PieFirma.Where(p =>  p.IdTipoAccionPersonal == PieFirma.IdTipoAccionPersonal && p.IdIndiceOcupacional == PieFirma.IdIndiceOcupacional).FirstOrDefault();
+            if (PieFirmarespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = TipoAccionPersonalrespuesta,
+                    Resultado = PieFirmarespuesta,
                 };
 
             }
@@ -336,7 +301,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoAccionPersonalrespuesta,
+                Resultado = PieFirmarespuesta,
             };
         }
     }

@@ -73,6 +73,7 @@ namespace bd.swth.datos
         public virtual DbSet<EscalaGrados> EscalaGrados { get; set; }
         public virtual DbSet<EspecificidadExperiencia> EspecificidadExperiencia { get; set; }
         public virtual DbSet<Estado> Estado { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.EstadoTipoAccionPersonal> EstadoTipoAccionPersonal { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.EstadoCivil> EstadoCivil { get; set; }
         public virtual DbSet<Estudio> Estudio { get; set; }
         public virtual DbSet<Etnia> Etnia { get; set; }
@@ -104,6 +105,7 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.FormularioDevengacion> FormularioDevengacion { get; set; }
         public virtual DbSet<FormulasRMU> FormulasRMU { get; set; }
         public virtual DbSet<FrecuenciaAplicacion> FrecuenciaAplicacion { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.FlujoAprobacion> FlujoAprobacion { get; set; }
         public virtual DbSet<GastoRubro> GastoRubro { get; set; }
         public virtual DbSet<Genero> Genero { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.GrupoOcupacional> GrupoOcupacional { get; set; }
@@ -150,6 +152,7 @@ namespace bd.swth.datos
         public virtual DbSet<PersonaEstudio> PersonaEstudio { get; set; }
         public virtual DbSet<PersonaSustituto> PersonaSustituto { get; set; }
         public virtual DbSet<PersonaPaquetesInformaticos> PersonaPaquetesInformaticos { get; set; }
+        public virtual DbSet<PieFirma> PieFirma { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.PlanGestionCambio> PlanGestionCambio { get; set; }
         public virtual DbSet<PlanificacionHE> PlanificacionHE { get; set; }
         public virtual DbSet<Pregunta> Pregunta { get; set; }
