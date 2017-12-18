@@ -43,6 +43,6 @@
     <ProjectReference Include="..\bd.swth.entidades\bd.swth.entidades.csproj" />
     <ProjectReference Include="..\bd.swth.servicios\bd.swth.servicios.csproj" />
   </ItemGroup>
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="e" /></VisualStudio></ProjectExtensions>
 
 </Project>

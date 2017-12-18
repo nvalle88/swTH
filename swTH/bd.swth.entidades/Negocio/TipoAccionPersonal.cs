@@ -25,6 +25,8 @@ namespace bd.swth.entidades.Negocio
 
         public bool ProcesoNomina { get; set; }
 
+        public bool EsResponsableTH { get; set; }
+
         public string Matriz { get; set; }
 
         public string Descripcion { get; set; }
