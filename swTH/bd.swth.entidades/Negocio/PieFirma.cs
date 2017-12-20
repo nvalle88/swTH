@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace bd.swth.entidades.Negocio
 {
     public class PieFirma
     {
-
+        [Key]
         public int IdPieFirma { get; set; }
 
         public int IdTipoAccionPersonal { get; set; }
