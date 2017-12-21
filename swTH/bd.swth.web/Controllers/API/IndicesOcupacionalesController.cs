@@ -97,6 +97,8 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        
+
         // GET: api/IndicesOcupacionales
         [HttpGet]
         [Route("ListarActividadesEsenciales")]

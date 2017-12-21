@@ -126,6 +126,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = false,
                     Message = Mensaje.Error,
+
                 };
             }
         }
@@ -145,23 +146,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(tipoAccionPersonal);
-                var TipoAccionPersonalActualizar = (TipoAccionPersonal)existe.Resultado;
-                if (existe.IsSuccess)
-                {
-                    if (TipoAccionPersonalActualizar.IdTipoAccionPersonal == tipoAccionPersonal.IdTipoAccionPersonal)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
-                    };
-                }
+               
                 var TipoAccionPersonal = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
                 
                 TipoAccionPersonal.Nombre = tipoAccionPersonal.Nombre;
@@ -172,6 +157,7 @@ namespace bd.swth.web.Controllers.API
                 TipoAccionPersonal.DiasHabiles = tipoAccionPersonal.DiasHabiles;
                 TipoAccionPersonal.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
                 TipoAccionPersonal.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
+                TipoAccionPersonal.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
                 TipoAccionPersonal.Matriz = tipoAccionPersonal.Matriz;
                 TipoAccionPersonal.Descripcion = TipoAccionPersonal.Descripcion;
                 TipoAccionPersonal.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
@@ -184,6 +170,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
+                    Resultado = TipoAccionPersonal,
                 };
 
             }
@@ -233,7 +220,8 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = Mensaje.Satisfactorio,
+                        Resultado = TipoAccionPersonal
                     };
                 }
 

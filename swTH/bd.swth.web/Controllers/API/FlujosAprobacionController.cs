@@ -35,7 +35,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.FlujoAprobacion.Include(x => x.TipoAccionPersonal).Include(x => x.Empleado).OrderBy(x => x.IdFlujoAprobacion).ToListAsync();
+                return await db.FlujoAprobacion.Include(x => x.TipoAccionPersonal).Include(x => x.Empleado.Persona).OrderBy(x => x.IdFlujoAprobacion).ToListAsync();
             }
             catch (Exception ex)
             {

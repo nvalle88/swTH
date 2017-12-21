@@ -69,6 +69,8 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        
+
         // GET: api/Empleados/5
         [HttpGet("{id}")]
         public async Task<Response> GetEmpleado([FromRoute] int id)
