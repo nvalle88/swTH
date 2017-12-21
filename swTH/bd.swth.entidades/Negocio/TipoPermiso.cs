@@ -6,16 +6,14 @@ namespace bd.swth.entidades.Negocio
      
     public partial class TipoPermiso
     {
-        [Key]
-        public int IdTipoPermiso { get; set; }
+        public TipoPermiso()
+        {
+            SolicitudPermiso = new HashSet<SolicitudPermiso>();
+        }
 
-        [Required(ErrorMessage = "Debe introducir {0}")]
-        [Display(Name = "tipo de permiso:")]
-        [StringLength(20, MinimumLength = 2, ErrorMessage = "El {0} no puede tener más de {1} y menos de {2}")]
+        public int IdTipoPermiso { get; set; }
         public string Nombre { get; set; }
 
-        //Propiedades Virtuales Referencias a otras clases
-
-        public virtual ICollection<Permiso> Permiso { get; set; }
+        public virtual ICollection<SolicitudPermiso> SolicitudPermiso { get; set; }
     }
 }

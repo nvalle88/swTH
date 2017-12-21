@@ -144,7 +144,6 @@ namespace bd.swth.datos
         public virtual DbSet<Parentesco> Parentesco { get; set; }
         public virtual DbSet<Parroquia> Parroquia { get; set; }
         public virtual DbSet<PartidasFase> PartidasFase { get; set; }
-        public virtual DbSet<Permiso> Permiso { get; set; }
         public virtual DbSet<Persona> Persona { get; set; }
         public virtual DbSet<PersonaCapacitacion> PersonaCapacitacion { get; set; }
         public virtual DbSet<PersonaDiscapacidad> PersonaDiscapacidad { get; set; }
@@ -2702,19 +2701,7 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<Permiso>(entity =>
-            {
-                entity.HasKey(e => e.IdPermiso)
-                    .HasName("PK_Permiso");
-
-                entity.HasIndex(e => e.IdTipoPermiso)
-                    .HasName("IX_Permiso_IdTipoPermiso");
-
-                entity.HasOne(d => d.TipoPermiso)
-                    .WithMany(p => p.Permiso)
-                    .HasForeignKey(d => d.IdTipoPermiso)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
+           
 
             modelBuilder.Entity<Persona>(entity =>
             {
@@ -3525,33 +3512,26 @@ namespace bd.swth.datos
             modelBuilder.Entity<SolicitudPermiso>(entity =>
             {
                 entity.HasKey(e => e.IdSolicitudPermiso)
-                    .HasName("PK_SolicitudPermiso");
+                     .HasName("PK76");
 
                 entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("IX_SolicitudPermiso_IdEmpleado");
+                    .HasName("Ref15113");
 
-                entity.HasIndex(e => e.IdEstado)
-                    .HasName("IX_SolicitudPermiso_IdEstado");
+                entity.Property(e => e.FechaAprobado).HasColumnType("datetime");
 
-                entity.HasIndex(e => e.IdPermiso)
-                    .HasName("IX_SolicitudPermiso_IdPermiso");
+                entity.Property(e => e.FechaDesde).HasColumnType("datetime");
 
-                entity.Property(e => e.Motivo)
-                    .IsRequired()
-                    .HasMaxLength(400);
+                entity.Property(e => e.FechaHasta).HasColumnType("datetime");
 
-                entity.HasOne(d => d.Empleado)
+                entity.Property(e => e.FechaSolicitud).HasColumnType("date");
+
+                entity.Property(e => e.Motivo).HasColumnType("text");
+
+                entity.HasOne(d => d.TipoPermiso)
                     .WithMany(p => p.SolicitudPermiso)
-                    .HasForeignKey(d => d.IdEmpleado)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasForeignKey(d => d.IdTipoPermiso)
+                    .HasConstraintName("FK_SolicitudPermiso_TipoPermiso");
 
-                entity.HasOne(d => d.Estado)
-                    .WithMany(p => p.SolicitudPermiso)
-                    .HasForeignKey(d => d.IdEstado);
-
-                entity.HasOne(d => d.Permiso)
-                    .WithMany(p => p.SolicitudPermiso)
-                    .HasForeignKey(d => d.IdPermiso);
             });
 
             modelBuilder.Entity<SolicitudPlanificacionVacaciones>(entity =>
@@ -3755,11 +3735,11 @@ namespace bd.swth.datos
             modelBuilder.Entity<TipoPermiso>(entity =>
             {
                 entity.HasKey(e => e.IdTipoPermiso)
-                    .HasName("PK_TipoPermiso");
+                   .HasName("PK133");
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
-                    .HasMaxLength(20);
+                    .HasColumnType("varchar(50)");
             });
 
             modelBuilder.Entity<TipoProvision>(entity =>
