@@ -182,8 +182,8 @@ namespace bd.swth.datos
         public virtual DbSet<SolicitudLiquidacionHaberes> SolicitudLiquidacionHaberes { get; set; }
         public virtual DbSet<SolicitudModificacionFichaEmpleado> SolicitudModificacionFichaEmpleado { get; set; }
         public virtual DbSet<SolicitudPermiso> SolicitudPermiso { get; set; }
-        public virtual DbSet<SolicitudPlanificacionVacaciones> SolicitudPlanificacionVacaciones { get; set; }
-        public virtual DbSet<SolicitudVacaciones> SolicitudVacaciones { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.SolicitudPlanificacionVacaciones> SolicitudPlanificacionVacaciones { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.SolicitudVacaciones> SolicitudVacaciones { get; set; }
         public virtual DbSet<SolicitudViatico> SolicitudViatico { get; set; }
         public virtual DbSet<Sucursal> Sucursal { get; set; }
         public virtual DbSet<TipoAccionPersonal> TipoAccionPersonal { get; set; }
@@ -3559,17 +3559,11 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdEmpleado)
                     .HasName("IX_SolicitudPlanificacionVacaciones_IdEmpleado");
 
-                entity.HasIndex(e => e.IdEstado)
-                    .HasName("IX_SolicitudPlanificacionVacaciones_IdEstado");
-
                 entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.SolicitudPlanificacionVacaciones)
                     .HasForeignKey(d => d.IdEmpleado)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(d => d.Estado)
-                    .WithMany(p => p.SolicitudPlanificacionVacaciones)
-                    .HasForeignKey(d => d.IdEstado);
             });
 
 
@@ -3581,17 +3575,14 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdEmpleado)
                     .HasName("IX_SolicitudVacaciones_IdEmpleado");
 
-                entity.HasIndex(e => e.IdEstado)
-                    .HasName("IX_SolicitudVacaciones_IdEstado");
 
                 entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.SolicitudVacaciones)
                     .HasForeignKey(d => d.IdEmpleado)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(d => d.Estado)
-                    .WithMany(p => p.SolicitudVacaciones)
-                    .HasForeignKey(d => d.IdEstado);
+
+
             });
 
             modelBuilder.Entity<SolicitudViatico>(entity =>

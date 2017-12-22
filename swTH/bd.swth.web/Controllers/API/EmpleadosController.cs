@@ -13,9 +13,11 @@ using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.ObjectTransfer;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
+
     [Produces("application/json")]
     [Route("api/Empleados")]
     public class EmpleadosController : Controller
@@ -124,6 +126,288 @@ namespace bd.swth.web.Controllers.API
                     IsSuccess = false,
                     Message = Mensaje.Error,
                 };
+            }
+        }
+
+        [HttpPost]
+        [Route("ObtenerEmpleadoLogueado")]
+        public async Task<Empleado> ObtenerEmpleadoLogueado([FromBody]Empleado empleado)
+        {
+            //Persona persona = new Persona();
+            try
+            {
+                
+                var Empleado = await db.Empleado
+                                   .Where(e => e.NombreUsuario == empleado.NombreUsuario).FirstOrDefaultAsync();
+                var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado };
+
+
+                return empl;
+            }
+            catch (Exception ex)
+            {
+                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Empleado();
+            }
+        }
+
+        
+
+        [HttpPost]
+        [Route("ListarEmpleadosdeJefe")]
+        public async Task<List<EmpleadoSolicitudVacacionesViewModel>> ListarEmpleadosdeJefe([FromBody]Empleado empleado)
+        {
+            try
+            {
+                var EmpleadoJefe = await db.Empleado
+                                   .Where(e => e.NombreUsuario == empleado.NombreUsuario && e.EsJefe == true).FirstOrDefaultAsync();
+
+                if (EmpleadoJefe != null)
+                {
+
+                    var listaSubordinados = await db.Empleado.Where(x => x.IdDependencia == EmpleadoJefe.IdDependencia && x.EsJefe == false).Include(x => x.Persona).Include(x => x.SolicitudPlanificacionVacaciones).ToListAsync();
+
+                    var listaEmpleado = new List<EmpleadoSolicitudVacacionesViewModel>();
+                    foreach (var item in listaSubordinados)
+                    {
+                        var haSolicitado = false;
+                        var aprobado = true;
+
+                        if (item.SolicitudPlanificacionVacaciones.Count==0)
+                        {
+                            haSolicitado = false;
+                            aprobado = false;
+                        }
+                        else
+                        {
+                            foreach (var item1 in item.SolicitudPlanificacionVacaciones)
+                            {
+                                if (item1.Estado == 0)
+                                {
+                                    haSolicitado = true;
+                                    aprobado = false;
+                                    break;
+                                }
+                            }
+                        }
+
+
+
+
+                        var empleadoSolicitud = new EmpleadoSolicitudVacacionesViewModel
+                        {
+                            NombreApellido = item.Persona.Nombres +" " + item.Persona.Apellidos,
+                            Identificacion = item.Persona.Identificacion,
+                            Aprobado = aprobado,
+                            IdEmpleado = item.IdEmpleado,
+                            HaSolicitadoVacaciones = haSolicitado,
+                        };
+
+                        listaEmpleado.Add(empleadoSolicitud);
+                    }
+
+                    return listaEmpleado;
+                }
+
+                return new List<EmpleadoSolicitudVacacionesViewModel>();
+                //var ListadoEmpleados = await (from p in db.Persona
+                //                              join e in db.Empleado
+                //                             on p.IdPersona equals e.IdPersona
+                //                              join d in db.Dependencia
+                //                              on e.IdDependencia equals d.IdDependencia
+                //                              where e.IdDependencia == EmpleadoJefe.IdDependencia && e.EsJefe == false 
+                //                             //group s by s.AdstDescripcion into pg
+                //                             select new Persona
+                //                             {
+                //                                 Nombres = p.Nombres,
+                //                                 Apellidos = p.Apellidos,
+                //                                 Identificacion = p.Identificacion,
+                //                                 Empleado=p.Empleado,
+                //                             }).ToListAsync();
+
+                //    var listaSalida = new List<Persona>();
+                //    foreach (var item3 in ListadoEmpleados)
+                //    {
+                //        listaSalida.Add(new Persona
+                //        {
+                //            Nombres = item3.Nombres,
+                //            Apellidos = item3.Apellidos,
+                //            Identificacion = item3.Identificacion
+                //        });
+                //    }
+
+                    // var lista = new List<EmpleadoSolicitudVacacionesViewModel>();
+
+
+                    //foreach (var item in listaSalida)
+                    //{
+                    //    var a = new EmpleadoSolicitudVacacionesViewModel { Apellidos = item.Apellidos, Nombres = item.Nombres, Identificacion = item.Identificacion, Empleado = item.Empleado,Aprobado=true };
+                    //    //var solicitudes =await db.SolicitudPlanificacionVacaciones.Where(x => x.IdEmpleado == item.Empleado.FirstOrDefault().IdEmpleado).ToListAsync();
+                    //    var solicitudes = new List<SolicitudPlanificacionVacaciones>();
+                    //    solicitudes.Add( (from s in db.SolicitudPlanificacionVacaciones
+                    //                           join e in db.Empleado
+                    //                          on s.IdEmpleado equals e.IdEmpleado
+                    //                           join p in db.Persona
+                    //                          on e.IdPersona equals p.IdPersona
+                    //                           where p.IdPersona == item.IdPersona
+                    //                           //group s by s.AdstDescripcion into pg
+                    //                           select new SolicitudPlanificacionVacaciones
+                    //                           {
+                    //                               IdSolicitudPlanificacionVacaciones = s.IdSolicitudPlanificacionVacaciones,
+                    //                               IdEmpleado = s.IdEmpleado,
+                    //                               FechaDesde = s.FechaDesde,
+                    //                               FechaHasta = s.FechaDesde,
+                    //                               Aprobado = s.Aprobado,
+                    //                               Observaciones = s.Observaciones
+                    //                           }));
+
+                    //    foreach (var item1 in solicitudes)
+                    //    {
+                    //        if (item1.Aprobado==false)
+                    //        {
+                    //            a.Aprobado = false; 
+
+                    //        }
+                    //    }
+
+                        
+                    //    lista.Add(a);
+
+                    //}
+
+                //var listaSalida = new List<Persona>();
+                //foreach (var item in ListadoEmpleados)
+                //{
+                //    listaSalida.Add(new Persona
+                //    {
+                //        Nombres = item.Nombres,
+                //        Apellidos = item.Apellidos,
+                //        Identificacion = item.Identificacion
+                //    });
+                // var ListadoSolicitudesVacacionesEmpleados = new List<SolicitudPlanificacionVacaciones>();
+                // ListadoSolicitudesVacacionesEmpleados.Add( await (from s in db.SolicitudPlanificacionVacaciones
+                //                                                           join e in db.Empleado
+                //                                                          on s.IdEmpleado equals e.IdEmpleado
+                //                                                           join p in db.Persona
+                //                                                          on e.IdPersona equals p.IdPersona
+                //                                                           where p.IdPersona == item.IdPersona
+                //                                                           //group s by s.AdstDescripcion into pg
+                //                                                           select new <List<SolicitudPlanificacionVacaciones>>
+                //                                                           {
+                //                                                               IdSolicitudPlanificacionVacaciones = s.IdSolicitudPlanificacionVacaciones,
+                //                                                               IdEmpleado = s.IdEmpleado,
+                //                                                               FechaDesde = s.FechaDesde,
+                //                                                               FechaHasta = s.FechaDesde,
+                //                                                               Aprobado = s.Aprobado,
+                //                                                               Observaciones = s.Observaciones
+                //                                                           }).ToListAsync();
+                //    }   
+
+                
+
+
+                //    return listaSalida;
+                //}
+
+                //return null;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<EmpleadoSolicitudVacacionesViewModel>();
+            }
+        }
+
+        [HttpPost]
+        [Route("ListarEmpleadosdeJefeconSolucitudesVacaciones")]
+        public async Task<List<EmpleadoSolicitudVacacionesViewModel>> ListarEmpleadosdeJefeconSolucitudesVacaciones([FromBody]Empleado empleado)
+        {
+            try
+            {
+                var EmpleadoJefe = await db.Empleado
+                                   .Where(e => e.NombreUsuario == empleado.NombreUsuario && e.EsJefe == true).FirstOrDefaultAsync();
+
+                if (EmpleadoJefe != null)
+                {
+
+                    var listaSubordinados = await db.Empleado.Where(x => x.IdDependencia == EmpleadoJefe.IdDependencia && x.EsJefe == false).Include(x => x.Persona).Include(x => x.SolicitudVacaciones).ToListAsync();
+
+                    var listaEmpleado = new List<EmpleadoSolicitudVacacionesViewModel>();
+                    foreach (var item in listaSubordinados)
+                    {
+                        var haSolicitado = false;
+                        var aprobado = true;
+
+                        if (item.SolicitudVacaciones.Count == 0)
+                        {
+                            haSolicitado = false;
+                            aprobado = false;
+                        }
+                        else
+                        {
+                            foreach (var item1 in item.SolicitudVacaciones)
+                            {
+                             
+                                if (item1.Estado == 0)
+                                {
+                                    haSolicitado = true;
+                                    aprobado = false;
+                                    break;
+                                }
+                            }
+                        }
+
+
+
+
+                        var empleadoSolicitud = new EmpleadoSolicitudVacacionesViewModel
+                        {
+                            NombreApellido = item.Persona.Nombres + " " + item.Persona.Apellidos,
+                            Identificacion = item.Persona.Identificacion,
+                            Aprobado = aprobado,
+                            IdEmpleado = item.IdEmpleado,
+                            HaSolicitadoVacaciones = haSolicitado,
+                        };
+
+                        listaEmpleado.Add(empleadoSolicitud);
+                    }
+
+                    return listaEmpleado;
+                }
+
+                return new List<EmpleadoSolicitudVacacionesViewModel>();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<EmpleadoSolicitudVacacionesViewModel>();
             }
         }
 

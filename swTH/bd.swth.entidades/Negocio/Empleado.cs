@@ -47,6 +47,9 @@ namespace bd.swth.entidades.Negocio
         [Range(0, 31, ErrorMessage = "El {0} debe estar entre {1} y {2} ")]
         public int DiasImposiciones { get; set; }
 
+        public string NombreUsuario { get; set; }
+        public bool EsJefe { get; set; }
+
         //Propiedades Virtuales Referencias a otras clases
 
         [Display(Name = "Persona:")]

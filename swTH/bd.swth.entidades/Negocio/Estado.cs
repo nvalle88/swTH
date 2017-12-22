@@ -22,7 +22,6 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<SolicitudPermiso> SolicitudPermiso { get; set; }
 
-        public virtual ICollection<SolicitudVacaciones> SolicitudVacaciones { get; set; }
 
         public virtual ICollection<SolicitudViatico> SolicitudViatico { get; set; }
 
@@ -35,8 +34,6 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<SolicitudCertificadoPersonal> SolicitudCertificadoPersonal { get; set; }
 
         
-
-        public virtual ICollection<SolicitudPlanificacionVacaciones> SolicitudPlanificacionVacaciones { get; set; }
 
         
     }
