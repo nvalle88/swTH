@@ -31,8 +31,9 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.AvanceGestionCambio> AvanceGestionCambio { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSO> BrigadaSSO { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSORol> BrigadaSsorol { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Calificacion> Calificacion { get; set; }
         public virtual DbSet<CandidatoConcurso> CandidatoConcurso { get; set; }
-        public virtual DbSet<Candidato> Canditato { get; set; }
+        public virtual DbSet<Candidato> Candidato { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Capacitacion> Capacitacion { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionAreaConocimiento> CapacitacionAreaConocimiento { get; set; }
         public virtual DbSet<CapacitacionEncuesta> CapacitacionEncuesta { get; set; }
@@ -161,6 +162,7 @@ namespace bd.swth.datos
         public virtual DbSet<Provincia> Provincia { get; set; }
         public virtual DbSet<Provisiones> Provisiones { get; set; }
         public virtual DbSet<RealizaExamenInduccion> RealizaExamenInduccion { get; set; }
+        public virtual DbSet<RecepcionActivoFijoDetalle> RecepcionActivoFijoDetalle { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.RegimenLaboral> RegimenLaboral { get; set; }
         public virtual DbSet<RegistroEntradaSalida> RegistroEntradaSalida { get; set; }
         public virtual DbSet<RelacionLaboral> RelacionLaboral { get; set; }
@@ -190,6 +192,7 @@ namespace bd.swth.datos
         public virtual DbSet<Sucursal> Sucursal { get; set; }
         public virtual DbSet<TipoAccionPersonal> TipoAccionPersonal { get; set; }
         public virtual DbSet<TipoCertificado> TipoCertificado { get; set; }
+        public virtual DbSet<TipoCalificacion> TipoCalificacion { get; set; }
         public virtual DbSet<TipoConcurso> TipoConcurso { get; set; }
         public virtual DbSet<TipoDiscapacidad> TipoDiscapacidad { get; set; }
         public virtual DbSet<TipoEnfermedad> TipoEnfermedad { get; set; }
@@ -1347,10 +1350,14 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdEstado)
                     .HasName("PK_Estado");
 
+                entity.HasIndex(e => new { e.IdEstado, e.IdSolicitudCertificadoPersonal })
+                    .HasName("Ref103220");
+
                 entity.Property(e => e.Nombre)
                     .IsRequired()
-                    .HasMaxLength(20);
+                    .HasColumnType("varchar(50)");
             });
+
 
             modelBuilder.Entity<EstadoCivil>(entity =>
             {
@@ -3110,6 +3117,29 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            modelBuilder.Entity<RecepcionActivoFijoDetalle>(entity =>
+            {
+                entity.HasKey(e => e.IdRecepcionActivoFijoDetalle)
+                    .HasName("PK_RecepcionActivoFijoDetalle");
+
+                entity.HasIndex(e => e.IdActivoFijo)
+                    .HasName("IX_RecepcionActivoFijoDetalle_IdActivoFijo");
+
+                entity.HasIndex(e => e.IdEstado)
+                    .HasName("IX_RecepcionActivoFijoDetalle_IdEstado");
+
+                entity.HasIndex(e => e.IdRecepcionActivoFijo)
+                    .HasName("IX_RecepcionActivoFijoDetalle_IdRecepcionActivoFijo");
+
+                entity.Property(e => e.NumeroPoliza)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.HasOne(d => d.IdEstadoNavigation)
+                    .WithMany(p => p.RecepcionActivoFijoDetalle)
+                    .HasForeignKey(d => d.IdEstado)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             modelBuilder.Entity<RegimenLaboral>(entity =>
             {
@@ -3409,40 +3439,44 @@ namespace bd.swth.datos
 
             modelBuilder.Entity<SolicitudCertificadoPersonal>(entity =>
             {
-                entity.HasKey(e => e.IdSolicitudCertificadoPersonal)
-                    .HasName("PK_SolicitudCertificadoPersonal");
-
-                entity.HasIndex(e => e.IdEmpleadoSolicitante)
-                    .HasName("IX_SolicitudCertificadoPersonal_EmpleadoSolicitanteIdEmpleadoSolicitante");
+                entity.HasKey(e => new { e.IdSolicitudCertificadoPersonal, e.IdEstado })
+                    .HasName("PK103");
 
                 entity.HasIndex(e => e.IdEmpleadoDirigidoA)
-                   .HasName("IX_SolicitudCertificadoPersonal_EmpleadoSolicitanteIdEmpleadoDirigidoA");
+                    .HasName("Ref15151");
+
+                entity.HasIndex(e => e.IdEmpleadoSolicitante)
+                    .HasName("Ref15150");
 
                 entity.HasIndex(e => e.IdEstado)
-                    .HasName("IX_SolicitudCertificadoPersonal_IdEstado");
+                    .HasName("Ref73223");
 
                 entity.HasIndex(e => e.IdTipoCertificado)
-                    .HasName("IX_SolicitudCertificadoPersonal_IdTipoCertificado");
+                    .HasName("Ref104149");
 
-                entity.Property(e => e.Observaciones).HasMaxLength(20);
+                entity.Property(e => e.IdSolicitudCertificadoPersonal).ValueGeneratedOnAdd();
 
-                entity.HasOne(d => d.EmpleadoSolicitante)
+                entity.Property(e => e.FechaSolicitud).HasColumnType("date");
+
+                entity.Property(e => e.Observaciones).HasColumnType("text");
+
+                entity.HasOne(d => d.IdEmpleadoDirigidoANavigation)
                     .WithMany(p => p.SolicitudCertificadoPersonal)
-                    .HasForeignKey(d => d.IdEmpleadoSolicitante);
+                    .HasForeignKey(d => d.IdEmpleadoDirigidoA)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefEmpleado151");
 
-                entity.HasOne(d => d.EmpleadoDirigidoA)
-                   .WithMany(p => p.SolicitudCertificadoPersonal1)
-                   .HasForeignKey(d => d.IdEmpleadoDirigidoA);
+                entity.HasOne(d => d.IdEmpleadoSolicitanteNavigation)
+                    .WithMany(p => p.SolicitudCertificadoPersonal1)
+                    .HasForeignKey(d => d.IdEmpleadoSolicitante)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefEmpleado150");
 
-                entity.HasOne(d => d.Estado)
-                    .WithMany(p => p.SolicitudCertificadoPersonal)
-                    .HasForeignKey(d => d.IdEstado)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(d => d.TipoCertificado)
+                entity.HasOne(d => d.IdTipoCertificadoNavigation)
                     .WithMany(p => p.SolicitudCertificadoPersonal)
                     .HasForeignKey(d => d.IdTipoCertificado)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefTipoCertificado149");
             });
 
             modelBuilder.Entity<SolicitudHorasExtras>(entity =>
@@ -3512,10 +3546,12 @@ namespace bd.swth.datos
             modelBuilder.Entity<SolicitudPermiso>(entity =>
             {
                 entity.HasKey(e => e.IdSolicitudPermiso)
-                     .HasName("PK76");
+                    .HasName("PK76");
 
                 entity.HasIndex(e => e.IdEmpleado)
                     .HasName("Ref15113");
+
+                entity.Property(e => e.Estado).HasDefaultValueSql("0");
 
                 entity.Property(e => e.FechaAprobado).HasColumnType("datetime");
 
@@ -3527,54 +3563,59 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.Motivo).HasColumnType("text");
 
+                entity.HasOne(d => d.Empleado)
+                    .WithMany(p => p.SolicitudPermiso)
+                    .HasForeignKey(d => d.IdEmpleado)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_SolicitudPermiso_Empleado");
+
                 entity.HasOne(d => d.TipoPermiso)
                     .WithMany(p => p.SolicitudPermiso)
                     .HasForeignKey(d => d.IdTipoPermiso)
                     .HasConstraintName("FK_SolicitudPermiso_TipoPermiso");
-
             });
 
             modelBuilder.Entity<SolicitudPlanificacionVacaciones>(entity =>
             {
                 entity.HasKey(e => e.IdSolicitudPlanificacionVacaciones)
-                    .HasName("PK_SolicitudPlanificacionVacaciones");
+                    .HasName("PK72");
 
                 entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("IX_SolicitudPlanificacionVacaciones_IdEmpleado");
+                    .HasName("Ref15110");
 
-                entity.HasIndex(e => e.IdEstado)
-                    .HasName("IX_SolicitudPlanificacionVacaciones_IdEstado");
+                entity.Property(e => e.FechaDesde).HasColumnType("date");
+
+                entity.Property(e => e.FechaHasta).HasColumnType("date");
+
+                entity.Property(e => e.FechaSolicitud).HasColumnType("date");
+
+                entity.Property(e => e.Observaciones).HasMaxLength(150);
 
                 entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.SolicitudPlanificacionVacaciones)
                     .HasForeignKey(d => d.IdEmpleado)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(d => d.Estado)
-                    .WithMany(p => p.SolicitudPlanificacionVacaciones)
-                    .HasForeignKey(d => d.IdEstado);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefEmpleado110");
             });
 
 
             modelBuilder.Entity<SolicitudVacaciones>(entity =>
             {
                 entity.HasKey(e => e.IdSolicitudVacaciones)
-                    .HasName("PK_SolicitudVacaciones");
+                    .HasName("PK75");
 
                 entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("IX_SolicitudVacaciones_IdEmpleado");
+                    .HasName("Ref15111");
 
-                entity.HasIndex(e => e.IdEstado)
-                    .HasName("IX_SolicitudVacaciones_IdEstado");
+                entity.Property(e => e.FechaDesde).HasColumnType("date");
 
-                entity.HasOne(d => d.Empleado)
-                    .WithMany(p => p.SolicitudVacaciones)
-                    .HasForeignKey(d => d.IdEmpleado)
-                    .OnDelete(DeleteBehavior.Restrict);
+                entity.Property(e => e.FechaHasta).HasColumnType("date");
 
-                entity.HasOne(d => d.Estado)
-                    .WithMany(p => p.SolicitudVacaciones)
-                    .HasForeignKey(d => d.IdEstado);
+                entity.Property(e => e.FechaRespuesta).HasColumnType("date");
+
+                entity.Property(e => e.FechaSolicitud).HasColumnType("date");
+
+                entity.Property(e => e.Observaciones).HasMaxLength(150);
             });
 
             modelBuilder.Entity<SolicitudViatico>(entity =>

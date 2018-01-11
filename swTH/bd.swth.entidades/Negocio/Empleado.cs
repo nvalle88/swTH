@@ -13,6 +13,8 @@ namespace bd.swth.entidades.Negocio
 
         public DateTime FechaIngresoSectorPublico { get; set; }
 
+        public bool EsJefe { get; set; }
+
         public bool TrabajoSuperintendenciaBanco { get; set; }
 
         public bool FondosReservas { get; set; }
@@ -41,9 +43,9 @@ namespace bd.swth.entidades.Negocio
 
         public virtual Dependencia Dependencia { get; set; }
 
+        public string NombreUsuario { get; set; }
 
-
-
+        public bool Activo { get; set; }
 
         public virtual ICollection<RolPagos> RolPagos { get; set; }
 
