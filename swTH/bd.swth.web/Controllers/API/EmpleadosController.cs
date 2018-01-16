@@ -13,6 +13,7 @@ using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.ObjectTransfer;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -239,8 +240,8 @@ namespace bd.swth.web.Controllers.API
         }
 
         [HttpPost]
-        [Route("ObtenerTrayectoriaLaboralJSON")]
-        public async Task<EmpleadoViewModel> ObtenerTrayectoriaLaboralJSON([FromBody] int idEmpleado)
+        [Route("ObtenerTrayectoriaLaboralEmpleado")]
+        public async Task<EmpleadoViewModel> ObtenerTrayectoriaLaboralEmpleado([FromBody] int idEmpleado)
         {
             try
             {
@@ -280,8 +281,8 @@ namespace bd.swth.web.Controllers.API
         }
 
         [HttpPost]
-        [Route("ObtenerPersonaEstudioJSON")]
-        public async Task<EmpleadoViewModel> ObtenerPersonaEstudioJSON([FromBody] int idEmpleado)
+        [Route("ObtenerPersonaEstudioEmpleado")]
+        public async Task <List<PersonaEstudioViewModel>> ObtenerPersonaEstudioEmpleado([FromBody] int idEmpleado)
         {
             try
             {
@@ -301,17 +302,28 @@ namespace bd.swth.web.Controllers.API
 
                 List<PersonaEstudio> personaEstudio = await db.PersonaEstudio
                                 .Where(x => x.IdPersona == oEmpleado.IdPersona)
+                                .Include(x=>x.Titulo)
+                                .ThenInclude(x=>x.AreaConocimiento)
                                 .ToListAsync();
 
+                List<PersonaEstudioViewModel> listaPersonaEstudio = new List<PersonaEstudioViewModel>();
 
-                EmpleadoViewModel item = new EmpleadoViewModel
+             
+                foreach (PersonaEstudio item in personaEstudio)
                 {
-                    Persona = persona,
-                    Empleado = oEmpleado,
-                    PersonaEstudio = personaEstudio
-                };
+                   
+                    PersonaEstudioViewModel objetoPersonaEstudio = new PersonaEstudioViewModel
+                    {
+                        estudio = item.Titulo.Estudio.Nombre,
+                        areaConocimiento = item.Titulo.AreaConocimiento.Descripcion,
+                        titulo = item.Titulo.Nombre,
+                        fechaGraduado= String.Format(item.FechaGraduado.ToString(), "dd/mm/aaaa")
+                    };
 
-                return item;
+                    listaPersonaEstudio.Add(objetoPersonaEstudio);
+                }
+
+                return listaPersonaEstudio;
 
             }
             catch (Exception ex)
@@ -322,8 +334,8 @@ namespace bd.swth.web.Controllers.API
 
 
         [HttpPost]
-        [Route("ObtenerEmpleadoFamiliarJSON")]
-        public async Task<EmpleadoViewModel> ObtenerEmpleadoFamiliarJSON([FromBody] int idEmpleado)
+        [Route("ObtenerEmpleadoFamiliarEmpleado")]
+        public async Task<EmpleadoViewModel> ObtenerEmpleadoFamiliarEmpleado([FromBody] int idEmpleado)
         {
             try
             {
@@ -364,8 +376,8 @@ namespace bd.swth.web.Controllers.API
 
 
         [HttpPost]
-        [Route("ObtenerPersonaDiscapacidadJSON")]
-        public async Task<EmpleadoViewModel> ObtenerPersonaDiscapacidadJSON([FromBody] int idEmpleado)
+        [Route("ObtenerPersonaDiscapacidadEmpleado")]
+        public async Task<EmpleadoViewModel> ObtenerPersonaDiscapacidadEmpleado([FromBody] int idEmpleado)
         {
             try
             {
@@ -405,8 +417,8 @@ namespace bd.swth.web.Controllers.API
 
 
         [HttpPost]
-        [Route("ObtenerPersonaEnfermedadJSON")]
-        public async Task<EmpleadoViewModel> ObtenerPersonaEnfermedadJSON([FromBody] int idEmpleado)
+        [Route("ObtenerPersonaEnfermedadEmpleado")]
+        public async Task<EmpleadoViewModel> ObtenerPersonaEnfermedadEmpleado([FromBody] int idEmpleado)
         {
             try
             {
@@ -444,8 +456,8 @@ namespace bd.swth.web.Controllers.API
         }
 
         [HttpPost]
-        [Route("ObtenerDiscapacidadSustitutoJSON")]
-        public async Task<EmpleadoViewModel> ObtenerDiscapacidadSustitutoJSON([FromBody] int idEmpleado)
+        [Route("ObtenerDiscapacidadSustitutoEmpleado")]
+        public async Task<EmpleadoViewModel> ObtenerDiscapacidadSustitutoEmpleado([FromBody] int idEmpleado)
         {
             try
             {
@@ -487,8 +499,8 @@ namespace bd.swth.web.Controllers.API
         }
 
         [HttpPost]
-        [Route("ObtenerEnfermedadSustitutoJSON")]
-        public async Task<EmpleadoViewModel> ObtenerEnfermedadSustitutoJSON([FromBody] int idEmpleado)
+        [Route("ObtenerEnfermedadSustitutoEmpleado")]
+        public async Task<EmpleadoViewModel> ObtenerEnfermedadSustitutoEmpleado([FromBody] int idEmpleado)
         {
             try
             {
