@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using System;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
@@ -15,24 +16,26 @@ using bd.log.guardar.Enumeradores;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/AccionesPersonal")]
-    public class AccionesPersonalController : Controller
+    [Route("api/ItinerarioViatico")]
+    public class ItinerarioViaticoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public AccionesPersonalController(SwTHDbContext db)
+        public ItinerarioViaticoController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/BasesDatos
-        [HttpGet]
-        [Route("ListarAccionesPersonal")]
-        public async Task<List<AccionPersonal>> GetAccionPersonal()
+        [HttpPost]
+        [Route("ListarItinerariosViaticos")]
+        public async Task<List<ItinerarioViatico>> ListarItinerariosViaticos([FromBody]ItinerarioViatico itinerarioViatico)
         {
+            //Persona persona = new Persona();
             try
             {
-                return await db.AccionPersonal.OrderBy(x => x.IdTipoAccionPersonal).ToListAsync();
+
+                return await db.ItinerarioViatico.Where(x=>x.IdSolicitudViatico == itinerarioViatico.IdSolicitudViatico).Include(x => x.TipoTransporte).OrderBy(x => x.FechaDesde).ToListAsync();
+
             }
             catch (Exception ex)
             {
@@ -46,13 +49,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<AccionPersonal>();
+                return new List<ItinerarioViatico>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetAccionPersonal([FromRoute] int id)
+        public async Task<Response> GetItinerarioViatico([FromRoute] int id)
         {
             try
             {
@@ -65,9 +68,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var AccionPersonal = await db.AccionPersonal.SingleOrDefaultAsync(m => m.IdEmpleado == id);
+                var ItinerarioViatico = await db.ItinerarioViatico.SingleOrDefaultAsync(m => m.IdItinerarioViatico == id);
 
-                if (AccionPersonal == null)
+                if (ItinerarioViatico == null)
                 {
                     return new Response
                     {
@@ -80,7 +83,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = AccionPersonal,
+                    Resultado = ItinerarioViatico,
                 };
             }
             catch (Exception ex)
@@ -105,7 +108,7 @@ namespace bd.swth.web.Controllers.API
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutAccionPersonal([FromRoute] int id, [FromBody] AccionPersonal accionPersonal)
+        public async Task<Response> PutItinerarioViatico([FromRoute] int id, [FromBody] ItinerarioViatico itinerarioViatico)
         {
             try
             {
@@ -118,32 +121,31 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                //var existe = Existe(accionPersonal);
-                //if (existe.IsSuccess)
-                //{
-                //    return new Response
-                //    {
-                //        IsSuccess = false,
-                //        Message = Mensaje.ExisteRegistro,
-                //    };
-                //}
+                var existe = Existe(itinerarioViatico);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
 
-                var accionPersonalActualizar = await db.AccionPersonal.Where(x => x.IdAccionPersonal == accionPersonal.IdAccionPersonal).FirstOrDefaultAsync();
+                var itinerarioViaticoActualizar = await db.ItinerarioViatico.Where(x => x.IdItinerarioViatico == id).FirstOrDefaultAsync();
 
-                if (accionPersonalActualizar != null)
+                if (itinerarioViaticoActualizar != null)
                 {
                     try
                     {
-                        accionPersonalActualizar.IdEmpleado = accionPersonal.IdEmpleado;
-                        accionPersonalActualizar.IdTipoAccionPersonal = accionPersonal.IdTipoAccionPersonal;
-                        accionPersonalActualizar.Fecha = accionPersonal.Fecha;
-                        accionPersonalActualizar.Numero = accionPersonal.Numero;
-                        accionPersonalActualizar.Solicitud = accionPersonal.Solicitud;
-                        accionPersonalActualizar.Explicacion = accionPersonal.Explicacion;
-                        accionPersonalActualizar.FechaRige = accionPersonal.FechaRige;
-                        accionPersonalActualizar.FechaRigeHasta = accionPersonal.FechaRigeHasta;
-                        accionPersonalActualizar.NoDias = accionPersonal.NoDias;
-                        accionPersonalActualizar.Estado = accionPersonal.Estado;
+                        itinerarioViaticoActualizar.IdTipoTransporte = itinerarioViatico.IdTipoTransporte;
+                        itinerarioViaticoActualizar.Descripcion = itinerarioViatico.Descripcion;
+                        itinerarioViaticoActualizar.FechaDesde = itinerarioViatico.FechaDesde;
+                        itinerarioViaticoActualizar.FechaHasta = itinerarioViatico.FechaHasta;
+                        itinerarioViaticoActualizar.Valor = itinerarioViatico.Valor;
+                        itinerarioViaticoActualizar.HoraSalida = itinerarioViatico.HoraSalida;
+                        itinerarioViaticoActualizar.HoraLlegada = itinerarioViatico.HoraLlegada;
+
+
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -194,8 +196,8 @@ namespace bd.swth.web.Controllers.API
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarAccionPersonal")]
-        public async Task<Response> PostAccionPersonal([FromBody] AccionPersonal AccionPersonal)
+        [Route("InsertarItinerarioViatico")]
+        public async Task<Response> PostItinerarioViatico([FromBody] ItinerarioViatico ItinerarioViatico)
         {
             try
             {
@@ -208,10 +210,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(AccionPersonal);
+                var respuesta = Existe(ItinerarioViatico);
                 if (!respuesta.IsSuccess)
                 {
-                    db.AccionPersonal.Add(AccionPersonal);
+                    db.ItinerarioViatico.Add(ItinerarioViatico);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -249,7 +251,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteAccionPersonal([FromRoute] int id)
+        public async Task<Response> DeleteItinerarioViatico([FromRoute] int id)
         {
             try
             {
@@ -262,7 +264,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.AccionPersonal.SingleOrDefaultAsync(m => m.IdAccionPersonal == id);
+                var respuesta = await db.ItinerarioViatico.SingleOrDefaultAsync(m => m.IdItinerarioViatico == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -271,7 +273,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.AccionPersonal.Remove(respuesta);
+                db.ItinerarioViatico.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -300,11 +302,13 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(AccionPersonal AccionPersonal)
+        private Response Existe(ItinerarioViatico ItinerarioViatico)
         {
-            var bdd = AccionPersonal.IdEmpleado;
-            var estadocivilrespuesta = db.AccionPersonal.Where(p => p.IdEmpleado == bdd).FirstOrDefault();
-            if (estadocivilrespuesta != null)
+            var bdd = ItinerarioViatico.IdTipoTransporte;
+            var bdd2 = ItinerarioViatico.FechaDesde;
+            var bdd3 = ItinerarioViatico.FechaHasta;
+            var itinerarioviaticorespuesta = db.ItinerarioViatico.Where(p => p.IdTipoTransporte== bdd && p.FechaDesde ==bdd2 && p.FechaHasta == bdd3).FirstOrDefault();
+            if (itinerarioviaticorespuesta != null)
             {
                 return new Response
                 {
@@ -318,7 +322,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = estadocivilrespuesta,
+                Resultado = itinerarioviaticorespuesta,
             };
         }
     }

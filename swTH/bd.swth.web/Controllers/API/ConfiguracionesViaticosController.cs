@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ConfiguracionViatico.Include(x => x.Dependencia).ToListAsync();
+                return await db.ConfiguracionViatico.Include(x => x.RolPuesto).ToListAsync();
 
             }
             catch (Exception ex)
@@ -109,9 +109,9 @@ namespace bd.swth.web.Controllers.API
         {
             var escalaevatotal = db.ConfiguracionViatico.Find(configuracionViatico.IdConfiguracionViatico);
 
-            escalaevatotal.IdDependencia = configuracionViatico.IdDependencia;
+            escalaevatotal.IdRolPuesto = configuracionViatico.IdRolPuesto;
             escalaevatotal.ValorEntregadoPorDia = configuracionViatico.ValorEntregadoPorDia;
-            escalaevatotal.PorCientoAJustificar = configuracionViatico.PorCientoAJustificar;
+            escalaevatotal.PorCientoAjustificar = configuracionViatico.PorCientoAjustificar;
             db.ConfiguracionViatico.Update(escalaevatotal);
             await db.SaveChangesAsync();
         }
@@ -142,9 +142,9 @@ namespace bd.swth.web.Controllers.API
 
                     if (ConfiguracionViaticoActualizar.IdConfiguracionViatico == ConfiguracionViatico.IdConfiguracionViatico)
                     {
-                        if (ConfiguracionViatico.IdDependencia == ConfiguracionViaticoActualizar.IdDependencia &&
+                        if (ConfiguracionViatico.IdRolPuesto == ConfiguracionViaticoActualizar.IdRolPuesto &&
                         ConfiguracionViatico.ValorEntregadoPorDia == ConfiguracionViaticoActualizar.ValorEntregadoPorDia &&
-                        ConfiguracionViatico.PorCientoAJustificar == ConfiguracionViaticoActualizar.PorCientoAJustificar)
+                        ConfiguracionViatico.PorCientoAjustificar == ConfiguracionViaticoActualizar.PorCientoAjustificar)
                         {
                             return new Response
                             {
@@ -306,8 +306,8 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(ConfiguracionViatico ConfiguracionViatico)
         {
-            var ConfiguracionViaticorespuesta = db.ConfiguracionViatico.Where(p => p.IdDependencia ==ConfiguracionViatico.IdDependencia 
-                                                && p.PorCientoAJustificar ==ConfiguracionViatico.PorCientoAJustificar 
+            var ConfiguracionViaticorespuesta = db.ConfiguracionViatico.Where(p => p.IdRolPuesto ==ConfiguracionViatico.IdRolPuesto
+                                                && p.PorCientoAjustificar ==ConfiguracionViatico.PorCientoAjustificar
                                                 && p.ValorEntregadoPorDia == ConfiguracionViatico.ValorEntregadoPorDia).FirstOrDefault();
             if (ConfiguracionViaticorespuesta != null)
             {

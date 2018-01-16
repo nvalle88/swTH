@@ -49,6 +49,7 @@ namespace bd.swth.entidades.Negocio
 
         public string NombreUsuario { get; set; }
         public bool EsJefe { get; set; }
+        public bool Activo { get; set; }
 
         //Propiedades Virtuales Referencias a otras clases
 
@@ -196,6 +197,8 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<Liquidacion> Liquidacion { get; set; }
 
         public virtual ICollection<Eval001> Eval001 { get; set; }
+
+        public virtual ICollection<CeseFuncion> CeseFuncion { get; set; }
 
 
     }

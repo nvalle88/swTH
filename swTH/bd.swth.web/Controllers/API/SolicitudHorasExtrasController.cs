@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using System;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
@@ -15,24 +16,30 @@ using bd.log.guardar.Enumeradores;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/AccionesPersonal")]
-    public class AccionesPersonalController : Controller
+    [Route("api/SolicitudHorasExtras")]
+    public class SolicitudHorasExtrasController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public AccionesPersonalController(SwTHDbContext db)
+        public SolicitudHorasExtrasController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/BasesDatos
-        [HttpGet]
-        [Route("ListarAccionesPersonal")]
-        public async Task<List<AccionPersonal>> GetAccionPersonal()
+        [HttpPost]
+        [Route("ListarSolicitudesHorasExtra")]
+        public async Task<List<SolicitudHorasExtras>> ListarSolicitudHorasExtras([FromBody]Empleado empleado)
         {
+            //Persona persona = new Persona();
             try
             {
-                return await db.AccionPersonal.OrderBy(x => x.IdTipoAccionPersonal).ToListAsync();
+
+                var SolicitudHorasExtras = await db.SolicitudHorasExtras
+                                   .Where(e => e.IdEmpleado == empleado.IdEmpleado).ToListAsync();
+                //var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado };
+
+
+                return SolicitudHorasExtras;
             }
             catch (Exception ex)
             {
@@ -46,13 +53,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<AccionPersonal>();
+                return new List<SolicitudHorasExtras>();
             }
         }
 
-        // GET: api/BasesDatos/5
+        // GET: api/SolicitudHorasExtras/5
         [HttpGet("{id}")]
-        public async Task<Response> GetAccionPersonal([FromRoute] int id)
+        public async Task<Response> GetSolicitudHorasExtras([FromRoute] int id)
         {
             try
             {
@@ -65,9 +72,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var AccionPersonal = await db.AccionPersonal.SingleOrDefaultAsync(m => m.IdEmpleado == id);
+                var SolicitudHorasExtras = await db.SolicitudHorasExtras.SingleOrDefaultAsync(m => m.IdSolicitudHorasExtras == id);
 
-                if (AccionPersonal == null)
+                if (SolicitudHorasExtras == null)
                 {
                     return new Response
                     {
@@ -80,7 +87,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = AccionPersonal,
+                    Resultado = SolicitudHorasExtras,
                 };
             }
             catch (Exception ex)
@@ -103,9 +110,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/BasesDatos/5
+        // PUT: api/SolicitudHorasExtras/5
         [HttpPut("{id}")]
-        public async Task<Response> PutAccionPersonal([FromRoute] int id, [FromBody] AccionPersonal accionPersonal)
+        public async Task<Response> PutSolicitudHorasExtras([FromRoute] int id, [FromBody] SolicitudHorasExtras SolicitudHorasExtras)
         {
             try
             {
@@ -114,36 +121,25 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                //var existe = Existe(accionPersonal);
-                //if (existe.IsSuccess)
-                //{
-                //    return new Response
-                //    {
-                //        IsSuccess = false,
-                //        Message = Mensaje.ExisteRegistro,
-                //    };
-                //}
-
-                var accionPersonalActualizar = await db.AccionPersonal.Where(x => x.IdAccionPersonal == accionPersonal.IdAccionPersonal).FirstOrDefaultAsync();
-
-                if (accionPersonalActualizar != null)
+                var SolicitudHorasExtrasActualizar = await db.SolicitudHorasExtras.Where(x => x.IdSolicitudHorasExtras == SolicitudHorasExtras.IdSolicitudHorasExtras).FirstOrDefaultAsync();
+                if (SolicitudHorasExtrasActualizar != null)
                 {
                     try
                     {
-                        accionPersonalActualizar.IdEmpleado = accionPersonal.IdEmpleado;
-                        accionPersonalActualizar.IdTipoAccionPersonal = accionPersonal.IdTipoAccionPersonal;
-                        accionPersonalActualizar.Fecha = accionPersonal.Fecha;
-                        accionPersonalActualizar.Numero = accionPersonal.Numero;
-                        accionPersonalActualizar.Solicitud = accionPersonal.Solicitud;
-                        accionPersonalActualizar.Explicacion = accionPersonal.Explicacion;
-                        accionPersonalActualizar.FechaRige = accionPersonal.FechaRige;
-                        accionPersonalActualizar.FechaRigeHasta = accionPersonal.FechaRigeHasta;
-                        accionPersonalActualizar.NoDias = accionPersonal.NoDias;
-                        accionPersonalActualizar.Estado = accionPersonal.Estado;
+                        
+                        SolicitudHorasExtrasActualizar.IdEmpleado = id;
+                        SolicitudHorasExtrasActualizar.Fecha = SolicitudHorasExtras.Fecha;
+                        SolicitudHorasExtrasActualizar.CantidadHoras = SolicitudHorasExtras.CantidadHoras;
+                        SolicitudHorasExtrasActualizar.Estado = SolicitudHorasExtras.Estado;
+                        SolicitudHorasExtrasActualizar.Observaciones = SolicitudHorasExtras.Observaciones;
+                        SolicitudHorasExtrasActualizar.FechaSolicitud = SolicitudHorasExtras.FechaSolicitud;
+                        SolicitudHorasExtrasActualizar.FechaAprobado = SolicitudHorasExtras.FechaAprobado;
+                        SolicitudHorasExtrasActualizar.EsExtraordinaria = SolicitudHorasExtras.EsExtraordinaria;
+                        db.SolicitudHorasExtras.Update(SolicitudHorasExtrasActualizar);
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -172,17 +168,13 @@ namespace bd.swth.web.Controllers.API
                         };
                     }
                 }
-
-
-
-
                 return new Response
                 {
                     IsSuccess = false,
                     Message = Mensaje.ExisteRegistro
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new Response
                 {
@@ -192,10 +184,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/BasesDatos
+        // POST: api/SolicitudHorasExtras
         [HttpPost]
-        [Route("InsertarAccionPersonal")]
-        public async Task<Response> PostAccionPersonal([FromBody] AccionPersonal AccionPersonal)
+        [Route("InsertarSolicitudHorasExtras")]
+        public async Task<Response> PostSolicitudHorasExtras([FromBody] SolicitudHorasExtras SolicitudHorasExtras)
         {
             try
             {
@@ -204,27 +196,29 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = ""
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var respuesta = Existe(AccionPersonal);
-                if (!respuesta.IsSuccess)
-                {
-                    db.AccionPersonal.Add(AccionPersonal);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
-                }
-
+                //var respuesta = Existe(SolicitudHorasExtras);
+                //if (!respuesta.IsSuccess)
+                //{
+                SolicitudHorasExtras.Estado = 0;
+                db.SolicitudHorasExtras.Add(SolicitudHorasExtras);
+                await db.SaveChangesAsync();
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = SolicitudHorasExtras
                 };
+                //}
+
+                //return new Response
+                //{
+                //    IsSuccess = false,
+                //    Message = Mensaje.Satisfactorio
+                //};
 
             }
             catch (Exception ex)
@@ -247,9 +241,67 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        [HttpPost]
+        [Route("EsExtraordinaria")]
+        public async Task<Response> EsExtraordinaria([FromBody] SolicitudHorasExtras SolicitudHorasExtras)
+        {
+            try
+            {
+                //if (!ModelState.IsValid)
+                //{
+                //    return new Response
+                //    {
+                //        IsSuccess = false,
+                //        Message = Mensaje.ModeloInvalido
+                //    };
+                //}
+
+                var diaSemana = (int)SolicitudHorasExtras.Fecha.Date.DayOfWeek;
+
+                if (diaSemana < 1 || diaSemana > 5)
+                {
+                    return new Response { IsSuccess = true };
+                }
+
+
+                var feriadoAno =await db.ConfiguracionFeriados.Where(x => x.FechaHasta.Year == DateTime.Now.Year).ToListAsync();
+
+                foreach (var item in feriadoAno)
+                {
+                    if (item.FechaDesde.Date <=SolicitudHorasExtras.Fecha.Date && item.FechaHasta.Date>=SolicitudHorasExtras.Fecha.Date )
+                    {
+                        return new Response { IsSuccess = true };
+                    }
+                };
+
+
+
+                return new Response { IsSuccess = false };
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        // DELETE: api/SolicitudHorasExtras/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteAccionPersonal([FromRoute] int id)
+        public async Task<Response> DeleteSolicitudHorasExtras([FromRoute] int id)
         {
             try
             {
@@ -262,7 +314,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.AccionPersonal.SingleOrDefaultAsync(m => m.IdAccionPersonal == id);
+                var respuesta = await db.SolicitudHorasExtras.SingleOrDefaultAsync(m => m.IdSolicitudHorasExtras == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -271,7 +323,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.AccionPersonal.Remove(respuesta);
+                db.SolicitudHorasExtras.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -300,26 +352,28 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(AccionPersonal AccionPersonal)
-        {
-            var bdd = AccionPersonal.IdEmpleado;
-            var estadocivilrespuesta = db.AccionPersonal.Where(p => p.IdEmpleado == bdd).FirstOrDefault();
-            if (estadocivilrespuesta != null)
-            {
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
-                };
 
-            }
 
-            return new Response
-            {
-                IsSuccess = false,
-                Resultado = estadocivilrespuesta,
-            };
-        }
+        //public Response Existe(SolicitudHorasExtras SolicitudHorasExtras)
+        //{
+        //    var bdd1 = SolicitudHorasExtras.IdEmpleado;
+        //    var bdd2 = SolicitudHorasExtras.FechaSolicitud;
+        //    var loglevelrespuesta = db.SolicitudHorasExtras.Where(p => p.IdEmpleado == bdd1 && p.FechaSolicitud == bdd2).FirstOrDefault();
+        //    if (loglevelrespuesta != null)
+        //    {
+        //        return new Response
+        //        {
+        //            IsSuccess = true,
+        //            Message = Mensaje.BorradoNoSatisfactorio,
+        //            Resultado = null,
+        //        };
+
+        //    }
+        //    return new Response
+        //    {
+        //        IsSuccess = false,
+        //        Resultado = loglevelrespuesta,
+        //    };
+        //}
     }
 }

@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using System;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
@@ -15,24 +16,24 @@ using bd.log.guardar.Enumeradores;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/AccionesPersonal")]
-    public class AccionesPersonalController : Controller
+    [Route("api/CeseFunciones")]
+    public class CeseFuncionesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public AccionesPersonalController(SwTHDbContext db)
+        public CeseFuncionesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarAccionesPersonal")]
-        public async Task<List<AccionPersonal>> GetAccionPersonal()
+        [Route("ListarCesesFunciones")]
+        public async Task<List<CeseFuncion>> GetCeseFuncion()
         {
             try
             {
-                return await db.AccionPersonal.OrderBy(x => x.IdTipoAccionPersonal).ToListAsync();
+                return await db.CeseFuncion.OrderBy(x => x.Fecha).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -46,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<AccionPersonal>();
+                return new List<CeseFuncion>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetAccionPersonal([FromRoute] int id)
+        public async Task<Response> GetCeseFuncion([FromRoute] int id)
         {
             try
             {
@@ -65,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var AccionPersonal = await db.AccionPersonal.SingleOrDefaultAsync(m => m.IdEmpleado == id);
+                var CeseFuncion = await db.CeseFuncion.SingleOrDefaultAsync(m => m.IdEmpleado == id);
 
-                if (AccionPersonal == null)
+                if (CeseFuncion == null)
                 {
                     return new Response
                     {
@@ -80,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = AccionPersonal,
+                    Resultado = CeseFuncion,
                 };
             }
             catch (Exception ex)
@@ -105,7 +106,7 @@ namespace bd.swth.web.Controllers.API
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutAccionPersonal([FromRoute] int id, [FromBody] AccionPersonal accionPersonal)
+        public async Task<Response> PutCeseFuncion([FromRoute] int id, [FromBody] CeseFuncion ceseFuncion)
         {
             try
             {
@@ -118,32 +119,26 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                //var existe = Existe(accionPersonal);
-                //if (existe.IsSuccess)
-                //{
-                //    return new Response
-                //    {
-                //        IsSuccess = false,
-                //        Message = Mensaje.ExisteRegistro,
-                //    };
-                //}
+                var existe = Existe(ceseFuncion);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
 
-                var accionPersonalActualizar = await db.AccionPersonal.Where(x => x.IdAccionPersonal == accionPersonal.IdAccionPersonal).FirstOrDefaultAsync();
+                var ceseFuncionActualizar = await db.CeseFuncion.Where(x => x.IdCeseFuncion == id).FirstOrDefaultAsync();
 
-                if (accionPersonalActualizar != null)
+                if (ceseFuncionActualizar != null)
                 {
                     try
                     {
-                        accionPersonalActualizar.IdEmpleado = accionPersonal.IdEmpleado;
-                        accionPersonalActualizar.IdTipoAccionPersonal = accionPersonal.IdTipoAccionPersonal;
-                        accionPersonalActualizar.Fecha = accionPersonal.Fecha;
-                        accionPersonalActualizar.Numero = accionPersonal.Numero;
-                        accionPersonalActualizar.Solicitud = accionPersonal.Solicitud;
-                        accionPersonalActualizar.Explicacion = accionPersonal.Explicacion;
-                        accionPersonalActualizar.FechaRige = accionPersonal.FechaRige;
-                        accionPersonalActualizar.FechaRigeHasta = accionPersonal.FechaRigeHasta;
-                        accionPersonalActualizar.NoDias = accionPersonal.NoDias;
-                        accionPersonalActualizar.Estado = accionPersonal.Estado;
+                        ceseFuncionActualizar.IdEmpleado = ceseFuncion.IdEmpleado;
+                        ceseFuncionActualizar.IdTipoCesacionFuncion = ceseFuncion.IdTipoCesacionFuncion;
+                        ceseFuncionActualizar.Fecha = ceseFuncion.Fecha;
+                        ceseFuncionActualizar.Observacion = ceseFuncion.Observacion;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -194,8 +189,8 @@ namespace bd.swth.web.Controllers.API
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarAccionPersonal")]
-        public async Task<Response> PostAccionPersonal([FromBody] AccionPersonal AccionPersonal)
+        [Route("InsertarCeseFuncion")]
+        public async Task<Response> PostCeseFuncion([FromBody] CeseFuncion CeseFuncion)
         {
             try
             {
@@ -208,10 +203,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(AccionPersonal);
+                var respuesta = Existe(CeseFuncion);
                 if (!respuesta.IsSuccess)
                 {
-                    db.AccionPersonal.Add(AccionPersonal);
+                    db.CeseFuncion.Add(CeseFuncion);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -249,7 +244,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteAccionPersonal([FromRoute] int id)
+        public async Task<Response> DeleteCeseFuncion([FromRoute] int id)
         {
             try
             {
@@ -262,7 +257,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.AccionPersonal.SingleOrDefaultAsync(m => m.IdAccionPersonal == id);
+                var respuesta = await db.CeseFuncion.SingleOrDefaultAsync(m => m.IdCeseFuncion == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -271,7 +266,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.AccionPersonal.Remove(respuesta);
+                db.CeseFuncion.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -300,11 +295,11 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(AccionPersonal AccionPersonal)
+        private Response Existe(CeseFuncion CeseFuncion)
         {
-            var bdd = AccionPersonal.IdEmpleado;
-            var estadocivilrespuesta = db.AccionPersonal.Where(p => p.IdEmpleado == bdd).FirstOrDefault();
-            if (estadocivilrespuesta != null)
+            var bdd = CeseFuncion.IdEmpleado;
+            var cesefuncionrespuesta = db.CeseFuncion.Where(p => p.IdEmpleado == bdd).FirstOrDefault();
+            if (cesefuncionrespuesta != null)
             {
                 return new Response
                 {
@@ -318,7 +313,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = estadocivilrespuesta,
+                Resultado = cesefuncionrespuesta,
             };
         }
     }

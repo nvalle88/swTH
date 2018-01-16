@@ -23,8 +23,6 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<SolicitudPermiso> SolicitudPermiso { get; set; }
 
 
-        public virtual ICollection<SolicitudViatico> SolicitudViatico { get; set; }
-
         public virtual ICollection<SolicitudModificacionFichaEmpleado> SolicitudModificacionFichaEmpleado { get; set; }
 
         public virtual ICollection<SolicitudAnticipo> SolicitudAnticipo { get; set; }

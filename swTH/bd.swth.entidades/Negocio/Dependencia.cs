@@ -25,7 +25,6 @@ namespace bd.swth.entidades.Negocio
         public int IdSucursal { get; set; }
         public virtual Sucursal Sucursal { get; set; }
 
-        public virtual ICollection<ConfiguracionViatico> ConfiguracionViatico { get; set; }
 
         public virtual ICollection<Empleado> Empleado { get; set; }
 

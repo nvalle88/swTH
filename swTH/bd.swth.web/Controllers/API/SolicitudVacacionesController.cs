@@ -166,7 +166,9 @@ namespace bd.swth.web.Controllers.API
                         SolicitudVacacionesActualizar.FechaDesde = SolicitudVacaciones.FechaDesde;
                         SolicitudVacacionesActualizar.FechaHasta = SolicitudVacaciones.FechaHasta;
                         SolicitudVacacionesActualizar.Observaciones = SolicitudVacaciones.Observaciones;
+                        SolicitudVacacionesActualizar.PlanAnual = SolicitudVacaciones.PlanAnual;
                         SolicitudVacacionesActualizar.Estado = SolicitudVacaciones.Estado;
+                        SolicitudVacacionesActualizar.FechaRespuesta = SolicitudVacaciones.FechaRespuesta;
 
                         db.SolicitudVacaciones.Update(SolicitudVacacionesActualizar);
                         await db.SaveChangesAsync();
