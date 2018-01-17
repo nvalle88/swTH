@@ -4,76 +4,38 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
-using Microsoft.EntityFrameworkCore;
-using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TiposAccionesPersonales")]
-    public class TiposAccionesPersonalesController : Controller
+    [Route("api/PersonasEstudios")]
+    public class PersonasEstudiosController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TiposAccionesPersonalesController(SwTHDbContext db)
+        public PersonasEstudiosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
 
-        [HttpPost]
-        [Route("ListarTiposAccionesPersonalesPorEstado")]
-        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEstado([FromBody] EstadoTipoAccionPersonal estadoTipoAccionPersonal)
-        {
-            try
-            {
-                return await db.TipoAccionPersonal.Where(x => x.IdEstadoTipoAccionPersonal == estadoTipoAccionPersonal.IdEstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<TipoAccionPersonal>();
-            }
-        }
-
-
-        [HttpPost]
-        [Route("ListarTiposAccionesPersonalesPorEsTalentoHumano")]
-        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEsTalentoHumano([FromBody] TipoAccionPersonal tipoAccionPersonal)
-        {
-            try
-            {
-              return await db.TipoAccionPersonal.Where(x=>x.EsResponsableTH==tipoAccionPersonal.EsResponsableTH).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-              return new List<TipoAccionPersonal>();
-            }
-        }
-
-        // GET: api/TipoAccionPersonal
+        // GET: api/PersonaEstudio
         [HttpGet]
-        [Route("ListarTiposAccionesPersonales")]
-        public async Task<List<TipoAccionPersonal>> GetTiposAccionesPersonales()
+        [Route("ListarPersonasEstudios")]
+        public async Task<List<PersonaEstudio>> GetPersonasEstudios()
         {
             try
             {
-                return await db.TipoAccionPersonal.Include(x => x.EstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.PersonaEstudio.Include(x => x.Titulo).Include(x => x.Persona).OrderBy(x => x.FechaGraduado).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -87,13 +49,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<TipoAccionPersonal>();
+                return new List<PersonaEstudio>();
             }
         }
 
-        // GET: api/TipoAccionPersonal/5
+        // GET: api/PersonaEstudio/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoAccionPersonal([FromRoute] int id)
+        public async Task<Response> GetPersonaEstudio([FromRoute] int id)
         {
             try
             {
@@ -106,9 +68,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoAccionPersonal = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
+                var PersonaEstudio = await db.PersonaEstudio.SingleOrDefaultAsync(m => m.IdPersonaEstudio == id);
 
-                if (TipoAccionPersonal == null)
+                if (PersonaEstudio == null)
                 {
                     return new Response
                     {
@@ -121,7 +83,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoAccionPersonal,
+                    Resultado = PersonaEstudio,
                 };
             }
             catch (Exception ex)
@@ -140,14 +102,13 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = false,
                     Message = Mensaje.Error,
-
                 };
             }
         }
 
-        // PUT: api/TipoAccionPersonal/5
+        // PUT: api/PersonaEstudio/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoAccionPersonal([FromRoute] int id, [FromBody] TipoAccionPersonal tipoAccionPersonal)
+        public async Task<Response> PutPersonaEstudio([FromRoute] int id, [FromBody] PersonaEstudio personaEstudio)
         {
             try
             {
@@ -160,40 +121,38 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (tipoAccionPersonal.NHorasMinimo > tipoAccionPersonal.NHorasMaximo && tipoAccionPersonal.NDiasMinimo > tipoAccionPersonal.NDiasMaximo)
+                var existe = Existe(personaEstudio);
+                var PersonaEstudioActualizar = (PersonaEstudio)existe.Resultado;
+                if (existe.IsSuccess)
                 {
+                    if (PersonaEstudioActualizar.IdPersonaEstudio == personaEstudio.IdPersonaEstudio)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "La hora mínimo debe ser menor a la hora máximo y el día mínimo debe ser menor al día máximo"
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
-
-
-                var TipoAccionPersonal = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
+                var PersonaEstudio = db.PersonaEstudio.Find(personaEstudio.IdPersonaEstudio);
                 
-                TipoAccionPersonal.Nombre = tipoAccionPersonal.Nombre;
-                TipoAccionPersonal.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
-                TipoAccionPersonal.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
-                TipoAccionPersonal.NHorasMaximo = tipoAccionPersonal.NHorasMaximo;
-                TipoAccionPersonal.NHorasMinimo = tipoAccionPersonal.NHorasMinimo;
-                TipoAccionPersonal.DiasHabiles = tipoAccionPersonal.DiasHabiles;
-                TipoAccionPersonal.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
-                TipoAccionPersonal.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
-                TipoAccionPersonal.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
-                TipoAccionPersonal.Matriz = tipoAccionPersonal.Matriz;
-                TipoAccionPersonal.Descripcion = TipoAccionPersonal.Descripcion;
-                TipoAccionPersonal.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
-                TipoAccionPersonal.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
-                TipoAccionPersonal.IdEstadoTipoAccionPersonal = tipoAccionPersonal.IdEstadoTipoAccionPersonal;
-                db.TipoAccionPersonal.Update(TipoAccionPersonal);
+                PersonaEstudio.FechaGraduado = personaEstudio.FechaGraduado;
+                PersonaEstudio.Observaciones = personaEstudio.Observaciones;
+                PersonaEstudio.IdTitulo = personaEstudio.IdTitulo;
+                PersonaEstudio.IdPersona = personaEstudio.IdPersona;
+                PersonaEstudio.NoSenescyt = personaEstudio.NoSenescyt;
+                db.PersonaEstudio.Update(personaEstudio);
+
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoAccionPersonal,
                 };
 
             }
@@ -219,10 +178,10 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/TipoAccionPersonal
+        // POST: api/PersonaEstudio
         [HttpPost]
-        [Route("InsertarTipoAccionPersonal")]
-        public async Task<Response> PostTipoAccionPersonal([FromBody] TipoAccionPersonal TipoAccionPersonal)
+        [Route("InsertarPersonaEstudio")]
+        public async Task<Response> PostPersonaEstudio([FromBody] PersonaEstudio PersonaEstudio)
         {
             try
             {
@@ -235,25 +194,15 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (TipoAccionPersonal.NHorasMinimo > TipoAccionPersonal.NHorasMaximo && TipoAccionPersonal.NDiasMinimo > TipoAccionPersonal.NDiasMaximo)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La hora mínimo debe ser menor a la hora máximo y el día mínimo debe ser menor al día máximo"
-                    };
-                }
-
-                var respuesta = Existe(TipoAccionPersonal);
+                var respuesta = Existe(PersonaEstudio);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoAccionPersonal.Add(TipoAccionPersonal);
+                    db.PersonaEstudio.Add(PersonaEstudio);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                        Resultado = TipoAccionPersonal
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
@@ -284,9 +233,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/TipoAccionPersonal/5
+        // DELETE: api/PersonaEstudio/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoAccionPersonal([FromRoute] int id)
+        public async Task<Response> DeletePersonaEstudio([FromRoute] int id)
         {
             try
             {
@@ -299,7 +248,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
+                var respuesta = await db.PersonaEstudio.SingleOrDefaultAsync(m => m.IdPersonaEstudio == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -308,7 +257,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoAccionPersonal.Remove(respuesta);
+                db.PersonaEstudio.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -337,18 +286,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(TipoAccionPersonal TipoAccionPersonal)
+        private Response Existe(PersonaEstudio PersonaEstudio)
         {
-            var nombre = TipoAccionPersonal.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoAccionPersonalrespuesta = db.TipoAccionPersonal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombre && p.IdEstadoTipoAccionPersonal == TipoAccionPersonal.IdEstadoTipoAccionPersonal).FirstOrDefault();
-
-            if (TipoAccionPersonalrespuesta != null)
+            var fechaGraduado = PersonaEstudio.FechaGraduado;
+            var PersonaEstudiorespuesta = db.PersonaEstudio.Where(p => p.FechaGraduado == fechaGraduado && p.IdPersona == PersonaEstudio.IdPersona && p.IdTitulo == PersonaEstudio.IdTitulo).FirstOrDefault();
+            if (PersonaEstudiorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = TipoAccionPersonalrespuesta,
+                    Resultado = PersonaEstudiorespuesta,
                 };
 
             }
@@ -356,7 +304,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoAccionPersonalrespuesta,
+                Resultado = PersonaEstudiorespuesta,
             };
         }
     }

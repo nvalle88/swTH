@@ -4,76 +4,37 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
-using Microsoft.EntityFrameworkCore;
-using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TiposAccionesPersonales")]
-    public class TiposAccionesPersonalesController : Controller
+    [Route("api/TrayectoriasLaborales")]
+    public class TrayectoriasLaboralesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TiposAccionesPersonalesController(SwTHDbContext db)
+        public TrayectoriasLaboralesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-
-        [HttpPost]
-        [Route("ListarTiposAccionesPersonalesPorEstado")]
-        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEstado([FromBody] EstadoTipoAccionPersonal estadoTipoAccionPersonal)
-        {
-            try
-            {
-                return await db.TipoAccionPersonal.Where(x => x.IdEstadoTipoAccionPersonal == estadoTipoAccionPersonal.IdEstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<TipoAccionPersonal>();
-            }
-        }
-
-
-        [HttpPost]
-        [Route("ListarTiposAccionesPersonalesPorEsTalentoHumano")]
-        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEsTalentoHumano([FromBody] TipoAccionPersonal tipoAccionPersonal)
-        {
-            try
-            {
-              return await db.TipoAccionPersonal.Where(x=>x.EsResponsableTH==tipoAccionPersonal.EsResponsableTH).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-              return new List<TipoAccionPersonal>();
-            }
-        }
-
-        // GET: api/TipoAccionPersonal
+        
+        // GET: api/TrayectoriaLaboral
         [HttpGet]
-        [Route("ListarTiposAccionesPersonales")]
-        public async Task<List<TipoAccionPersonal>> GetTiposAccionesPersonales()
+        [Route("ListarTrayectoriasLaborales")]
+        public async Task<List<TrayectoriaLaboral>> GetTrayectoriasLaborales()
         {
             try
             {
-                return await db.TipoAccionPersonal.Include(x => x.EstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TrayectoriaLaboral.Include(x => x.Persona).OrderBy(x => x.Empresa).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -87,13 +48,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<TipoAccionPersonal>();
+                return new List<TrayectoriaLaboral>();
             }
         }
 
-        // GET: api/TipoAccionPersonal/5
+        // GET: api/TrayectoriaLaboral/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoAccionPersonal([FromRoute] int id)
+        public async Task<Response> GetTrayectoriaLaboral([FromRoute] int id)
         {
             try
             {
@@ -106,9 +67,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoAccionPersonal = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
+                var TrayectoriaLaboral = await db.TrayectoriaLaboral.SingleOrDefaultAsync(m => m.IdTrayectoriaLaboral == id);
 
-                if (TipoAccionPersonal == null)
+                if (TrayectoriaLaboral == null)
                 {
                     return new Response
                     {
@@ -121,7 +82,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoAccionPersonal,
+                    Resultado = TrayectoriaLaboral,
                 };
             }
             catch (Exception ex)
@@ -140,14 +101,13 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = false,
                     Message = Mensaje.Error,
-
                 };
             }
         }
 
-        // PUT: api/TipoAccionPersonal/5
+        // PUT: api/TrayectoriaLaboral/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoAccionPersonal([FromRoute] int id, [FromBody] TipoAccionPersonal tipoAccionPersonal)
+        public async Task<Response> PutTrayectoriaLaboral([FromRoute] int id, [FromBody] TrayectoriaLaboral trayectoriaLaboral)
         {
             try
             {
@@ -160,40 +120,40 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (tipoAccionPersonal.NHorasMinimo > tipoAccionPersonal.NHorasMaximo && tipoAccionPersonal.NDiasMinimo > tipoAccionPersonal.NDiasMaximo)
+                var existe = Existe(trayectoriaLaboral);
+                var TrayectoriaLaboralActualizar = (TrayectoriaLaboral)existe.Resultado;
+                if (existe.IsSuccess)
                 {
+                    if (TrayectoriaLaboralActualizar.IdTrayectoriaLaboral == trayectoriaLaboral.IdTrayectoriaLaboral)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "La hora mínimo debe ser menor a la hora máximo y el día mínimo debe ser menor al día máximo"
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
-
-
-                var TipoAccionPersonal = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
+                var TrayectoriaLaboral = db.TrayectoriaLaboral.Find(trayectoriaLaboral.IdTrayectoriaLaboral);
                 
-                TipoAccionPersonal.Nombre = tipoAccionPersonal.Nombre;
-                TipoAccionPersonal.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
-                TipoAccionPersonal.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
-                TipoAccionPersonal.NHorasMaximo = tipoAccionPersonal.NHorasMaximo;
-                TipoAccionPersonal.NHorasMinimo = tipoAccionPersonal.NHorasMinimo;
-                TipoAccionPersonal.DiasHabiles = tipoAccionPersonal.DiasHabiles;
-                TipoAccionPersonal.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
-                TipoAccionPersonal.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
-                TipoAccionPersonal.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
-                TipoAccionPersonal.Matriz = tipoAccionPersonal.Matriz;
-                TipoAccionPersonal.Descripcion = TipoAccionPersonal.Descripcion;
-                TipoAccionPersonal.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
-                TipoAccionPersonal.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
-                TipoAccionPersonal.IdEstadoTipoAccionPersonal = tipoAccionPersonal.IdEstadoTipoAccionPersonal;
-                db.TipoAccionPersonal.Update(TipoAccionPersonal);
+                TrayectoriaLaboral.IdPersona = TrayectoriaLaboral.IdPersona;
+                TrayectoriaLaboral.FechaInicio = TrayectoriaLaboral.FechaInicio;
+                TrayectoriaLaboral.FechaFin = TrayectoriaLaboral.FechaFin;
+                TrayectoriaLaboral.Empresa = TrayectoriaLaboral.Empresa;
+                TrayectoriaLaboral.PuestoTrabajo = TrayectoriaLaboral.PuestoTrabajo;
+                TrayectoriaLaboral.DescripcionFunciones = TrayectoriaLaboral.DescripcionFunciones;
+
+                db.TrayectoriaLaboral.Update(TrayectoriaLaboral);
+
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoAccionPersonal,
                 };
 
             }
@@ -219,10 +179,10 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/TipoAccionPersonal
+        // POST: api/TrayectoriaLaboral
         [HttpPost]
-        [Route("InsertarTipoAccionPersonal")]
-        public async Task<Response> PostTipoAccionPersonal([FromBody] TipoAccionPersonal TipoAccionPersonal)
+        [Route("InsertarTrayectoriaLaboral")]
+        public async Task<Response> PostTrayectoriaLaboral([FromBody] TrayectoriaLaboral TrayectoriaLaboral)
         {
             try
             {
@@ -235,25 +195,15 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (TipoAccionPersonal.NHorasMinimo > TipoAccionPersonal.NHorasMaximo && TipoAccionPersonal.NDiasMinimo > TipoAccionPersonal.NDiasMaximo)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La hora mínimo debe ser menor a la hora máximo y el día mínimo debe ser menor al día máximo"
-                    };
-                }
-
-                var respuesta = Existe(TipoAccionPersonal);
+                var respuesta = Existe(TrayectoriaLaboral);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoAccionPersonal.Add(TipoAccionPersonal);
+                    db.TrayectoriaLaboral.Add(TrayectoriaLaboral);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                        Resultado = TipoAccionPersonal
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
@@ -284,9 +234,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/TipoAccionPersonal/5
+        // DELETE: api/TrayectoriaLaboral/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoAccionPersonal([FromRoute] int id)
+        public async Task<Response> DeleteTrayectoriaLaboral([FromRoute] int id)
         {
             try
             {
@@ -299,7 +249,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
+                var respuesta = await db.TrayectoriaLaboral.SingleOrDefaultAsync(m => m.IdTrayectoriaLaboral == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -308,7 +258,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoAccionPersonal.Remove(respuesta);
+                db.TrayectoriaLaboral.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -337,18 +287,19 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(TipoAccionPersonal TipoAccionPersonal)
+        private Response Existe(TrayectoriaLaboral TrayectoriaLaboral)
         {
-            var nombre = TipoAccionPersonal.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoAccionPersonalrespuesta = db.TipoAccionPersonal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombre && p.IdEstadoTipoAccionPersonal == TipoAccionPersonal.IdEstadoTipoAccionPersonal).FirstOrDefault();
+            var fechaInicio = TrayectoriaLaboral.FechaInicio;
+            var fechaFin = TrayectoriaLaboral.FechaFin;
+            var TrayectoriaLaboralrespuesta = db.TrayectoriaLaboral.Where(p => p.FechaInicio == fechaInicio && p.FechaFin == fechaFin).FirstOrDefault();
 
-            if (TipoAccionPersonalrespuesta != null)
+            if (TrayectoriaLaboralrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = TipoAccionPersonalrespuesta,
+                    Resultado = TrayectoriaLaboralrespuesta,
                 };
 
             }
@@ -356,7 +307,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoAccionPersonalrespuesta,
+                Resultado = TrayectoriaLaboralrespuesta,
             };
         }
     }

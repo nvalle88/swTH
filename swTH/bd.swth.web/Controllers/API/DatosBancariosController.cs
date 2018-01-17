@@ -4,76 +4,38 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
-using Microsoft.EntityFrameworkCore;
-using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TiposAccionesPersonales")]
-    public class TiposAccionesPersonalesController : Controller
+    [Route("api/DatosBancarios")]
+    public class DatosBancariosController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TiposAccionesPersonalesController(SwTHDbContext db)
+        public DatosBancariosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
 
-        [HttpPost]
-        [Route("ListarTiposAccionesPersonalesPorEstado")]
-        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEstado([FromBody] EstadoTipoAccionPersonal estadoTipoAccionPersonal)
-        {
-            try
-            {
-                return await db.TipoAccionPersonal.Where(x => x.IdEstadoTipoAccionPersonal == estadoTipoAccionPersonal.IdEstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<TipoAccionPersonal>();
-            }
-        }
-
-
-        [HttpPost]
-        [Route("ListarTiposAccionesPersonalesPorEsTalentoHumano")]
-        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEsTalentoHumano([FromBody] TipoAccionPersonal tipoAccionPersonal)
-        {
-            try
-            {
-              return await db.TipoAccionPersonal.Where(x=>x.EsResponsableTH==tipoAccionPersonal.EsResponsableTH).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-              return new List<TipoAccionPersonal>();
-            }
-        }
-
-        // GET: api/TipoAccionPersonal
+        // GET: api/DatosBancarios
         [HttpGet]
-        [Route("ListarTiposAccionesPersonales")]
-        public async Task<List<TipoAccionPersonal>> GetTiposAccionesPersonales()
+        [Route("ListarDatosBancarios")]
+        public async Task<List<DatosBancarios>> GetDatosBancarios()
         {
             try
             {
-                return await db.TipoAccionPersonal.Include(x => x.EstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.DatosBancarios.Include(x => x.Empleado).Include(x => x.InstitucionFinanciera).OrderBy(x => x.NumeroCuenta).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -87,13 +49,48 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<TipoAccionPersonal>();
+                return new List<DatosBancarios>();
             }
         }
 
-        // GET: api/TipoAccionPersonal/5
+        
+
+        [HttpPost]
+        [Route("DatosBancariosPorIdEmpleado")]
+        public async Task<Response> DatosBancariosPorIdEmpleado([FromBody] DatosBancarios datosBancarios)
+        {
+            try
+            {
+                var DatosBancarios = await db.DatosBancarios.SingleOrDefaultAsync(m => m.IdEmpleado == datosBancarios.IdEmpleado);
+
+                var response = new Response
+                {
+                    IsSuccess = true,
+                    Resultado = DatosBancarios,
+                };
+
+                return response;
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response { };
+            }
+        }
+
+        // GET: api/DatosBancarios/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoAccionPersonal([FromRoute] int id)
+        public async Task<Response> GetDatosBancarios([FromRoute] int id)
         {
             try
             {
@@ -106,9 +103,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoAccionPersonal = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
+                var DatosBancarios = await db.DatosBancarios.SingleOrDefaultAsync(m => m.IdDatosBancarios == id);
 
-                if (TipoAccionPersonal == null)
+                if (DatosBancarios == null)
                 {
                     return new Response
                     {
@@ -121,7 +118,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoAccionPersonal,
+                    Resultado = DatosBancarios,
                 };
             }
             catch (Exception ex)
@@ -140,14 +137,13 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = false,
                     Message = Mensaje.Error,
-
                 };
             }
         }
 
-        // PUT: api/TipoAccionPersonal/5
+        // PUT: api/DatosBancarios/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoAccionPersonal([FromRoute] int id, [FromBody] TipoAccionPersonal tipoAccionPersonal)
+        public async Task<Response> PutDatosBancarios([FromRoute] int id, [FromBody] DatosBancarios datosBancarios)
         {
             try
             {
@@ -160,40 +156,36 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (tipoAccionPersonal.NHorasMinimo > tipoAccionPersonal.NHorasMaximo && tipoAccionPersonal.NDiasMinimo > tipoAccionPersonal.NDiasMaximo)
+                var existe = Existe(datosBancarios);
+                var DatosBancariosActualizar = (DatosBancarios)existe.Resultado;
+                if (existe.IsSuccess)
                 {
+                    if (DatosBancariosActualizar.IdDatosBancarios == datosBancarios.IdDatosBancarios)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "La hora mínimo debe ser menor a la hora máximo y el día mínimo debe ser menor al día máximo"
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
-
-
-                var TipoAccionPersonal = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
+                var DatosBancarios = db.DatosBancarios.Find(datosBancarios.IdDatosBancarios);
                 
-                TipoAccionPersonal.Nombre = tipoAccionPersonal.Nombre;
-                TipoAccionPersonal.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
-                TipoAccionPersonal.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
-                TipoAccionPersonal.NHorasMaximo = tipoAccionPersonal.NHorasMaximo;
-                TipoAccionPersonal.NHorasMinimo = tipoAccionPersonal.NHorasMinimo;
-                TipoAccionPersonal.DiasHabiles = tipoAccionPersonal.DiasHabiles;
-                TipoAccionPersonal.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
-                TipoAccionPersonal.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
-                TipoAccionPersonal.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
-                TipoAccionPersonal.Matriz = tipoAccionPersonal.Matriz;
-                TipoAccionPersonal.Descripcion = TipoAccionPersonal.Descripcion;
-                TipoAccionPersonal.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
-                TipoAccionPersonal.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
-                TipoAccionPersonal.IdEstadoTipoAccionPersonal = tipoAccionPersonal.IdEstadoTipoAccionPersonal;
-                db.TipoAccionPersonal.Update(TipoAccionPersonal);
+                DatosBancarios.IdInstitucionFinanciera = datosBancarios.IdInstitucionFinanciera;
+                DatosBancarios.NumeroCuenta = datosBancarios.NumeroCuenta;
+                DatosBancarios.Ahorros = datosBancarios.Ahorros;
+
+                db.DatosBancarios.Update(DatosBancarios);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoAccionPersonal,
                 };
 
             }
@@ -219,10 +211,10 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/TipoAccionPersonal
+        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoAccionPersonal")]
-        public async Task<Response> PostTipoAccionPersonal([FromBody] TipoAccionPersonal TipoAccionPersonal)
+        [Route("InsertarDatosBancarios")]
+        public async Task<Response> PostDatosBancarios([FromBody] DatosBancarios DatosBancarios)
         {
             try
             {
@@ -235,25 +227,15 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (TipoAccionPersonal.NHorasMinimo > TipoAccionPersonal.NHorasMaximo && TipoAccionPersonal.NDiasMinimo > TipoAccionPersonal.NDiasMaximo)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La hora mínimo debe ser menor a la hora máximo y el día mínimo debe ser menor al día máximo"
-                    };
-                }
-
-                var respuesta = Existe(TipoAccionPersonal);
+                var respuesta = Existe(DatosBancarios);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoAccionPersonal.Add(TipoAccionPersonal);
+                    db.DatosBancarios.Add(DatosBancarios);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                        Resultado = TipoAccionPersonal
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
@@ -284,9 +266,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/TipoAccionPersonal/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoAccionPersonal([FromRoute] int id)
+        public async Task<Response> DeleteDatosBancarios([FromRoute] int id)
         {
             try
             {
@@ -299,7 +281,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
+                var respuesta = await db.DatosBancarios.SingleOrDefaultAsync(m => m.IdDatosBancarios == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -308,7 +290,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoAccionPersonal.Remove(respuesta);
+                db.DatosBancarios.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -337,18 +319,17 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(TipoAccionPersonal TipoAccionPersonal)
+        private Response Existe(DatosBancarios DatosBancarios)
         {
-            var nombre = TipoAccionPersonal.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoAccionPersonalrespuesta = db.TipoAccionPersonal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombre && p.IdEstadoTipoAccionPersonal == TipoAccionPersonal.IdEstadoTipoAccionPersonal).FirstOrDefault();
-
-            if (TipoAccionPersonalrespuesta != null)
+            var numerocuenta = DatosBancarios.NumeroCuenta.ToUpper().TrimEnd().TrimStart();
+            var DatosBancariosrespuesta = db.DatosBancarios.Where(p => p.NumeroCuenta.ToUpper().TrimStart().TrimEnd() == numerocuenta && p.IdEmpleado == DatosBancarios.IdEmpleado && p.IdInstitucionFinanciera == DatosBancarios.IdInstitucionFinanciera).FirstOrDefault();
+            if (DatosBancariosrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = TipoAccionPersonalrespuesta,
+                    Resultado = DatosBancariosrespuesta,
                 };
 
             }
@@ -356,7 +337,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoAccionPersonalrespuesta,
+                Resultado = DatosBancariosrespuesta,
             };
         }
     }

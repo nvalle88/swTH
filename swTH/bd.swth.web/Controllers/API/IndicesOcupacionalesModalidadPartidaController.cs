@@ -4,76 +4,38 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.log.guardar.Servicios;
-using bd.log.guardar.Enumeradores;
-using Microsoft.EntityFrameworkCore;
-using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TiposAccionesPersonales")]
-    public class TiposAccionesPersonalesController : Controller
+    [Route("api/IndicesOcupacionalesModalidadPartida")]
+    public class IndicesOcupacionalesModalidadPartidaController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TiposAccionesPersonalesController(SwTHDbContext db)
+        public IndicesOcupacionalesModalidadPartidaController(SwTHDbContext db)
         {
             this.db = db;
         }
 
 
-        [HttpPost]
-        [Route("ListarTiposAccionesPersonalesPorEstado")]
-        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEstado([FromBody] EstadoTipoAccionPersonal estadoTipoAccionPersonal)
-        {
-            try
-            {
-                return await db.TipoAccionPersonal.Where(x => x.IdEstadoTipoAccionPersonal == estadoTipoAccionPersonal.IdEstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<TipoAccionPersonal>();
-            }
-        }
-
-
-        [HttpPost]
-        [Route("ListarTiposAccionesPersonalesPorEsTalentoHumano")]
-        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEsTalentoHumano([FromBody] TipoAccionPersonal tipoAccionPersonal)
-        {
-            try
-            {
-              return await db.TipoAccionPersonal.Where(x=>x.EsResponsableTH==tipoAccionPersonal.EsResponsableTH).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-              return new List<TipoAccionPersonal>();
-            }
-        }
-
-        // GET: api/TipoAccionPersonal
+        // GET: api/IndiceOcupacionalModalidadPartida
         [HttpGet]
-        [Route("ListarTiposAccionesPersonales")]
-        public async Task<List<TipoAccionPersonal>> GetTiposAccionesPersonales()
+        [Route("ListarIndicesOcupacionalesModalidadPartida")]
+        public async Task<List<IndiceOcupacionalModalidadPartida>> GetIndicesOcupacionalesModalidadPartida()
         {
             try
             {
-                return await db.TipoAccionPersonal.Include(x => x.EstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.IndiceOcupacionalModalidadPartida.Include(x => x.IndiceOcupacional).Include(x => x.Empleado).Include(x => x.FondoFinanciamiento).Include(x => x.ModalidadPartida).Include(x => x.TipoNombramiento).OrderBy(x => x.Fecha).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -87,13 +49,49 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<TipoAccionPersonal>();
+                return new List<IndiceOcupacionalModalidadPartida>();
             }
         }
 
-        // GET: api/TipoAccionPersonal/5
+        [HttpPost]
+        [Route("IndiceOcupacionalModalidadPartidaPorIdEmpleado")]
+        public async Task<Response> IndiceOcupacionalModalidadPartidaPorIdEmpleado([FromBody] IndiceOcupacionalModalidadPartida indiceOcupacionalModalidadPartida)
+        {
+            try
+            {
+                var IndiceOcupacionalModalidadPartida = await db.IndiceOcupacionalModalidadPartida.SingleOrDefaultAsync(m => m.IdEmpleado == indiceOcupacionalModalidadPartida.IdEmpleado);
+
+                var response = new Response
+                {
+                    IsSuccess = true,
+                    Resultado = IndiceOcupacionalModalidadPartida,
+                };
+
+                return response;
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
+                return new Response { };
+            }
+        }
+
+
+
+        // GET: api/IndiceOcupacionalModalidadPartida/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTipoAccionPersonal([FromRoute] int id)
+        public async Task<Response> GetIndiceOcupacionalModalidadPartida([FromRoute] int id)
         {
             try
             {
@@ -106,9 +104,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoAccionPersonal = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
+                var IndiceOcupacionalModalidadPartida = await db.IndiceOcupacionalModalidadPartida.SingleOrDefaultAsync(m => m.IdIndiceOcupacionalModalidadPartida == id);
 
-                if (TipoAccionPersonal == null)
+                if (IndiceOcupacionalModalidadPartida == null)
                 {
                     return new Response
                     {
@@ -121,7 +119,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoAccionPersonal,
+                    Resultado = IndiceOcupacionalModalidadPartida,
                 };
             }
             catch (Exception ex)
@@ -140,14 +138,13 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = false,
                     Message = Mensaje.Error,
-
                 };
             }
         }
 
-        // PUT: api/TipoAccionPersonal/5
+        // PUT: api/IndiceOcupacionalModalidadPartida/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTipoAccionPersonal([FromRoute] int id, [FromBody] TipoAccionPersonal tipoAccionPersonal)
+        public async Task<Response> PutIndiceOcupacionalModalidadPartida([FromRoute] int id, [FromBody] IndiceOcupacionalModalidadPartida indiceOcupacionalModalidadPartida)
         {
             try
             {
@@ -160,40 +157,41 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (tipoAccionPersonal.NHorasMinimo > tipoAccionPersonal.NHorasMaximo && tipoAccionPersonal.NDiasMinimo > tipoAccionPersonal.NDiasMaximo)
+                var existe = Existe(indiceOcupacionalModalidadPartida);
+                var IndiceOcupacionalModalidadPartidaActualizar = (IndiceOcupacionalModalidadPartida)existe.Resultado;
+                if (existe.IsSuccess)
                 {
+                    if (IndiceOcupacionalModalidadPartidaActualizar.IdIndiceOcupacionalModalidadPartida == indiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                        };
+                    }
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "La hora mínimo debe ser menor a la hora máximo y el día mínimo debe ser menor al día máximo"
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
 
+                var IndiceOcupacionalModalidadPartida = db.IndiceOcupacionalModalidadPartida.Find(indiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida);
 
-                var TipoAccionPersonal = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
-                
-                TipoAccionPersonal.Nombre = tipoAccionPersonal.Nombre;
-                TipoAccionPersonal.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
-                TipoAccionPersonal.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
-                TipoAccionPersonal.NHorasMaximo = tipoAccionPersonal.NHorasMaximo;
-                TipoAccionPersonal.NHorasMinimo = tipoAccionPersonal.NHorasMinimo;
-                TipoAccionPersonal.DiasHabiles = tipoAccionPersonal.DiasHabiles;
-                TipoAccionPersonal.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
-                TipoAccionPersonal.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
-                TipoAccionPersonal.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
-                TipoAccionPersonal.Matriz = tipoAccionPersonal.Matriz;
-                TipoAccionPersonal.Descripcion = TipoAccionPersonal.Descripcion;
-                TipoAccionPersonal.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
-                TipoAccionPersonal.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
-                TipoAccionPersonal.IdEstadoTipoAccionPersonal = tipoAccionPersonal.IdEstadoTipoAccionPersonal;
-                db.TipoAccionPersonal.Update(TipoAccionPersonal);
+                IndiceOcupacionalModalidadPartida.IdIndiceOcupacional = indiceOcupacionalModalidadPartida.IdIndiceOcupacional;
+                IndiceOcupacionalModalidadPartida.IdEmpleado = indiceOcupacionalModalidadPartida.IdEmpleado;
+                IndiceOcupacionalModalidadPartida.IdFondoFinanciamiento = indiceOcupacionalModalidadPartida.IdFondoFinanciamiento;
+                IndiceOcupacionalModalidadPartida.IdModalidadPartida = indiceOcupacionalModalidadPartida.IdModalidadPartida;
+                IndiceOcupacionalModalidadPartida.IdTipoNombramiento = indiceOcupacionalModalidadPartida.IdTipoNombramiento;
+                IndiceOcupacionalModalidadPartida.Fecha = indiceOcupacionalModalidadPartida.Fecha;
+                IndiceOcupacionalModalidadPartida.SalarioReal = indiceOcupacionalModalidadPartida.SalarioReal;
+
+                db.IndiceOcupacionalModalidadPartida.Update(IndiceOcupacionalModalidadPartida);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = TipoAccionPersonal,
                 };
 
             }
@@ -219,10 +217,10 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/TipoAccionPersonal
+        // POST: api/IndiceOcupacionalModalidadPartida
         [HttpPost]
-        [Route("InsertarTipoAccionPersonal")]
-        public async Task<Response> PostTipoAccionPersonal([FromBody] TipoAccionPersonal TipoAccionPersonal)
+        [Route("InsertarIndiceOcupacionalModalidadPartida")]
+        public async Task<Response> PostIndiceOcupacionalModalidadPartida([FromBody] IndiceOcupacionalModalidadPartida IndiceOcupacionalModalidadPartida)
         {
             try
             {
@@ -235,25 +233,15 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (TipoAccionPersonal.NHorasMinimo > TipoAccionPersonal.NHorasMaximo && TipoAccionPersonal.NDiasMinimo > TipoAccionPersonal.NDiasMaximo)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La hora mínimo debe ser menor a la hora máximo y el día mínimo debe ser menor al día máximo"
-                    };
-                }
-
-                var respuesta = Existe(TipoAccionPersonal);
+                var respuesta = Existe(IndiceOcupacionalModalidadPartida);
                 if (!respuesta.IsSuccess)
                 {
-                    db.TipoAccionPersonal.Add(TipoAccionPersonal);
+                    db.IndiceOcupacionalModalidadPartida.Add(IndiceOcupacionalModalidadPartida);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                        Resultado = TipoAccionPersonal
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
@@ -284,9 +272,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/TipoAccionPersonal/5
+        // DELETE: api/IndiceOcupacionalModalidadPartida/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTipoAccionPersonal([FromRoute] int id)
+        public async Task<Response> DeleteIndiceOcupacionalModalidadPartida([FromRoute] int id)
         {
             try
             {
@@ -299,7 +287,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
+                var respuesta = await db.IndiceOcupacionalModalidadPartida.SingleOrDefaultAsync(m => m.IdIndiceOcupacionalModalidadPartida == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -308,7 +296,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoAccionPersonal.Remove(respuesta);
+                db.IndiceOcupacionalModalidadPartida.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -337,18 +325,18 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(TipoAccionPersonal TipoAccionPersonal)
+        private Response Existe(IndiceOcupacionalModalidadPartida IndiceOcupacionalModalidadPartida)
         {
-            var nombre = TipoAccionPersonal.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoAccionPersonalrespuesta = db.TipoAccionPersonal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombre && p.IdEstadoTipoAccionPersonal == TipoAccionPersonal.IdEstadoTipoAccionPersonal).FirstOrDefault();
-
-            if (TipoAccionPersonalrespuesta != null)
+            var fecha = IndiceOcupacionalModalidadPartida.Fecha;
+            var salarioReal = IndiceOcupacionalModalidadPartida.SalarioReal;
+            var IndiceOcupacionalModalidadPartidarespuesta = db.IndiceOcupacionalModalidadPartida.Where(p => p.Fecha == fecha && p.SalarioReal == salarioReal && p.IdIndiceOcupacional == IndiceOcupacionalModalidadPartida.IdIndiceOcupacional && p.IdEmpleado == IndiceOcupacionalModalidadPartida.IdEmpleado && p.IdFondoFinanciamiento == IndiceOcupacionalModalidadPartida.IdFondoFinanciamiento && p.IdModalidadPartida == IndiceOcupacionalModalidadPartida.IdModalidadPartida && p.IdTipoNombramiento == IndiceOcupacionalModalidadPartida.IdTipoNombramiento).FirstOrDefault();
+            if (IndiceOcupacionalModalidadPartidarespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = TipoAccionPersonalrespuesta,
+                    Resultado = IndiceOcupacionalModalidadPartidarespuesta,
                 };
 
             }
@@ -356,8 +344,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = TipoAccionPersonalrespuesta,
+                Resultado = IndiceOcupacionalModalidadPartidarespuesta,
             };
         }
+
     }
 }

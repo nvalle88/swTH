@@ -16,7 +16,7 @@
     <None Remove="Properties\PublishProfiles\CustomProfile2.pubxml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="bd.log.guardar" Version="1.0.1" />
+    <PackageReference Include="bd.log.guardar" Version="1.0.8" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.3" />
@@ -36,6 +36,7 @@
     <Folder Include="Controllers\MVC\" />
     <Folder Include="Properties\PublishProfiles\" />
     <Folder Include="wwwroot\Documentos\" />
+    <Folder Include="wwwroot\Noticias\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\bd.swcompartidos.servicios.externos\bd.sw.externos.csproj" />
