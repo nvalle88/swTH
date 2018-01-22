@@ -304,10 +304,22 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(ItinerarioViatico ItinerarioViatico)
         {
-            var bdd = ItinerarioViatico.IdTipoTransporte;
-            var bdd2 = ItinerarioViatico.FechaDesde;
-            var bdd3 = ItinerarioViatico.FechaHasta;
-            var itinerarioviaticorespuesta = db.ItinerarioViatico.Where(p => p.IdTipoTransporte== bdd && p.FechaDesde ==bdd2 && p.FechaHasta == bdd3).FirstOrDefault();
+            var bdd1 = ItinerarioViatico.IdSolicitudViatico;
+            var bdd2 = ItinerarioViatico.IdTipoTransporte;
+            var bdd3 = ItinerarioViatico.Descripcion;
+            var bdd4 = ItinerarioViatico.FechaDesde;
+            var bdd5 = ItinerarioViatico.FechaHasta;
+            var bdd6 = ItinerarioViatico.Valor;
+            var bdd7 = ItinerarioViatico.HoraSalida;
+            var bdd8 = ItinerarioViatico.HoraLlegada;
+            var itinerarioviaticorespuesta = db.ItinerarioViatico.Where(p => p.IdSolicitudViatico== bdd1 
+            && p.IdTipoTransporte ==bdd2 
+            && p.Descripcion == bdd3
+            && p.FechaHasta == bdd4
+            && p.FechaHasta == bdd5
+            && p.Valor == bdd6
+            && p.HoraSalida == bdd7
+            && p.HoraLlegada == bdd8).FirstOrDefault();
             if (itinerarioviaticorespuesta != null)
             {
                 return new Response

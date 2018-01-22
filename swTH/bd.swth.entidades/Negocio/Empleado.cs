@@ -7,17 +7,18 @@ namespace bd.swth.entidades.Negocio
 
     public partial class Empleado
     {
+        [Key]
         public int IdEmpleado { get; set; }
 
         public DateTime FechaIngreso { get; set; }
 
         public DateTime FechaIngresoSectorPublico { get; set; }
 
-        [Required(ErrorMessage = "Debe introducir {0}")]
-        [Display(Name = "¿Trabajó en la Superintendencia de InstitucionesFinancieras?")]
         public bool TrabajoSuperintendenciaBanco { get; set; }
 
+
         public bool FondosReservas { get; set; }
+
 
         public bool DeclaracionJurada { get; set; }
 
@@ -33,24 +34,18 @@ namespace bd.swth.entidades.Negocio
 
         //Propiedades Virtuales Referencias a otras clases
 
-        [Display(Name = "Persona:")]
-        [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int IdPersona { get; set; }
-
         public virtual Persona Persona { get; set; }
 
-        public int IdCiudadLugarNacimiento { get; set; }
 
+        public int IdCiudadLugarNacimiento { get; set; }
         public virtual Ciudad CiudadNacimiento { get; set; }
 
         public int IdProvinciaLugarSufragio { get; set; }
-
         public virtual Provincia ProvinciaSufragio { get; set; }
 
         public int IdDependencia { get; set; }
-
         public virtual Dependencia Dependencia { get; set; }
-
 
 
 
@@ -177,6 +172,8 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<Eval001> Eval001 { get; set; }
 
         public virtual ICollection<CeseFuncion> CeseFuncion { get; set; }
+
+        public virtual ICollection<Induccion> Induccion { get; set; }
 
 
     }

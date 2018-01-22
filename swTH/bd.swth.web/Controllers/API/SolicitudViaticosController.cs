@@ -52,6 +52,37 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("ListarSolicitudesViaticosPorEmpleado")]
+        public async Task<List<SolicitudViatico>> ListarSolicitudesViaticosPorEmpleado([FromBody]Empleado empleado)
+        {
+            //Persona persona = new Persona();
+            try
+            {
+
+                var SolicitudViaticos = await db.SolicitudViatico
+                                   .Where(e => e.IdEmpleado == empleado.IdEmpleado).ToListAsync();
+                //var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado };
+
+
+                return SolicitudViaticos;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<SolicitudViatico>();
+            }
+        }
+
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetSolicitudViatico([FromRoute] int id)
@@ -271,6 +302,144 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("ActualizarValorTotalViatico")]
+        public async Task<Response> PutValorTotalViatico([FromBody] SolicitudViatico solicitudViatico)
+        {
+            Decimal valor = new Decimal();
+            try
+            {
+           
+
+                var solicitudViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
+
+                if (solicitudViaticoActualizar != null)
+                {
+
+                    var listaItinerarios = await db.ItinerarioViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).ToListAsync();
+
+
+                    foreach (var item in listaItinerarios)
+                    {
+                        valor = valor + item.Valor;
+                    }
+
+
+                    try
+                    {
+                        solicitudViaticoActualizar.ValorEstimado = valor;
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+        }
+
+        [HttpPost]
+        [Route("ActualizarEstadoSolicitudViatico")]
+        public async Task<Response> ActualizarEstadoSolicitudViatico([FromBody] SolicitudViaticoViewModel solicitudViaticoViewModel)
+        {
+            try
+            {
+               
+
+                var solicitudViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViaticoViewModel.SolicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
+
+                if (solicitudViaticoActualizar != null)
+                {
+                    try
+                    {
+                        
+                        solicitudViaticoActualizar.Estado = solicitudViaticoViewModel.SolicitudViatico.Estado;
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+        }
+
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteSolicitudViatico([FromRoute] int id)
@@ -326,11 +495,34 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(SolicitudViatico SolicitudViatico)
         {
-            var bdd = SolicitudViatico.IdEmpleado;
-            var bdd2 = SolicitudViatico.FechaSolicitud;
-            var bdd3 = SolicitudViatico.FechaSalida;
-            var bdd4 = SolicitudViatico.FechaLlegada;
-            var solicitudviaticorespuesta = db.SolicitudViatico.Where(p => p.IdEmpleado == bdd && p.FechaSolicitud == bdd2 && p.FechaSalida == bdd3 && p.FechaLlegada == bdd4).FirstOrDefault();
+            var bdd1 = SolicitudViatico.IdEmpleado;
+            var bdd2 = SolicitudViatico.IdPais;
+            var bdd3 = SolicitudViatico.IdProvincia;
+            var bdd4 = SolicitudViatico.IdCiudad;
+            var bdd5 = SolicitudViatico.IdConfiguracionViatico;
+            var bdd6 = SolicitudViatico.FechaSolicitud;
+            var bdd7 = SolicitudViatico.Descripcion;
+            var bdd8 = SolicitudViatico.ValorEstimado;
+            var bdd9 = SolicitudViatico.FechaLlegada;
+            var bdd10 = SolicitudViatico.FechaSalida;
+            var bdd11 = SolicitudViatico.Observacion;
+            var bdd12 = SolicitudViatico.Estado;
+            var bdd13 = SolicitudViatico.HoraSalida;
+            var bdd14 = SolicitudViatico.HoraLlegada;
+            var solicitudviaticorespuesta = db.SolicitudViatico.Where(p => p.IdEmpleado == bdd1
+            && p.IdPais == bdd2 
+            && p.IdProvincia == bdd3 
+            && p.IdCiudad == bdd4
+            && p.IdConfiguracionViatico == bdd5
+            && p.FechaSolicitud == bdd6
+            && p.Descripcion == bdd7
+            && p.ValorEstimado == bdd8
+            && p.FechaLlegada == bdd9
+            && p.FechaSalida == bdd10
+            && p.Observacion == bdd11
+            && p.Estado == bdd12
+            && p.HoraSalida == bdd13
+            && p.HoraLlegada == bdd14).FirstOrDefault();
             if (solicitudviaticorespuesta != null)
             {
                 return new Response

@@ -121,7 +121,8 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalComportamientoObservable> IndiceOcupacionalComportamientoObservable { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalConocimientosAdicionales> IndiceOcupacionalConocimientosAdicionales { get; set; }
         public virtual DbSet<IndiceOcupacionalEstudio> IndiceOcupacionalEstudio { get; set; }
-        public virtual DbSet<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
+        public virtual DbSet<Induccion> Induccion { get; set; }
         public virtual DbSet<InformeUATH> InformeUATH { get; set; }
         public virtual DbSet<InformeViatico> InformeViatico { get; set; }
         public virtual DbSet<IngresoEgresoRMU> IngresoEgresoRMU { get; set; }
@@ -131,6 +132,7 @@ namespace bd.swth.datos
         public virtual DbSet<Liquidacion> Liquidacion { get; set; }
         public virtual DbSet<ManualPuesto> ManualPuesto { get; set; }
         public virtual DbSet<MaterialApoyo> MaterialApoyo { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.MaterialInduccion> MaterialInduccion { get; set; }
         public virtual DbSet<Mision> Mision { get; set; }
         public virtual DbSet<MisionIndiceOcupacional> MisionIndiceOcupacional { get; set; }
         public virtual DbSet<ModalidadPartida> ModalidadPartida { get; set; }
@@ -149,7 +151,6 @@ namespace bd.swth.datos
         public virtual DbSet<Parentesco> Parentesco { get; set; }
         public virtual DbSet<Parroquia> Parroquia { get; set; }
         public virtual DbSet<PartidasFase> PartidasFase { get; set; }
-        public virtual DbSet<Permiso> Permiso { get; set; }
         public virtual DbSet<Persona> Persona { get; set; }
         public virtual DbSet<PersonaCapacitacion> PersonaCapacitacion { get; set; }
         public virtual DbSet<PersonaDiscapacidad> PersonaDiscapacidad { get; set; }
@@ -792,7 +793,6 @@ namespace bd.swth.datos
                     .HasColumnName("PorCientoAJustificar")
                     .HasColumnType("char(10)");
 
-                entity.Property(e => e.PorCientoAJustificar).HasColumnName("PorCientoAJustificar");
 
                 entity.Property(e => e.ValorEntregadoPorDia).HasColumnType("decimal");
 
@@ -2364,6 +2364,20 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdTipoNombramiento);
             });
 
+            modelBuilder.Entity<Induccion>(entity =>
+            {
+                entity.HasKey(e => e.IdInduccion)
+                    .HasName("PK_Induccion");
+
+                entity.Property(e => e.Fecha).HasColumnType("date");
+
+                entity.HasOne(d => d.IdEmpleadoNavigation)
+                    .WithMany(p => p.Induccion)
+                    .HasForeignKey(d => d.IdEmpleado)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Induccion_Empleado");
+            });
+
             modelBuilder.Entity<InformeUATH>(entity =>
             {
                 entity.HasKey(e => e.IdInformeUATH)
@@ -2548,6 +2562,25 @@ namespace bd.swth.datos
                     .WithMany(p => p.MaterialApoyo)
                     .HasForeignKey(d => d.IdFormularioDevengacion)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+
+            modelBuilder.Entity<MaterialInduccion>(entity =>
+            {
+                entity.HasKey(e => e.IdMaterialInduccion)
+                    .HasName("PK_MaterialInduccion");
+
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("varchar(250)");
+
+                entity.Property(e => e.Titulo)
+                    .IsRequired()
+                    .HasColumnType("varchar(150)");
+
+                entity.Property(e => e.Url)
+                    .IsRequired()
+                    .HasColumnType("varchar(250)");
             });
 
             modelBuilder.Entity<Mision>(entity =>

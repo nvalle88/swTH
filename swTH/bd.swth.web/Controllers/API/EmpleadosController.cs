@@ -335,6 +335,269 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("ObtenerPersonaEstudioEmpleado")]
+        public async Task<List<PersonaEstudioViewModel>> ObtenerPersonaEstudioEmpleado([FromBody] int idEmpleado)
+        {
+            try
+            {
+
+
+                Empleado oEmpleado = await db.Empleado
+                                  .Where(x => x.IdEmpleado == idEmpleado)
+                                  .SingleOrDefaultAsync();
+
+                Persona persona = await db.Persona
+                                         .Where(m => m.IdPersona == oEmpleado.IdPersona)
+                                         .Include(x => x.Parroquia)
+                                         .ThenInclude(x => x.Ciudad)
+                                         .ThenInclude(x => x.Provincia)
+                                         .ThenInclude(x => x.Pais)
+                                         .FirstOrDefaultAsync();
+
+                List<PersonaEstudio> personaEstudio = await db.PersonaEstudio
+                                .Where(x => x.IdPersona == oEmpleado.IdPersona)
+                                .Include(x => x.Titulo)
+                                .ThenInclude(x => x.AreaConocimiento)
+                                .ToListAsync();
+
+                List<PersonaEstudioViewModel> listaPersonaEstudio = new List<PersonaEstudioViewModel>();
+
+
+                foreach (PersonaEstudio item in personaEstudio)
+                {
+
+                    PersonaEstudioViewModel objetoPersonaEstudio = new PersonaEstudioViewModel
+                    {
+                        estudio = item.Titulo.Estudio.Nombre,
+                        areaConocimiento = item.Titulo.AreaConocimiento.Descripcion,
+                        titulo = item.Titulo.Nombre,
+                        fechaGraduado = String.Format(item.FechaGraduado.ToString(), "dd/mm/aaaa")
+                    };
+
+                    listaPersonaEstudio.Add(objetoPersonaEstudio);
+                }
+
+                return listaPersonaEstudio;
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+
+        [HttpPost]
+        [Route("ObtenerEmpleadoFamiliarEmpleado")]
+        public async Task<EmpleadoViewModel> ObtenerEmpleadoFamiliarEmpleado([FromBody] int idEmpleado)
+        {
+            try
+            {
+
+
+                Empleado oEmpleado = await db.Empleado
+                                  .Where(x => x.IdEmpleado == idEmpleado)
+                                  .SingleOrDefaultAsync();
+
+                Persona persona = await db.Persona
+                                         .Where(m => m.IdPersona == oEmpleado.IdPersona)
+                                         .Include(x => x.Parroquia)
+                                         .ThenInclude(x => x.Ciudad)
+                                         .ThenInclude(x => x.Provincia)
+                                         .ThenInclude(x => x.Pais)
+                                         .FirstOrDefaultAsync();
+
+                List<EmpleadoFamiliar> empleadoFamiliar = await db.EmpleadoFamiliar
+                                 .Where(x => x.IdEmpleado == oEmpleado.IdEmpleado)
+                                 .ToListAsync();
+
+
+                EmpleadoViewModel item = new EmpleadoViewModel
+                {
+                    Persona = persona,
+                    Empleado = oEmpleado,
+                    EmpleadoFamiliar = empleadoFamiliar
+                };
+
+                return item;
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        [HttpPost]
+        [Route("ObtenerPersonaDiscapacidadEmpleado")]
+        public async Task<EmpleadoViewModel> ObtenerPersonaDiscapacidadEmpleado([FromBody] int idEmpleado)
+        {
+            try
+            {
+
+                Empleado oEmpleado = await db.Empleado
+                                  .Where(x => x.IdEmpleado == idEmpleado)
+                                  .SingleOrDefaultAsync();
+
+                Persona persona = await db.Persona
+                                         .Where(m => m.IdPersona == oEmpleado.IdPersona)
+                                         .Include(x => x.Parroquia)
+                                         .ThenInclude(x => x.Ciudad)
+                                         .ThenInclude(x => x.Provincia)
+                                         .ThenInclude(x => x.Pais)
+                                         .FirstOrDefaultAsync();
+
+                List<PersonaDiscapacidad> personaDiscapacidad = await db.PersonaDiscapacidad
+                                  .Where(x => x.IdPersona == oEmpleado.IdPersona)
+                                  .ToListAsync();
+
+
+                EmpleadoViewModel item = new EmpleadoViewModel
+                {
+                    Persona = persona,
+                    Empleado = oEmpleado,
+                    PersonaDiscapacidad = personaDiscapacidad
+                };
+
+                return item;
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+
+        [HttpPost]
+        [Route("ObtenerPersonaEnfermedadEmpleado")]
+        public async Task<EmpleadoViewModel> ObtenerPersonaEnfermedadEmpleado([FromBody] int idEmpleado)
+        {
+            try
+            {
+
+                Empleado oEmpleado = await db.Empleado
+                                  .Where(x => x.IdEmpleado == idEmpleado)
+                                  .SingleOrDefaultAsync();
+
+                Persona persona = await db.Persona
+                                         .Where(m => m.IdPersona == oEmpleado.IdPersona)
+                                         .Include(x => x.Parroquia)
+                                         .ThenInclude(x => x.Ciudad)
+                                         .ThenInclude(x => x.Provincia)
+                                         .ThenInclude(x => x.Pais)
+                                         .FirstOrDefaultAsync();
+
+                List<PersonaEnfermedad> personaEnfermedad = await db.PersonaEnfermedad
+                  .Where(x => x.IdPersona == oEmpleado.IdPersona)
+                  .ToListAsync();
+
+                EmpleadoViewModel item = new EmpleadoViewModel
+                {
+                    Persona = persona,
+                    Empleado = oEmpleado,
+                    PersonaEnfermedad = personaEnfermedad
+                };
+
+                return item;
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+
+        [HttpPost]
+        [Route("ObtenerDiscapacidadSustitutoEmpleado")]
+        public async Task<EmpleadoViewModel> ObtenerDiscapacidadSustitutoEmpleado([FromBody] int idEmpleado)
+        {
+            try
+            {
+
+                Empleado oEmpleado = await db.Empleado
+                                  .Where(x => x.IdEmpleado == idEmpleado)
+                                  .SingleOrDefaultAsync();
+
+                Persona persona = await db.Persona
+                                         .Where(m => m.IdPersona == oEmpleado.IdPersona)
+                                         .Include(x => x.Parroquia)
+                                         .ThenInclude(x => x.Ciudad)
+                                         .ThenInclude(x => x.Provincia)
+                                         .ThenInclude(x => x.Pais)
+                                         .FirstOrDefaultAsync();
+
+                PersonaSustituto personaSustituto = await db.PersonaSustituto
+                                 .Where(x => x.IdPersona == oEmpleado.IdPersona)
+                                 .SingleOrDefaultAsync();
+
+                List<DiscapacidadSustituto> discapacidadSustituto = await db.DiscapacidadSustituto
+                                  .Where(x => x.IdPersonaSustituto == personaSustituto.IdPersonaSustituto)
+                                  .ToListAsync();
+
+                EmpleadoViewModel item = new EmpleadoViewModel
+                {
+                    Persona = persona,
+                    Empleado = oEmpleado,
+                    DiscapacidadSustituto = discapacidadSustituto
+                };
+
+                return item;
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        [HttpPost]
+        [Route("ObtenerEnfermedadSustitutoEmpleado")]
+        public async Task<EmpleadoViewModel> ObtenerEnfermedadSustitutoEmpleado([FromBody] int idEmpleado)
+        {
+            try
+            {
+
+                Empleado oEmpleado = await db.Empleado
+                                  .Where(x => x.IdEmpleado == idEmpleado)
+                                  .SingleOrDefaultAsync();
+
+                Persona persona = await db.Persona
+                                         .Where(m => m.IdPersona == oEmpleado.IdPersona)
+                                         .Include(x => x.Parroquia)
+                                         .ThenInclude(x => x.Ciudad)
+                                         .ThenInclude(x => x.Provincia)
+                                         .ThenInclude(x => x.Pais)
+                                         .FirstOrDefaultAsync();
+
+                PersonaSustituto personaSustituto = await db.PersonaSustituto
+                                 .Where(x => x.IdPersona == oEmpleado.IdPersona)
+                                 .SingleOrDefaultAsync();
+
+                List<EnfermedadSustituto> enfermedadSustituto = await db.EnfermedadSustituto
+                  .Where(x => x.IdPersonaSustituto == personaSustituto.IdPersonaSustituto)
+                  .ToListAsync();
+
+
+                EmpleadoViewModel item = new EmpleadoViewModel
+                {
+                    Persona = persona,
+                    Empleado = oEmpleado,
+                    EnfermedadSustituto = enfermedadSustituto
+                };
+
+                return item;
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
         [HttpPost]
         [Route("ObtenerEmpleadoLogueado")]
         public async Task<Empleado> ObtenerEmpleadoLogueado([FromBody]Empleado empleado)
@@ -768,6 +1031,81 @@ namespace bd.swth.web.Controllers.API
         }
 
         [HttpPost]
+        [Route("ListarEmpleadosdeJefeconSolucitudesViaticos")]
+        public async Task<List<EmpleadoSolicitudViewModel>> ListarEmpleadosdeJefeconSolucitudesViaticos([FromBody]Empleado empleado)
+        {
+            try
+            {
+                var EmpleadoJefe = await db.Empleado
+                                   .Where(e => e.NombreUsuario == empleado.NombreUsuario && e.EsJefe == true).FirstOrDefaultAsync();
+
+                if (EmpleadoJefe != null)
+                {
+
+                    var listaSubordinados = await db.Empleado.Where(x => x.IdDependencia == EmpleadoJefe.IdDependencia && x.EsJefe == false).Include(x => x.Persona).Include(x => x.SolicitudViatico).ToListAsync();
+
+                    var listaEmpleado = new List<EmpleadoSolicitudViewModel>();
+                    foreach (var item in listaSubordinados)
+                    {
+                        var haSolicitado = false;
+                        var aprobado = true;
+
+                        if (item.SolicitudViatico.Count == 0)
+                        {
+                            haSolicitado = false;
+                            aprobado = false;
+                        }
+                        else
+                        {
+                            foreach (var item1 in item.SolicitudViatico)
+                            {
+
+                                if (item1.Estado == 0)
+                                {
+                                    haSolicitado = true;
+                                    aprobado = false;
+                                    break;
+                                }
+                            }
+                        }
+
+
+
+
+                        var empleadoSolicitud = new EmpleadoSolicitudViewModel
+                        {
+                            NombreApellido = item.Persona.Nombres + " " + item.Persona.Apellidos,
+                            Identificacion = item.Persona.Identificacion,
+                            Aprobado = aprobado,
+                            IdEmpleado = item.IdEmpleado,
+                            HaSolicitado = haSolicitado,
+                        };
+
+                        listaEmpleado.Add(empleadoSolicitud);
+                    }
+
+                    return listaEmpleado;
+                }
+
+                return new List<EmpleadoSolicitudViewModel>();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<EmpleadoSolicitudViewModel>();
+            }
+        }
+
+        [HttpPost]
         [Route("ListarEmpleadosdeJefeconHorasExtra")]
         public async Task<List<EmpleadoSolicitudViewModel>> ListarEmpleadosdeJefeconHorasExtra([FromBody]Empleado empleado)
         {
@@ -842,40 +1180,6 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        //[HttpPut("{id}")]
-        //public async Task<Response> PutEmpleado([FromRoute] int id, [FromBody] EmpleadoViewModel empleadoViewModel)
-        //{
-        //    try
-        //    {
-        //        if (!ModelState.IsValid)
-        //        {
-        //            return new Response
-        //            {
-        //                IsSuccess = false,
-        //                Message = Mensaje.ModeloInvalido
-        //            };
-        //        }
-
-                List<EnfermedadSustituto> enfermedadSustituto = await db.EnfermedadSustituto
-                  .Where(x => x.IdPersonaSustituto == personaSustituto.IdPersonaSustituto)
-                  .ToListAsync();
-
-
-                EmpleadoViewModel item = new EmpleadoViewModel
-                {
-                    Persona = persona,
-                    Empleado = oEmpleado,
-                    EnfermedadSustituto = enfermedadSustituto
-                };
-
-                return item;
-
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
 
         [HttpPost]
         [Route("EmpleadoSegunNombreUsuario")]
@@ -1713,6 +2017,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
         private Response Existe(EmpleadoViewModel empleadoViewModel)
         {
             var identificacion = empleadoViewModel.Persona.Identificacion.ToUpper().TrimEnd().TrimStart();
@@ -1735,33 +2040,6 @@ namespace bd.swth.web.Controllers.API
                 IsSuccess = false,
                 Resultado = Empleadorespuesta,
             };
-        }
-
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
         }
 
         // PUT: api/BasesDatos/5
