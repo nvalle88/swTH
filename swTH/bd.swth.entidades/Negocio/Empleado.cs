@@ -7,17 +7,18 @@ namespace bd.swth.entidades.Negocio
 
     public partial class Empleado
     {
+        [Key]
         public int IdEmpleado { get; set; }
 
         public DateTime FechaIngreso { get; set; }
 
         public DateTime FechaIngresoSectorPublico { get; set; }
 
-        public bool EsJefe { get; set; }
-
         public bool TrabajoSuperintendenciaBanco { get; set; }
 
+
         public bool FondosReservas { get; set; }
+
 
         public bool DeclaracionJurada { get; set; }
 
@@ -27,25 +28,27 @@ namespace bd.swth.entidades.Negocio
 
         public int DiasImposiciones { get; set; }
 
-        public int IdPersona { get; set; }
+        public string NombreUsuario { get; set; }
+        public bool EsJefe { get; set; }
+        public bool Activo { get; set; }
 
+        //Propiedades Virtuales Referencias a otras clases
+
+        public int IdPersona { get; set; }
         public virtual Persona Persona { get; set; }
 
-        public int IdCiudadLugarNacimiento { get; set; }
 
+        public int IdCiudadLugarNacimiento { get; set; }
         public virtual Ciudad CiudadNacimiento { get; set; }
 
         public int IdProvinciaLugarSufragio { get; set; }
-
         public virtual Provincia ProvinciaSufragio { get; set; }
 
         public int IdDependencia { get; set; }
-
         public virtual Dependencia Dependencia { get; set; }
 
-        public string NombreUsuario { get; set; }
 
-        public bool Activo { get; set; }
+
 
         public virtual ICollection<RolPagos> RolPagos { get; set; }
 
@@ -167,6 +170,10 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<Liquidacion> Liquidacion { get; set; }
 
         public virtual ICollection<Eval001> Eval001 { get; set; }
+
+        public virtual ICollection<CeseFuncion> CeseFuncion { get; set; }
+
+        public virtual ICollection<Induccion> Induccion { get; set; }
 
 
     }

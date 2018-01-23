@@ -13,10 +13,8 @@ namespace bd.swth.entidades.Negocio
         public int IdPais { get; set; }
         public string Nombre { get; set; }
 
-        //Propiedades Virtuales Referencias a otras clases
-
         public virtual ICollection<CapacitacionProveedor> CapacitacionProveedor { get; set; }
-        public virtual ICollection<ItinerarioViatico> ItinerarioViatico { get; set; }
         public virtual ICollection<Provincia> Provincia { get; set; }
+        public virtual ICollection<SolicitudViatico> SolicitudViatico { get; set; }
     }
 }

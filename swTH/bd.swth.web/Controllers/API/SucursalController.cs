@@ -51,6 +51,30 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("ListarSucursalporCiudad")]
+        public async Task<List<Sucursal>> GetSucursalbyCity([FromBody] Ciudad ciudad)
+        {
+            try
+            {
+                return await db.Sucursal.Include(c => c.Ciudad).Where(x => x.IdCiudad == ciudad.IdCiudad).OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<Sucursal>();
+            }
+        }
+
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetSucursal([FromRoute] int id)

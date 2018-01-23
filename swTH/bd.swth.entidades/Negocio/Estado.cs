@@ -10,7 +10,6 @@ namespace bd.swth.entidades.Negocio
             RecepcionActivoFijoDetalle = new HashSet<RecepcionActivoFijoDetalle>();
             SolicitudAnticipo = new HashSet<SolicitudAnticipo>();
             SolicitudModificacionFichaEmpleado = new HashSet<SolicitudModificacionFichaEmpleado>();
-            SolicitudViatico = new HashSet<SolicitudViatico>();
         }
 
         public int IdEstado { get; set; }
@@ -21,7 +20,6 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<SolicitudAnticipo> SolicitudAnticipo { get; set; }
         public virtual ICollection<SolicitudModificacionFichaEmpleado> SolicitudModificacionFichaEmpleado { get; set; }
        
-        public virtual ICollection<SolicitudViatico> SolicitudViatico { get; set; }
 
     }
 }

@@ -54,6 +54,31 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("ListarDependenciaporSucursal")]
+        public async Task<List<Dependencia>> GetDependenciabySucursal([FromBody] Sucursal sucursal)
+        {
+            try
+            {
+                return await db.Dependencia.Include(c => c.Sucursal).Where(x => x.IdSucursal == sucursal.IdSucursal).OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<Dependencia>();
+            }
+        }
+
         // GET: api/Dependencias/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDependencia([FromRoute] int id)

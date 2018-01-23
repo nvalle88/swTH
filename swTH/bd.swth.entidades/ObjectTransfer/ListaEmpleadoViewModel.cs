@@ -12,5 +12,12 @@ namespace bd.swth.entidades.ObjectTransfer
         public string Identificacion { get; set; }
         public string TelefonoPrivado { get; set; }
         public string CorreoPrivado { get; set; }
+        public string Dependencia { get; set; }
+        public string RolPuesto { get; set; }
+        public bool TipoCuenta { get; set; }
+        public string NoCuenta { get; set; }
+        public string InstitucionBancaria { get; set; }
+        public string FondoFinanciamiento { get; set; } 
+        public int IdConfiguracionViatico { get; set; }
     }
 }

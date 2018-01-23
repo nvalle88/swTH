@@ -3,10 +3,10 @@ namespace bd.swth.entidades.Negocio
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
-     
+
     public partial class TipoAccionPersonal
     {
-       
+
         public int IdTipoAccionPersonal { get; set; }
 
         public string Nombre { get; set; }
