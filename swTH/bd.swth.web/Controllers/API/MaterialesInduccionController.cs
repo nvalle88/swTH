@@ -97,7 +97,9 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = Mensaje.Satisfactorio,
+                        Resultado = documentoInstitucional
+
                     };
                 }
 
