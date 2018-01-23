@@ -38,7 +38,7 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 //var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x=>x.DatosBancarios).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).OrderBy(x => x.FechaIngreso).ToListAsync();
-                var lista = await db.Empleado.Include(x => x.Persona).OrderBy(x => x.FechaIngreso).ToListAsync();
+                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).ToListAsync();
                 var listaSalida = new List<ListaEmpleadoViewModel>();
                 foreach (var item in lista)
                 {
@@ -271,10 +271,11 @@ namespace bd.swth.web.Controllers.API
                                   .SingleOrDefaultAsync();
 
                 EmpleadoContactoEmergencia contactoEmergencia = await db.EmpleadoContactoEmergencia
-                                  .Where(x => x.IdEmpleado == idEmpleado)
-                                  .SingleOrDefaultAsync();
-                
-               
+                                  .Include(x => x.Persona)
+                                 .Where(x => x.IdEmpleado == idEmpleado)
+                                 .SingleOrDefaultAsync();
+
+
                 EmpleadoViewModel item = new EmpleadoViewModel
                 {
                     IndiceOcupacionalModalidadPartida = indice,
@@ -358,8 +359,8 @@ namespace bd.swth.web.Controllers.API
 
                 List<PersonaEstudio> personaEstudio = await db.PersonaEstudio
                                 .Where(x => x.IdPersona == oEmpleado.IdPersona)
-                                .Include(x => x.Titulo)
-                                .ThenInclude(x => x.AreaConocimiento)
+                                .Include(x => x.Titulo).ThenInclude(x => x.Estudio)
+                                .Include(x => x.Titulo).ThenInclude(x => x.AreaConocimiento)
                                 .ToListAsync();
 
                 List<PersonaEstudioViewModel> listaPersonaEstudio = new List<PersonaEstudioViewModel>();
@@ -371,8 +372,8 @@ namespace bd.swth.web.Controllers.API
                     PersonaEstudioViewModel objetoPersonaEstudio = new PersonaEstudioViewModel
                     {
                         estudio = item.Titulo.Estudio.Nombre,
-                        areaConocimiento = item.Titulo.AreaConocimiento.Descripcion,
                         titulo = item.Titulo.Nombre,
+                        areaConocimiento = item.Titulo.AreaConocimiento.Descripcion,
                         fechaGraduado = String.Format(item.FechaGraduado.ToString(), "dd/mm/aaaa")
                     };
 
