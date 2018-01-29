@@ -238,6 +238,30 @@ namespace bd.swrm.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("ListarSolicitudesTiposViaticos")]
+        public async Task<List<SolicitudTipoViatico>> GetSolicitudesTiposViaticos([FromBody] SolicitudTipoViatico solicitudTipoViatico)
+        {
+            try
+            {
+                return await db.SolicitudTipoViatico.Where(x=>x.IdSolicitudViatico == solicitudTipoViatico.IdSolicitudViatico).OrderBy(x => x.IdTipoViatico).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<SolicitudTipoViatico>();
+            }
+        }
+
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteTipoViatico([FromRoute] int id)

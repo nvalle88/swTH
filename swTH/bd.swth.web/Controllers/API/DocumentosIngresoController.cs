@@ -7,40 +7,34 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.servicios.Interfaces;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
-using bd.swth.entidades.ObjectTransfer;
-using System.IO;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/MaterialesInduccion")]
-    public class MaterialesInduccionController : Controller
+    [Route("api/DocumentosIngreso")]
+    public class DocumentosIngresoController : Controller
     {
-        private readonly IUploadFileService uploadFileService;
         private readonly SwTHDbContext db;
 
-
-
-        public MaterialesInduccionController(SwTHDbContext db, IUploadFileService uploadFileService)
+        public DocumentosIngresoController(SwTHDbContext db)
         {
-            this.uploadFileService = uploadFileService;
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarMaterialesInduccion")]
-        public async Task<List<MaterialInduccion>> GetMaterialesInduccion()
+        [Route("ListarDocumentosIngreso")]
+        public async Task<List<DocumentosIngreso>> GetDocumentosIngreso()
         {
             try
             {
-                return await db.MaterialInduccion.OrderBy(x => x.Titulo).ToListAsync();
+                return await db.DocumentosIngreso.OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -54,16 +48,39 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<MaterialInduccion>();
+                return new List<DocumentosIngreso>();
             }
         }
 
-
+        // GET: api/BasesDatos
         [HttpPost]
-        [Route("UploadFiles")]
-        public async Task<Response> Post([FromBody] DocumentoInstitucionalTransfer documentoInstitucionalTransfer)
+        [Route("ListarDocumentosIngresoEmpleado")]
+        public async Task<List<DocumentosIngresoEmpleado>> GetDocumentosIngresoEmpleado([FromBody] Empleado empleado)
         {
-            MaterialInduccion seleccionado = new MaterialInduccion();
+            try
+            {
+                return await db.DocumentosIngresoEmpleado.Where(x=>x.IdEmpleado == empleado.IdEmpleado).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<DocumentosIngresoEmpleado>();
+            }
+        }
+
+        // GET: api/BasesDatos/5
+        [HttpGet("{id}")]
+        public async Task<Response> GetDocumentosIngreso([FromRoute] int id)
+        {
             try
             {
                 if (!ModelState.IsValid)
@@ -71,58 +88,30 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = ""
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
-                var documentoInstitucional = new MaterialInduccion
+                var DocumentosIngreso = await db.DocumentosIngreso.SingleOrDefaultAsync(m => m.IdDocumentosIngreso == id);
+
+                if (DocumentosIngreso == null)
                 {
-                    Titulo = documentoInstitucionalTransfer.Nombre,
-                    Descripcion = documentoInstitucionalTransfer.Descripcion
-                };
-
-                var respuesta = ExisteMaterialInduccion(documentoInstitucional.Titulo);
-                if (!respuesta.IsSuccess)
-                {
-                    if (documentoInstitucionalTransfer.Url==null)
-                    {
-                        documentoInstitucional = await InsertarMaterialInduccion(documentoInstitucional);
-
-                        await uploadFileService.UploadFile(documentoInstitucionalTransfer.Fichero, "MaterialInduccion", Convert.ToString(documentoInstitucional.IdMaterialInduccion), documentoInstitucionalTransfer.Extension);
-
-
-                        seleccionado = db.MaterialInduccion.Find(documentoInstitucional.IdMaterialInduccion);
-                        seleccionado.Url = string.Format("{0}/{1}{2}", "MaterialInduccion", Convert.ToString(documentoInstitucional.IdMaterialInduccion), documentoInstitucionalTransfer.Extension);
-                        db.MaterialInduccion.Update(seleccionado);
-                        db.SaveChanges();
-                    }
-                    else
-                    {
-                        documentoInstitucional = await InsertarMaterialInduccion(documentoInstitucional);
-                        seleccionado = db.MaterialInduccion.Find(documentoInstitucional.IdMaterialInduccion);
-                        seleccionado.Url = documentoInstitucionalTransfer.Url;
-                        db.MaterialInduccion.Update(seleccionado);
-                        db.SaveChanges();
-                    }
-                    
                     return new Response
                     {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                        Resultado = documentoInstitucional
-
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
 
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = DocumentosIngreso,
                 };
             }
             catch (Exception ex)
             {
-
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
@@ -139,24 +128,147 @@ namespace bd.swth.web.Controllers.API
                     Message = Mensaje.Error,
                 };
             }
-
-
         }
 
+
         // POST: api/BasesDatos
-        private async Task<MaterialInduccion> InsertarMaterialInduccion(MaterialInduccion MaterialInduccion)
+        [HttpPost]
+        [Route("GetDocumentoIngresoEmpleado")]
+        public async Task<Response> GetDocumentoIngresoEmpleado([FromBody] Empleado empleado)
         {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
 
-            db.MaterialInduccion.Add(MaterialInduccion);
-            await db.SaveChangesAsync();
-            return MaterialInduccion;
+                var DocumentosIngresoEmpleado = await db.DocumentosIngresoEmpleado.SingleOrDefaultAsync(m => m.IdEmpleado == empleado.IdEmpleado);
 
+                if (DocumentosIngresoEmpleado == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = DocumentosIngresoEmpleado,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        // PUT: api/BasesDatos/5
+        [HttpPut("{id}")]
+        public async Task<Response> PutDocumentosIngreso([FromRoute] int id, [FromBody] DocumentosIngreso documentosIngreso)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                var existe = Existe(documentosIngreso);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var documentosIngresoActualizar = await db.DocumentosIngreso.Where(x => x.IdDocumentosIngreso == id).FirstOrDefaultAsync();
+
+                if (documentosIngresoActualizar != null)
+                {
+                    try
+                    {
+                        documentosIngresoActualizar.Descripcion = documentosIngreso.Descripcion;
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("IngresarInduccionEmpleado")]
-        public async Task<Response> IngresarInduccionEmpleado([FromBody] Induccion induccion)
+        [Route("InsertarDocumentosIngreso")]
+        public async Task<Response> PostDocumentosIngreso([FromBody] DocumentosIngreso DocumentosIngreso)
         {
             try
             {
@@ -169,10 +281,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = ExisteInduccion(induccion);
+                var respuesta = Existe(DocumentosIngreso);
                 if (!respuesta.IsSuccess)
                 {
-                    db.Induccion.Add(induccion);
+                    db.DocumentosIngreso.Add(DocumentosIngreso);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -208,40 +320,34 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
-
-        // GET: api/BasesDatos/5
-        [HttpGet("{id}")]
-        public async Task<Response> GetMaterialInduccion([FromRoute] int id)
+        // POST: api/BasesDatos
+        [HttpPost]
+        [Route("InsertarDocumentosIngresoEmpleado")]
+        public async Task<Response> PostDocumentosIngresoEmpleado([FromBody] ViewModelDocumentoIngresoEmpleado viewModelDocumentoIngresoEmpleado)
         {
             try
             {
-                if (!ModelState.IsValid)
+                foreach (var item in viewModelDocumentoIngresoEmpleado.DocumentosSeleccionados)
                 {
-                    return new Response
+
+
+                    var documentosIngresoEmpleado = new DocumentosIngresoEmpleado
                     {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        IdEmpleado = viewModelDocumentoIngresoEmpleado.empleadoViewModel.IdEmpleado,
+                        IdDocumentosIngreso = Convert.ToInt32(item),
+                        Entregado = true
                     };
+                    db.DocumentosIngresoEmpleado.Add(documentosIngresoEmpleado);
                 }
 
-                var MaterialInduccion = await db.MaterialInduccion.SingleOrDefaultAsync(m => m.IdMaterialInduccion == id);
-
-                if (MaterialInduccion == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
+                await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = MaterialInduccion,
                 };
+
             }
             catch (Exception ex)
             {
@@ -262,52 +368,11 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
-
-        // GET: api/BasesDatos/5
-        [HttpPost]
-        [Route("GetFile")]
-        public async Task<Response> GetFile([FromBody] MaterialInduccion documentoInformacionInstitucional)
-        {
-            var ext = Path.GetExtension(documentoInformacionInstitucional.Url);
-            try
-            {
-
-                var respuestaFile = uploadFileService.GetFile("MaterialInduccion", Convert.ToString(documentoInformacionInstitucional.IdMaterialInduccion), ext);
-
-                var documentoIstitucional = await db.MaterialInduccion.Where(x => x.IdMaterialInduccion == documentoInformacionInstitucional.IdMaterialInduccion).FirstOrDefaultAsync();
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = documentoIstitucional.Titulo,
-                    Resultado = respuestaFile,
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
-
 
         // PUT: api/BasesDatos/5
-        [HttpPut("{id}")]
-        public async Task<Response> PutMaterialInduccion([FromRoute] int id, [FromBody] MaterialInduccion documentoInformacionInstitucional)
+        [HttpPost]
+        [Route("EditarCheckListDocumentos")]
+        public async Task<Response> PutCheckListDocumentosIngreso([FromBody] ViewModelDocumentoIngresoEmpleado viewModelDocumentoIngresoEmpleado)
         {
             try
             {
@@ -320,24 +385,36 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = ExisteMaterialInduccion(documentoInformacionInstitucional.Titulo);
-                if (existe.IsSuccess)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
-                    };
-                }
 
-                var documentoInformacionInstitucionalActualizar = await db.MaterialInduccion.Where(x => x.IdMaterialInduccion == id).FirstOrDefaultAsync();
+                var documentosIngresoActualizar = await db.DocumentosIngresoEmpleado.Where(x => x.IdEmpleado == viewModelDocumentoIngresoEmpleado.empleadoViewModel.IdEmpleado).ToListAsync();
 
-                if (documentoInformacionInstitucionalActualizar != null)
+                if (documentosIngresoActualizar != null)
                 {
                     try
                     {
-                        documentoInformacionInstitucionalActualizar.Titulo = documentoInformacionInstitucional.Titulo;
-                        documentoInformacionInstitucionalActualizar.Descripcion = documentoInformacionInstitucional.Descripcion;
+                        foreach(var item1 in viewModelDocumentoIngresoEmpleado.DocumentosSeleccionados)
+                          {
+                            var bandera = true;
+                              foreach(var item2 in documentosIngresoActualizar )
+                           {
+
+                                if(Convert.ToInt32(item1) == item2.IdDocumentosIngreso)
+                                {                                            
+                                  bandera = false;
+                                }
+                           }
+                                if (bandera)
+                                    {
+                                var documentoIngresoEmpleado = new DocumentosIngresoEmpleado
+                                {
+                                    IdDocumentosIngreso = Convert.ToInt32(item1),
+                                    IdEmpleado = viewModelDocumentoIngresoEmpleado.empleadoViewModel.IdEmpleado,
+                                    Entregado = true
+                                };
+                                db.DocumentosIngresoEmpleado.Add(documentoIngresoEmpleado);
+                                }
+                            }
+
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -367,6 +444,9 @@ namespace bd.swth.web.Controllers.API
                     }
                 }
 
+
+
+
                 return new Response
                 {
                     IsSuccess = false,
@@ -385,7 +465,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteMaterialInduccion([FromRoute] int id)
+        public async Task<Response> DeleteDocumentosIngreso([FromRoute] int id)
         {
             try
             {
@@ -398,10 +478,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                var respuestaFile = uploadFileService.DeleteFile("MaterialInduccion", Convert.ToString(id), "pdf");
-
-                var respuesta = await db.MaterialInduccion.SingleOrDefaultAsync(m => m.IdMaterialInduccion == id);
+                var respuesta = await db.DocumentosIngreso.SingleOrDefaultAsync(m => m.IdDocumentosIngreso == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -410,7 +487,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.MaterialInduccion.Remove(respuesta);
+                db.DocumentosIngreso.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -439,11 +516,13 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response ExisteInduccion(Induccion induccion)
+
+
+        private Response Existe(DocumentosIngreso DocumentosIngreso)
         {
-            var bdd = induccion.IdEmpleado;
-            var Induccionrespuesta = db.Induccion.Where(p => p.IdEmpleado == bdd).FirstOrDefault();
-            if (Induccionrespuesta != null)
+            var bdd = DocumentosIngreso.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var documentoingresorespuesta = db.DocumentosIngreso.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (documentoingresorespuesta != null)
             {
                 return new Response
                 {
@@ -457,29 +536,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = Induccionrespuesta,
-            };
-        }
-
-        private Response ExisteMaterialInduccion(String nombre)
-        {
-            var bdd = nombre.ToUpper().TrimEnd().TrimStart();
-            var MaterialInduccionrespuesta = db.MaterialInduccion.Where(p => p.Titulo.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
-            if (MaterialInduccionrespuesta != null)
-            {
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
-                };
-
-            }
-
-            return new Response
-            {
-                IsSuccess = false,
-                Resultado = MaterialInduccionrespuesta,
+                Resultado = documentoingresorespuesta,
             };
         }
     }

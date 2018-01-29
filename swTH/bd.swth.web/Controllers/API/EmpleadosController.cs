@@ -636,41 +636,50 @@ namespace bd.swth.web.Controllers.API
         [Route("ObtenerDatosCompletosEmpleado")]
         public async Task<ListaEmpleadoViewModel> ObtenerDatosCompletosEmpleado([FromBody]Empleado empleado)
         {
+            Empleado empleadoObtenido = new Empleado();
+            ListaEmpleadoViewModel empleadoEnviar = new ListaEmpleadoViewModel();
+
             try
             {
-
-                var empleadoObtenido = await db.Empleado.Where(x => x.NombreUsuario == empleado.NombreUsuario)
-                    .Include(x => x.Persona).Include(x => x.Dependencia).Include(x=>x.IndiceOcupacionalModalidadPartida).ThenInclude(x=>x.FondoFinanciamiento)
-                    .Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).ThenInclude(x=>x.ConfiguracionViatico)
-                    .Include(x => x.DatosBancarios).ThenInclude(x=>x.InstitucionFinanciera)
+                if (empleado.NombreUsuario != null)
+                {
+                    empleadoObtenido = await db.Empleado.Where(x => x.NombreUsuario == empleado.NombreUsuario)
+                   .Include(x => x.Persona).Include(x => x.Dependencia).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.FondoFinanciamiento)
+                    .Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).ThenInclude(x => x.ConfiguracionViatico)
+                    .Include(x => x.DatosBancarios).ThenInclude(x => x.InstitucionFinanciera)
                     .FirstOrDefaultAsync();
+                }
+                else if (empleado.Persona.Identificacion != null)
+                {
+                    empleadoObtenido = await db.Empleado.Where(x => x.Persona.Identificacion == empleado.Persona.Identificacion)
+                                      .Include(x => x.Persona).Include(x => x.Dependencia).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.FondoFinanciamiento)
+                                       .Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).ThenInclude(x => x.ConfiguracionViatico)
+                                       .Include(x => x.DatosBancarios).ThenInclude(x => x.InstitucionFinanciera)
+                                       .FirstOrDefaultAsync();
+                }
 
-                var empleadoEnviar = new ListaEmpleadoViewModel();
-                
-                    
-                        var empleados = new ListaEmpleadoViewModel
-                        {
-                            IdEmpleado = empleadoObtenido.IdEmpleado,
-                            NombreApellido = string.Format("{0} {1}", empleadoObtenido.Persona.Nombres, empleadoObtenido.Persona.Apellidos),
-                            Identificacion = empleadoObtenido.Persona.Identificacion,
-                            TelefonoPrivado = empleadoObtenido.Persona.TelefonoPrivado,
-                            CorreoPrivado = empleadoObtenido.Persona.CorreoPrivado,
-                            Dependencia = empleadoObtenido.Dependencia.Nombre,
-                            InstitucionBancaria = empleadoObtenido.DatosBancarios.FirstOrDefault().InstitucionFinanciera.Nombre,
-                            NoCuenta = empleadoObtenido.DatosBancarios.FirstOrDefault().NumeroCuenta,
-                            TipoCuenta = empleadoObtenido.DatosBancarios.FirstOrDefault().Ahorros,
-                            RolPuesto = empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.Nombre,
-                            FondoFinanciamiento = empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().FondoFinanciamiento.Nombre,
-                            IdConfiguracionViatico = empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.ConfiguracionViatico.FirstOrDefault().IdConfiguracionViatico
-                            
-                                                                                                 
-                        };
-                    empleadoEnviar = empleados;
-                        //listaEmpleado.Add(empleados);
+                var empleados = new ListaEmpleadoViewModel
+                {
+                    IdEmpleado = empleadoObtenido.IdEmpleado,
+                    NombreApellido = string.Format("{0} {1}", empleadoObtenido.Persona.Nombres, empleadoObtenido.Persona.Apellidos),
+                    Identificacion = empleadoObtenido.Persona.Identificacion,
+                    TelefonoPrivado = empleadoObtenido.Persona.TelefonoPrivado,
+                    CorreoPrivado = empleadoObtenido.Persona.CorreoPrivado,
+                    Dependencia = empleadoObtenido.Dependencia.Nombre,
+                    InstitucionBancaria = empleadoObtenido.DatosBancarios.FirstOrDefault().InstitucionFinanciera.Nombre,
+                    NoCuenta = empleadoObtenido.DatosBancarios.FirstOrDefault().NumeroCuenta,
+                    TipoCuenta = empleadoObtenido.DatosBancarios.FirstOrDefault().Ahorros,
+                    RolPuesto = empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.Nombre,
+                    FondoFinanciamiento = empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().FondoFinanciamiento.Nombre,
+                    IdConfiguracionViatico = empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.ConfiguracionViatico.FirstOrDefault().IdConfiguracionViatico,
+                    FechaIngreso = empleadoObtenido.FechaIngreso
+                };
+                empleadoEnviar = empleados;
+                //listaEmpleado.Add(empleados);
 
 
 
-               
+
 
                 return empleadoEnviar;
 

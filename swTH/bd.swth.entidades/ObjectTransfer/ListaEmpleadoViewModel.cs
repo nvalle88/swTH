@@ -19,5 +19,6 @@ namespace bd.swth.entidades.ObjectTransfer
         public string InstitucionBancaria { get; set; }
         public string FondoFinanciamiento { get; set; } 
         public int IdConfiguracionViatico { get; set; }
+        public DateTime FechaIngreso { get; set; }
     }
 }

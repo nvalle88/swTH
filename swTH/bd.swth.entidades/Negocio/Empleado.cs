@@ -175,6 +175,8 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<Induccion> Induccion { get; set; }
 
+        public virtual ICollection<DocumentosIngresoEmpleado> DocumentosIngresoEmpleado { get; set; }
+
 
     }
 }

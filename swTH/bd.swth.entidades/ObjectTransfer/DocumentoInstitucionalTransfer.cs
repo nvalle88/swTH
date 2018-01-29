@@ -9,6 +9,7 @@ namespace bd.swth.entidades.ObjectTransfer
         public string Nombre { get; set; }
         public string Descripcion { get; set; }
         public string Extension { get; set; }
+        public string Url { get; set; }
         public byte[] Fichero { get; set; }
     }
 }

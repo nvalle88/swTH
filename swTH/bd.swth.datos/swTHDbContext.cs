@@ -59,6 +59,8 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.Destreza> Destreza { get; set; }
         public virtual DbSet<DetalleExamenInduccion> DetalleExamenInduccion { get; set; }
         public virtual DbSet<DiscapacidadSustituto> DiscapacidadSustituto { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngreso> DocumentosIngreso { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngresoEmpleado> DocumentosIngresoEmpleado { get; set; }
         public virtual DbSet<DocumentosParentescodos> DocumentosParentescodos { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Empleado> Empleado { get; set; }
         public virtual DbSet<EmpleadoContactoEmergencia> EmpleadoContactoEmergencia { get; set; }
@@ -853,6 +855,34 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+
+            modelBuilder.Entity<DocumentosIngreso>(entity =>
+            {
+                entity.HasKey(e => e.IdDocumentosIngreso)
+                    .HasName("PK_DocumentosIngreso");
+
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("varchar(500)");
+            });
+
+            modelBuilder.Entity<DocumentosIngresoEmpleado>(entity =>
+            {
+                entity.HasKey(e => e.IdDocumentosIngresoEmpleado)
+                    .HasName("PK_DocumentosIngresoEmpleado");
+
+                entity.HasOne(d => d.DocumentosIngreso)
+                    .WithMany(p => p.DocumentosIngresoEmpleado)
+                    .HasForeignKey(d => d.IdDocumentosIngreso)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_DocumentosIngresoEmpleado_DocumentosIngreso");
+
+                entity.HasOne(d => d.Empleado)
+                    .WithMany(p => p.DocumentosIngresoEmpleado)
+                    .HasForeignKey(d => d.IdEmpleado)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_DocumentosIngresoEmpleado_Empleado");
+            });
 
             modelBuilder.Entity<DeclaracionPatrimonioPersonal>(entity =>
             {
