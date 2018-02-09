@@ -21,8 +21,6 @@ namespace bd.swth.entidades.Negocio
         public int? IdRegimenLaboral { get; set; }
         public virtual RegimenLaboral RegimenLaboral { get; set; }
 
-        public virtual ICollection<ModalidadPartida> ModalidadPartida { get; set; }
-
         public virtual ICollection<TipoNombramiento> TipoNombramiento { get; set; }
     }
 }

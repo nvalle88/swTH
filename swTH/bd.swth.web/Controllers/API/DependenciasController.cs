@@ -79,6 +79,46 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("ListarDependenciaporSucursalPadreHijo")]
+        public async Task<Dependencia> GetDependenciabySucursalPadreHijo([FromBody] Sucursal sucursal)
+        {
+            try
+            {
+                var listadependeciasporsucursal = await db.Dependencia.Include(c => c.Sucursal).Where(x => x.IdSucursal == sucursal.IdSucursal).OrderBy(x => x.Nombre).ToListAsync();
+                var jefe = listadependeciasporsucursal.Where(x => x.IdDependenciaPadre == 0).FirstOrDefault();
+                SetChildren(jefe, listadependeciasporsucursal);
+                return jefe;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Dependencia();
+            }
+        }
+
+        private void SetChildren(Dependencia dependencia, List<Dependencia> listadependencias)
+        {
+            var hijos = listadependencias.Where(x => x.IdDependenciaPadre == dependencia.IdDependencia).ToList();
+            if (hijos.Count > 0)
+            {
+                foreach (var hijo in hijos)
+                {
+                    SetChildren(hijo, listadependencias);
+                    dependencia.Dependencia1.Add(hijo);
+                }
+            }
+        }
+
         // GET: api/Dependencias/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDependencia([FromRoute] int id)

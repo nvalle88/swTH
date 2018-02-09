@@ -35,7 +35,9 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.IndiceOcupacionalModalidadPartida.Include(x => x.IndiceOcupacional).Include(x => x.Empleado).Include(x => x.FondoFinanciamiento).Include(x => x.ModalidadPartida).Include(x => x.TipoNombramiento).OrderBy(x => x.Fecha).ToListAsync();
+                //return await db.IndiceOcupacionalModalidadPartida.Include(x => x.IndiceOcupacional).Include(x => x.Empleado).Include(x => x.FondoFinanciamiento).Include(x => x.ModalidadPartida).Include(x => x.TipoNombramiento).OrderBy(x => x.Fecha).ToListAsync();
+                return await db.IndiceOcupacionalModalidadPartida.Include(x => x.IndiceOcupacional).Include(x => x.Empleado).Include(x => x.FondoFinanciamiento).Include(x => x.TipoNombramiento).OrderBy(x => x.Fecha).ToListAsync();
+
             }
             catch (Exception ex)
             {
@@ -180,7 +182,7 @@ namespace bd.swth.web.Controllers.API
                 IndiceOcupacionalModalidadPartida.IdIndiceOcupacional = indiceOcupacionalModalidadPartida.IdIndiceOcupacional;
                 IndiceOcupacionalModalidadPartida.IdEmpleado = indiceOcupacionalModalidadPartida.IdEmpleado;
                 IndiceOcupacionalModalidadPartida.IdFondoFinanciamiento = indiceOcupacionalModalidadPartida.IdFondoFinanciamiento;
-                IndiceOcupacionalModalidadPartida.IdModalidadPartida = indiceOcupacionalModalidadPartida.IdModalidadPartida;
+                //IndiceOcupacionalModalidadPartida.IdModalidadPartida = indiceOcupacionalModalidadPartida.IdModalidadPartida;
                 IndiceOcupacionalModalidadPartida.IdTipoNombramiento = indiceOcupacionalModalidadPartida.IdTipoNombramiento;
                 IndiceOcupacionalModalidadPartida.Fecha = indiceOcupacionalModalidadPartida.Fecha;
                 IndiceOcupacionalModalidadPartida.SalarioReal = indiceOcupacionalModalidadPartida.SalarioReal;
@@ -329,7 +331,8 @@ namespace bd.swth.web.Controllers.API
         {
             var fecha = IndiceOcupacionalModalidadPartida.Fecha;
             var salarioReal = IndiceOcupacionalModalidadPartida.SalarioReal;
-            var IndiceOcupacionalModalidadPartidarespuesta = db.IndiceOcupacionalModalidadPartida.Where(p => p.Fecha == fecha && p.SalarioReal == salarioReal && p.IdIndiceOcupacional == IndiceOcupacionalModalidadPartida.IdIndiceOcupacional && p.IdEmpleado == IndiceOcupacionalModalidadPartida.IdEmpleado && p.IdFondoFinanciamiento == IndiceOcupacionalModalidadPartida.IdFondoFinanciamiento && p.IdModalidadPartida == IndiceOcupacionalModalidadPartida.IdModalidadPartida && p.IdTipoNombramiento == IndiceOcupacionalModalidadPartida.IdTipoNombramiento).FirstOrDefault();
+            //var IndiceOcupacionalModalidadPartidarespuesta = db.IndiceOcupacionalModalidadPartida.Where(p => p.Fecha == fecha && p.SalarioReal == salarioReal && p.IdIndiceOcupacional == IndiceOcupacionalModalidadPartida.IdIndiceOcupacional && p.IdEmpleado == IndiceOcupacionalModalidadPartida.IdEmpleado && p.IdFondoFinanciamiento == IndiceOcupacionalModalidadPartida.IdFondoFinanciamiento && p.IdModalidadPartida == IndiceOcupacionalModalidadPartida.IdModalidadPartida && p.IdTipoNombramiento == IndiceOcupacionalModalidadPartida.IdTipoNombramiento).FirstOrDefault();
+            var IndiceOcupacionalModalidadPartidarespuesta = db.IndiceOcupacionalModalidadPartida.Where(p => p.Fecha == fecha && p.SalarioReal == salarioReal && p.IdIndiceOcupacional == IndiceOcupacionalModalidadPartida.IdIndiceOcupacional && p.IdEmpleado == IndiceOcupacionalModalidadPartida.IdEmpleado && p.IdFondoFinanciamiento == IndiceOcupacionalModalidadPartida.IdFondoFinanciamiento && p.IdTipoNombramiento == IndiceOcupacionalModalidadPartida.IdTipoNombramiento).FirstOrDefault();
             if (IndiceOcupacionalModalidadPartidarespuesta != null)
             {
                 return new Response

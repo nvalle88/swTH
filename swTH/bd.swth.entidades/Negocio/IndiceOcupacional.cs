@@ -30,6 +30,15 @@ namespace bd.swth.entidades.Negocio
         public int? IdEscalaGrados { get; set; }
         public virtual EscalaGrados EscalaGrados { get; set; }
 
+        [Display(Name = "Modalidad de Partida:")]
+        [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
+        public int? IdModalidadPartida { get; set; }
+        public virtual ModalidadPartida ModalidadPartida { get; set; }
+
+        public int? IdPartidaGeneral { get; set; }
+        public string NumeroPartidaIndividual { get; set; }
+        public virtual PartidaGeneral PartidaGeneral { get; set; }
+
 
 
         public virtual ICollection<IndiceOcupacionalExperienciaLaboralRequerida> IndiceOcupacionalExperienciaLaboralRequerida { get; set; }

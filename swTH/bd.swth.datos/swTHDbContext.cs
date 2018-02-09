@@ -152,6 +152,7 @@ namespace bd.swth.datos
         public virtual DbSet<TipoDiscapacidadSustituto> TipoDiscapacidadSustituto { get; set; }
         public virtual DbSet<Parentesco> Parentesco { get; set; }
         public virtual DbSet<Parroquia> Parroquia { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.PartidaGeneral> PartidaGeneral { get; set; }
         public virtual DbSet<PartidasFase> PartidasFase { get; set; }
         public virtual DbSet<Persona> Persona { get; set; }
         public virtual DbSet<PersonaCapacitacion> PersonaCapacitacion { get; set; }
@@ -2170,7 +2171,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdGrupoOcupacional)
                     .HasName("PK_GrupoOcupacional");
 
-                entity.Property(e => e.Nombre)
+                entity.Property(e => e.TipoEscala)
                     .IsRequired()
                     .HasMaxLength(50);
             });
@@ -2213,6 +2214,15 @@ namespace bd.swth.datos
                 entity.HasOne(d => d.ManualPuesto)
                     .WithMany(p => p.IndiceOcupacional)
                     .HasForeignKey(d => d.IdManualPuesto);
+
+                entity.HasOne(d => d.ModalidadPartida)
+                   .WithMany(p => p.IndiceOcupacional)
+                   .HasForeignKey(d => d.IdModalidadPartida);
+
+
+                entity.HasOne(d => d.PartidaGeneral)
+                    .WithMany(p => p.IndiceOcupacional)
+                    .HasForeignKey(d => d.IdPartidaGeneral);
 
                 entity.HasOne(d => d.RolPuesto)
                     .WithMany(p => p.IndiceOcupacional)
@@ -2363,8 +2373,6 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdIndiceOcupacional)
                     .HasName("IX_IndiceOcupacionalModalidadPartida_IdIndiceOcupacional");
 
-                entity.HasIndex(e => e.IdModalidadPartida)
-                    .HasName("IX_IndiceOcupacionalModalidadPartida_IdModalidadPartida");
 
                 entity.HasIndex(e => e.IdTipoNombramiento)
                     .HasName("IX_IndiceOcupacionalModalidadPartida_IdTipoNombramiento");
@@ -2385,9 +2393,6 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdIndiceOcupacional)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(d => d.ModalidadPartida)
-                    .WithMany(p => p.IndiceOcupacionalModalidadPartida)
-                    .HasForeignKey(d => d.IdModalidadPartida);
 
                 entity.HasOne(d => d.TipoNombramiento)
                     .WithMany(p => p.IndiceOcupacionalModalidadPartida)
@@ -2648,19 +2653,11 @@ namespace bd.swth.datos
             modelBuilder.Entity<ModalidadPartida>(entity =>
             {
                 entity.HasKey(e => e.IdModalidadPartida)
-                    .HasName("PK_ModalidadPartida");
-
-                entity.HasIndex(e => e.IdRelacionLaboral)
-                    .HasName("IX_ModalidadPartida_IdRelacionLaboral");
+                    .HasName("PK62");
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
-                    .HasMaxLength(20);
-
-                entity.HasOne(d => d.RelacionLaboral)
-                    .WithMany(p => p.ModalidadPartida)
-                    .HasForeignKey(d => d.IdRelacionLaboral)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasColumnType("varchar(50)");
             });
 
 
@@ -2809,6 +2806,16 @@ namespace bd.swth.datos
                     .WithMany(p => p.Parroquia)
                     .HasForeignKey(d => d.IdCiudad)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<PartidaGeneral>(entity =>
+            {
+                entity.HasKey(e => e.IdPartidaGeneral)
+                    .HasName("PK_PartidaGeneral");
+
+                entity.Property(e => e.NumeroPartida)
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
             });
 
             modelBuilder.Entity<PartidasFase>(entity =>
