@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.GrupoOcupacional.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.GrupoOcupacional.OrderBy(x => x.TipoEscala).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -135,7 +135,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        GrupoOcupacionalActualizar.Nombre = GrupoOcupacional.Nombre;
+                        GrupoOcupacionalActualizar.TipoEscala = GrupoOcupacional.TipoEscala;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -294,8 +294,8 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(GrupoOcupacional GrupoOcupacional)
         {
-            var bdd = GrupoOcupacional.Nombre;
-            var GrupoOcupacionalrespuesta = db.GrupoOcupacional.Where(p => p.Nombre == bdd).FirstOrDefault();
+            var bdd = GrupoOcupacional.TipoEscala;
+            var GrupoOcupacionalrespuesta = db.GrupoOcupacional.Where(p => p.TipoEscala == bdd).FirstOrDefault();
             if (GrupoOcupacionalrespuesta != null)
             {
                 return new Response

@@ -32,7 +32,9 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ModalidadPartida.Where(x => x.IdRelacionLaboral==relacionLaboral.IdRelacionLaboral).OrderBy(x => x.Nombre).ToListAsync();
+                //return await db.ModalidadPartida.Where(x => x.IdRelacionLaboral==relacionLaboral.IdRelacionLaboral).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.ModalidadPartida.OrderBy(x => x.Nombre).ToListAsync();
+
             }
             catch (Exception ex)
             {
@@ -58,7 +60,8 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ModalidadPartida.Include(x => x.RelacionLaboral).OrderBy(x => x.Nombre).ToListAsync();
+                //return await db.ModalidadPartida.Include(x => x.RelacionLaboral).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.ModalidadPartida.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -163,7 +166,7 @@ namespace bd.swth.web.Controllers.API
                 }
                 var modalidadpartida = db.ModalidadPartida.Find(ModalidadPartida.IdModalidadPartida);
 
-                modalidadpartida.IdRelacionLaboral = ModalidadPartida.IdRelacionLaboral;
+                //modalidadpartida.IdRelacionLaboral = ModalidadPartida.IdRelacionLaboral;
                 modalidadpartida.Nombre = ModalidadPartida.Nombre;
                 db.ModalidadPartida.Update(modalidadpartida);
                 await db.SaveChangesAsync();
@@ -308,7 +311,8 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(ModalidadPartida ModalidadPartida)
         {
             var bdd = ModalidadPartida.Nombre.ToUpper().TrimEnd().TrimStart();
-            var ModalidadPartidarespuesta = db.ModalidadPartida.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdRelacionLaboral == ModalidadPartida.IdRelacionLaboral).FirstOrDefault();
+            //var ModalidadPartidarespuesta = db.ModalidadPartida.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdRelacionLaboral == ModalidadPartida.IdRelacionLaboral).FirstOrDefault();
+            var ModalidadPartidarespuesta = db.ModalidadPartida.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
             if (ModalidadPartidarespuesta != null)
             {
                 return new Response

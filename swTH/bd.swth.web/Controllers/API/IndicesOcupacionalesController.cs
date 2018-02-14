@@ -217,7 +217,6 @@ namespace bd.swth.web.Controllers.API
                                                     {
                                                         IdExperienciaLaboralRequerida = t.rt.IdExperienciaLaboralRequerida,
                                                         Estudio=t.rt.Estudio,
-                                                        AnoExperiencia=t.rt.AnoExperiencia,
                                                         EspecificidadExperiencia=t.rt.EspecificidadExperiencia,
                                                     })
                                                     .ToListAsync();
@@ -886,5 +885,129 @@ namespace bd.swth.web.Controllers.API
                 Resultado = indiceOcupacionalReturn,
             };
         }
+
+        // POST: api/BasesDatos
+        [HttpPost]
+        [Route("ObtenerIndiceOcupacional")]
+        public async Task<Response> PostEstadoCivil([FromBody] IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+              
+                IndiceOcupacional IndiceOcupacional = new IndiceOcupacional();
+                if (indiceOcupacional.IdEscalaGrados != 0)
+                {
+                    IndiceOcupacional = await db.IndiceOcupacional.SingleOrDefaultAsync(m => m.IdDependencia == indiceOcupacional.IdDependencia
+                    && m.IdManualPuesto == indiceOcupacional.IdManualPuesto
+                    && m.IdRolPuesto == indiceOcupacional.IdRolPuesto
+                    && m.IdEscalaGrados == indiceOcupacional.IdEscalaGrados);
+                }
+                else
+                {
+                    IndiceOcupacional = await db.IndiceOcupacional.SingleOrDefaultAsync(m => m.IdDependencia == indiceOcupacional.IdDependencia
+                                        && m.IdManualPuesto == indiceOcupacional.IdManualPuesto
+                                        && m.IdRolPuesto == indiceOcupacional.IdRolPuesto);
+                } 
+
+                if (IndiceOcupacional == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = IndiceOcupacional,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        [HttpPost]
+        [Route("ActualizarModalidadPartida")]
+        public async Task<Response> PutModalidadPartidaIndiceOcupacion([FromBody] IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+              
+
+                var indiceOcupacionalActualizar = await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional).FirstOrDefaultAsync();
+
+                if (indiceOcupacionalActualizar != null)
+                {
+                    try
+                    {
+                        indiceOcupacionalActualizar.IdModalidadPartida = indiceOcupacional.IdModalidadPartida;
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+        }
+
+
     }
 }

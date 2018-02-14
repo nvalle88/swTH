@@ -20,6 +20,7 @@ namespace bd.swth.entidades.ObjectTransfer
         public List<DiscapacidadSustituto> DiscapacidadSustituto { get; set; }
         public List<EnfermedadSustituto> EnfermedadSustituto { get; set; }
         public IndiceOcupacionalModalidadPartida IndiceOcupacionalModalidadPartida { get; set; }
+        public Dependencia Dependencia { get; set; }
 
     }
 

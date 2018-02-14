@@ -14,6 +14,7 @@ using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.ObjectTransfer;
 using bd.swth.entidades.ViewModels;
+using MoreLinq;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -73,6 +74,120 @@ namespace bd.swth.web.Controllers.API
 
                 });
                 return new List<ListaEmpleadoViewModel>();
+            }
+        }
+
+        [HttpPost]
+        [Route("ListarManualPuestoporDependencia")]
+        public async Task<List<IndiceOcupacional>> GetManualPuestobyDependency([FromBody] IndiceOcupacional indiceocupacional)
+        {
+            try
+            {
+                    
+                var listaIndiceOcupacional =  db.IndiceOcupacional.Include(x => x.ManualPuesto).Where(x => x.IdDependencia == indiceocupacional.IdDependencia).OrderBy(x => x.IdDependencia).DistinctBy(x=>x.IdManualPuesto).ToList();
+
+                return listaIndiceOcupacional;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<IndiceOcupacional>();
+            }
+        }
+
+        [HttpPost]
+        [Route("ListarRolPuestoporManualPuesto")]
+        public async Task<List<IndiceOcupacional>> GetRolPuestoPorManualPuesto([FromBody] IndiceOcupacional indiceocupacional)
+        {
+            try
+            {
+
+                var listaIndiceOcupacional = db.IndiceOcupacional.Include(x => x.RolPuesto)
+                    .Where(x => x.IdManualPuesto == indiceocupacional.IdManualPuesto && x.IdDependencia == indiceocupacional.IdDependencia)
+                    .OrderBy(x => x.IdDependencia).DistinctBy(x=>x.IdRolPuesto).ToList();
+
+                return listaIndiceOcupacional;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<IndiceOcupacional>();
+            }
+        }
+
+        [HttpPost]
+        [Route("ListarEscalaGradosPorRolPuesto")]
+        public async Task<List<IndiceOcupacional>> GetEscalaGradosPorRolPuesto([FromBody] IndiceOcupacional indiceocupacional)
+        {
+            try
+            {
+
+                var listaIndiceOcupacional = db.IndiceOcupacional.Include(x => x.EscalaGrados)
+                    .Where(x => x.IdManualPuesto == indiceocupacional.IdManualPuesto && x.IdDependencia == indiceocupacional.IdDependencia && x.IdRolPuesto == indiceocupacional.IdRolPuesto)
+                    .OrderBy(x => x.IdDependencia).DistinctBy(x=>x.EscalaGrados).ToList();
+
+                return listaIndiceOcupacional;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<IndiceOcupacional>();
+            }
+        }
+
+        [HttpPost]
+        [Route("ListarModalidadesPartidaPorEscalaGrados")]
+        public async Task<List<IndiceOcupacional>> GetModalidadesPartidaPorEscalaGrados([FromBody] IndiceOcupacional indiceocupacional)
+        {
+            try
+            {
+
+                var listaIndiceOcupacional = db.IndiceOcupacional.Include(x => x.ModalidadPartida)
+                    .Where(x => x.IdManualPuesto == indiceocupacional.IdManualPuesto && x.IdDependencia == indiceocupacional.IdDependencia && x.IdRolPuesto == indiceocupacional.IdRolPuesto && x.IdEscalaGrados == indiceocupacional.IdEscalaGrados)
+                    .OrderBy(x => x.IdDependencia).DistinctBy(x => x.ModalidadPartida).ToList();
+
+                return listaIndiceOcupacional;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<IndiceOcupacional>();
             }
         }
 
@@ -249,7 +364,7 @@ namespace bd.swth.web.Controllers.API
                 IndiceOcupacionalModalidadPartida indice = await db.IndiceOcupacionalModalidadPartida
                                 .Where(x=>x.IdEmpleado==idEmpleado)
                                 .Include(x=>x.TipoNombramiento).ThenInclude(x=>x.RelacionLaboral)
-                                .Include(x=>x.ModalidadPartida).ThenInclude(x=>x.RelacionLaboral)
+                                //.Include(x=>x.ModalidadPartida).ThenInclude(x=>x.RelacionLaboral)
                                 .SingleOrDefaultAsync();
                 
                 Empleado oEmpleado = await db.Empleado
@@ -1600,7 +1715,7 @@ namespace bd.swth.web.Controllers.API
                 indiceOcupacionalModalidadPartida.IdIndiceOcupacional = empleadoViewModel.IndiceOcupacionalModalidadPartida.IdIndiceOcupacional;
                 indiceOcupacionalModalidadPartida.IdEmpleado = empleadoViewModel.IndiceOcupacionalModalidadPartida.IdEmpleado;
                 indiceOcupacionalModalidadPartida.IdFondoFinanciamiento = empleadoViewModel.IndiceOcupacionalModalidadPartida.IdFondoFinanciamiento;
-                indiceOcupacionalModalidadPartida.IdModalidadPartida = empleadoViewModel.IndiceOcupacionalModalidadPartida.IdModalidadPartida;
+                //indiceOcupacionalModalidadPartida.IdModalidadPartida = empleadoViewModel.IndiceOcupacionalModalidadPartida.IdModalidadPartida;
                 indiceOcupacionalModalidadPartida.IdTipoNombramiento = empleadoViewModel.IndiceOcupacionalModalidadPartida.IdTipoNombramiento;
                 indiceOcupacionalModalidadPartida.Fecha = empleadoViewModel.IndiceOcupacionalModalidadPartida.Fecha;
                 indiceOcupacionalModalidadPartida.SalarioReal = empleadoViewModel.IndiceOcupacionalModalidadPartida.SalarioReal;
