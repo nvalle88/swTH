@@ -41,7 +41,6 @@
     <Folder Include="wwwroot\Noticias\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\bd.swcompartidos.servicios.externos\bd.sw.externos.csproj" />
     <ProjectReference Include="..\bd.swth.datos\bd.swth.datos.csproj" />
     <ProjectReference Include="..\bd.swth.entidades\bd.swth.entidades.csproj" />
     <ProjectReference Include="..\bd.swth.servicios\bd.swth.servicios.csproj" />
