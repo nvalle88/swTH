@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="bd.log.guardar" Version="1.0.8" />
-    <PackageReference Include="EnviarCorreo" Version="1.0.4" />
+    <PackageReference Include="EnviarCorreo" Version="1.1.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.1" />
     <PackageReference Include="morelinq" Version="2.10.0" />
