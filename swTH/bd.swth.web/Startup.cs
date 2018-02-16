@@ -8,6 +8,7 @@ using bd.swth.datos;
 using Microsoft.AspNetCore.Http;
 using bd.swth.servicios.Interfaces;
 using bd.swth.servicios.Servicios;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web
 {
@@ -34,6 +35,8 @@ namespace bd.swth.web
               options.UseSqlServer(Configuration.GetConnectionString("SwTHConnection")));
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IUploadFileService, UploadFileService>();
+
+            Constantes.PartidaVacante = Configuration.GetSection("PartidaVacante").Value;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

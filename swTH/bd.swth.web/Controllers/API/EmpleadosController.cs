@@ -15,6 +15,7 @@ using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.ObjectTransfer;
 using bd.swth.entidades.ViewModels;
 using MoreLinq;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -83,8 +84,10 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                    
-                var listaIndiceOcupacional =  db.IndiceOcupacional.Include(x => x.ManualPuesto).Where(x => x.IdDependencia == indiceocupacional.IdDependencia).OrderBy(x => x.IdDependencia).DistinctBy(x=>x.IdManualPuesto).ToList();
+                var name = Constantes.PartidaVacante;
+                var listaIndiceOcupacional =  db.IndiceOcupacional.Include(x => x.ManualPuesto).Include(x=>x.ModalidadPartida)
+                    .Where(x => x.IdDependencia == indiceocupacional.IdDependencia && x.ModalidadPartida.Nombre == Constantes.PartidaVacante)
+                    .OrderBy(x => x.IdDependencia).DistinctBy(x=>x.IdManualPuesto).ToList();
 
                 return listaIndiceOcupacional;
             }

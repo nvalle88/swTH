@@ -78,7 +78,7 @@ namespace bd.swth.web.Controllers.API
                     item.RolPuesto = rol;
                     lista1.Add(item);
                 }
-
+                IndiceOcupacional a = new IndiceOcupacional();
                 return lista1;
             }
             catch (Exception ex)
