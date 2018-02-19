@@ -8,7 +8,6 @@ namespace bd.swth.entidades.Negocio
         [Key]
         public int IdAccionPersonal { get; set; }
 
-    
         public DateTime Fecha { get; set; }
 
       
