@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ViewModels\Ejemplo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="EntidadesServicios\" />
   </ItemGroup>
 
