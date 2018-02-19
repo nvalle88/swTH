@@ -52,7 +52,6 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.ConfirmacionLectura> ConfirmacionLectura { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ConocimientosAdicionales> ConocimientosAdicionales { get; set; }
         public virtual DbSet<DatosBancarios> DatosBancarios { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.Ejemplo> Ejemplo { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DeclaracionPatrimonioPersonal> DeclaracionPatrimonioPersonal { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DenominacionCompetencia> DenominacionCompetencia { get; set; }
         public virtual DbSet<Dependencia> Dependencia { get; set; }
@@ -272,16 +271,7 @@ namespace bd.swth.datos
             });
 
 
-            modelBuilder.Entity<Ejemplo>(entity =>
-            {
-                entity.Property(e => e.Apellido)
-                    .IsRequired()
-                    .HasColumnType("varchar(50)");
-
-                entity.Property(e => e.Nombre)
-                    .IsRequired()
-                    .HasColumnType("varchar(50)");
-            });
+           
 
 
             modelBuilder.Entity<ActividadesEsenciales>(entity =>
