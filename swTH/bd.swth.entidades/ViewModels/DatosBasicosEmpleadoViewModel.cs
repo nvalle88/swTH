@@ -16,7 +16,7 @@ namespace bd.swth.entidades.ViewModels
         public int IdTipoSangre { get; set; }
         public int IdNacionalidad { get; set; }
         public int IdEtnia { get; set; }
-        public int IdNacionalidadIndigena { get; set; }
+        public int? IdNacionalidadIndigena { get; set; }
         public string CorreoPrivado { get; set; }
         public DateTime FechaNacimiento { get; set; }
         public string LugarTrabajo { get; set; }

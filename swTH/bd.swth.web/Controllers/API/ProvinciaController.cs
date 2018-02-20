@@ -33,6 +33,10 @@ namespace bd.swrm.web.Controllers.API
         {
             try
             {
+                if (pais==null)
+                {
+                    return new List<Provincia>();
+                }
                 return await db.Provincia.Include(c=> c.Pais).Where(x => x.IdPais==pais.IdPais).OrderBy(x=>x.Nombre).ToListAsync();
             }
             catch (Exception ex)

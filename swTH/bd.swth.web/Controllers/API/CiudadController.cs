@@ -32,6 +32,11 @@ namespace bd.swrm.web.Controllers.API
         {
             try
             {
+                if (pais==null)
+                {
+                    return new List<Ciudad>();
+                }
+
                 var listaSalida = new List<Ciudad>();
                 var provincias =await db.Provincia.Where(x => x.IdPais == pais.IdPais).ToListAsync();
 
@@ -65,6 +70,10 @@ namespace bd.swrm.web.Controllers.API
         {
             try
             {
+                if (provincia==null)
+                {
+                    return new List<Ciudad>();
+                }
                 return await db.Ciudad.Include(x => x.Provincia).ThenInclude(x => x.Pais).Where(x => x.IdProvincia == provincia.IdProvincia).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
