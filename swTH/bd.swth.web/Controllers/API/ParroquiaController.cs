@@ -58,6 +58,10 @@ namespace bd.swrm.web.Controllers.API
         {
             try
             {
+                if (ciudad==null)
+                {
+                    return new List<Parroquia>();
+                }
                 return await db.Parroquia.Where(x => x.IdCiudad == ciudad.IdCiudad).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)

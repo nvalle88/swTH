@@ -9,6 +9,10 @@
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Controllers\API\EjemplosController.cs" />
+  </ItemGroup>
+
  
 
   <ItemGroup>

@@ -251,6 +251,8 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+
+
             modelBuilder.Entity<ActividadesAnalisisOcupacional>(entity =>
             {
                 entity.HasKey(e => e.IdActividadesAnalisisOcupacional)
@@ -264,6 +266,10 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdFormularioAnalisisOcupacional)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+
+           
+
 
             modelBuilder.Entity<ActividadesEsenciales>(entity =>
             {
