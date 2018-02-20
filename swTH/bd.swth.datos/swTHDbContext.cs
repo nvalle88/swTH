@@ -135,8 +135,6 @@ namespace bd.swth.datos
         public virtual DbSet<ManualPuesto> ManualPuesto { get; set; }
         public virtual DbSet<MaterialApoyo> MaterialApoyo { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.MaterialInduccion> MaterialInduccion { get; set; }
-        public virtual DbSet<Mision> Mision { get; set; }
-        public virtual DbSet<MisionIndiceOcupacional> MisionIndiceOcupacional { get; set; }
         public virtual DbSet<ModalidadPartida> ModalidadPartida { get; set; }
         public virtual DbSet<ModosScializacion> ModosScializacion { get; set; }
         public virtual DbSet<Nacionalidad> Nacionalidad { get; set; }
@@ -176,7 +174,6 @@ namespace bd.swth.datos
         public virtual DbSet<RegistroEntradaSalida> RegistroEntradaSalida { get; set; }
         public virtual DbSet<RelacionLaboral> RelacionLaboral { get; set; }
         public virtual DbSet<RelacionesInternasExternas> RelacionesInternasExternas { get; set; }
-        public virtual DbSet<RelacionesInternasExternasIndiceOcupacional> RelacionesInternasExternasIndiceOcupacional { get; set; }
         public virtual DbSet<Relevancia> Relevancia { get; set; }
         public virtual DbSet<RequisitosNoCumple> RequisitosNoCumple { get; set; }
         public virtual DbSet<Respuesta> Respuesta { get; set; }
@@ -2575,13 +2572,22 @@ namespace bd.swth.datos
             modelBuilder.Entity<ManualPuesto>(entity =>
             {
                 entity.HasKey(e => e.IdManualPuesto)
-                    .HasName("PK_ManualPuesto");
+                    .HasName("PK70");
 
-                entity.Property(e => e.Descripcion).IsRequired();
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("varchar(250)");
+
+                entity.Property(e => e.Mision).HasColumnType("varchar(1000)");
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
-                    .HasMaxLength(50);
+                    .HasColumnType("varchar(150)");
+
+                entity.HasOne(d => d.RelacionesInternasExternas)
+                    .WithMany(p => p.ManualPuesto)
+                    .HasForeignKey(d => d.IdRelacionesInternasExternas)
+                    .HasConstraintName("FK_ManualPuesto_RelacionesInternasExternas");
             });
 
 
@@ -2618,37 +2624,7 @@ namespace bd.swth.datos
                     .HasColumnType("varchar(250)");
             });
 
-            modelBuilder.Entity<Mision>(entity =>
-            {
-                entity.HasKey(e => e.IdMision)
-                    .HasName("PK_Mision");
 
-                entity.Property(e => e.Descripcion).IsRequired();
-            });
-
-            modelBuilder.Entity<MisionIndiceOcupacional>(entity =>
-            {
-                entity.HasKey(e => e.IdMisionIndiceOcupacional)
-                    .HasName("PK_MisionIndiceOcupacional");
-
-                entity.HasIndex(e => e.IdIndiceOcupacional)
-                    .HasName("IX_MisionIndiceOcupacional_idIndiceOcupacional");
-
-                entity.HasIndex(e => e.IdMision)
-                    .HasName("IX_MisionIndiceOcupacional_IdMision");
-
-                entity.Property(e => e.IdIndiceOcupacional).HasColumnName("idIndiceOcupacional");
-
-                entity.HasOne(d => d.IndiceOcupacional)
-                    .WithMany(p => p.MisionIndiceOcupacional)
-                    .HasForeignKey(d => d.IdIndiceOcupacional)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(d => d.Mision)
-                    .WithMany(p => p.MisionIndiceOcupacional)
-                    .HasForeignKey(d => d.IdMision)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
 
             modelBuilder.Entity<ModalidadPartida>(entity =>
             {
@@ -3325,28 +3301,6 @@ namespace bd.swth.datos
                 entity.Property(e => e.Descripcion)
                     .IsRequired()
                     .HasMaxLength(50);
-            });
-
-            modelBuilder.Entity<RelacionesInternasExternasIndiceOcupacional>(entity =>
-            {
-                entity.HasKey(e => e.IdRelacionesInternasExternasIndiceOcupacional)
-                    .HasName("PK_RelacionesInternasExternasIndiceOcupacional");
-
-                entity.HasIndex(e => e.IdIndiceOcupacional)
-                    .HasName("IX_RelacionesInternasExternasIndiceOcupacional_IdIndiceOcupacional");
-
-                entity.HasIndex(e => e.IdRelacionesInternasExternas)
-                    .HasName("IX_RelacionesInternasExternasIndiceOcupacional_IdRelacionesInternasExternas");
-
-                entity.HasOne(d => d.IndiceOcupacional)
-                    .WithMany(p => p.RelacionesInternasExternasIndiceOcupacional)
-                    .HasForeignKey(d => d.IdIndiceOcupacional)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(d => d.RelacionesInternasExternas)
-                    .WithMany(p => p.RelacionesInternasExternasIndiceOcupacional)
-                    .HasForeignKey(d => d.IdRelacionesInternasExternas)
-                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Relevancia>(entity =>

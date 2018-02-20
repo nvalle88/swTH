@@ -223,20 +223,20 @@ namespace bd.swth.web.Controllers.API
 
 
 
-                var ListaRelacionesInternasExternas = await db.RelacionesInternasExternasIndiceOcupacional
-                                                    .Join(db.IndiceOcupacional
-                                                    , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
-                                                    (rta, ind) => new { hm = rta, gh = ind })
-                                                    .Join(db.RelacionesInternasExternas
-                                                    , ind_1 => ind_1.hm.RelacionesInternasExternas.IdRelacionesInternasExternas, valor => valor.IdRelacionesInternasExternas,
-                                                    (ind_1, valor) => new { ca = ind_1, rt = valor })
-                                                    .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
-                                                    .Select(t => new RelacionesInternasExternas
-                                                    {
-                                                        IdRelacionesInternasExternas = t.rt.IdRelacionesInternasExternas,
-                                                        Descripcion = t.rt.Descripcion,
-                                                    })
-                                                    .ToListAsync();
+                //var ListaRelacionesInternasExternas = await db.RelacionesInternasExternasIndiceOcupacional
+                //                                    .Join(db.IndiceOcupacional
+                //                                    , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
+                //                                    (rta, ind) => new { hm = rta, gh = ind })
+                //                                    .Join(db.RelacionesInternasExternas
+                //                                    , ind_1 => ind_1.hm.RelacionesInternasExternas.IdRelacionesInternasExternas, valor => valor.IdRelacionesInternasExternas,
+                //                                    (ind_1, valor) => new { ca = ind_1, rt = valor })
+                //                                    .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+                //                                    .Select(t => new RelacionesInternasExternas
+                //                                    {
+                //                                        IdRelacionesInternasExternas = t.rt.IdRelacionesInternasExternas,
+                //                                        Descripcion = t.rt.Descripcion,
+                //                                    })
+                //                                    .ToListAsync();
 
 
 
@@ -258,20 +258,20 @@ namespace bd.swth.web.Controllers.API
 
 
 
-                var listaMisiones = await db.MisionIndiceOcupacional
-                                                     .Join(db.IndiceOcupacional
-                                                     , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
-                                                     (rta, ind) => new { hm = rta, gh = ind })
-                                                     .Join(db.Mision
-                                                     , ind_1 => ind_1.hm.Mision.IdMision, valor => valor.IdMision,
-                                                     (ind_1, valor) => new { ca = ind_1, rt = valor })
-                                                     .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
-                                                     .Select(t => new Mision
-                                                     {
-                                                         IdMision = t.rt.IdMision,
-                                                         Descripcion = t.rt.Descripcion,
-                                                     })
-                                                     .ToListAsync();
+                //var listaMisiones = await db.MisionIndiceOcupacional
+                //                                     .Join(db.IndiceOcupacional
+                //                                     , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
+                //                                     (rta, ind) => new { hm = rta, gh = ind })
+                //                                     .Join(db.Mision
+                //                                     , ind_1 => ind_1.hm.Mision.IdMision, valor => valor.IdMision,
+                //                                     (ind_1, valor) => new { ca = ind_1, rt = valor })
+                //                                     .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+                //                                     .Select(t => new Mision
+                //                                     {
+                //                                         IdMision = t.rt.IdMision,
+                //                                         Descripcion = t.rt.Descripcion,
+                //                                     })
+                //                                     .ToListAsync();
 
 
                 var ListaEstudios = await db.IndiceOcupacionalEstudio
@@ -371,11 +371,11 @@ namespace bd.swth.web.Controllers.API
                     ListaActividadesEsenciales=listaActividadesEsenciales,
                     ListaConocimientosAdicionales=ListaConocimientosAdicionales,
                     ListaComportamientoObservables=ListaComportamientoObservables,
-                    ListaRelacionesInternasExternas=ListaRelacionesInternasExternas,
+                    //ListaRelacionesInternasExternas=ListaRelacionesInternasExternas,
                     ListaAreaConocimientos=listaAreasConocimiento,
                     ListaCapacitaciones=ListaCapacitaciones,
                     ListaEstudios=ListaEstudios,
-                    ListaMisiones=listaMisiones,
+                    //ListaMisiones=listaMisiones,
                     ListaExperienciaLaboralRequeridas=ListaExperienciaLaboralRequeridas,
                   
 
@@ -523,92 +523,92 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        [HttpPost]
-        [Route("InsertarMision")]
-        public async Task<Response> InsertarMision([FromBody] MisionIndiceOcupacional misionIndiceOcupacional)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
-                db.MisionIndiceOcupacional.Add(misionIndiceOcupacional);
-                await db.SaveChangesAsync();
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
+        //[HttpPost]
+        //[Route("InsertarMision")]
+        //public async Task<Response> InsertarMision([FromBody] MisionIndiceOcupacional misionIndiceOcupacional)
+        //{
+        //    try
+        //    {
+        //        if (!ModelState.IsValid)
+        //        {
+        //            return new Response
+        //            {
+        //                IsSuccess = false,
+        //                Message = Mensaje.ModeloInvalido,
+        //            };
+        //        }
+        //        db.MisionIndiceOcupacional.Add(misionIndiceOcupacional);
+        //        await db.SaveChangesAsync();
+        //        return new Response
+        //        {
+        //            IsSuccess = true,
+        //            Message = Mensaje.Satisfactorio
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+        //        {
+        //            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+        //            ExceptionTrace = ex,
+        //            Message = Mensaje.Excepcion,
+        //            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+        //            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+        //            UserName = "",
 
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
-
+        //        });
+        //        return new Response
+        //        {
+        //            IsSuccess = false,
+        //            Message = Mensaje.Error,
+        //        };
+        //    }
+        //}
 
 
-        [HttpPost]
-        [Route("InsertarRelacionesInternasExternas")]
-        public async Task<Response> InsertarRelacionesInternasExternas([FromBody] RelacionesInternasExternasIndiceOcupacional relacionesInternasExternasIndiceOcupacional)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
-                db.RelacionesInternasExternasIndiceOcupacional.Add(relacionesInternasExternasIndiceOcupacional);
-                await db.SaveChangesAsync();
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
+
+        //[HttpPost]
+        //[Route("InsertarRelacionesInternasExternas")]
+        //public async Task<Response> InsertarRelacionesInternasExternas([FromBody] RelacionesInternasExternasIndiceOcupacional relacionesInternasExternasIndiceOcupacional)
+        //{
+        //    try
+        //    {
+        //        if (!ModelState.IsValid)
+        //        {
+        //            return new Response
+        //            {
+        //                IsSuccess = false,
+        //                Message = Mensaje.ModeloInvalido,
+        //            };
+        //        }
+        //        db.RelacionesInternasExternasIndiceOcupacional.Add(relacionesInternasExternasIndiceOcupacional);
+        //        await db.SaveChangesAsync();
+        //        return new Response
+        //        {
+        //            IsSuccess = true,
+        //            Message = Mensaje.Satisfactorio
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+        //        {
+        //            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+        //            ExceptionTrace = ex,
+        //            Message = Mensaje.Excepcion,
+        //            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+        //            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+        //            UserName = "",
+
+        //        });
+        //        return new Response
+        //        {
+        //            IsSuccess = false,
+        //            Message = Mensaje.Error,
+        //        };
+        //    }
+        //}
 
         [HttpPost]
         [Route("InsertarAreaConocimiento")]

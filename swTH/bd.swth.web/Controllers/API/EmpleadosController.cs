@@ -42,9 +42,17 @@ namespace bd.swth.web.Controllers.API
                 //var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x=>x.DatosBancarios).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).OrderBy(x => x.FechaIngreso).ToListAsync();
                 var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).ToListAsync();
                 var listaSalida = new List<ListaEmpleadoViewModel>();
+                var NombreDependencia = "";
                 foreach (var item in lista)
                 {
-                   
+                    if (item.Dependencia==null)
+                    {
+                       NombreDependencia="No Asignado";
+                    }
+                    else
+                    {
+                        NombreDependencia = item.Dependencia.Nombre;
+                    }
                         listaSalida.Add(new ListaEmpleadoViewModel
                         {
                             IdEmpleado = item.IdEmpleado,
@@ -52,7 +60,7 @@ namespace bd.swth.web.Controllers.API
                             Identificacion = item.Persona.Identificacion,
                             TelefonoPrivado = item.Persona.TelefonoPrivado,
                             CorreoPrivado = item.Persona.CorreoPrivado,
-                            Dependencia = item.Dependencia.Nombre,
+                            Dependencia = NombreDependencia,
 
 
                         });
@@ -1344,6 +1352,10 @@ namespace bd.swth.web.Controllers.API
                     {
 
                     var respuesta = Existe(datosBasicosEmpleado);
+                    if (datosBasicosEmpleado.IdNacionalidadIndigena==0)
+                    {
+                        datosBasicosEmpleado.IdNacionalidadIndigena = null;
+                    }
                     if (!respuesta.IsSuccess)
                     {
                         var persona = new Persona
