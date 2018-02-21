@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ManualPuesto.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.ManualPuesto.Include(x=>x.RelacionesInternasExternas).OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -110,6 +110,8 @@ namespace bd.swth.web.Controllers.API
 
             manualpuesto.Nombre = ManualPuesto.Nombre;
             manualpuesto.Descripcion = ManualPuesto.Descripcion;
+            manualpuesto.Mision = ManualPuesto.Mision;
+            manualpuesto.IdRelacionesInternasExternas = ManualPuesto.IdRelacionesInternasExternas;
             db.ManualPuesto.Update(manualpuesto);
             await db.SaveChangesAsync();
         }

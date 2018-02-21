@@ -302,5 +302,29 @@ namespace bd.swth.web.Controllers.API
                 Resultado = EscalaGradosrespuesta,
             };
         }
+
+        [HttpPost]
+        [Route("ListarEscalasGradosPorGrupoOcupacional")]
+        public async Task<List<EscalaGrados>> GetSucursalbyCity([FromBody] GrupoOcupacional grupoocupacional)
+        {
+            try
+            {
+                return await db.EscalaGrados.Include(c => c.GrupoOcupacional).Where(x => x.IdGrupoOcupacional == grupoocupacional.IdGrupoOcupacional).OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<EscalaGrados>();
+            }
+        }
     }
 }
