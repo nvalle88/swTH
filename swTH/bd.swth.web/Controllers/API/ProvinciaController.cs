@@ -153,6 +153,7 @@ namespace bd.swrm.web.Controllers.API
                 {
                     try
                     {
+                        provinciaActualizar.IdPais = provincia.IdPais;
                         provinciaActualizar.Nombre = provincia.Nombre;
                         db.Provincia.Update(provinciaActualizar);
                         await db.SaveChangesAsync();
@@ -230,7 +231,7 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -315,7 +316,8 @@ namespace bd.swrm.web.Controllers.API
         public Response Existe(Provincia provincia)
         {
             var bdd = provincia.Nombre.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.Provincia.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd1 = provincia.IdPais;
+            var loglevelrespuesta = db.Provincia.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdPais == bdd1).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
