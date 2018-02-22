@@ -942,6 +942,12 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasMaxLength(60);
 
+                entity.HasOne(d => d.Proceso)
+                    .WithMany(p => p.Dependencia)
+                    .HasForeignKey(d => d.IdProceso)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Dependencia_Proceso");
+
                 entity.HasOne(d => d.DependenciaPadre)
                     .WithMany(p => p.Dependencia1)
                     .HasForeignKey(d => d.IdDependenciaPadre);
