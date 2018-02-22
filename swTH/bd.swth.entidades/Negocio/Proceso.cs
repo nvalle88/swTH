@@ -16,5 +16,6 @@ namespace bd.swth.entidades.Negocio
         public string Nombre { get; set; }
 
         public virtual ICollection<ProcesoDetalle> ProcesoDetalle { get; set; }
+        public virtual ICollection<Dependencia> Dependencia { get; set; }
     }
 }
