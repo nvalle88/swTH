@@ -198,6 +198,7 @@ namespace bd.swth.web.Controllers.API
                                       .Include(x=>x.ManualPuesto)
                                       .Include(x=>x.RolPuesto)
                                       .Include(x=>x.EscalaGrados.GrupoOcupacional)
+                                      .Include(x=>x.ManualPuesto).ThenInclude(x=>x.RelacionesInternasExternas)
                                       .FirstOrDefaultAsync();
 
 
