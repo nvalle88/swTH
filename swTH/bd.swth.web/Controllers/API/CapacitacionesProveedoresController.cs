@@ -136,6 +136,9 @@ namespace bd.swth.web.Controllers.API
                     try
                     {
                         capacitacionProveedorActualizar.Nombre = capacitacionProveedor.Nombre;
+                        capacitacionProveedorActualizar.IdPais = capacitacionProveedor.IdPais;
+                        capacitacionProveedorActualizar.Telefono = capacitacionProveedor.Telefono;
+                        capacitacionProveedorActualizar.Direccion = capacitacionProveedor.Direccion;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -295,7 +298,10 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(CapacitacionProveedor CapacitacionProveedor)
         {
             var bdd = CapacitacionProveedor.Nombre.ToUpper().TrimEnd().TrimStart();
-            var estadocivilrespuesta = db.CapacitacionProveedor.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var direcc = CapacitacionProveedor.Direccion;
+            var pais = CapacitacionProveedor.IdPais;
+            var tele = CapacitacionProveedor.Telefono;
+            var estadocivilrespuesta = db.CapacitacionProveedor.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdPais == pais && p.Telefono == tele && p.Direccion == direcc).FirstOrDefault();
             if (estadocivilrespuesta != null)
             {
                 return new Response
