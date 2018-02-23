@@ -149,22 +149,16 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-
-
-
-                var respuesta = Existe(pParroquia);
-                
-                if (respuesta.IsSuccess)
+                var existe = Existe(pParroquia);
+                if (existe.IsSuccess)
                 {
                     return new Response
                     {
-                        IsSuccess = true,
-                        Message = Mensaje.ExisteRegistro
+                        IsSuccess = false,
+                        Message = "Existe una parroquia con ese nombre asignada a esa ciudad",
                     };
                 }
-
-
-
+                
 
                 var pParroquiaActualizar = await db.Parroquia.Where(x => x.IdParroquia == id).FirstOrDefaultAsync();
                 if (pParroquiaActualizar != null)
@@ -324,7 +318,7 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro,
+                    Message = Mensaje.BorradoNoSatisfactorio,
                 };
             }
         }
