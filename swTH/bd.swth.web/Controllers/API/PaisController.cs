@@ -124,15 +124,25 @@ namespace bd.swrm.web.Controllers.API
                 {
                     try
                     {
-                        paisActualizar.Nombre = pais.Nombre;
-                        db.Pais.Update(paisActualizar);
-                        await db.SaveChangesAsync();
+                        var  respuesta = Existe(pais);
+                        if (!respuesta.IsSuccess)
+                        {
+                            paisActualizar.Nombre = pais.Nombre;
+                            db.Pais.Update(paisActualizar);
+                            await db.SaveChangesAsync();
 
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Message = Mensaje.Satisfactorio,
+                            };
+                        }
                         return new Response
                         {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
+                            IsSuccess = false,
+                            Message = Mensaje.ExisteRegistro
                         };
+                        
 
                     }
                     catch (Exception ex)
@@ -201,7 +211,7 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }

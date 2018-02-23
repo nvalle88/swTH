@@ -12,9 +12,20 @@ using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
+
+    //public class DependenciaViewModel
+    //{
+    //    public int IdDependencia { get; set; }
+    //    public string NombreDependencia { get; set; }
+    //    public string NombreSucursal { get; set; }
+    //    public string NombreDependenciaPadre { get; set; }
+    //    public string NombreProceso  { get; set; }
+    //}
+
     [Produces("application/json")]
     [Route("api/Dependencias")]
     public class DependenciasController : Controller
@@ -29,14 +40,50 @@ namespace bd.swth.web.Controllers.API
         // GET: api/Dependencias
         [HttpGet]
         [Route("ListarDependencias")]
-        public async Task<List<Dependencia>> GetDependencia()
+        public async Task<List<DependenciaViewModel>> GetDependencia()
         {
             try
             {
-                return await db.Dependencia.OrderBy(x => x.Sucursal.Nombre)
-                                                    .ThenBy(x => x.DependenciaPadre.Nombre)
-                                                    .ThenBy(x => x.Nombre).Include(x => x.Sucursal).Include(x => x.DependenciaPadre)
-                                                    .ToListAsync();
+
+                //var lista = await db.Dependencia.OrderBy(x => x.Sucursal.Nombre)
+                //                                     .ThenBy(x => x.DependenciaPadre.Nombre)
+                //                                     .ThenBy(x => x.Nombre).Include(x => x.Sucursal).Include(x => x.DependenciaPadre).Include(x=>x.Proceso)
+                //                                     .ToListAsync();
+
+                var listaDependencia = await db.Dependencia.Include(x=>x.DependenciaPadre).Include(x=>x.Sucursal).ToListAsync();
+
+                var listaSalida = new List<DependenciaViewModel>();
+
+                foreach (var item in listaDependencia)
+                {
+
+                    var padre = "";
+                    if (item.DependenciaPadre == null)
+                    {
+                        padre = "No tiene dependencia padre";
+                    }
+                    else
+                    {
+                        padre = item.DependenciaPadre.Nombre;
+                    }
+
+                    var dependenciaSalida = new DependenciaViewModel
+                    {
+                        IdDependencia =item.IdDependencia,
+                        NombreDependencia =item.Nombre,
+                        NombreSucursal = item.Sucursal.Nombre,
+                        NombreDependenciaPadre=padre,
+                        
+                    };
+
+                    var proceso =await db.Proceso.Where(x => x.IdProceso == item.IdProceso).FirstOrDefaultAsync();
+
+                    dependenciaSalida.NombreProceso = proceso.Nombre;
+
+                    listaSalida.Add(dependenciaSalida);
+
+                }
+                return  listaSalida;
             }
             catch (Exception ex)
             {
@@ -50,7 +97,7 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Dependencia>();
+                return new List<DependenciaViewModel>();
             }
         }
 
@@ -252,23 +299,56 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/Dependencias/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDependencia([FromRoute] int id)
+        public async Task<Response> DeleteDependencia([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
 
-            var dependencia = await db.Dependencia.SingleOrDefaultAsync(m => m.IdDependencia == id);
-            if (dependencia == null)
+                var dependencia = await db.Dependencia.SingleOrDefaultAsync(m => m.IdDependencia == id);
+                if (dependencia == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+
+                db.Dependencia.Remove(dependencia);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
             }
-
-            db.Dependencia.Remove(dependencia);
-            await db.SaveChangesAsync();
-
-            return Ok(dependencia);
         }
 
         private Response Existe(Dependencia dependencia)
