@@ -168,6 +168,7 @@ namespace bd.swth.web.Controllers.API
 
                         TituloActualizar.Nombre = Titulo.Nombre;
                         TituloActualizar.IdAreaConocimiento = Titulo.IdAreaConocimiento;
+                        TituloActualizar.IdEstudio = Titulo.IdEstudio;
                         db.Titulo.Update(TituloActualizar);
                         await db.SaveChangesAsync();
 
@@ -325,7 +326,15 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(Titulo Titulo)
         {
             var bdd = Titulo.Nombre.ToUpper().TrimEnd().TrimStart();
-            var Titulorespuesta = db.Titulo.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var ada = Titulo.IdEstudio;
+            var iac = Titulo.IdAreaConocimiento;
+
+            var Titulorespuesta = db.Titulo.Where(
+                    p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd 
+                    && p.IdEstudio == ada
+                    && p.IdAreaConocimiento == iac
+
+                ).FirstOrDefault();
             if (Titulorespuesta != null)
             {
                 return new Response

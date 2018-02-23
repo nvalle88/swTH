@@ -33,7 +33,7 @@ namespace bd.swrm.web.Controllers.API
         {
             try
             {
-                return await db.Parroquia.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Parroquia.Include(x=>x.Ciudad).ThenInclude(x=>x.Provincia).ThenInclude(x => x.Pais).OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -95,7 +95,7 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var pParroquia = await db.Parroquia.SingleOrDefaultAsync(m => m.IdParroquia == id);
+                var pParroquia = await db.Parroquia.Include(x=>x.Ciudad).ThenInclude(X=>X.Provincia).ThenInclude(x=>x.Pais).Where(x=>x.IdParroquia==id).FirstOrDefaultAsync();
 
                 if (pParroquia == null)
                 {
@@ -139,6 +139,7 @@ namespace bd.swrm.web.Controllers.API
         {
             try
             {
+
                 if (!ModelState.IsValid)
                 {
                     return new Response
@@ -148,12 +149,31 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
+
+
+
+                var respuesta = Existe(pParroquia);
+                
+                if (respuesta.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.ExisteRegistro
+                    };
+                }
+
+
+
+
                 var pParroquiaActualizar = await db.Parroquia.Where(x => x.IdParroquia == id).FirstOrDefaultAsync();
                 if (pParroquiaActualizar != null)
                 {
                     try
                     {
                         pParroquiaActualizar.Nombre = pParroquia.Nombre;
+                        pParroquiaActualizar.IdCiudad = pParroquia.IdCiudad;
+
                         db.Parroquia.Update(pParroquiaActualizar);
                         await db.SaveChangesAsync();
 
@@ -215,15 +235,14 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(pParroquia);
-                if (!respuesta.IsSuccess)
+               
+                var existe = Existe(pParroquia);
+                if (existe.IsSuccess)
                 {
-                    db.Parroquia.Add(pParroquia);
-                    await db.SaveChangesAsync();
                     return new Response
                     {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        IsSuccess = false,
+                        Message = "Existe una parroquia con ese nombre asignada a esa ciudad",
                     };
                 }
 
@@ -278,6 +297,9 @@ namespace bd.swrm.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
+
+
+
                 db.Parroquia.Remove(respuesta);
                 await db.SaveChangesAsync();
 
@@ -302,7 +324,7 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.ExisteRegistro,
                 };
             }
         }
@@ -315,7 +337,14 @@ namespace bd.swrm.web.Controllers.API
         public Response Existe(Parroquia pParroquia)
         {
             var bdd = pParroquia.Nombre.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.Parroquia.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var ppc = pParroquia.IdCiudad;
+
+            var loglevelrespuesta = db.Parroquia.Where(
+                p => 
+                p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd &&
+                p.IdCiudad == ppc
+            
+            ).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
