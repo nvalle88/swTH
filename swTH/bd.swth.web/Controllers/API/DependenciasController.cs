@@ -45,11 +45,6 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                //var lista = await db.Dependencia.OrderBy(x => x.Sucursal.Nombre)
-                //                                     .ThenBy(x => x.DependenciaPadre.Nombre)
-                //                                     .ThenBy(x => x.Nombre).Include(x => x.Sucursal).Include(x => x.DependenciaPadre).Include(x=>x.Proceso)
-                //                                     .ToListAsync();
-
                 var listaDependencia = await db.Dependencia.Include(x=>x.DependenciaPadre).Include(x=>x.Sucursal).ToListAsync();
 
                 var listaSalida = new List<DependenciaViewModel>();
@@ -166,53 +161,156 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/Dependencias/5
+        // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetDependencia([FromRoute] int id)
+        public async Task<Response> GetDependencia([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var Depedencia = await db.Dependencia.SingleOrDefaultAsync(m => m.IdDependencia == id);
+
+                if (Depedencia == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = Depedencia,
+                };
             }
-
-            var dependencia = await db.Dependencia.SingleOrDefaultAsync(m => m.IdDependencia == id);
-
-            if (dependencia == null)
+            catch (Exception ex)
             {
-                return NotFound();
-            }
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
 
-            return Ok(dependencia);
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
         }
 
         // PUT: api/Dependencias/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutDependencia([FromRoute] int id, [FromBody] Dependencia dependencia)
+        public async Task<Response> PutDependencia([FromRoute] int id, [FromBody] DependenciaViewModel dependenciaViewModel)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != dependencia.IdDependencia)
-            {
-                return BadRequest();
-            }
-
-            db.Entry(dependencia).State = EntityState.Modified;
-
             try
             {
-                await db.SaveChangesAsync();
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                var dependencia = new Dependencia
+                {
+                    IdDependencia= dependenciaViewModel.IdDependencia,
+                    Nombre = dependenciaViewModel.NombreDependencia,
+                    IdSucursal= dependenciaViewModel.IdSucursal,
+                    IdDependenciaPadre = dependenciaViewModel.IdDependenciaPadre,
+                    IdProceso = dependenciaViewModel.IdProceso
+                };
+
+                var existe = Existe(dependencia);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var dependenciaActualizar = await db.Dependencia.Where(x => x.IdDependencia == id).FirstOrDefaultAsync();
+
+                if (dependenciaActualizar != null)
+                {
+                    try
+                    {
+                        if (dependencia.Nombre != dependenciaActualizar.Nombre
+                            || dependencia.IdSucursal != dependenciaActualizar.IdSucursal
+                            || dependencia.IdDependenciaPadre != dependenciaActualizar.IdDependenciaPadre
+                            || dependencia.IdProceso != dependenciaActualizar.IdProceso)
+                        {
+                            dependenciaActualizar.Nombre = dependencia.Nombre;
+                            dependenciaActualizar.IdSucursal = dependencia.IdSucursal;
+                            dependenciaActualizar.IdDependenciaPadre = dependencia.IdDependenciaPadre;
+                            dependenciaActualizar.IdProceso = dependenciaActualizar.IdProceso;
+                            await db.SaveChangesAsync();
+
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Message = Mensaje.Satisfactorio,
+                            };
+                        }
+                      
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception)
             {
-
-                throw;
-
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
             }
-
-            return NoContent();
         }
 
         
@@ -245,7 +343,7 @@ namespace bd.swth.web.Controllers.API
         // POST: api/Dependencias
         [HttpPost]
         [Route("InsertarDependencia")]
-        public async Task<Response> PostDependencia([FromBody] Dependencia dependencia)
+        public async Task<Response> PostDependencia([FromBody] DependenciaViewModel dependenciaViewModel)
         {
             try
             {
@@ -257,6 +355,15 @@ namespace bd.swth.web.Controllers.API
                         Message =Mensaje.ModeloInvalido,
                     };
                 }
+
+                var dependencia = new Dependencia()
+                {
+                    Nombre = dependenciaViewModel.NombreDependencia,
+                    IdSucursal = dependenciaViewModel.IdSucursal,
+                    IdDependenciaPadre= dependenciaViewModel.IdDependenciaPadre,
+                    IdProceso = dependenciaViewModel.IdProceso
+
+                };
 
                 var respuesta = Existe(dependencia);
                 if (!respuesta.IsSuccess)
@@ -354,16 +461,17 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(Dependencia dependencia)
         {
             var nombre = dependencia.Nombre.ToUpper().TrimEnd().TrimStart();
-            var EscalaGradosrespuesta = db.Dependencia.Where(p => p.Nombre.ToUpper().TrimEnd().TrimStart()==nombre
+            var dependenciarespuesta = db.Dependencia.Where(p => p.Nombre.ToUpper().TrimEnd().TrimStart()==nombre
                                                              && p.IdDependenciaPadre==dependencia.IdDependenciaPadre
-                                                             && p.IdSucursal==dependencia.IdSucursal).FirstOrDefault();
-            if (EscalaGradosrespuesta != null)
+                                                             && p.IdSucursal==dependencia.IdSucursal
+                                                             && p.IdProceso == dependencia.IdProceso).FirstOrDefault();
+            if (dependenciarespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = EscalaGradosrespuesta,
+                    Resultado = dependenciarespuesta,
                 };
 
             }
@@ -371,7 +479,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = EscalaGradosrespuesta,
+                Resultado = dependenciarespuesta,
             };
         }
     }
