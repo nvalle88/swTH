@@ -77,6 +77,7 @@ namespace bd.swth.web.Controllers.API
                     item.ManualPuesto = manual;
                     item.RolPuesto = rol;
                     lista1.Add(item);
+
                 }
                 IndiceOcupacional a = new IndiceOcupacional();
                 return lista1;
