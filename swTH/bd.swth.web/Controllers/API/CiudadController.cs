@@ -268,7 +268,7 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -353,7 +353,8 @@ namespace bd.swrm.web.Controllers.API
         public Response Existe(Ciudad ciudad)
         {
             var bdd = ciudad.Nombre.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.Ciudad.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd1 = ciudad.IdProvincia;
+            var loglevelrespuesta = db.Ciudad.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdProvincia == bdd1).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
