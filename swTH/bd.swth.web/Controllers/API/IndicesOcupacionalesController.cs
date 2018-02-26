@@ -77,6 +77,7 @@ namespace bd.swth.web.Controllers.API
                     item.ManualPuesto = manual;
                     item.RolPuesto = rol;
                     lista1.Add(item);
+
                 }
                 IndiceOcupacional a = new IndiceOcupacional();
                 return lista1;
@@ -198,6 +199,7 @@ namespace bd.swth.web.Controllers.API
                                       .Include(x=>x.ManualPuesto)
                                       .Include(x=>x.RolPuesto)
                                       .Include(x=>x.EscalaGrados.GrupoOcupacional)
+                                      .Include(x=>x.ManualPuesto).ThenInclude(x=>x.RelacionesInternasExternas)
                                       .FirstOrDefaultAsync();
 
 

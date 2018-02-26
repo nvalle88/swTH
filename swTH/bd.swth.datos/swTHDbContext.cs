@@ -593,8 +593,8 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdCapacitacionProveedor)
                     .HasName("PK175");
 
-                entity.HasIndex(e => e.IdCapacitacionRecibida)
-                    .HasName("Ref315476");
+                //entity.HasIndex(e => e.IdCapacitacionRecibida)
+                //    .HasName("Ref315476");
 
                 entity.Property(e => e.Direccion).HasColumnType("varchar(40)");
 
