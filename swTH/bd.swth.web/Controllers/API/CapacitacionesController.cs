@@ -12,6 +12,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers
 {
@@ -24,6 +25,34 @@ namespace bd.swth.web.Controllers
         public CapacitacionesController(SwTHDbContext db)
         {
             this.db = db;
+        }
+
+        [HttpPost]
+        [Route("ListarCapacitacionesPorIndiceOcupacional")]
+        public async Task<List<CapacitacionViewModel>> ListarCapacitacionesPorIndiceOcupacional([FromBody] IndiceOcupacional indiceOcupacional)
+        {
+            var ListaCapacitaciones = await db.IndiceOcupacionalCapacitaciones
+                                                .Join(db.IndiceOcupacional
+                                                , indiceCapacitaciones => indiceCapacitaciones.IdIndiceOcupacional, indice => indice.IdIndiceOcupacional,
+                                                (indiceActEsenciales, indice) => new { IndiceOcupacionalActividadesEsenciales = indiceActEsenciales, IndiceOcupacional = indice })
+                                                .Join(db.Capacitacion
+                                                , indice_1 => indice_1.IndiceOcupacionalActividadesEsenciales.IdCapacitacion, capacitacion => capacitacion.IdCapacitacion,
+                                                (indice_1, capacitacion) => new { ca = indice_1, rt = capacitacion })
+                                                .Where(ds => ds.ca.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                .Select(t => new CapacitacionViewModel
+                                                {
+                                                    IdCapacitacion = t.rt.IdCapacitacion,
+                                                    Nombre = t.rt.Nombre,
+                                                    IdIndiceOcupacional=indiceOcupacional.IdIndiceOcupacional,
+                                                })
+                                                .ToListAsync();
+            if (ListaCapacitaciones.Count == 0)
+            {
+                ListaCapacitaciones.Add(new CapacitacionViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional, IdCapacitacion = -1 });
+            }
+
+            return ListaCapacitaciones;
+
         }
 
         // GET: api/BasesDatos

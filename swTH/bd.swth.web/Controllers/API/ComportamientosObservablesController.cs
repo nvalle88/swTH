@@ -12,6 +12,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -25,6 +26,43 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
+
+        [HttpPost]
+        [Route("ListarComportamientosObservablesPorIndiceOcupacional")]
+        public async Task<List<ComportamientoObservableViewModel>> ListarComportamientosObservablesPorIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            var ListaComportamientoObservables = await db.IndiceOcupacionalComportamientoObservable
+                                                .Join(db.IndiceOcupacional
+                                                , indiceComportamiento => indiceComportamiento.IdIndiceOcupacional, indice => indice.IdIndiceOcupacional,
+                                                (indiceConocimiento, indice) => new { IndiceOcupacionalComportamientoObservable = indiceConocimiento, IndiceOcupacional = indice })
+                                                .Join(db.ComportamientoObservable
+                                                , indice_1 => indice_1.IndiceOcupacionalComportamientoObservable.IdComportamientoObservable, comportamientoObservable => comportamientoObservable.IdComportamientoObservable,
+                                                (indice_1, comportamientoObservable) => new { ca = indice_1, rt = comportamientoObservable })
+                                                .Where(ds => ds.ca.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                .Select(t => new ComportamientoObservableViewModel
+                                                {
+                                                    IdComportamientoObservable = t.rt.IdComportamientoObservable,
+                                                    Descripcion = t.rt.Descripcion,
+                                                    CompetenciaTecnicaDenominacionCompetencia=t.rt.DenominacionCompetencia.CompetenciaTecnica,
+                                                    DefinicionDenominacionCompetencia=t.rt.DenominacionCompetencia.Definicion,
+                                                    IdDenominacionCompetencia=Convert.ToInt32(t.rt.IdDenominacionCompetencia),
+                                                    IdIndiceOcupacional=t.ca.IndiceOcupacional.IdIndiceOcupacional,
+                                                    IdNivel=Convert.ToInt32( t.rt.IdNivel),
+                                                    NombreDenominacionCompetencia=t.rt.DenominacionCompetencia.Nombre,
+                                                    NombreNivel=t.rt.Nivel.Nombre,
+                                                   
+                                                })
+                                                .ToListAsync();
+
+
+            if (ListaComportamientoObservables.Count == 0)
+            {
+                ListaComportamientoObservables.Add(new ComportamientoObservableViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional, IdComportamientoObservable = -1 });
+            }
+
+            return ListaComportamientoObservables;
+        }
+
 
         // GET: api/BasesDatos
         [HttpGet]

@@ -12,6 +12,11 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
+
+
+
+
 
 namespace bd.swth.web.Controllers.API
 {
@@ -24,6 +29,38 @@ namespace bd.swth.web.Controllers.API
         public AreasConocimientosController(SwTHDbContext db)
         {
             this.db = db;
+        }
+
+
+
+        [HttpPost]
+        [Route("ListarAreasConocimientosPorIndiceOcupacional")]
+        public async Task<List<AreaConocimientoViewModel>> ListarAreasConocimientosPorIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+
+            var listaAreasConocimiento = await db.IndiceOcupacionalAreaConocimiento
+                                                 .Join(db.IndiceOcupacional
+                                                 , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
+                                                 (rta, ind) => new { hm = rta, gh = ind })
+                                                 .Join(db.AreaConocimiento
+                                                 , ind_1 => ind_1.hm.AreaConocimiento.IdAreaConocimiento, valor => valor.IdAreaConocimiento,
+                                                 (ind_1, valor) => new { ca = ind_1, rt = valor })
+                                                 .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                 .Select(t => new AreaConocimientoViewModel
+                                                 {
+                                                     IdAreaConocimiento = t.rt.IdAreaConocimiento,
+                                                     Descripcion = t.rt.Descripcion,
+                                                     IdIndiceOcupacional=indiceOcupacional.IdIndiceOcupacional,
+                                                     
+                                                 })
+                                                 .ToListAsync();
+
+            if (listaAreasConocimiento.Count==0)
+            {
+                listaAreasConocimiento.Add(new AreaConocimientoViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional,IdAreaConocimiento=-1 });
+            }
+
+            return listaAreasConocimiento;
         }
 
         // GET: api/BasesDatos

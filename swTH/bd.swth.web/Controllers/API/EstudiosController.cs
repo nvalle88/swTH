@@ -12,6 +12,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -25,6 +26,38 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
+
+
+        [HttpPost]
+        [Route("ListarEstudiosPorIndiceOcupacional")]
+        public async Task<List<EstudioViewModel>> ListarEstudiosPorIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            var ListaEstudios = await db.IndiceOcupacionalEstudio
+                                                 .Join(db.IndiceOcupacional
+                                                 , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
+                                                 (rta, ind) => new { hm = rta, gh = ind })
+                                                 .Join(db.Estudio
+                                                 , ind_1 => ind_1.hm.Estudio.IdEstudio, valor => valor.IdEstudio,
+                                                 (ind_1, valor) => new { ca = ind_1, rt = valor })
+                                                 .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                 .Select(t => new EstudioViewModel
+                                                 {
+                                                     IdEstudio = t.rt.IdEstudio,
+                                                     Nombre = t.rt.Nombre,
+                                                     IdIndiceOcupacional=indiceOcupacional.IdIndiceOcupacional
+                                                 })
+                                                 .ToListAsync();
+
+
+            if (ListaEstudios.Count == 0)
+            {
+                ListaEstudios.Add(new EstudioViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional, IdEstudio = -1 });
+            }
+
+            return ListaEstudios;
+        }
+
+
 
 
         [HttpPost]
