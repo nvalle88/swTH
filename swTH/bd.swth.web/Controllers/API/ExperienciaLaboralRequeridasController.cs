@@ -91,7 +91,7 @@ namespace bd.swth.web.Controllers.API
                                    .Where(m => !db.IndiceOcupacionalExperienciaLaboralRequerida
                                                    .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
                                                    .Select(iom => iom.IdExperienciaLaboralRequerida)
-                                                   .Contains(m.IdExperienciaLaboralRequerida)).Include(x => x.EspecificidadExperiencia).Include(x => x.AnoExperiencia).Include(x => x.Estudio)
+                                                   .Contains(m.IdExperienciaLaboralRequerida)).Include(x => x.EspecificidadExperiencia).Include(x => x.Estudio)
                                           .ToListAsync();
 
                 return ListaExperienciaLaboralRequerida;
@@ -121,7 +121,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ExperienciaLaboralRequerida.Include(x => x.EspecificidadExperiencia).Include(x => x.AnoExperiencia).Include(x=>x.Estudio).OrderBy(x => x.IdExperienciaLaboralRequerida).ToListAsync();
+                return await db.ExperienciaLaboralRequerida.Include(x => x.EspecificidadExperiencia).Include(x=>x.Estudio).OrderBy(x => x.IdExperienciaLaboralRequerida).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -226,9 +226,10 @@ namespace bd.swth.web.Controllers.API
                 }
                 var ExperienciaLaboralRequerida = db.ExperienciaLaboralRequerida.Find(experienciaLaboralRequerida.IdExperienciaLaboralRequerida);
 
-                ExperienciaLaboralRequerida.IdEspecificidadExperiencia = ExperienciaLaboralRequerida.IdEspecificidadExperiencia;
-                ExperienciaLaboralRequerida.IdAnoExperiencia = ExperienciaLaboralRequerida.IdAnoExperiencia;
-                ExperienciaLaboralRequerida.IdEstudio = ExperienciaLaboralRequerida.IdEstudio;
+                ExperienciaLaboralRequerida.IdEspecificidadExperiencia = experienciaLaboralRequerida.IdEspecificidadExperiencia;
+                ExperienciaLaboralRequerida.AnoExperiencia = experienciaLaboralRequerida.AnoExperiencia;
+                ExperienciaLaboralRequerida.MesExperiencia = experienciaLaboralRequerida.MesExperiencia;
+                ExperienciaLaboralRequerida.IdEstudio = experienciaLaboralRequerida.IdEstudio;
                 db.ExperienciaLaboralRequerida.Update(ExperienciaLaboralRequerida);
                 await db.SaveChangesAsync();
 
@@ -372,7 +373,7 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(ExperienciaLaboralRequerida ExperienciaLaboralRequerida)
         {
            
-            var ExperienciaLaboralRequeridarespuesta = db.ExperienciaLaboralRequerida.Where(p => p.IdEspecificidadExperiencia == ExperienciaLaboralRequerida.IdEspecificidadExperiencia && p.IdAnoExperiencia == ExperienciaLaboralRequerida.IdAnoExperiencia && p.IdEstudio == ExperienciaLaboralRequerida.IdEstudio).FirstOrDefault();
+            var ExperienciaLaboralRequeridarespuesta = db.ExperienciaLaboralRequerida.Where(p => p.IdEspecificidadExperiencia == ExperienciaLaboralRequerida.IdEspecificidadExperiencia  && p.IdEstudio == ExperienciaLaboralRequerida.IdEstudio && p.AnoExperiencia==ExperienciaLaboralRequerida.AnoExperiencia && p.MesExperiencia == ExperienciaLaboralRequerida.MesExperiencia).FirstOrDefault();
             if (ExperienciaLaboralRequeridarespuesta != null)
             {
                 return new Response

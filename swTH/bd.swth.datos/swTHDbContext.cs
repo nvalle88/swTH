@@ -25,7 +25,6 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.IndiceOcupacionalExperienciaLaboralRequerida> IndiceOcupacionalExperienciaLaboralRequerida { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
         public virtual DbSet<AdministracionTalentoHumano> AdministracionTalentoHumano { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.AnoExperiencia> AnoExperiencia { get; set; }
         public virtual DbSet<AprobacionViatico> AprobacionViatico { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AreaConocimiento> AreaConocimiento { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AvanceGestionCambio> AvanceGestionCambio { get; set; }
@@ -331,15 +330,7 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<AnoExperiencia>(entity =>
-            {
-                entity.HasKey(e => e.IdAnoExperiencia)
-                    .HasName("PK_AnoExperiencia");
-
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasMaxLength(50);
-            });
+            
 
             modelBuilder.Entity<AprobacionViatico>(entity =>
             {
@@ -1431,7 +1422,7 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.Descripcion)
                     .IsRequired()
-                    .HasMaxLength(20);
+                    .HasMaxLength(200);
             });
 
             modelBuilder.Entity<Estado>(entity =>
@@ -1916,27 +1907,16 @@ namespace bd.swth.datos
             });
 
             
-
-
             modelBuilder.Entity<ExperienciaLaboralRequerida>(entity =>
             {
                 entity.HasKey(e => e.IdExperienciaLaboralRequerida)
                     .HasName("PK230");
-
-                entity.HasIndex(e => e.IdAnoExperiencia)
-                    .HasName("Ref228351");
-
+                
                 entity.HasIndex(e => e.IdEspecificidadExperiencia)
                     .HasName("Ref229350");
 
                 entity.HasIndex(e => e.IdEstudio)
                     .HasName("Ref214352");
-
-                entity.HasOne(d => d.AnoExperiencia)
-                    .WithMany(p => p.ExperienciaLaboralRequerida)
-                    .HasForeignKey(d => d.IdAnoExperiencia)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("RefAnoExperiencia351");
 
                 entity.HasOne(d => d.EspecificidadExperiencia)
                     .WithMany(p => p.ExperienciaLaboralRequerida)
@@ -1950,6 +1930,8 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("RefEstudio352");
             });
+
+
 
 
             modelBuilder.Entity<IndiceOcupacionalExperienciaLaboralRequerida>(entity =>
@@ -2089,8 +2071,8 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.ResponsableArea)
                     .HasName("IX_FormularioDevengacion_IdEmpleadoResponsableArea");
 
-                entity.HasIndex(e => e.ModosScializacionId)
-                    .HasName("IX_FormularioDevengacion_ModosScializacionId");
+                entity.HasIndex(e => e.IdModosScializacion)
+                    .HasName("IX_FormularioDevengacion_IdModosScializacion");
 
                 entity.Property(e => e.ModoSocial)
                     .IsRequired()
@@ -2114,7 +2096,7 @@ namespace bd.swth.datos
 
                 entity.HasOne(d => d.ModosScializacion)
                     .WithMany(p => p.FormularioDevengacion)
-                    .HasForeignKey(d => d.ModosScializacionId)
+                    .HasForeignKey(d => d.IdModosScializacion)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 

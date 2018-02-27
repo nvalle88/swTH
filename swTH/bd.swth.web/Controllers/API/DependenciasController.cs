@@ -67,7 +67,7 @@ namespace bd.swth.web.Controllers.API
                         IdDependencia =item.IdDependencia,
                         NombreDependencia =item.Nombre,
                         NombreSucursal = item.Sucursal.Nombre,
-                        NombreDependenciaPadre=padre,
+                        NombreDependenciaPadre=padre
                         
                     };
 
@@ -262,7 +262,7 @@ namespace bd.swth.web.Controllers.API
                             dependenciaActualizar.Nombre = dependencia.Nombre;
                             dependenciaActualizar.IdSucursal = dependencia.IdSucursal;
                             dependenciaActualizar.IdDependenciaPadre = dependencia.IdDependenciaPadre;
-                            dependenciaActualizar.IdProceso = dependenciaActualizar.IdProceso;
+                            dependenciaActualizar.IdProceso = dependencia.IdProceso;
                             await db.SaveChangesAsync();
 
                             return new Response

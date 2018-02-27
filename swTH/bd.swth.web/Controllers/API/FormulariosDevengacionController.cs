@@ -33,7 +33,8 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.FormularioDevengacion.Include(x => x.ModosScializacion).Include(x => x.Empleado).Include(x => x.AnalistaDesarrolloInstitucional).Include(x => x.ResponsableArea).OrderBy(x => x.ModoSocial).ToListAsync();
+                // return await db.FormularioDevengacion.Include(x => x.ModosScializacion).Include(x => x.Empleado).Include(x => x.AnalistaDesarrolloInstitucional).Include(x => x.ResponsableArea).OrderBy(x => x.ModoSocial).ToListAsync();
+                return await db.FormularioDevengacion.Include(x => x.ModosScializacion).OrderBy(x => x.ModoSocial).ToListAsync();
             }
             catch (Exception ex)
             {

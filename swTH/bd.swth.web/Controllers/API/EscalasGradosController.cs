@@ -113,6 +113,7 @@ namespace bd.swth.web.Controllers.API
             escalaevatotal.IdGrupoOcupacional = escalaGrados.IdGrupoOcupacional;
             escalaevatotal.Grado = escalaGrados.Grado;
             escalaevatotal.Remuneracion = escalaGrados.Remuneracion;
+            escalaevatotal.Nombre = escalaGrados.Nombre;
             db.EscalaGrados.Update(escalaevatotal);
             await db.SaveChangesAsync();
         }
@@ -142,7 +143,8 @@ namespace bd.swth.web.Controllers.API
                 {
                     if (EscalaGrados.IdGrupoOcupacional == EscalaGradosActualizar.IdGrupoOcupacional &&
                     EscalaGrados.Grado == EscalaGradosActualizar.Grado &&
-                    EscalaGrados.Remuneracion == EscalaGradosActualizar.Remuneracion)
+                    EscalaGrados.Remuneracion == EscalaGradosActualizar.Remuneracion &&
+                    EscalaGrados.Nombre == EscalaGradosActualizar.Nombre)
                     {
                         return new Response
                         {
@@ -284,7 +286,11 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(EscalaGrados EscalaGrados)
         {
             var bdd = EscalaGrados.Grado;
-            var EscalaGradosrespuesta = db.EscalaGrados.Where(p => p.Grado == bdd).FirstOrDefault();
+            var bbd1 = EscalaGrados.Remuneracion;
+            var bbd2 = EscalaGrados.IdGrupoOcupacional;
+            var bbd3 = EscalaGrados.Nombre;
+
+            var EscalaGradosrespuesta = db.EscalaGrados.Where(p => p.Grado == bdd && p.Remuneracion== bbd1 && p.IdGrupoOcupacional == bbd2 && p.Nombre == bbd3).FirstOrDefault();
             if (EscalaGradosrespuesta != null)
             {
                 return new Response
