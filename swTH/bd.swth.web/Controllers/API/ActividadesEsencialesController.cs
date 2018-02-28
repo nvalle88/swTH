@@ -12,6 +12,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -24,6 +25,35 @@ namespace bd.swth.web.Controllers.API
         public ActividadesEsencialesController(SwTHDbContext db)
         {
             this.db = db;
+        }
+
+
+        [HttpPost]
+        [Route("ListarActividadesEsencialesPorIndiceOcupacional")]
+        public async Task<List<ActividadesEsencialesViewModel>> ListarActividadesEsencialesIndiceOcupacional([FromBody] IndiceOcupacional indiceOcupacional)
+        {
+            var listaActividadesEsenciales = await db.IndiceOcupacionalActividadesEsenciales
+                                                        .Join(db.IndiceOcupacional
+                                                        , indice => indice.IdIndiceOcupacional, ocupacional => ocupacional.IdIndiceOcupacional,
+                                                        (indice, ocupacional) => new { IndiceOcupacionalActividadesEsenciales = indice, IndiceOcupacional = ocupacional })
+                                                        .Join(db.ActividadesEsenciales
+                                                        , indice1 => indice1.IndiceOcupacionalActividadesEsenciales.IdActividadesEsenciales, a => a.IdActividadesEsenciales,
+                                                        (indice1, a) => new { z = indice1, s = a })
+                                                        .Where(ds => ds.z.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                        .Select(t => new ActividadesEsencialesViewModel
+                                                        {
+                                                            IdActividadesEsenciales = t.s.IdActividadesEsenciales,
+                                                            Descripcion = t.s.Descripcion,
+                                                            IdIndiceOcupacional=indiceOcupacional.IdIndiceOcupacional,
+                                                        })
+                                                        .ToListAsync();
+
+            if (listaActividadesEsenciales.Count == 0)
+            {
+                listaActividadesEsenciales.Add(new ActividadesEsencialesViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional,IdActividadesEsenciales=-1 });
+            }
+
+            return listaActividadesEsenciales;
         }
 
         // GET: api/BasesDatos

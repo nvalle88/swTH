@@ -304,14 +304,17 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(ManualPuesto ManualPuesto)
         {
             var bdd = ManualPuesto.Nombre;
-            var ManualPuestorespuesta = db.ManualPuesto.Where(p => p.Nombre == bdd).FirstOrDefault();
+            var bdd1 = ManualPuesto.Descripcion;
+            var bdd2 = ManualPuesto.Mision;
+            var bdd3 = ManualPuesto.IdRelacionesInternasExternas;
+            var ManualPuestorespuesta = db.ManualPuesto.Where(p => p.Nombre == bdd && p.Descripcion ==bdd1 && p.Mision == bdd2 && p.IdRelacionesInternasExternas == bdd3 ).FirstOrDefault();
             if (ManualPuestorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = ManualPuestorespuesta,
+                   // Resultado = ManualPuestorespuesta,
                 };
 
             }

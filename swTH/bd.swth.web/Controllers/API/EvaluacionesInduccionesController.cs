@@ -324,7 +324,9 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(EvaluacionInducion EvaluacionInducion)
         {
             var bdd = EvaluacionInducion.Nombre.ToUpper().TrimEnd().TrimStart();
-            var EvaluacionInducionrespuesta = db.EvaluacionInducion.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            //var bdd1 = EvaluacionInducion.MinimoAprobar;
+            //var bdd2 = EvaluacionInducion.MinimoAprobar;
+            var EvaluacionInducionrespuesta = db.EvaluacionInducion.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd ).FirstOrDefault();
             if (EvaluacionInducionrespuesta != null)
             {
                 return new Response

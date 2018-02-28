@@ -13,6 +13,7 @@ using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.ObjectTransfer;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -29,58 +30,37 @@ namespace bd.swth.web.Controllers.API
 
         [HttpGet]
         [Route("ListarIndicesOcupaciones")]
-        public async Task<List<IndiceOcupacional>> GetIndicesOcupacionales()
+        public async Task<List<IndiceOcupacionalViewModel>> ListarIndicesOcupaciones()
         {
             try
             {
-                //Escala de grados
-                //Include(x => x.Dependencia.Nombre).Include(x => x.Dependencia.IdDependencia).Include(x => x.ManualPuesto.Nombre).Include(x => x.RolPuesto)
-                var lista=await db.IndiceOcupacional.ToListAsync();
-                var lista1 = new List<IndiceOcupacional>();
+                var lista=await db.IndiceOcupacional.Include(x=>x.Dependencia)
+                                                    .Include(x=>x.EscalaGrados)
+                                                    .Include(x=>x.ManualPuesto)
+                                                    .ThenInclude(x=>x.RelacionesInternasExternas)
+                                                    .Include(x=>x.RolPuesto)
+                                                    .Include(x=>x.ModalidadPartida).ToListAsync();
+
+                var listaSalida = new List<IndiceOcupacionalViewModel>();
 
                 foreach (var item in lista)
                 {
-                    var escalaGrados =await db.EscalaGrados.Where(x => x.IdEscalaGrados == item.IdEscalaGrados).FirstOrDefaultAsync();
-                    var dependencia = await db.Dependencia.Where(x => x.IdDependencia == item.IdDependencia).FirstOrDefaultAsync();
-                    var manualPuesto = await db.ManualPuesto.Where(x => x.IdManualPuesto == item.IdManualPuesto).FirstOrDefaultAsync();
-                    var rolPuesto = await db.RolPuesto.Where(x => x.IdRolPuesto == item.IdRolPuesto).FirstOrDefaultAsync();
-
-
-                    var grados = new EscalaGrados
+                    listaSalida.Add(new IndiceOcupacionalViewModel
                     {
-                        Grado = escalaGrados.Grado,
-                        GrupoOcupacional = escalaGrados.GrupoOcupacional,
-                        Remuneracion=escalaGrados.Remuneracion,
-                    };
-
-                    var dependencia1 = new Dependencia
-                    {
-                        Nombre =dependencia.Nombre,
-                       DependenciaPadre=dependencia.DependenciaPadre,
-                    };
-
-
-                    var manual = new ManualPuesto
-                    {
-                        Nombre = manualPuesto.Nombre,
-                        Descripcion=manualPuesto.Descripcion,
-                       
-                    };
-
-                    var rol = new RolPuesto
-                    {
-                        Nombre = rolPuesto.Nombre,
-                    };
-
-                    item.EscalaGrados = grados;
-                    item.Dependencia = dependencia1;
-                    item.ManualPuesto = manual;
-                    item.RolPuesto = rol;
-                    lista1.Add(item);
-
+                        Dependencia = item.Dependencia.Nombre,
+                        EscalaGrado = item.EscalaGrados.Nombre,
+                        IdIndiceOcupacional = item.IdIndiceOcupacional,
+                        ManualPuesto = item.ManualPuesto.Nombre,
+                        ModalidadPartida = item.ManualPuesto.Nombre,
+                        Remuneracion=Convert.ToDecimal(item.EscalaGrados.Remuneracion),
+                        PartidaGeneral = Convert.ToInt32(item.PartidaGeneral),
+                        PartidaIndividual = item.NumeroPartidaIndividual,
+                        RolPuesto = item.RolPuesto.Nombre,
+                    }
+                    );
                 }
-                IndiceOcupacional a = new IndiceOcupacional();
-                return lista1;
+
+                return listaSalida;
             }
             catch (Exception ex)
             {
@@ -94,7 +74,7 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<IndiceOcupacional>();
+                return new List<IndiceOcupacionalViewModel>();
             }
         }
 
@@ -182,217 +162,253 @@ namespace bd.swth.web.Controllers.API
 
 
         [HttpPost]
-        [Route("DetalleIndiceOcupacional")]
-        public async Task<IndiceOcupacionalDetalle> DetalleIndiceOcupacional([FromBody] IndiceOcupacionalDetalle indiceOcupacionalDetalle)
+        [Route("InformacionBasicaIndiceOcupacional")]
+        public async Task<IndiceOcupacionalViewModel> InformacionBasicaIndiceOcupacional([FromBody] IndiceOcupacional indiceOcupacionalDetalle)
         {
             try
             {
 
-                //public IndiceOcupacional IndiceOcupacional { get; set; }
-
-
-
-                //public List<ComportamientoObservable> ListaComportamientoObservables { get; set; }
-
-                var IndiceOcupacional1 =await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+                var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == indiceOcupacionalDetalle.IdIndiceOcupacional)
                                       .Include(x => x.Dependencia)
-                                      .Include(x=>x.ManualPuesto)
-                                      .Include(x=>x.RolPuesto)
-                                      .Include(x=>x.EscalaGrados.GrupoOcupacional)
-                                      .Include(x=>x.ManualPuesto).ThenInclude(x=>x.RelacionesInternasExternas)
+                                      .Include(x => x.ManualPuesto)
+                                      .Include(x => x.RolPuesto)
+                                      .Include(x => x.ModalidadPartida)
+                                      .Include(x => x.EscalaGrados.GrupoOcupacional)
+                                      .Include(x => x.ManualPuesto).ThenInclude(x => x.RelacionesInternasExternas)
+                                      .Select(x=> new IndiceOcupacionalViewModel
+                                                      {
+                                                        Dependencia =x.Dependencia.Nombre,
+                                                        EscalaGrado=x.EscalaGrados.Nombre,
+                                                        IdIndiceOcupacional=x.IdIndiceOcupacional,
+                                                        ManualPuesto=x.ManualPuesto.Nombre,
+                                                        ModalidadPartida=x.ModalidadPartida.Nombre,
+                                                        PartidaGeneral=Convert.ToInt32(x.PartidaGeneral),
+                                                        PartidaIndividual=x.NumeroPartidaIndividual,
+                                                        Remuneracion=Convert.ToDecimal(x.EscalaGrados.Remuneracion),
+                                                        RolPuesto=x.RolPuesto.Nombre,
+                                                        Mision=x.ManualPuesto.Mision,
+                                                        RelacionesInternasExternas=x.ManualPuesto.RelacionesInternasExternas.Descripcion,
+                                                       }
+                                              )
                                       .FirstOrDefaultAsync();
 
-
-
-
-                //var ListaExperienciaLaboralRequeridas = await db.ExperienciaLaboralRequerida.Where(x => x.IdIndiceOcupacionalCapacitaciones == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional).Include(x => x.IdExperienciaLaboralRequerida).ToListAsync();
-
-                var ListaExperienciaLaboralRequeridas = await db.IndiceOcupacionalExperienciaLaboralRequerida
-                                                    .Join(db.IndiceOcupacional
-                                                    , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
-                                                    (rta, ind) => new { hm = rta, gh = ind })
-                                                    .Join(db.ExperienciaLaboralRequerida
-                                                    , ind_1 => ind_1.hm.ExperienciaLaboralRequerida.IdExperienciaLaboralRequerida, valor => valor.IdExperienciaLaboralRequerida,
-                                                    (ind_1, valor) => new { ca = ind_1, rt = valor })
-                                                    .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
-                                                    .Select(t => new ExperienciaLaboralRequerida
-                                                    {
-                                                        IdExperienciaLaboralRequerida = t.rt.IdExperienciaLaboralRequerida,
-                                                        Estudio=t.rt.Estudio,
-                                                        EspecificidadExperiencia=t.rt.EspecificidadExperiencia,
-                                                    })
-                                                    .ToListAsync();
-
-
-
-                //var ListaRelacionesInternasExternas = await db.RelacionesInternasExternasIndiceOcupacional
-                //                                    .Join(db.IndiceOcupacional
-                //                                    , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
-                //                                    (rta, ind) => new { hm = rta, gh = ind })
-                //                                    .Join(db.RelacionesInternasExternas
-                //                                    , ind_1 => ind_1.hm.RelacionesInternasExternas.IdRelacionesInternasExternas, valor => valor.IdRelacionesInternasExternas,
-                //                                    (ind_1, valor) => new { ca = ind_1, rt = valor })
-                //                                    .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
-                //                                    .Select(t => new RelacionesInternasExternas
-                //                                    {
-                //                                        IdRelacionesInternasExternas = t.rt.IdRelacionesInternasExternas,
-                //                                        Descripcion = t.rt.Descripcion,
-                //                                    })
-                //                                    .ToListAsync();
-
-
-
-                var listaAreasConocimiento = await db.IndiceOcupacionalAreaConocimiento
-                                                     .Join(db.IndiceOcupacional
-                                                     , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
-                                                     (rta, ind) => new { hm = rta, gh = ind })
-                                                     .Join(db.AreaConocimiento
-                                                     , ind_1 => ind_1.hm.AreaConocimiento.IdAreaConocimiento, valor => valor.IdAreaConocimiento,
-                                                     (ind_1, valor) => new { ca = ind_1, rt = valor })
-                                                     .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
-                                                     .Select(t => new AreaConocimiento
-                                                     {
-                                                         IdAreaConocimiento = t.rt.IdAreaConocimiento,
-                                                         Descripcion = t.rt.Descripcion,
-                                                     })
-                                                     .ToListAsync();
-
-
-
-
-                //var listaMisiones = await db.MisionIndiceOcupacional
-                //                                     .Join(db.IndiceOcupacional
-                //                                     , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
-                //                                     (rta, ind) => new { hm = rta, gh = ind })
-                //                                     .Join(db.Mision
-                //                                     , ind_1 => ind_1.hm.Mision.IdMision, valor => valor.IdMision,
-                //                                     (ind_1, valor) => new { ca = ind_1, rt = valor })
-                //                                     .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
-                //                                     .Select(t => new Mision
-                //                                     {
-                //                                         IdMision = t.rt.IdMision,
-                //                                         Descripcion = t.rt.Descripcion,
-                //                                     })
-                //                                     .ToListAsync();
-
-
-                var ListaEstudios = await db.IndiceOcupacionalEstudio
-                                                     .Join(db.IndiceOcupacional
-                                                     , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
-                                                     (rta, ind) => new { hm = rta, gh = ind })
-                                                     .Join(db.Estudio
-                                                     , ind_1 => ind_1.hm.Estudio.IdEstudio, valor => valor.IdEstudio,
-                                                     (ind_1, valor) => new { ca = ind_1, rt = valor })
-                                                     .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
-                                                     .Select(t => new Estudio
-                                                     {
-                                                         IdEstudio = t.rt.IdEstudio,
-                                                         Nombre = t.rt.Nombre,
-                                                     })
-                                                     .ToListAsync();
-
-
-
-                var ListaCapacitaciones = await db.IndiceOcupacionalCapacitaciones
-                                                    .Join(db.IndiceOcupacional
-                                                    , indiceCapacitaciones=> indiceCapacitaciones.IdIndiceOcupacional, indice => indice.IdIndiceOcupacional,
-                                                    (indiceActEsenciales, indice) => new { IndiceOcupacionalActividadesEsenciales = indiceActEsenciales, IndiceOcupacional = indice })
-                                                    .Join(db.Capacitacion
-                                                    , indice_1 => indice_1.IndiceOcupacionalActividadesEsenciales.IdCapacitacion, capacitacion => capacitacion.IdCapacitacion,
-                                                    (indice_1, capacitacion) => new { ca = indice_1, rt = capacitacion })
-                                                    .Where(ds => ds.ca.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
-                                                    .Select(t => new Capacitacion
-                                                    {
-                                                       IdCapacitacion=t.rt.IdCapacitacion,
-                                                       Nombre=t.rt.Nombre,
-                                                    })
-                                                    .ToListAsync();
-
-
-
-
-                //Seleccionar Actividades esenciales......
-
-                var listaActividadesEsenciales =await db.IndiceOcupacionalActividadesEsenciales
-                                                        .Join(db.IndiceOcupacional
-                                                        ,indice => indice.IdIndiceOcupacional, ocupacional => ocupacional.IdIndiceOcupacional,
-                                                        (indice, ocupacional) => new { IndiceOcupacionalActividadesEsenciales = indice, IndiceOcupacional = ocupacional })
-                                                        .Join(db.ActividadesEsenciales
-                                                        ,indice1 => indice1.IndiceOcupacionalActividadesEsenciales.IdActividadesEsenciales, a => a.IdActividadesEsenciales,
-                                                        (indice1, a) => new { z = indice1, s = a })
-                                                        .Where(ds => ds.z.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
-                                                        .Select(t => new ActividadesEsenciales
-                                                                      {
-                                                                          IdActividadesEsenciales=t.s.IdActividadesEsenciales,
-                                                                          Descripcion=t.s.Descripcion,
-                                                                      })
-                                                        .ToListAsync();
-
-
-
-                var ListaConocimientosAdicionales = await db.IndiceOcupacionalConocimientosAdicionales
-                                                    .Join(db.IndiceOcupacional
-                                                    , indiceConocimiento => indiceConocimiento.IdIndiceOcupacional, indice => indice.IdIndiceOcupacional,
-                                                    (indiceConocimiento, indice) => new { IndiceOcupacionalConocimientosAdicionales = indiceConocimiento, IndiceOcupacional = indice })
-                                                    .Join(db.ConocimientosAdicionales
-                                                    , indice_1 => indice_1.IndiceOcupacionalConocimientosAdicionales.IdConocimientosAdicionales, conocimientoAdicional => conocimientoAdicional.IdConocimientosAdicionales,
-                                                    (indice_1, conocimientoAdicional) => new { ca = indice_1, io = conocimientoAdicional })
-                                                    .Where(ds => ds.ca.IndiceOcupacional.IdIndiceOcupacional== indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
-                                                    .Select(t => new ConocimientosAdicionales
-                                                    {
-                                                        IdConocimientosAdicionales=t.io.IdConocimientosAdicionales,
-                                                        Descripcion=t.io.Descripcion,
-                                                    })
-                                                    .ToListAsync();
-
-                var ListaComportamientoObservables = await db.IndiceOcupacionalComportamientoObservable
-                                                    .Join(db.IndiceOcupacional
-                                                    , indiceComportamiento => indiceComportamiento.IdIndiceOcupacional, indice => indice.IdIndiceOcupacional,
-                                                    (indiceConocimiento, indice) => new { IndiceOcupacionalComportamientoObservable = indiceConocimiento, IndiceOcupacional = indice })
-                                                    .Join(db.ComportamientoObservable
-                                                    , indice_1 => indice_1.IndiceOcupacionalComportamientoObservable.IdComportamientoObservable, comportamientoObservable => comportamientoObservable.IdComportamientoObservable,
-                                                    (indice_1, comportamientoObservable) => new { ca = indice_1, rt = comportamientoObservable })
-                                                    .Where(ds => ds.ca.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
-                                                    .Select(t => new ComportamientoObservable
-                                                    {
-                                                        IdComportamientoObservable=t.rt.IdComportamientoObservable,
-                                                        Descripcion=t.rt.Descripcion,
-                                                        Nivel=t.rt.Nivel,
-                                                        DenominacionCompetencia=t.rt.DenominacionCompetencia,
-                                                    })
-                                                    .ToListAsync();
-
-
-
-
-
-
-                var detalle = new IndiceOcupacionalDetalle
-                {
-                    IndiceOcupacional= IndiceOcupacional1,
-                    ListaActividadesEsenciales=listaActividadesEsenciales,
-                    ListaConocimientosAdicionales=ListaConocimientosAdicionales,
-                    ListaComportamientoObservables=ListaComportamientoObservables,
-                    //ListaRelacionesInternasExternas=ListaRelacionesInternasExternas,
-                    ListaAreaConocimientos=listaAreasConocimiento,
-                    ListaCapacitaciones=ListaCapacitaciones,
-                    ListaEstudios=ListaEstudios,
-                    //ListaMisiones=listaMisiones,
-                    ListaExperienciaLaboralRequeridas=ListaExperienciaLaboralRequeridas,
-                  
-
-
-                };
-
-
-                return detalle;
-               
+                return DatosBasicosIndiceOcupacional;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+
                 throw;
             }
         }
+
+
+
+
+        //[HttpPost]
+        //[Route("DetalleIndiceOcupacional")]
+        //public async Task<IndiceOcupacionalDetalle> DetalleIndiceOcupacional([FromBody] IndiceOcupacionalDetalle indiceOcupacionalDetalle)
+        //{
+        //    try
+        //    {
+
+        //        //public IndiceOcupacional IndiceOcupacional { get; set; }
+
+
+
+        //        //public List<ComportamientoObservable> ListaComportamientoObservables { get; set; }
+
+
+
+
+
+        //        //var ListaExperienciaLaboralRequeridas = await db.ExperienciaLaboralRequerida.Where(x => x.IdIndiceOcupacionalCapacitaciones == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional).Include(x => x.IdExperienciaLaboralRequerida).ToListAsync();
+
+        //        var ListaExperienciaLaboralRequeridas = await db.IndiceOcupacionalExperienciaLaboralRequerida
+        //                                            .Join(db.IndiceOcupacional
+        //                                            , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
+        //                                            (rta, ind) => new { hm = rta, gh = ind })
+        //                                            .Join(db.ExperienciaLaboralRequerida
+        //                                            , ind_1 => ind_1.hm.ExperienciaLaboralRequerida.IdExperienciaLaboralRequerida, valor => valor.IdExperienciaLaboralRequerida,
+        //                                            (ind_1, valor) => new { ca = ind_1, rt = valor })
+        //                                            .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+        //                                            .Select(t => new ExperienciaLaboralRequerida
+        //                                            {
+        //                                                IdExperienciaLaboralRequerida = t.rt.IdExperienciaLaboralRequerida,
+        //                                                Estudio=t.rt.Estudio,
+        //                                                EspecificidadExperiencia=t.rt.EspecificidadExperiencia,
+        //                                            })
+        //                                            .ToListAsync();
+
+
+
+        //        //var ListaRelacionesInternasExternas = await db.RelacionesInternasExternasIndiceOcupacional
+        //        //                                    .Join(db.IndiceOcupacional
+        //        //                                    , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
+        //        //                                    (rta, ind) => new { hm = rta, gh = ind })
+        //        //                                    .Join(db.RelacionesInternasExternas
+        //        //                                    , ind_1 => ind_1.hm.RelacionesInternasExternas.IdRelacionesInternasExternas, valor => valor.IdRelacionesInternasExternas,
+        //        //                                    (ind_1, valor) => new { ca = ind_1, rt = valor })
+        //        //                                    .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+        //        //                                    .Select(t => new RelacionesInternasExternas
+        //        //                                    {
+        //        //                                        IdRelacionesInternasExternas = t.rt.IdRelacionesInternasExternas,
+        //        //                                        Descripcion = t.rt.Descripcion,
+        //        //                                    })
+        //        //                                    .ToListAsync();
+
+
+
+        //        var listaAreasConocimiento = await db.IndiceOcupacionalAreaConocimiento
+        //                                             .Join(db.IndiceOcupacional
+        //                                             , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
+        //                                             (rta, ind) => new { hm = rta, gh = ind })
+        //                                             .Join(db.AreaConocimiento
+        //                                             , ind_1 => ind_1.hm.AreaConocimiento.IdAreaConocimiento, valor => valor.IdAreaConocimiento,
+        //                                             (ind_1, valor) => new { ca = ind_1, rt = valor })
+        //                                             .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+        //                                             .Select(t => new AreaConocimiento
+        //                                             {
+        //                                                 IdAreaConocimiento = t.rt.IdAreaConocimiento,
+        //                                                 Descripcion = t.rt.Descripcion,
+        //                                             })
+        //                                             .ToListAsync();
+
+
+
+
+        //        //var listaMisiones = await db.MisionIndiceOcupacional
+        //        //                                     .Join(db.IndiceOcupacional
+        //        //                                     , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
+        //        //                                     (rta, ind) => new { hm = rta, gh = ind })
+        //        //                                     .Join(db.Mision
+        //        //                                     , ind_1 => ind_1.hm.Mision.IdMision, valor => valor.IdMision,
+        //        //                                     (ind_1, valor) => new { ca = ind_1, rt = valor })
+        //        //                                     .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+        //        //                                     .Select(t => new Mision
+        //        //                                     {
+        //        //                                         IdMision = t.rt.IdMision,
+        //        //                                         Descripcion = t.rt.Descripcion,
+        //        //                                     })
+        //        //                                     .ToListAsync();
+
+
+        //        var ListaEstudios = await db.IndiceOcupacionalEstudio
+        //                                             .Join(db.IndiceOcupacional
+        //                                             , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
+        //                                             (rta, ind) => new { hm = rta, gh = ind })
+        //                                             .Join(db.Estudio
+        //                                             , ind_1 => ind_1.hm.Estudio.IdEstudio, valor => valor.IdEstudio,
+        //                                             (ind_1, valor) => new { ca = ind_1, rt = valor })
+        //                                             .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+        //                                             .Select(t => new Estudio
+        //                                             {
+        //                                                 IdEstudio = t.rt.IdEstudio,
+        //                                                 Nombre = t.rt.Nombre,
+        //                                             })
+        //                                             .ToListAsync();
+
+
+
+        //        var ListaCapacitaciones = await db.IndiceOcupacionalCapacitaciones
+        //                                            .Join(db.IndiceOcupacional
+        //                                            , indiceCapacitaciones=> indiceCapacitaciones.IdIndiceOcupacional, indice => indice.IdIndiceOcupacional,
+        //                                            (indiceActEsenciales, indice) => new { IndiceOcupacionalActividadesEsenciales = indiceActEsenciales, IndiceOcupacional = indice })
+        //                                            .Join(db.Capacitacion
+        //                                            , indice_1 => indice_1.IndiceOcupacionalActividadesEsenciales.IdCapacitacion, capacitacion => capacitacion.IdCapacitacion,
+        //                                            (indice_1, capacitacion) => new { ca = indice_1, rt = capacitacion })
+        //                                            .Where(ds => ds.ca.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+        //                                            .Select(t => new Capacitacion
+        //                                            {
+        //                                               IdCapacitacion=t.rt.IdCapacitacion,
+        //                                               Nombre=t.rt.Nombre,
+        //                                            })
+        //                                            .ToListAsync();
+
+
+
+
+        //        //Seleccionar Actividades esenciales......
+
+        //        var listaActividadesEsenciales =await db.IndiceOcupacionalActividadesEsenciales
+        //                                                .Join(db.IndiceOcupacional
+        //                                                ,indice => indice.IdIndiceOcupacional, ocupacional => ocupacional.IdIndiceOcupacional,
+        //                                                (indice, ocupacional) => new { IndiceOcupacionalActividadesEsenciales = indice, IndiceOcupacional = ocupacional })
+        //                                                .Join(db.ActividadesEsenciales
+        //                                                ,indice1 => indice1.IndiceOcupacionalActividadesEsenciales.IdActividadesEsenciales, a => a.IdActividadesEsenciales,
+        //                                                (indice1, a) => new { z = indice1, s = a })
+        //                                                .Where(ds => ds.z.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+        //                                                .Select(t => new ActividadesEsenciales
+        //                                                              {
+        //                                                                  IdActividadesEsenciales=t.s.IdActividadesEsenciales,
+        //                                                                  Descripcion=t.s.Descripcion,
+        //                                                              })
+        //                                                .ToListAsync();
+
+
+
+        //        var ListaConocimientosAdicionales = await db.IndiceOcupacionalConocimientosAdicionales
+        //                                            .Join(db.IndiceOcupacional
+        //                                            , indiceConocimiento => indiceConocimiento.IdIndiceOcupacional, indice => indice.IdIndiceOcupacional,
+        //                                            (indiceConocimiento, indice) => new { IndiceOcupacionalConocimientosAdicionales = indiceConocimiento, IndiceOcupacional = indice })
+        //                                            .Join(db.ConocimientosAdicionales
+        //                                            , indice_1 => indice_1.IndiceOcupacionalConocimientosAdicionales.IdConocimientosAdicionales, conocimientoAdicional => conocimientoAdicional.IdConocimientosAdicionales,
+        //                                            (indice_1, conocimientoAdicional) => new { ca = indice_1, io = conocimientoAdicional })
+        //                                            .Where(ds => ds.ca.IndiceOcupacional.IdIndiceOcupacional== indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+        //                                            .Select(t => new ConocimientosAdicionales
+        //                                            {
+        //                                                IdConocimientosAdicionales=t.io.IdConocimientosAdicionales,
+        //                                                Descripcion=t.io.Descripcion,
+        //                                            })
+        //                                            .ToListAsync();
+
+        //        var ListaComportamientoObservables = await db.IndiceOcupacionalComportamientoObservable
+        //                                            .Join(db.IndiceOcupacional
+        //                                            , indiceComportamiento => indiceComportamiento.IdIndiceOcupacional, indice => indice.IdIndiceOcupacional,
+        //                                            (indiceConocimiento, indice) => new { IndiceOcupacionalComportamientoObservable = indiceConocimiento, IndiceOcupacional = indice })
+        //                                            .Join(db.ComportamientoObservable
+        //                                            , indice_1 => indice_1.IndiceOcupacionalComportamientoObservable.IdComportamientoObservable, comportamientoObservable => comportamientoObservable.IdComportamientoObservable,
+        //                                            (indice_1, comportamientoObservable) => new { ca = indice_1, rt = comportamientoObservable })
+        //                                            .Where(ds => ds.ca.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacionalDetalle.IndiceOcupacional.IdIndiceOcupacional)
+        //                                            .Select(t => new ComportamientoObservable
+        //                                            {
+        //                                                IdComportamientoObservable=t.rt.IdComportamientoObservable,
+        //                                                Descripcion=t.rt.Descripcion,
+        //                                                Nivel=t.rt.Nivel,
+        //                                                DenominacionCompetencia=t.rt.DenominacionCompetencia,
+        //                                            })
+        //                                            .ToListAsync();
+
+
+
+
+
+
+        //        var detalle = new IndiceOcupacionalDetalle
+        //        {
+        //            IndiceOcupacional= IndiceOcupacional1,
+        //            ListaActividadesEsenciales=listaActividadesEsenciales,
+        //            ListaConocimientosAdicionales=ListaConocimientosAdicionales,
+        //            ListaComportamientoObservables=ListaComportamientoObservables,
+        //            //ListaRelacionesInternasExternas=ListaRelacionesInternasExternas,
+        //            ListaAreaConocimientos=listaAreasConocimiento,
+        //            ListaCapacitaciones=ListaCapacitaciones,
+        //            ListaEstudios=ListaEstudios,
+        //            //ListaMisiones=listaMisiones,
+        //            ListaExperienciaLaboralRequeridas=ListaExperienciaLaboralRequeridas,
+                  
+
+
+        //        };
+
+
+        //        return detalle;
+               
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw;
+        //    }
+        //}
 
 
         [HttpPost]
@@ -899,10 +915,10 @@ namespace bd.swth.web.Controllers.API
                 IndiceOcupacional IndiceOcupacional = new IndiceOcupacional();
                 if (indiceOcupacional.IdEscalaGrados != 0)
                 {
-                    IndiceOcupacional = await db.IndiceOcupacional.SingleOrDefaultAsync(m => m.IdDependencia == indiceOcupacional.IdDependencia
+                    IndiceOcupacional = await db.IndiceOcupacional.Where(m => m.IdDependencia == indiceOcupacional.IdDependencia
                     && m.IdManualPuesto == indiceOcupacional.IdManualPuesto
                     && m.IdRolPuesto == indiceOcupacional.IdRolPuesto
-                    && m.IdEscalaGrados == indiceOcupacional.IdEscalaGrados);
+                    && m.IdEscalaGrados == indiceOcupacional.IdEscalaGrados).FirstOrDefaultAsync();
                 }
                 else
                 {

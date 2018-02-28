@@ -20,5 +20,9 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<IndiceOcupacionalEstudio> IndiceOcupacionalEstudio { get; set; }
 
         public virtual ICollection<ExperienciaLaboralRequerida> ExperienciaLaboralRequerida { get; set; }
+
+
+
+        
     }
 }

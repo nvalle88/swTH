@@ -12,6 +12,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -25,6 +26,38 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
+
+
+        [HttpPost]
+        [Route("ListarConocimientosAdicionalesPorIndiceOcupacional")]
+        public async Task<List<ConocimientosAdicionalesViewModel>> ListarConocimientosAdicionalesPorIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+
+            var ListaConocimientosAdicionales = await db.IndiceOcupacionalConocimientosAdicionales
+                                                .Join(db.IndiceOcupacional
+                                                , indiceConocimiento => indiceConocimiento.IdIndiceOcupacional, indice => indice.IdIndiceOcupacional,
+                                                (indiceConocimiento, indice) => new { IndiceOcupacionalConocimientosAdicionales = indiceConocimiento, IndiceOcupacional = indice })
+                                                .Join(db.ConocimientosAdicionales
+                                                , indice_1 => indice_1.IndiceOcupacionalConocimientosAdicionales.IdConocimientosAdicionales, conocimientoAdicional => conocimientoAdicional.IdConocimientosAdicionales,
+                                                (indice_1, conocimientoAdicional) => new { ca = indice_1, io = conocimientoAdicional })
+                                                .Where(ds => ds.ca.IndiceOcupacional.IdIndiceOcupacional ==indiceOcupacional.IdIndiceOcupacional)
+                                                .Select(t => new ConocimientosAdicionalesViewModel
+                                                {
+                                                    IdConocimientosAdicionales = t.io.IdConocimientosAdicionales,
+                                                    Descripcion = t.io.Descripcion,
+                                                    IdIndiceOcupacional=t.ca.IndiceOcupacional.IdIndiceOcupacional,
+                                                })
+                                                .ToListAsync();
+
+            if (ListaConocimientosAdicionales.Count == 0)
+            {
+                ListaConocimientosAdicionales.Add(new ConocimientosAdicionalesViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional, IdConocimientosAdicionales = -1 });
+            }
+
+            return ListaConocimientosAdicionales;
+
+        }
+
 
         // GET: api/BasesDatos
         [HttpGet]

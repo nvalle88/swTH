@@ -136,6 +136,8 @@ namespace bd.swth.web.Controllers.API
                     try
                     {
                         MaterialApoyoActualizar.NombreDocumento = MaterialApoyo.NombreDocumento;
+                        MaterialApoyoActualizar.Ubicacion = MaterialApoyo.Ubicacion;
+                        MaterialApoyoActualizar.IdFormularioDevengacion = MaterialApoyo.IdFormularioDevengacion;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -295,7 +297,9 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(MaterialApoyo MaterialApoyo)
         {
             var bdd = MaterialApoyo.NombreDocumento;
-            var MaterialApoyorespuesta = db.MaterialApoyo.Where(p => p.NombreDocumento == bdd).FirstOrDefault();
+            var bdd1 = MaterialApoyo.Ubicacion;
+            var bd2 = MaterialApoyo.IdFormularioDevengacion;
+            var MaterialApoyorespuesta = db.MaterialApoyo.Where(p => p.NombreDocumento == bdd && p.Ubicacion== bdd1 && p.IdFormularioDevengacion==bd2).FirstOrDefault();
             if (MaterialApoyorespuesta != null)
             {
                 return new Response

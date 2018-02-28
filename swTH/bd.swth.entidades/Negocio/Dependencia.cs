@@ -25,7 +25,7 @@ namespace bd.swth.entidades.Negocio
         public int IdSucursal { get; set; }
         public virtual Sucursal Sucursal { get; set; }
 
-        public int? IdProceso { get; set; }
+        public int IdProceso { get; set; }
         public virtual Proceso Proceso { get; set; }
 
 
