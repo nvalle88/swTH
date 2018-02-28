@@ -64,7 +64,7 @@ namespace bd.swth.datos
         public virtual DbSet<DocumentosParentescodos> DocumentosParentescodos { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Empleado> Empleado { get; set; }
         public virtual DbSet<EmpleadoContactoEmergencia> EmpleadoContactoEmergencia { get; set; }
-        public virtual DbSet<EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
         public virtual DbSet<EmpleadoFormularioCapacitacion> EmpleadoFormularioCapacitacion { get; set; }
         public virtual DbSet<EmpleadoIE> EmpleadoIE { get; set; }
         public virtual DbSet<EmpleadoImpuestoRenta> EmpleadoImpuestoRenta { get; set; }
