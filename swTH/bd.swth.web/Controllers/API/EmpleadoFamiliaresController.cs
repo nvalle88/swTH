@@ -12,28 +12,29 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/Titulos")]
-    public class TitulosController : Controller
+    [Route("api/EmpleadoFamiliares")]
+    public class EmpleadoFamiliaresController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TitulosController(SwTHDbContext db)
+        public EmpleadoFamiliaresController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTitulos")]
-        public async Task<List<Titulo>> GetTitulos()
+        [Route("ListarEmpleadoFamiliares")]
+        public async Task<List<EmpleadoFamiliar>> GetEmpleadoFamiliar()
         {
             try
             {
-                return await db.Titulo.Include(x => x.AreaConocimiento).Include(x => x.Estudio).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.EmpleadoFamiliar.OrderBy(x => x.IdPersona).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,69 +48,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<Titulo>();
-            }
-        }
-
-        // GET: api/BasesDatos
-        [HttpPost]
-        [Route("ListarAreasConocimientoyEstudiosporTitulo")]
-        public async Task<List<Titulo>> ListarAreasConocimientoyEstudiosporTitulo([FromBody] Titulo titulo)
-        {
-            try
-            {
-                return await db.Titulo.Where(x => x.IdTitulo == titulo.IdTitulo).Include(x => x.AreaConocimiento).Include(x => x.Estudio).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<Titulo>();
-            }
-        }
-
-
-        [HttpPost]
-        [Route("ListarTitulosporAreaConocimiento")]
-        public async Task<List<Titulo>> ListarTitulosporAreaConocimiento([FromBody]Titulo titulo)
-        {
-            try
-            {
-                var Lista = await db.Titulo
-                                   .Where(ac => db.Titulo
-                                                   .Where(a => a.IdAreaConocimiento == titulo.IdAreaConocimiento && a.IdEstudio == titulo.IdEstudio)
-                                                   .Select(ioac => ioac.IdTitulo)
-                                                   .Contains(ac.IdTitulo))
-                                          .ToListAsync();
-                return Lista;
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<Titulo>();
+                return new List<EmpleadoFamiliar>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetTitulo([FromRoute] int id)
+        public async Task<Response> GetEmpleadoFamiliar([FromRoute] int id)
         {
             try
             {
@@ -122,9 +67,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var Titulo = await db.Titulo.SingleOrDefaultAsync(m => m.IdTitulo == id);
+                var EmpleadoFamiliar = await db.EmpleadoFamiliar.SingleOrDefaultAsync(m => m.IdEmpleadoFamiliar == id);
 
-                if (Titulo == null)
+                if (EmpleadoFamiliar == null)
                 {
                     return new Response
                     {
@@ -137,7 +82,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = Titulo,
+                    Resultado = EmpleadoFamiliar,
                 };
             }
             catch (Exception ex)
@@ -162,7 +107,7 @@ namespace bd.swth.web.Controllers.API
 
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutTitulo([FromRoute] int id, [FromBody] Titulo Titulo)
+        public async Task<Response> PutEmpleadoFamiliar([FromRoute] int id, [FromBody] EmpleadoFamiliarViewModel empleadoFamiliarViewModel)
         {
             try
             {
@@ -175,26 +120,25 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(Titulo);
+                var existe = Existe(empleadoFamiliarViewModel);
                 if (existe.IsSuccess)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe una brigada de salud y seguridad ocupacional con igual rol",
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
 
-                var TituloActualizar = await db.Titulo.Where(x => x.IdTitulo == id).FirstOrDefaultAsync();
-                if (TituloActualizar != null)
+                var EmpleadoFamiliarActualizar = await db.EmpleadoFamiliar.Where(x => x.IdEmpleadoFamiliar == id).FirstOrDefaultAsync();
+
+                if (EmpleadoFamiliarActualizar != null)
                 {
                     try
                     {
-
-                        TituloActualizar.Nombre = Titulo.Nombre;
-                        TituloActualizar.IdAreaConocimiento = Titulo.IdAreaConocimiento;
-                        TituloActualizar.IdEstudio = Titulo.IdEstudio;
-                        db.Titulo.Update(TituloActualizar);
+                        //EmpleadoFamiliarActualizar.IdPersona = EmpleadoFamiliar.IdPersona;
+                        //EmpleadoFamiliarActualizar.IdEmpleado = EmpleadoFamiliar.IdEmpleado;
+                        //EmpleadoFamiliarActualizar.IdParentesco = EmpleadoFamiliar.IdParentesco;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -224,10 +168,13 @@ namespace bd.swth.web.Controllers.API
                     }
                 }
 
+
+
+
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol",
+                    Message = Mensaje.ExisteRegistro
                 };
             }
             catch (Exception)
@@ -240,64 +187,107 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/BasesDatos
+
         [HttpPost]
-        [Route("InsertarTitulo")]
-        public async Task<Response> PostTitulo([FromBody] Titulo Titulo)
+        [Route("InsertarEmpleadoFamiliar")]
+        public async Task<Response> InsertarEmpleadoFamiliar([FromBody] EmpleadoFamiliarViewModel empleadoFamiliarViewModel)
         {
-            try
+            using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                if (!ModelState.IsValid)
+                try
                 {
+
+                    var respuesta = Existe(empleadoFamiliarViewModel);
+                    if (empleadoFamiliarViewModel.IdNacionalidadIndigena == 0)
+                    {
+                        empleadoFamiliarViewModel.IdNacionalidadIndigena = null;
+                    }
+                    if (!respuesta.IsSuccess)
+                    {
+
+                        var persona = new Persona()
+                        {
+                            FechaNacimiento = empleadoFamiliarViewModel.FechaNacimiento,
+                            IdSexo = empleadoFamiliarViewModel.IdSexo,
+                            IdTipoIdentificacion = empleadoFamiliarViewModel.IdTipoIdentificacion,
+                            IdEstadoCivil = empleadoFamiliarViewModel.IdEstadoCivil,
+                            IdGenero = empleadoFamiliarViewModel.IdGenero,
+                            IdNacionalidad = empleadoFamiliarViewModel.IdNacionalidad,
+                            IdTipoSangre = empleadoFamiliarViewModel.IdTipoSangre,
+                            IdEtnia = empleadoFamiliarViewModel.IdEtnia,
+                            Identificacion = empleadoFamiliarViewModel.Identificacion,
+                            Nombres = empleadoFamiliarViewModel.Nombres,
+                            Apellidos = empleadoFamiliarViewModel.Apellidos,
+                            TelefonoPrivado = empleadoFamiliarViewModel.TelefonoPrivado,
+                            TelefonoCasa = empleadoFamiliarViewModel.TelefonoCasa,
+                            CorreoPrivado = empleadoFamiliarViewModel.CorreoPrivado,
+                            LugarTrabajo = empleadoFamiliarViewModel.LugarTrabajo,
+                            IdNacionalidadIndigena = empleadoFamiliarViewModel.IdNacionalidadIndigena,
+                            CallePrincipal = empleadoFamiliarViewModel.CallePrincipal,
+                            CalleSecundaria = empleadoFamiliarViewModel.CalleSecundaria,
+                            Referencia = empleadoFamiliarViewModel.Referencia,
+                            Numero = empleadoFamiliarViewModel.Numero,
+                            IdParroquia = empleadoFamiliarViewModel.IdParroquia,
+                            Ocupacion = empleadoFamiliarViewModel.Ocupacion
+
+                        };
+
+                        //1. Insertar Persona 
+
+                        var personaInsertarda = await db.Persona.AddAsync(persona);
+                        await db.SaveChangesAsync();
+
+                        //2. Insertar EmpleadoFamiliar
+                        var empleadoFamiliar = new EmpleadoFamiliar()
+                        {
+                            IdPersona = personaInsertarda.Entity.IdPersona,
+                            IdEmpleado = empleadoFamiliarViewModel.IdEmpleado,
+                            IdParentesco = empleadoFamiliarViewModel.IdParentesco
+                        };
+                        var empleadoFamiliarInsertado = await db.EmpleadoFamiliar.AddAsync(empleadoFamiliar);
+                        await db.SaveChangesAsync();
+
+                        transaction.Commit();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                            Resultado = empleadoFamiliarInsertado.Entity
+                        };
+                    }
+
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = ""
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
-
-                var respuesta = Existe(Titulo);
-                if (!respuesta.IsSuccess)
+                catch (Exception ex)
                 {
-                    db.Titulo.Add(Titulo);
-                    await db.SaveChangesAsync();
+                    transaction.Rollback();
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    {
+                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                        ExceptionTrace = ex,
+                        Message = Mensaje.Excepcion,
+                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                        UserName = "",
+
+                    });
                     return new Response
                     {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
                     };
                 }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol"
-                };
-
             }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
         }
-
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteTitulo([FromRoute] int id)
+        public async Task<Response> DeleteEmpleadoFamiliar([FromRoute] int id)
         {
             try
             {
@@ -310,7 +300,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.Titulo.SingleOrDefaultAsync(m => m.IdTitulo == id);
+                var respuesta = await db.EmpleadoFamiliar.SingleOrDefaultAsync(m => m.IdEmpleadoFamiliar == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -319,7 +309,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.Titulo.Remove(respuesta);
+                db.EmpleadoFamiliar.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -343,30 +333,22 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.BorradoNoSatisfactorio,
+                    Message = Mensaje.Error,
                 };
             }
         }
 
-        private Response Existe(Titulo Titulo)
+
+        private Response Existe(EmpleadoFamiliarViewModel empleadoFamiliarViewModel)
         {
-            var bdd = Titulo.Nombre.ToUpper().TrimEnd().TrimStart();
-            var ada = Titulo.IdEstudio;
-            var iac = Titulo.IdAreaConocimiento;
-
-            var Titulorespuesta = db.Titulo.Where(
-                    p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd 
-                    && p.IdEstudio == ada
-                    && p.IdAreaConocimiento == iac
-
-                ).FirstOrDefault();
-            if (Titulorespuesta != null)
+            var identificacion = empleadoFamiliarViewModel.Identificacion.ToUpper().TrimEnd().TrimStart();
+            var Empleadorespuesta = db.Persona.Where(p => p.Identificacion == identificacion).FirstOrDefault();
+            if (Empleadorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol",
-                    Resultado = null,
+                    Message = Mensaje.ExisteRegistro,
                 };
 
             }
@@ -374,7 +356,6 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = Titulorespuesta,
             };
         }
     }

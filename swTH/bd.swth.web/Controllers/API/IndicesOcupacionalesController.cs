@@ -915,10 +915,10 @@ namespace bd.swth.web.Controllers.API
                 IndiceOcupacional IndiceOcupacional = new IndiceOcupacional();
                 if (indiceOcupacional.IdEscalaGrados != 0)
                 {
-                    IndiceOcupacional = await db.IndiceOcupacional.SingleOrDefaultAsync(m => m.IdDependencia == indiceOcupacional.IdDependencia
+                    IndiceOcupacional = await db.IndiceOcupacional.Where(m => m.IdDependencia == indiceOcupacional.IdDependencia
                     && m.IdManualPuesto == indiceOcupacional.IdManualPuesto
                     && m.IdRolPuesto == indiceOcupacional.IdRolPuesto
-                    && m.IdEscalaGrados == indiceOcupacional.IdEscalaGrados);
+                    && m.IdEscalaGrados == indiceOcupacional.IdEscalaGrados).FirstOrDefaultAsync();
                 }
                 else
                 {
