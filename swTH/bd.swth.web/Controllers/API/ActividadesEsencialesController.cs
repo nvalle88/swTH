@@ -83,7 +83,7 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("ListarActividedesEsencialesNoAsignadasIndiceOcupacional")]
-        public async Task<List<ActividadesEsenciales>> ListarActividedesEsencialesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        public async Task<List<ActividadesEsencialesViewModel>> ListarActividedesEsencialesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
         {
             try
             {
@@ -93,7 +93,28 @@ namespace bd.swth.web.Controllers.API
                                                    .Select(ioac => ioac.IdActividadesEsenciales)
                                                    .Contains(ac.IdActividadesEsenciales))
                                           .ToListAsync();
-                return Lista;
+
+
+                var listaSalida = new List<ActividadesEsencialesViewModel>();
+                if (Lista.Count == 0)
+                {
+                    listaSalida.Add(new ActividadesEsencialesViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional, IdActividadesEsenciales = -1 });
+                }
+
+                else
+                {
+                    foreach (var item in Lista)
+                    {
+                        listaSalida.Add(new ActividadesEsencialesViewModel
+                        {
+                            Descripcion = item.Descripcion,
+                            IdActividadesEsenciales = item.IdActividadesEsenciales,
+                            IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional,
+                        });
+                    }
+                }
+
+                return listaSalida;
             }
             catch (Exception ex)
             {
@@ -107,7 +128,7 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<ActividadesEsenciales>();
+                return new List<ActividadesEsencialesViewModel>();
             }
         }
 

@@ -92,32 +92,42 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("ListarComportamientosObservablesNoAsignadasIndiceOcupacional")]
-        public async Task<List<ComportamientoObservable>> ListarActividedesEsencialesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        public async Task<List<ComportamientoObservableViewModel>> ListarActividedesEsencialesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
         {
-            try
-            {
+
                 var Lista = await db.ComportamientoObservable
                                    .Where(ac => !db.IndiceOcupacionalComportamientoObservable
                                                    .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
                                                    .Select(ioac => ioac.IdComportamientoObservable)
                                                    .Contains(ac.IdComportamientoObservable)).Include(x=>x.Nivel).Include(x=>x.DenominacionCompetencia)
                                           .ToListAsync();
-                return Lista;
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
-                return new List<ComportamientoObservable>();
+            var listaSalida = new List<ComportamientoObservableViewModel>();
+
+            if (Lista.Count == 0)
+            {
+                listaSalida.Add(new ComportamientoObservableViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional, IdComportamientoObservable = -1 });
             }
+
+            else
+            {
+                foreach (var item in Lista)
+                {
+                    listaSalida.Add(new ComportamientoObservableViewModel
+                    {
+                        NombreNivel=item.Nivel.Nombre,
+                        Descripcion=item.Descripcion,
+                        CompetenciaTecnicaDenominacionCompetencia=item.DenominacionCompetencia.CompetenciaTecnica,
+                        DefinicionDenominacionCompetencia=item.DenominacionCompetencia.Definicion,
+                        NombreDenominacionCompetencia=item.DenominacionCompetencia.Nombre,
+                        IdComportamientoObservable = item.IdComportamientoObservable,
+                        IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional,
+                    });
+                }
+            }
+
+            return listaSalida;
+
         }
 
         // GET: api/BasesDatos/5

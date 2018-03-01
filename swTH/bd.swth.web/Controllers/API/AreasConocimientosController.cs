@@ -67,32 +67,38 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("ListarAreasConocimientosNoAsignadasIndiceOcupacional")]
-        public async Task<List<AreaConocimiento>> ListarAreasConocimientosNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        public async Task<List<AreaConocimientoViewModel>> ListarAreasConocimientosNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
         {
-            try
-            {
+
                 var Lista =await db.AreaConocimiento
                                    .Where(ac => !db.IndiceOcupacionalAreaConocimiento
                                                    .Where(a=>a.IndiceOcupacional.IdIndiceOcupacional==indiceOcupacional.IdIndiceOcupacional)
                                                    .Select(ioac => ioac.IdAreaConocimiento)
                                                    .Contains(ac.IdAreaConocimiento))
                                           .ToListAsync();
-                return Lista;
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
-                return new List<AreaConocimiento>();
-            }
+                var listaSalida = new List<AreaConocimientoViewModel>();
+
+                if (Lista.Count == 0)
+                {
+                    listaSalida.Add(new AreaConocimientoViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional, IdAreaConocimiento = -1 });
+                }
+
+                else
+                {
+                    foreach (var item in Lista)
+                    {
+                        listaSalida.Add(new AreaConocimientoViewModel
+                        {
+                            Descripcion = item.Descripcion,
+                            IdAreaConocimiento = item.IdAreaConocimiento,
+                            IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional,
+                        });
+                    }
+                }
+
+                return listaSalida;
+            
         }
 
         [HttpPost]

@@ -82,32 +82,37 @@ namespace bd.swth.web.Controllers
 
         [HttpPost]
         [Route("ListarCapacitacionesNoAsignadasIndiceOcupacional")]
-        public async Task<List<Capacitacion>> ListarCapacitacionesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        public async Task<List<CapacitacionViewModel>> ListarCapacitacionesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
         {
-            try
-            {
+
                 var Lista = await db.Capacitacion
                                    .Where(ac => !db.IndiceOcupacionalCapacitaciones
                                                    .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
                                                    .Select(ioac => ioac.IdCapacitacion)
                                                    .Contains(ac.IdCapacitacion))
                                           .ToListAsync();
-                return Lista;
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
+                var listaSalida = new List<CapacitacionViewModel>();
 
-                });
-                return new List<Capacitacion>();
-            }
+                if (Lista.Count == 0)
+                {
+                    listaSalida.Add(new CapacitacionViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional, IdCapacitacion = -1 });
+                }
+
+                else
+                {
+                    foreach (var item in Lista)
+                    {
+                        listaSalida.Add(new CapacitacionViewModel
+                        {
+                            Nombre = item.Nombre,
+                            IdCapacitacion = item.IdCapacitacion,
+                            IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional,
+                        });
+                    }
+                }
+
+                return listaSalida;
+          
         }
 
         // GET: api/BasesDatos/5
