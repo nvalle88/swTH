@@ -12,6 +12,7 @@ using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -25,7 +26,42 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
-        
+
+        [HttpPost]
+        [Route("ListarExperienciaLaboralRequeridaPorIndiceOcupacional")]
+        public async Task<List<ExperienciaLaboralRequeridaViewModel>> ListarExperienciaLaboralRequeridaPorIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        {
+            var ListaExperienciaLaboralRequeridas = await db.IndiceOcupacionalExperienciaLaboralRequerida
+                                                    .Join(db.IndiceOcupacional
+                                                    , rta => rta.IdIndiceOcupacional, ind => ind.IdIndiceOcupacional,
+                                                    (rta, ind) => new { hm = rta, gh = ind })
+                                                    .Join(db.ExperienciaLaboralRequerida
+                                                    , ind_1 => ind_1.hm.ExperienciaLaboralRequerida.IdExperienciaLaboralRequerida, valor => valor.IdExperienciaLaboralRequerida,
+                                                    (ind_1, valor) => new { ca = ind_1, rt = valor })
+                                                    .Where(ds => ds.ca.hm.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                                                    .Select(t => new ExperienciaLaboralRequeridaViewModel
+                                                    {
+                                                        IdExperienciaLaboralRequerida = t.rt.IdExperienciaLaboralRequerida,
+                                                        MesExperiencia=t.rt.MesExperiencia,
+                                                        AnoExperiencia=t.rt.AnoExperiencia,
+                                                        DescripcionEspecificidadExperiencia=t.rt.EspecificidadExperiencia.Descripcion,
+                                                        IdEspecificidadExperiencia=t.rt.EspecificidadExperiencia.IdEspecificidadExperiencia,
+                                                        IdEstudio=t.rt.Estudio.IdEstudio,
+                                                        NombreEstudio=t.rt.Estudio.Nombre,
+                                                        IdIndiceOcupacional=t.ca.gh.IdIndiceOcupacional,
+                                                    })
+                                                    .ToListAsync();
+
+            if (ListaExperienciaLaboralRequeridas.Count == 0)
+            {
+                ListaExperienciaLaboralRequeridas.Add(new ExperienciaLaboralRequeridaViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional, IdExperienciaLaboralRequerida = -1 });
+            }
+
+            return ListaExperienciaLaboralRequeridas;
+
+        }
+
+
         [HttpPost]
         [Route("EliminarIncideOcupacionalExperienciaLaboralRequeridas")]
         public async Task<Response> EliminarIncideOcupacionalExperienciaLaboralRequeridas([FromBody] IndiceOcupacionalExperienciaLaboralRequerida indiceOcupacionalExperienciaLaboralRequerida)
@@ -82,35 +118,42 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("ListarExperienciaLaboralRequeridaNoAsignadasIndiceOcupacional")]
-        public async Task<List<ExperienciaLaboralRequerida>> ListarExperienciaLaboralRequeridaNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        public async Task<List<ExperienciaLaboralRequeridaViewModel>> ListarExperienciaLaboralRequeridaNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
         {
-            try
-            {
+
                 
-                var ListaExperienciaLaboralRequerida = await db.ExperienciaLaboralRequerida
+                var Lista = await db.ExperienciaLaboralRequerida
                                    .Where(m => !db.IndiceOcupacionalExperienciaLaboralRequerida
                                                    .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
                                                    .Select(iom => iom.IdExperienciaLaboralRequerida)
                                                    .Contains(m.IdExperienciaLaboralRequerida)).Include(x => x.EspecificidadExperiencia).Include(x => x.Estudio)
                                           .ToListAsync();
 
-                return ListaExperienciaLaboralRequerida;
-
-            }
-            catch (Exception ex)
+            var listaSalida = new List<ExperienciaLaboralRequeridaViewModel>();
+            if (Lista.Count == 0)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<ExperienciaLaboralRequerida>();
+                listaSalida.Add(new ExperienciaLaboralRequeridaViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional, IdExperienciaLaboralRequerida = -1 });
             }
+
+            else
+            {
+                foreach (var item in Lista)
+                {
+                    listaSalida.Add(new ExperienciaLaboralRequeridaViewModel
+                    {
+                        AnoExperiencia = item.AnoExperiencia,
+                        DescripcionEspecificidadExperiencia=item.EspecificidadExperiencia.Descripcion,
+                        MesExperiencia=item.MesExperiencia,
+                        NombreEstudio=item.Estudio.Nombre,
+                        IdExperienciaLaboralRequerida = item.IdExperienciaLaboralRequerida,
+                        IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional,
+                    });
+                }
+            }
+
+            return listaSalida;
+
+
         }
 
 

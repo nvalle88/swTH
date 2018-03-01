@@ -182,7 +182,7 @@ namespace bd.swth.web.Controllers.API
                                                         IdIndiceOcupacional=x.IdIndiceOcupacional,
                                                         ManualPuesto=x.ManualPuesto.Nombre,
                                                         ModalidadPartida=x.ModalidadPartida.Nombre,
-                                                        PartidaGeneral=Convert.ToInt32(x.PartidaGeneral),
+                                                        PartidaGeneral=Convert.ToInt32( x.PartidaGeneral.NumeroPartida),
                                                         PartidaIndividual=x.NumeroPartidaIndividual,
                                                         Remuneracion=Convert.ToDecimal(x.EscalaGrados.Remuneracion),
                                                         RolPuesto=x.RolPuesto.Nombre,
@@ -194,7 +194,7 @@ namespace bd.swth.web.Controllers.API
 
                 return DatosBasicosIndiceOcupacional;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
                 throw;
