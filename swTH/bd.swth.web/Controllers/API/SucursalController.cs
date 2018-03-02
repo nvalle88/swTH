@@ -148,18 +148,20 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
+                        var respuesta = Existe(sucursal);
+                        if (!respuesta.IsSuccess)
+                        {   sucursalActualizar.Nombre = sucursal.Nombre;
+                            sucursalActualizar.IdCiudad = sucursal.IdCiudad;
 
-                        sucursalActualizar.Nombre = sucursal.Nombre;
-                        sucursalActualizar.IdCiudad = sucursal.IdCiudad;
+                            db.Sucursal.Update(sucursalActualizar);
+                            await db.SaveChangesAsync();
 
-                        db.Sucursal.Update(sucursalActualizar);
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Message = Mensaje.Satisfactorio,
+                            };
+                        }
 
                     }
                     catch (Exception ex)
@@ -174,18 +176,18 @@ namespace bd.swth.web.Controllers.API
                             UserName = "",
 
                         });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
+                        //return new Response
+                        //{
+                        //    IsSuccess = false,
+                        //    Message = Mensaje.Error,
+                        //};
                     }
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.Error
                 };
             }
             catch (Exception)
@@ -229,7 +231,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
@@ -309,13 +311,14 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(Sucursal sucursal)
         {
             var bdd = sucursal.Nombre.ToUpper().TrimEnd().TrimStart();
-            var sucursalrespuesta = db.Sucursal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            var bdd1 = sucursal.IdCiudad;
+            var sucursalrespuesta = db.Sucursal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.IdCiudad==bdd1).FirstOrDefault();
             if (sucursalrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = String.Format("Ya existe una Sucursal con el nombre {0}", sucursal.Nombre),
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
