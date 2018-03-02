@@ -26,6 +26,7 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
         public virtual DbSet<AdministracionTalentoHumano> AdministracionTalentoHumano { get; set; }
         public virtual DbSet<AprobacionViatico> AprobacionViatico { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.Ambito> Ambito { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AreaConocimiento> AreaConocimiento { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AvanceGestionCambio> AvanceGestionCambio { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSO> BrigadaSSO { get; set; }
@@ -2177,6 +2178,16 @@ namespace bd.swth.datos
                     .HasMaxLength(50);
             });
 
+            modelBuilder.Entity<Ambito>(entity =>
+            {
+                entity.HasKey(e => e.IdAmbito)
+                    .HasName("PK_Ambito");
+
+                entity.Property(e => e.Nombre)
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
+            });
+
             modelBuilder.Entity<IndiceOcupacional>(entity =>
             {
                 entity.HasKey(e => e.IdIndiceOcupacional)
@@ -2194,6 +2205,8 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdRolPuesto)
                     .HasName("IX_IndiceOcupacional_IdRolPuesto");
 
+                entity.Property(e => e.Nivel).HasColumnType("varchar(50)");
+
                 entity.HasOne(d => d.Dependencia)
                     .WithMany(p => p.IndiceOcupacional)
                     .HasForeignKey(d => d.IdDependencia);
@@ -2210,6 +2223,10 @@ namespace bd.swth.datos
                    .WithMany(p => p.IndiceOcupacional)
                    .HasForeignKey(d => d.IdModalidadPartida);
 
+                entity.HasOne(d => d.Ambito)
+                   .WithMany(p => p.IndiceOcupacional)
+                   .HasForeignKey(d => d.IdAmbito)
+                   .HasConstraintName("FK_IndiceOcupacional_Ambito");
 
                 entity.HasOne(d => d.PartidaGeneral)
                     .WithMany(p => p.IndiceOcupacional)

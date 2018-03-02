@@ -29,6 +29,11 @@ namespace bd.swth.entidades.Negocio
         public string NumeroPartidaIndividual { get; set; }
         public virtual PartidaGeneral PartidaGeneral { get; set; }
 
+        public int? IdAmbito { get; set; }
+        public virtual Ambito Ambito { get; set; }
+
+        public string Nivel { get; set; }
+
 
 
         public virtual ICollection<IndiceOcupacionalExperienciaLaboralRequerida> IndiceOcupacionalExperienciaLaboralRequerida { get; set; }
