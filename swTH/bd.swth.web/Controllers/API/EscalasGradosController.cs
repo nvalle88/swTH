@@ -139,26 +139,27 @@ namespace bd.swth.web.Controllers.API
             {
 
 
-                if (EscalaGradosActualizar.IdEscalaGrados == EscalaGrados.IdEscalaGrados)
-                {
-                    if (EscalaGrados.IdGrupoOcupacional == EscalaGradosActualizar.IdGrupoOcupacional &&
-                    EscalaGrados.Grado == EscalaGradosActualizar.Grado &&
-                    EscalaGrados.Remuneracion == EscalaGradosActualizar.Remuneracion &&
-                    EscalaGrados.Nombre == EscalaGradosActualizar.Nombre)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
+                //if (EscalaGradosActualizar.IdEscalaGrados == EscalaGrados.IdEscalaGrados)
+                //{
+                //    if (EscalaGrados.IdGrupoOcupacional == EscalaGradosActualizar.IdGrupoOcupacional &&
+                //    EscalaGrados.Grado == EscalaGradosActualizar.Grado &&
+                //    EscalaGrados.Remuneracion == EscalaGradosActualizar.Remuneracion &&
+                //    EscalaGrados.Nombre == EscalaGradosActualizar.Nombre)
+                //    {
+                //        return new Response
+                //        {
+                //            IsSuccess = true,
+                //            Message=Mensaje.ExisteRegistro,
+                //        };
+                //    }
 
-                    await Actualizar(EscalaGrados);
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                    };
-                }
+                //    await Actualizar(EscalaGrados);
+                //    return new Response
+                //    {
+                //        IsSuccess = true,
+                //        Message = Mensaje.Satisfactorio,
+                //    };
+                //}
                 return new Response
                 {
                     IsSuccess = false,
