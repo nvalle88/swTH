@@ -34,33 +34,24 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var lista=await db.IndiceOcupacional.Include(x=>x.Dependencia)
-                                                    .Include(x=>x.EscalaGrados)
-                                                    .Include(x=>x.ManualPuesto)
-                                                    .ThenInclude(x=>x.RelacionesInternasExternas)
-                                                    .Include(x=>x.RolPuesto)
-                                                    .Include(x=>x.ModalidadPartida).ToListAsync();
-
-                var listaSalida = new List<IndiceOcupacionalViewModel>();
-
-                foreach (var item in lista)
-                {
-                    listaSalida.Add(new IndiceOcupacionalViewModel
-                    {
-                        Dependencia = item.Dependencia.Nombre,
-                        EscalaGrado = item.EscalaGrados.Nombre,
-                        IdIndiceOcupacional = item.IdIndiceOcupacional,
-                        ManualPuesto = item.ManualPuesto.Nombre,
-                        ModalidadPartida = item.ManualPuesto.Nombre,
-                        Remuneracion=Convert.ToDecimal(item.EscalaGrados.Remuneracion),
-                        PartidaGeneral = Convert.ToInt32(item.PartidaGeneral),
-                        PartidaIndividual = item.NumeroPartidaIndividual,
-                        RolPuesto = item.RolPuesto.Nombre,
-                    }
-                    );
+                var lista=await db.IndiceOcupacional.Select(x=> new IndiceOcupacionalViewModel
+                   {
+                    Dependencia = x.Dependencia.Nombre,
+                    EscalaGrado = x.EscalaGrados.Nombre,
+                    IdIndiceOcupacional = x.IdIndiceOcupacional,
+                    ManualPuesto = x.ManualPuesto.Nombre,
+                    ModalidadPartida = x.ManualPuesto.Nombre,
+                    Remuneracion = Convert.ToDecimal(x.EscalaGrados.Remuneracion),
+                    PartidaGeneral = Convert.ToInt32(x.PartidaGeneral.NumeroPartida),
+                    PartidaIndividual = x.NumeroPartidaIndividual,
+                    RolPuesto = x.RolPuesto.Nombre,
+                    Ambito = x.Ambito.Nombre,
+                    Nivel = x.Nivel,
                 }
+                ).ToListAsync();
 
-                return listaSalida;
+
+                return lista;
             }
             catch (Exception ex)
             {
@@ -169,12 +160,7 @@ namespace bd.swth.web.Controllers.API
             {
 
                 var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == indiceOcupacionalDetalle.IdIndiceOcupacional)
-                                      .Include(x => x.Dependencia)
-                                      .Include(x => x.ManualPuesto)
-                                      .Include(x => x.RolPuesto)
-                                      .Include(x => x.ModalidadPartida)
-                                      .Include(x => x.EscalaGrados.GrupoOcupacional)
-                                      .Include(x => x.ManualPuesto).ThenInclude(x => x.RelacionesInternasExternas)
+
                                       .Select(x=> new IndiceOcupacionalViewModel
                                                       {
                                                         Dependencia =x.Dependencia.Nombre,
@@ -183,11 +169,14 @@ namespace bd.swth.web.Controllers.API
                                                         ManualPuesto=x.ManualPuesto.Nombre,
                                                         ModalidadPartida=x.ModalidadPartida.Nombre,
                                                         PartidaGeneral=Convert.ToInt32( x.PartidaGeneral.NumeroPartida),
+                                                        Grado= Convert.ToInt32(x.EscalaGrados.Grado),
                                                         PartidaIndividual=x.NumeroPartidaIndividual,
                                                         Remuneracion=Convert.ToDecimal(x.EscalaGrados.Remuneracion),
                                                         RolPuesto=x.RolPuesto.Nombre,
                                                         Mision=x.ManualPuesto.Mision,
                                                         RelacionesInternasExternas=x.ManualPuesto.RelacionesInternasExternas.Descripcion,
+                                                        Ambito=x.Ambito.Nombre,
+                                                        Nivel=x.Nivel,
                                                        }
                                               )
                                       .FirstOrDefaultAsync();
