@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace bd.swth.entidades.ViewModels
+namespace bd.webappth.entidades.ViewModels
 {
     public class EmpleadoFamiliarViewModel : IValidatableObject
     {
         public int IdEmpleado { get; set; }
+        public int IdEmpleadoFamiliar { get; set; }
+        public int IdPersona { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "Tipo de identificación:")]
@@ -76,7 +78,7 @@ namespace bd.swth.entidades.ViewModels
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "Fecha de Nacimiento:")]
         [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
+        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = false)]
         public DateTime FechaNacimiento { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
@@ -141,7 +143,7 @@ namespace bd.swth.entidades.ViewModels
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-       
+
             if (IdTipoIdentificacion == 1)
             {
                 var cad = Identificacion.ToString();

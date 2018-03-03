@@ -154,7 +154,7 @@ namespace bd.swth.datos
         public virtual DbSet<Persona> Persona { get; set; }
         public virtual DbSet<PersonaCapacitacion> PersonaCapacitacion { get; set; }
         public virtual DbSet<PersonaDiscapacidad> PersonaDiscapacidad { get; set; }
-        public virtual DbSet<PersonaEnfermedad> PersonaEnfermedad { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.PersonaEnfermedad> PersonaEnfermedad { get; set; }
         public virtual DbSet<PersonaEstudio> PersonaEstudio { get; set; }
         public virtual DbSet<PersonaSustituto> PersonaSustituto { get; set; }
         public virtual DbSet<PersonaPaquetesInformaticos> PersonaPaquetesInformaticos { get; set; }

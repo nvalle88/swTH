@@ -7,35 +7,34 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
-using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
-
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/PersonasDiscapacidades")]
-    public class PersonasDiscapacidadesController : Controller
+    [Route("api/PersonaEnfermedades")]
+    public class PersonaEnfermedadesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public PersonasDiscapacidadesController(SwTHDbContext db)
+        public PersonaEnfermedadesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
 
-        // GET: api/PersonaDiscapacidad
+        // GET: api/PersonaEnfermedad
         [HttpGet]
-        [Route("ListarPersonasDiscapacidades")]
-        public async Task<List<PersonaDiscapacidad>> GetPersonaDiscapacidad()
+        [Route("ListarPersonasEnfermedades")]
+        public async Task<List<PersonaEnfermedad>> GetPersonaEnfermedad()
         {
             try
             {
-                return await db.PersonaDiscapacidad.Include(x => x.TipoDiscapacidad).Include(x => x.Persona).OrderBy(x => x.NumeroCarnet).ToListAsync();
+                return await db.PersonaEnfermedad.Include(x => x.TipoEnfermedad).Include(x => x.Persona).OrderBy(x => x.InstitucionEmite).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -49,17 +48,17 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<PersonaDiscapacidad>();
+                return new List<PersonaEnfermedad>();
             }
         }
 
         [HttpPost]
-        [Route("ListarDiscapacidadesEmpleadoPorId")]
-        public async Task<List<PersonaDiscapacidad>> ListarDiscapacidadesEmpleadoPorId([FromBody] Empleado empleado)
+        [Route("ListarEnfermedadesEmpleadoPorId")]
+        public async Task<List<PersonaEnfermedad>> ListarEnfermedadesEmpleadoPorId([FromBody] Empleado empleado)
         {
             try
             {
-                return await db.PersonaDiscapacidad.Where(x=>x.IdPersona == empleado.IdPersona).Include(x => x.TipoDiscapacidad).Include(x => x.Persona).OrderBy(x => x.NumeroCarnet).ToListAsync();
+                return await db.PersonaEnfermedad.Where(x => x.IdPersona == empleado.IdPersona).Include(x => x.TipoEnfermedad).Include(x => x.Persona).OrderBy(x => x.InstitucionEmite).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -73,13 +72,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<PersonaDiscapacidad>();
+                return new List<PersonaEnfermedad>();
             }
         }
 
-        // GET: api/PersonaDiscapacidad/5
+        // GET: api/PersonaEnfermedad/5
         [HttpGet("{id}")]
-        public async Task<Response> GetPersonaDiscapacidad([FromRoute] int id)
+        public async Task<Response> GetPersonaEnfermedad([FromRoute] int id)
         {
             try
             {
@@ -92,9 +91,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var PersonaDiscapacidad = await db.PersonaDiscapacidad.SingleOrDefaultAsync(m => m.IdPersonaDiscapacidad == id);
+                var PersonaEnfermedad = await db.PersonaEnfermedad.SingleOrDefaultAsync(m => m.IdPersonaEnfermedad == id);
 
-                if (PersonaDiscapacidad == null)
+                if (PersonaEnfermedad == null)
                 {
                     return new Response
                     {
@@ -107,7 +106,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = PersonaDiscapacidad,
+                    Resultado = PersonaEnfermedad,
                 };
             }
             catch (Exception ex)
@@ -130,9 +129,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/PersonaDiscapacidad/5
+        // PUT: api/PersonaEnfermedad/5
         [HttpPut("{id}")]
-        public async Task<Response> PutPersonaDiscapacidad([FromRoute] int id, [FromBody] PersonaDiscapacidad personaDiscapacidad)
+        public async Task<Response> PutPersonaEnfermedad([FromRoute] int id, [FromBody] PersonaEnfermedad PersonaEnfermedad)
         {
             try
             {
@@ -145,8 +144,8 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(personaDiscapacidad);
-                var PersonaDiscapacidadActualizar = (PersonaDiscapacidad)existe.Resultado;
+                var existe = Existe(PersonaEnfermedad);
+                var PersonaEnfermedadActualizar = (PersonaEnfermedad)existe.Resultado;
                 if (existe.IsSuccess)
                 {
                     return new Response
@@ -156,12 +155,11 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var PersonaDiscapacidadAct= await db.PersonaDiscapacidad.Where(x => x.IdPersonaDiscapacidad == personaDiscapacidad.IdPersonaDiscapacidad).FirstOrDefaultAsync();
+                var PersonaEnfermedadAct = await db.PersonaEnfermedad.Where(x => x.IdPersonaEnfermedad == PersonaEnfermedad.IdPersonaEnfermedad).FirstOrDefaultAsync();
 
-                PersonaDiscapacidadAct.IdTipoDiscapacidad = personaDiscapacidad.IdTipoDiscapacidad;
-                PersonaDiscapacidadAct.IdPersona = personaDiscapacidad.IdPersona;
-                PersonaDiscapacidadAct.NumeroCarnet = personaDiscapacidad.NumeroCarnet;
-                PersonaDiscapacidadAct.Porciento = personaDiscapacidad.Porciento;
+                PersonaEnfermedadAct.IdTipoEnfermedad = PersonaEnfermedad.IdTipoEnfermedad;
+                PersonaEnfermedadAct.IdPersona = PersonaEnfermedad.IdPersona;
+                PersonaEnfermedadAct.InstitucionEmite = PersonaEnfermedad.InstitucionEmite;
 
                 await db.SaveChangesAsync();
 
@@ -194,10 +192,10 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/PersonaDiscapacidad
+        // POST: api/PersonaEnfermedad
         [HttpPost]
-        [Route("InsertarPersonaDiscapacidad")]
-        public async Task<Response> PostPersonaDiscapacidad([FromBody] PersonaDiscapacidad PersonaDiscapacidad)
+        [Route("InsertarPersonaEnfermedad")]
+        public async Task<Response> PostPersonaEnfermedad([FromBody] PersonaEnfermedad PersonaEnfermedad)
         {
             try
             {
@@ -210,10 +208,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(PersonaDiscapacidad);
+                var respuesta = Existe(PersonaEnfermedad);
                 if (!respuesta.IsSuccess)
                 {
-                    db.PersonaDiscapacidad.Add(PersonaDiscapacidad);
+                    db.PersonaEnfermedad.Add(PersonaEnfermedad);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -249,9 +247,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/PersonaDiscapacidad/5
+        // DELETE: api/PersonaEnfermedad/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeletePersonaDiscapacidad([FromRoute] int id)
+        public async Task<Response> DeletePersonaEnfermedad([FromRoute] int id)
         {
             try
             {
@@ -264,7 +262,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.PersonaDiscapacidad.SingleOrDefaultAsync(m => m.IdPersonaDiscapacidad == id);
+                var respuesta = await db.PersonaEnfermedad.SingleOrDefaultAsync(m => m.IdPersonaEnfermedad == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -273,7 +271,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.PersonaDiscapacidad.Remove(respuesta);
+                db.PersonaEnfermedad.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -302,24 +300,23 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(PersonaDiscapacidad PersonaDiscapacidad)
+        private Response Existe(PersonaEnfermedad PersonaEnfermedad)
         {
-            var numeroCarnet = PersonaDiscapacidad.NumeroCarnet;
-            var idtipodiscapacidad = PersonaDiscapacidad.IdTipoDiscapacidad;
-            var idpersona = PersonaDiscapacidad.IdPersona;
-            var porciento = PersonaDiscapacidad.Porciento;
-            var PersonaDiscapacidadrespuesta = db.PersonaDiscapacidad.Where(p => p.NumeroCarnet == numeroCarnet 
-            && p.IdPersona == idpersona 
-            && p.IdTipoDiscapacidad == idtipodiscapacidad
-            && p.Porciento == porciento).FirstOrDefault();
+            var institucionemite = PersonaEnfermedad.InstitucionEmite;
+            var idtipoenfermedad = PersonaEnfermedad.IdTipoEnfermedad;
+            var idpersona = PersonaEnfermedad.IdPersona;
 
-            if (PersonaDiscapacidadrespuesta != null)
+            var PersonaEnfermedadrespuesta = db.PersonaEnfermedad.Where(p => p.InstitucionEmite == institucionemite
+            && p.IdTipoEnfermedad == idtipoenfermedad
+            && p.IdPersona == idpersona).FirstOrDefault();
+
+            if (PersonaEnfermedadrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = PersonaDiscapacidadrespuesta,
+                    Resultado = PersonaEnfermedadrespuesta,
                 };
 
             }
@@ -327,7 +324,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = PersonaDiscapacidadrespuesta,
+                Resultado = PersonaEnfermedadrespuesta,
             };
         }
     }
