@@ -167,7 +167,7 @@ namespace bd.swth.web.Controllers.API
                         SolicitudVacacionesActualizar.FechaHasta = SolicitudVacaciones.FechaHasta;
                         SolicitudVacacionesActualizar.Observaciones = SolicitudVacaciones.Observaciones;
                         SolicitudVacacionesActualizar.PlanAnual = SolicitudVacaciones.PlanAnual;
-                        SolicitudVacacionesActualizar.Estado = SolicitudVacaciones.Estado;
+                        SolicitudVacacionesActualizar.Estado = 0;
                         SolicitudVacacionesActualizar.FechaRespuesta = SolicitudVacaciones.FechaRespuesta;
 
                         db.SolicitudVacaciones.Update(SolicitudVacacionesActualizar);

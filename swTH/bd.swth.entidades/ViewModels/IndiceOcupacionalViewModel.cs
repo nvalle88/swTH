@@ -8,6 +8,7 @@ namespace bd.swth.entidades.ViewModels
     {
         public int IdIndiceOcupacional { get; set; }
         public string Dependencia { get; set; }
+        public int Grado { get; set; }
         public string ManualPuesto { get; set; }
         public string Mision { get; set; }
         public string RelacionesInternasExternas { get; set; }
@@ -15,7 +16,9 @@ namespace bd.swth.entidades.ViewModels
         public string EscalaGrado { get; set; }
         public decimal Remuneracion { get; set; }
         public string ModalidadPartida { get; set; }
-        public int PartidaGeneral { get; set; }
+        public int? PartidaGeneral { get; set; }
         public string PartidaIndividual { get; set; }
+        public string Ambito { get; set; }
+        public string Nivel { get; set; }
     }
 }

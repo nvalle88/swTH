@@ -392,7 +392,10 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(PlanGestionCambio PlanGestionCambio)
         {
             var bdd = PlanGestionCambio.Titulo.ToUpper().TrimEnd().TrimStart();
-            var PlanGestionCambiorespuesta = db.PlanGestionCambio.Where(p => p.Titulo.ToUpper().TrimStart().TrimEnd() == bdd && p.FechaInicio == PlanGestionCambio.FechaInicio && p.FechaFin == PlanGestionCambio.FechaFin &&  p.RealizadoPor == PlanGestionCambio.RealizadoPor  && p.AprobadoPor == PlanGestionCambio.AprobadoPor).FirstOrDefault();
+            var bdd1 = PlanGestionCambio.Descripcion;
+            var bdd2 = PlanGestionCambio.FechaFin;
+            var bdd3 = PlanGestionCambio.FechaInicio;
+            var PlanGestionCambiorespuesta = db.PlanGestionCambio.Where(p => p.Titulo.ToUpper().TrimStart().TrimEnd() == bdd && p.Descripcion ==bdd1 && p.FechaInicio == PlanGestionCambio.FechaInicio && p.FechaFin == PlanGestionCambio.FechaFin &&  p.RealizadoPor == PlanGestionCambio.RealizadoPor  && p.AprobadoPor == PlanGestionCambio.AprobadoPor).FirstOrDefault();
             if (PlanGestionCambiorespuesta != null)
             {
                 return new Response

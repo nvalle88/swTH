@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace bd.sw.externos.NUevosModels
+namespace bd.swth.entidades.Negocio
 {
-    public partial class PartidaGeneral
+    public partial class Ambito
     {
-        public PartidaGeneral()
+        public Ambito()
         {
             IndiceOcupacional = new HashSet<IndiceOcupacional>();
         }
 
-        public int IdPartidaGeneral { get; set; }
-        public string NumeroPartida { get; set; }
+        public int IdAmbito { get; set; }
+        public string Nombre { get; set; }
 
         public virtual ICollection<IndiceOcupacional> IndiceOcupacional { get; set; }
     }
