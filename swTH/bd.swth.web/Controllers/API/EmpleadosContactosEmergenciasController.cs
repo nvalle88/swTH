@@ -12,6 +12,8 @@ using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.webappth.entidades.ViewModels;
+
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
@@ -57,7 +59,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var EmpleadoContactoEmergencia = await db.EmpleadoContactoEmergencia.SingleOrDefaultAsync(m => m.IdEmpleado == empleadoContactoEmergencia.IdEmpleado);
+                var EmpleadoContactoEmergencia = await db.EmpleadoContactoEmergencia.Include(x => x.Persona).Include(x => x.Empleado).Include(x => x.Parentesco).SingleOrDefaultAsync(m => m.IdEmpleado == empleadoContactoEmergencia.IdEmpleado);
 
                 var response = new Response
                 {
@@ -102,7 +104,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EmpleadoContactoEmergencia = await db.EmpleadoContactoEmergencia.SingleOrDefaultAsync(m => m.IdEmpleadoContactoEmergencia == id);
+                var EmpleadoContactoEmergencia = await db.EmpleadoContactoEmergencia.Include(x=>x.Persona).Include(x=>x.Parentesco).SingleOrDefaultAsync(m => m.IdPersona == id);
 
                 if (EmpleadoContactoEmergencia == null)
                 {
@@ -140,9 +142,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/EmpleadoContactoEmergencia/5
+        // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutEmpleadoContactoEmergencia([FromRoute] int id, [FromBody] EmpleadoContactoEmergencia empleadoContactoEmergencia)
+        public async Task<Response> PutEmpleadoContactoEmergencia([FromRoute] int id, [FromBody] EmpleadoFamiliarViewModel empleadoFamiliarViewModel)
         {
             try
             {
@@ -155,180 +157,241 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                var existe = Existe(empleadoContactoEmergencia);
-                var EmpleadoContactoEmergenciaActualizar = (EmpleadoContactoEmergencia)existe.Resultado;
-                if (existe.IsSuccess)
-                {
-                    if (EmpleadoContactoEmergenciaActualizar.IdEmpleado == id)
+                var PersonaActual = await db.Persona.Where(x => x.IdPersona == empleadoFamiliarViewModel.IdPersona).FirstOrDefaultAsync();
+                
+                    var existe = Existe(empleadoFamiliarViewModel);
+                    if (existe.IsSuccess)
                     {
                         return new Response
                         {
-                            IsSuccess = true,
+                            IsSuccess = false,
+                            Message = Mensaje.ExisteRegistro,
                         };
                     }
+                    else
+                    {
+                        using (var transaction = await db.Database.BeginTransactionAsync())
+                        {
+                            try
+                            {
+                                if (empleadoFamiliarViewModel.IdNacionalidadIndigena == 0)
+                                {
+                                    empleadoFamiliarViewModel.IdNacionalidadIndigena = null;
+                                }
+                                //1. Actualizar Persona 
+                                PersonaActual.Nombres = empleadoFamiliarViewModel.Nombres;
+                                PersonaActual.Apellidos = empleadoFamiliarViewModel.Apellidos;
+                                PersonaActual.TelefonoPrivado = empleadoFamiliarViewModel.TelefonoPrivado;
+                                PersonaActual.TelefonoCasa = empleadoFamiliarViewModel.TelefonoCasa;
+                                PersonaActual.CorreoPrivado = empleadoFamiliarViewModel.CorreoPrivado;
+
+
+                                //2. Actualizar EmpleadoContactoEmergencia
+                                var EmpleadoContactoEmergenciaActualizar = await db.EmpleadoContactoEmergencia.Where(x => x.IdPersona == empleadoFamiliarViewModel.IdPersona).FirstOrDefaultAsync();
+
+                                EmpleadoContactoEmergenciaActualizar.IdPersona = empleadoFamiliarViewModel.IdPersona;
+                                EmpleadoContactoEmergenciaActualizar.IdEmpleado = empleadoFamiliarViewModel.IdEmpleado;
+                                EmpleadoContactoEmergenciaActualizar.IdParentesco = empleadoFamiliarViewModel.IdParentesco;
+
+                                await db.SaveChangesAsync();
+
+
+                                transaction.Commit();
+
+                                return new Response
+                                {
+                                    IsSuccess = true,
+                                    Message = Mensaje.Satisfactorio,
+                                };
+
+                            }
+                            catch (Exception ex)
+                            {
+                                transaction.Rollback();
+                                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                                {
+                                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                                    ExceptionTrace = ex,
+                                    Message = Mensaje.Excepcion,
+                                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                                    UserName = "",
+
+                                });
+                                return new Response
+                                {
+                                    IsSuccess = false,
+                                    Message = Mensaje.Error,
+                                };
+                            }
+                        }
+                    
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+        [HttpPost]
+        [Route("InsertarEmpleadoContactoEmergencia")]
+        public async Task<Response> InsertarEmpleadoContactoEmergencia([FromBody] EmpleadoFamiliarViewModel empleadoFamiliarViewModel)
+        {
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+
+                    var respuesta = Existe(empleadoFamiliarViewModel);
+                    if (empleadoFamiliarViewModel.IdNacionalidadIndigena == 0)
+                    {
+                        empleadoFamiliarViewModel.IdNacionalidadIndigena = null;
+                    }
+                    if (!respuesta.IsSuccess)
+                    {
+
+                        var persona = new Persona()
+                        {
+
+                            Nombres = empleadoFamiliarViewModel.Nombres,
+                            Apellidos = empleadoFamiliarViewModel.Apellidos,
+                            TelefonoPrivado = empleadoFamiliarViewModel.TelefonoPrivado,
+                            TelefonoCasa = empleadoFamiliarViewModel.TelefonoCasa,
+                        };
+
+                        //1. Insertar Persona 
+
+                        var personaInsertarda = await db.Persona.AddAsync(persona);
+                        await db.SaveChangesAsync();
+
+                        //2. Insertar EmpleadoFamiliar
+                        var empleadoContactoEmergencia = new EmpleadoContactoEmergencia()
+                        {
+                            IdPersona = personaInsertarda.Entity.IdPersona,
+                            IdEmpleado = empleadoFamiliarViewModel.IdEmpleado,
+                            IdParentesco = empleadoFamiliarViewModel.IdParentesco
+                        };
+                        var empleadoContactoEmergenciaInsertado = await db.EmpleadoContactoEmergencia.AddAsync(empleadoContactoEmergencia);
+                        await db.SaveChangesAsync();
+
+                        transaction.Commit();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                            Resultado = empleadoContactoEmergenciaInsertado.Entity
+                        };
+                    }
+
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
-                var EmpleadoContactoEmergencia = db.EmpleadoContactoEmergencia.Find(empleadoContactoEmergencia.IdEmpleadoContactoEmergencia);
-
-                EmpleadoContactoEmergencia.IdPersona = empleadoContactoEmergencia.IdPersona;
-                EmpleadoContactoEmergencia.IdEmpleado = id;
-                EmpleadoContactoEmergencia.IdParentesco = empleadoContactoEmergencia.IdParentesco;
-                db.EmpleadoContactoEmergencia.Update(EmpleadoContactoEmergencia);
-                await db.SaveChangesAsync();
-
-                return new Response
+                catch (Exception ex)
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                };
+                    transaction.Rollback();
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    {
+                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                        ExceptionTrace = ex,
+                        Message = Mensaje.Excepcion,
+                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                        UserName = "",
 
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Excepcion,
-                };
-            }
-
-        }
-
-        // POST: api/EmpleadoContactoEmergencia
-        [HttpPost]
-        [Route("InsertarEmpleadoContactoEmergencia")]
-        public async Task<Response> PostEmpleadoContactoEmergencia([FromBody] EmpleadoContactoEmergencia EmpleadoContactoEmergencia)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
+                    });
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = ""
+                        Message = Mensaje.Error,
                     };
                 }
-
-                var respuesta = Existe(EmpleadoContactoEmergencia);
-                if (!respuesta.IsSuccess)
-                {
-                    db.EmpleadoContactoEmergencia.Add(EmpleadoContactoEmergencia);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro,
-                };
-
             }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
         }
-
-        // DELETE: api/EmpleadoContactoEmergencia/5
+        // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteEmpleadoContactoEmergencia([FromRoute] int id)
         {
-            try
+            using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                if (!ModelState.IsValid)
+                try
                 {
+
+
+                    //Eliminar Persona
+                    var respuestaEmpleadoContactoEmergencia = await db.EmpleadoContactoEmergencia.SingleOrDefaultAsync(m => m.IdPersona == id);
+                    var respuestaPersona = await db.Persona.SingleOrDefaultAsync(m => m.IdPersona == id);
+                    if (respuestaPersona == null)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.RegistroNoEncontrado,
+                        };
+                    }
+                    db.EmpleadoContactoEmergencia.Remove(respuestaEmpleadoContactoEmergencia);
+                    db.Persona.Remove(respuestaPersona);
+                    await db.SaveChangesAsync();
+                    transaction.Commit();
+
+
                     return new Response
                     {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
                     };
                 }
 
-                var respuesta = await db.EmpleadoContactoEmergencia.SingleOrDefaultAsync(m => m.IdEmpleadoContactoEmergencia == id);
-                if (respuesta == null)
+                catch (Exception ex)
                 {
+                    transaction.Rollback();
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    {
+                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                        ExceptionTrace = ex,
+                        Message = Mensaje.Excepcion,
+                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                        UserName = "",
+
+                    });
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = Mensaje.Error,
                     };
                 }
-                db.EmpleadoContactoEmergencia.Remove(respuesta);
-                await db.SaveChangesAsync();
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
             }
         }
 
-        private Response Existe(EmpleadoContactoEmergencia EmpleadoContactoEmergencia)
+
+        private Response Existe(EmpleadoFamiliarViewModel empleadoFamiliarViewModel)
         {
-           
-            var EmpleadoContactoEmergenciarespuesta = db.EmpleadoContactoEmergencia.Where(p => p.IdPersona == EmpleadoContactoEmergencia.IdPersona && p.IdEmpleado==EmpleadoContactoEmergencia.IdEmpleado&&p.IdParentesco== EmpleadoContactoEmergencia.IdParentesco).FirstOrDefault();
-            if (EmpleadoContactoEmergenciarespuesta != null)
+            var nombre = empleadoFamiliarViewModel.Nombres;
+            var apellido = empleadoFamiliarViewModel.Apellidos;
+            var celular = empleadoFamiliarViewModel.TelefonoPrivado;
+            var telefono = empleadoFamiliarViewModel.TelefonoCasa;
+            var Empleadorespuesta = db.Persona.Where(p => p.Nombres == nombre
+            && p.Apellidos == apellido
+            && p.TelefonoPrivado == celular
+            && p.TelefonoCasa == telefono).FirstOrDefault();
+            if (Empleadorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = EmpleadoContactoEmergenciarespuesta,
                 };
 
             }
@@ -336,7 +399,6 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = EmpleadoContactoEmergenciarespuesta,
             };
         }
     }

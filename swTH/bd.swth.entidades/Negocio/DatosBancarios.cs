@@ -12,10 +12,10 @@ namespace bd.swth.entidades.Negocio
         public int IdInstitucionFinanciera { get; set; }
         public virtual InstitucionFinanciera InstitucionFinanciera { get; set; }
 
-        
 
-       
 
-        
+
+
+
     }
 }
