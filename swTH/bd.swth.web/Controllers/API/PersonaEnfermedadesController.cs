@@ -10,31 +10,31 @@ using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/EscalasGrados")]
-    public class EscalasGradosController : Controller
+    [Route("api/PersonaEnfermedades")]
+    public class PersonaEnfermedadesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public EscalasGradosController(SwTHDbContext db)
+        public PersonaEnfermedadesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+
+        // GET: api/PersonaEnfermedad
         [HttpGet]
-        [Route("ListarEscalasGrados")]
-        public async Task<List<EscalaGrados>> GetEscalasGrados()
+        [Route("ListarPersonasEnfermedades")]
+        public async Task<List<PersonaEnfermedad>> GetPersonaEnfermedad()
         {
             try
             {
-                return await db.EscalaGrados.Include(x => x.GrupoOcupacional).OrderBy(x => x.Grado).ToListAsync();
-
+                return await db.PersonaEnfermedad.Include(x => x.TipoEnfermedad).Include(x => x.Persona).OrderBy(x => x.InstitucionEmite).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -42,19 +42,43 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<EscalaGrados>();
+                return new List<PersonaEnfermedad>();
             }
         }
 
-        // GET: api/BasesDatos/5
+        [HttpPost]
+        [Route("ListarEnfermedadesEmpleadoPorId")]
+        public async Task<List<PersonaEnfermedad>> ListarEnfermedadesEmpleadoPorId([FromBody] Empleado empleado)
+        {
+            try
+            {
+                return await db.PersonaEnfermedad.Where(x => x.IdPersona == empleado.IdPersona).Include(x => x.TipoEnfermedad).Include(x => x.Persona).OrderBy(x => x.InstitucionEmite).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<PersonaEnfermedad>();
+            }
+        }
+
+        // GET: api/PersonaEnfermedad/5
         [HttpGet("{id}")]
-        public async Task<Response> GetEscalaGrados([FromRoute] int id)
+        public async Task<Response> GetPersonaEnfermedad([FromRoute] int id)
         {
             try
             {
@@ -67,9 +91,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EscalaGrados = await db.EscalaGrados.SingleOrDefaultAsync(m => m.IdEscalaGrados == id);
+                var PersonaEnfermedad = await db.PersonaEnfermedad.SingleOrDefaultAsync(m => m.IdPersonaEnfermedad == id);
 
-                if (EscalaGrados == null)
+                if (PersonaEnfermedad == null)
                 {
                     return new Response
                     {
@@ -82,7 +106,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = EscalaGrados,
+                    Resultado = PersonaEnfermedad,
                 };
             }
             catch (Exception ex)
@@ -91,7 +115,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -105,24 +129,12 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
-        private async Task Actualizar(EscalaGrados escalaGrados)
-        {
-            var escalaevatotal = db.EscalaGrados.Find(escalaGrados.IdEscalaGrados);
-
-            escalaevatotal.IdGrupoOcupacional = escalaGrados.IdGrupoOcupacional;
-            escalaevatotal.Grado = escalaGrados.Grado;
-            escalaevatotal.Remuneracion = escalaGrados.Remuneracion;
-            escalaevatotal.Nombre = escalaGrados.Nombre;
-            db.EscalaGrados.Update(escalaevatotal);
-            await db.SaveChangesAsync();
-        }
-
-        // PUT: api/BasesDatos/5
+        // PUT: api/PersonaEnfermedad/5
         [HttpPut("{id}")]
-        public async Task<Response> PutEscalaGrados([FromRoute] int id, [FromBody] EscalaGrados EscalaGrados)
+        public async Task<Response> PutPersonaEnfermedad([FromRoute] int id, [FromBody] PersonaEnfermedad PersonaEnfermedad)
         {
-           
+            try
+            {
                 if (!ModelState.IsValid)
                 {
                     return new Response
@@ -132,54 +144,58 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-            var existe = Existe(EscalaGrados);
-            var EscalaGradosActualizar = (EscalaGrados)existe.Resultado;
+                var existe = Existe(PersonaEnfermedad);
+                var PersonaEnfermedadActualizar = (PersonaEnfermedad)existe.Resultado;
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
 
-            if (existe.IsSuccess)
-            {
+                var PersonaEnfermedadAct = await db.PersonaEnfermedad.Where(x => x.IdPersonaEnfermedad == PersonaEnfermedad.IdPersonaEnfermedad).FirstOrDefaultAsync();
 
+                PersonaEnfermedadAct.IdTipoEnfermedad = PersonaEnfermedad.IdTipoEnfermedad;
+                PersonaEnfermedadAct.IdPersona = PersonaEnfermedad.IdPersona;
+                PersonaEnfermedadAct.InstitucionEmite = PersonaEnfermedad.InstitucionEmite;
 
-                //if (EscalaGradosActualizar.IdEscalaGrados == EscalaGrados.IdEscalaGrados)
-                //{
-                //    if (EscalaGrados.IdGrupoOcupacional == EscalaGradosActualizar.IdGrupoOcupacional &&
-                //    EscalaGrados.Grado == EscalaGradosActualizar.Grado &&
-                //    EscalaGrados.Remuneracion == EscalaGradosActualizar.Remuneracion &&
-                //    EscalaGrados.Nombre == EscalaGradosActualizar.Nombre)
-                //    {
-                //        return new Response
-                //        {
-                //            IsSuccess = true,
-                //            Message=Mensaje.ExisteRegistro,
-                //        };
-                //    }
+                await db.SaveChangesAsync();
 
-                //    await Actualizar(EscalaGrados);
-                //    return new Response
-                //    {
-                //        IsSuccess = true,
-                //        Message = Mensaje.Satisfactorio,
-                //    };
-                //}
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro,
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Excepcion,
                 };
             }
 
-            await Actualizar(EscalaGrados);
-            return new Response
-            {
-                IsSuccess = true,
-                Message = Mensaje.Satisfactorio,
-            };
-
         }
 
-        // POST: api/BasesDatos
+        // POST: api/PersonaEnfermedad
         [HttpPost]
-        [Route("InsertarEscalaGrados")]
-        public async Task<Response> PostEscalaGrados([FromBody] EscalaGrados EscalaGrados)
+        [Route("InsertarPersonaEnfermedad")]
+        public async Task<Response> PostPersonaEnfermedad([FromBody] PersonaEnfermedad PersonaEnfermedad)
         {
             try
             {
@@ -192,10 +208,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(EscalaGrados);
+                var respuesta = Existe(PersonaEnfermedad);
                 if (!respuesta.IsSuccess)
                 {
-                    db.EscalaGrados.Add(EscalaGrados);
+                    db.PersonaEnfermedad.Add(PersonaEnfermedad);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -207,7 +223,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro,
                 };
 
             }
@@ -217,7 +233,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -231,9 +247,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        // DELETE: api/PersonaEnfermedad/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteEscalaGrados([FromRoute] int id)
+        public async Task<Response> DeletePersonaEnfermedad([FromRoute] int id)
         {
             try
             {
@@ -246,7 +262,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.EscalaGrados.SingleOrDefaultAsync(m => m.IdEscalaGrados == id);
+                var respuesta = await db.PersonaEnfermedad.SingleOrDefaultAsync(m => m.IdPersonaEnfermedad == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -255,7 +271,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.EscalaGrados.Remove(respuesta);
+                db.PersonaEnfermedad.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -270,7 +286,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -284,21 +300,23 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(EscalaGrados EscalaGrados)
+        private Response Existe(PersonaEnfermedad PersonaEnfermedad)
         {
-            var bdd = EscalaGrados.Grado;
-            var bbd1 = EscalaGrados.Remuneracion;
-            var bbd2 = EscalaGrados.IdGrupoOcupacional;
-            var bbd3 = EscalaGrados.Nombre;
+            var institucionemite = PersonaEnfermedad.InstitucionEmite;
+            var idtipoenfermedad = PersonaEnfermedad.IdTipoEnfermedad;
+            var idpersona = PersonaEnfermedad.IdPersona;
 
-            var EscalaGradosrespuesta = db.EscalaGrados.Where(p => p.Grado == bdd && p.Remuneracion== bbd1 && p.IdGrupoOcupacional == bbd2 && p.Nombre == bbd3).FirstOrDefault();
-            if (EscalaGradosrespuesta != null)
+            var PersonaEnfermedadrespuesta = db.PersonaEnfermedad.Where(p => p.InstitucionEmite == institucionemite
+            && p.IdTipoEnfermedad == idtipoenfermedad
+            && p.IdPersona == idpersona).FirstOrDefault();
+
+            if (PersonaEnfermedadrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = EscalaGradosrespuesta,
+                    Resultado = PersonaEnfermedadrespuesta,
                 };
 
             }
@@ -306,32 +324,8 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = EscalaGradosrespuesta,
+                Resultado = PersonaEnfermedadrespuesta,
             };
-        }
-
-        [HttpPost]
-        [Route("ListarEscalasGradosPorGrupoOcupacional")]
-        public async Task<List<EscalaGrados>> GetSucursalbyCity([FromBody] GrupoOcupacional grupoocupacional)
-        {
-            try
-            {
-                return await db.EscalaGrados.Include(c => c.GrupoOcupacional).Where(x => x.IdGrupoOcupacional == grupoocupacional.IdGrupoOcupacional).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<EscalaGrados>();
-            }
         }
     }
 }

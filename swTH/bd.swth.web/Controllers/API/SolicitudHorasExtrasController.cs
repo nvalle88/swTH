@@ -134,7 +134,7 @@ namespace bd.swth.web.Controllers.API
                         SolicitudHorasExtrasActualizar.IdEmpleado = id;
                         SolicitudHorasExtrasActualizar.Fecha = SolicitudHorasExtras.Fecha;
                         SolicitudHorasExtrasActualizar.CantidadHoras = SolicitudHorasExtras.CantidadHoras;
-                        SolicitudHorasExtrasActualizar.Estado = SolicitudHorasExtras.Estado;
+                        SolicitudHorasExtrasActualizar.Estado = 0;
                         SolicitudHorasExtrasActualizar.Observaciones = SolicitudHorasExtras.Observaciones;
                         SolicitudHorasExtrasActualizar.FechaSolicitud = SolicitudHorasExtras.FechaSolicitud;
                         SolicitudHorasExtrasActualizar.FechaAprobado = SolicitudHorasExtras.FechaAprobado;

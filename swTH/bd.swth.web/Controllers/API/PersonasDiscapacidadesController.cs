@@ -53,6 +53,30 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("ListarDiscapacidadesEmpleadoPorId")]
+        public async Task<List<PersonaDiscapacidad>> ListarDiscapacidadesEmpleadoPorId([FromBody] Empleado empleado)
+        {
+            try
+            {
+                return await db.PersonaDiscapacidad.Where(x=>x.IdPersona == empleado.IdPersona).Include(x => x.TipoDiscapacidad).Include(x => x.Persona).OrderBy(x => x.NumeroCarnet).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<PersonaDiscapacidad>();
+            }
+        }
+
         // GET: api/PersonaDiscapacidad/5
         [HttpGet("{id}")]
         public async Task<Response> GetPersonaDiscapacidad([FromRoute] int id)
@@ -125,13 +149,6 @@ namespace bd.swth.web.Controllers.API
                 var PersonaDiscapacidadActualizar = (PersonaDiscapacidad)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (PersonaDiscapacidadActualizar.IdPersonaDiscapacidad == personaDiscapacidad.IdPersonaDiscapacidad)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
                     return new Response
                     {
                         IsSuccess = false,
@@ -139,13 +156,12 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var PersonaDiscapacidad = db.PersonaDiscapacidad.Find(personaDiscapacidad.IdPersonaDiscapacidad);
+                var PersonaDiscapacidadAct= await db.PersonaDiscapacidad.Where(x => x.IdPersonaDiscapacidad == personaDiscapacidad.IdPersonaDiscapacidad).FirstOrDefaultAsync();
 
-                PersonaDiscapacidad.IdTipoDiscapacidad = PersonaDiscapacidad.IdTipoDiscapacidad;
-                PersonaDiscapacidad.IdPersona = PersonaDiscapacidad.IdPersona;
-                PersonaDiscapacidad.NumeroCarnet = PersonaDiscapacidad.NumeroCarnet;
-                PersonaDiscapacidad.Porciento = PersonaDiscapacidad.Porciento;
-                db.PersonaDiscapacidad.Update(PersonaDiscapacidad);
+                PersonaDiscapacidadAct.IdTipoDiscapacidad = personaDiscapacidad.IdTipoDiscapacidad;
+                PersonaDiscapacidadAct.IdPersona = personaDiscapacidad.IdPersona;
+                PersonaDiscapacidadAct.NumeroCarnet = personaDiscapacidad.NumeroCarnet;
+                PersonaDiscapacidadAct.Porciento = personaDiscapacidad.Porciento;
 
                 await db.SaveChangesAsync();
 
@@ -289,7 +305,13 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(PersonaDiscapacidad PersonaDiscapacidad)
         {
             var numeroCarnet = PersonaDiscapacidad.NumeroCarnet;
-            var PersonaDiscapacidadrespuesta = db.PersonaDiscapacidad.Where(p => p.NumeroCarnet == numeroCarnet && p.IdPersona == PersonaDiscapacidad.IdPersona).FirstOrDefault();
+            var idtipodiscapacidad = PersonaDiscapacidad.IdTipoDiscapacidad;
+            var idpersona = PersonaDiscapacidad.IdPersona;
+            var porciento = PersonaDiscapacidad.Porciento;
+            var PersonaDiscapacidadrespuesta = db.PersonaDiscapacidad.Where(p => p.NumeroCarnet == numeroCarnet 
+            && p.IdPersona == idpersona 
+            && p.IdTipoDiscapacidad == idtipodiscapacidad
+            && p.Porciento == porciento).FirstOrDefault();
 
             if (PersonaDiscapacidadrespuesta != null)
             {

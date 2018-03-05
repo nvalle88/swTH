@@ -29,7 +29,7 @@ namespace bd.swth.entidades.Negocio
         public virtual NacionalidadIndigena NacionalidadIndigena { get; set; }
         public int? IdParroquia { get; set; }
         public virtual Parroquia Parroquia { get; set; }
-        public int IdGenero { get; set; }
+        public int? IdGenero { get; set; }
         public virtual Genero Genero { get; set; }
         public int? IdTipoSangre { get; set; }
         public virtual TipoSangre TipoSangre { get; set; }

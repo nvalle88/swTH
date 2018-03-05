@@ -53,6 +53,31 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        // GET: api/PersonaEstudio
+        [HttpPost]
+        [Route("ListarEstudiosporEmpleado")]
+        public async Task<List<PersonaEstudio>> GetEstudiosById([FromBody] Empleado empleado)
+        {
+            try
+            {
+                return await db.PersonaEstudio.Where(x=>x.IdPersona == empleado.IdPersona).Include(x => x.Titulo).Include(x => x.Persona).OrderBy(x => x.FechaGraduado).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<PersonaEstudio>();
+            }
+        }
+
         // GET: api/PersonaEstudio/5
         [HttpGet("{id}")]
         public async Task<Response> GetPersonaEstudio([FromRoute] int id)
@@ -125,28 +150,19 @@ namespace bd.swth.web.Controllers.API
                 var PersonaEstudioActualizar = (PersonaEstudio)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (PersonaEstudioActualizar.IdPersonaEstudio == personaEstudio.IdPersonaEstudio)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
-                var PersonaEstudio = db.PersonaEstudio.Find(personaEstudio.IdPersonaEstudio);
+                var PersonaEstudio = await db.PersonaEstudio.Where(x => x.IdPersonaEstudio == personaEstudio.IdPersonaEstudio).FirstOrDefaultAsync();
                 
                 PersonaEstudio.FechaGraduado = personaEstudio.FechaGraduado;
                 PersonaEstudio.Observaciones = personaEstudio.Observaciones;
                 PersonaEstudio.IdTitulo = personaEstudio.IdTitulo;
                 PersonaEstudio.IdPersona = personaEstudio.IdPersona;
                 PersonaEstudio.NoSenescyt = personaEstudio.NoSenescyt;
-                db.PersonaEstudio.Update(personaEstudio);
-
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -289,7 +305,11 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(PersonaEstudio PersonaEstudio)
         {
             var fechaGraduado = PersonaEstudio.FechaGraduado;
-            var PersonaEstudiorespuesta = db.PersonaEstudio.Where(p => p.FechaGraduado == fechaGraduado && p.IdPersona == PersonaEstudio.IdPersona && p.IdTitulo == PersonaEstudio.IdTitulo).FirstOrDefault();
+            var PersonaEstudiorespuesta = db.PersonaEstudio.Where(p => p.FechaGraduado == fechaGraduado 
+            && p.IdPersona == PersonaEstudio.IdPersona 
+            && p.IdTitulo == PersonaEstudio.IdTitulo
+            && p.Observaciones == PersonaEstudio.Observaciones
+            && p.NoSenescyt == PersonaEstudio.NoSenescyt).FirstOrDefault();
             if (PersonaEstudiorespuesta != null)
             {
                 return new Response

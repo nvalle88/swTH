@@ -52,6 +52,31 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        // GET: api/PersonaEstudio
+        [HttpPost]
+        [Route("ListarTrayectoriasLaboralesporEmpleado")]
+        public async Task<List<TrayectoriaLaboral>> GetTrayectoriasLaboralesById([FromBody] Empleado empleado)
+        {
+            try
+            {
+                return await db.TrayectoriaLaboral.Where(x => x.IdPersona == empleado.IdPersona).OrderBy(x => x.FechaInicio).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<TrayectoriaLaboral>();
+            }
+        }
+
         // GET: api/TrayectoriaLaboral/5
         [HttpGet("{id}")]
         public async Task<Response> GetTrayectoriaLaboral([FromRoute] int id)
@@ -124,30 +149,21 @@ namespace bd.swth.web.Controllers.API
                 var TrayectoriaLaboralActualizar = (TrayectoriaLaboral)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (TrayectoriaLaboralActualizar.IdTrayectoriaLaboral == trayectoriaLaboral.IdTrayectoriaLaboral)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
+                  
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
-                var TrayectoriaLaboral = db.TrayectoriaLaboral.Find(trayectoriaLaboral.IdTrayectoriaLaboral);
-                
-                TrayectoriaLaboral.IdPersona = TrayectoriaLaboral.IdPersona;
-                TrayectoriaLaboral.FechaInicio = TrayectoriaLaboral.FechaInicio;
-                TrayectoriaLaboral.FechaFin = TrayectoriaLaboral.FechaFin;
-                TrayectoriaLaboral.Empresa = TrayectoriaLaboral.Empresa;
-                TrayectoriaLaboral.PuestoTrabajo = TrayectoriaLaboral.PuestoTrabajo;
-                TrayectoriaLaboral.DescripcionFunciones = TrayectoriaLaboral.DescripcionFunciones;
+                var TrayectoriaLaboral = await db.TrayectoriaLaboral.Where(x => x.IdTrayectoriaLaboral == trayectoriaLaboral.IdTrayectoriaLaboral).FirstOrDefaultAsync();
 
-                db.TrayectoriaLaboral.Update(TrayectoriaLaboral);
-
+                TrayectoriaLaboral.IdPersona = trayectoriaLaboral.IdPersona;
+                TrayectoriaLaboral.FechaInicio = trayectoriaLaboral.FechaInicio;
+                TrayectoriaLaboral.FechaFin = trayectoriaLaboral.FechaFin;
+                TrayectoriaLaboral.Empresa = trayectoriaLaboral.Empresa;
+                TrayectoriaLaboral.PuestoTrabajo = trayectoriaLaboral.PuestoTrabajo;
+                TrayectoriaLaboral.DescripcionFunciones = trayectoriaLaboral.DescripcionFunciones;
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -291,7 +307,15 @@ namespace bd.swth.web.Controllers.API
         {
             var fechaInicio = TrayectoriaLaboral.FechaInicio;
             var fechaFin = TrayectoriaLaboral.FechaFin;
-            var TrayectoriaLaboralrespuesta = db.TrayectoriaLaboral.Where(p => p.FechaInicio == fechaInicio && p.FechaFin == fechaFin).FirstOrDefault();
+            var Empresa = TrayectoriaLaboral.Empresa;
+            var PuestoTrabajo = TrayectoriaLaboral.PuestoTrabajo;
+            var DescripcionFunciones = TrayectoriaLaboral.DescripcionFunciones;
+
+            var TrayectoriaLaboralrespuesta = db.TrayectoriaLaboral.Where(p => p.FechaInicio == fechaInicio 
+            && p.FechaFin == fechaFin
+            && p.Empresa == Empresa
+            && p.PuestoTrabajo == PuestoTrabajo
+            && p.DescripcionFunciones == DescripcionFunciones).FirstOrDefault();
 
             if (TrayectoriaLaboralrespuesta != null)
             {

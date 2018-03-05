@@ -735,7 +735,7 @@ namespace bd.swth.web.Controllers.API
                 
                 var Empleado = await db.Empleado
                                    .Where(e => e.NombreUsuario == empleado.NombreUsuario).FirstOrDefaultAsync();
-                var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado };
+                var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado, IdPersona = Empleado.IdPersona };
 
 
                 return empl;

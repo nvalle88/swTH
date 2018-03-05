@@ -87,32 +87,37 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("ListarConocimientosAdicionalesNoAsignadasIndiceOcupacional")]
-        public async Task<List<ConocimientosAdicionales>> ListarConocimientosAdicionalesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
+        public async Task<List<ConocimientosAdicionalesViewModel>> ListarConocimientosAdicionalesNoAsignadasIndiceOcupacional([FromBody]IndiceOcupacional indiceOcupacional)
         {
-            try
-            {
+
                 var Lista = await db.ConocimientosAdicionales
                                    .Where(ac => !db.IndiceOcupacionalConocimientosAdicionales
                                                    .Where(a => a.IndiceOcupacional.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
                                                    .Select(ioac => ioac.IdConocimientosAdicionales)
                                                    .Contains(ac.IdConocimientosAdicionales))
                                           .ToListAsync();
-                return Lista;
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
-                return new List<ConocimientosAdicionales>();
+            var listaSalida = new List<ConocimientosAdicionalesViewModel>();
+            if (Lista.Count == 0)
+            {
+                listaSalida.Add(new ConocimientosAdicionalesViewModel { IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional, IdConocimientosAdicionales = -1 });
             }
+
+            else
+            {
+                foreach (var item in Lista)
+                {
+                    listaSalida.Add(new ConocimientosAdicionalesViewModel
+                    {
+                        Descripcion = item.Descripcion,
+                        IdConocimientosAdicionales = item.IdConocimientosAdicionales,
+                        IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional,
+                    });
+                }
+            }
+
+            return listaSalida;
+
         }
 
         [HttpPost]

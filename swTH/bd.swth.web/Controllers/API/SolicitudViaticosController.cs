@@ -501,7 +501,7 @@ namespace bd.swth.web.Controllers.API
             var bdd4 = SolicitudViatico.IdCiudad;
             var bdd5 = SolicitudViatico.IdConfiguracionViatico;
             var bdd6 = SolicitudViatico.FechaSolicitud;
-            var bdd7 = SolicitudViatico.Descripcion;
+            //var bdd7 = SolicitudViatico.Descripcion;
             var bdd8 = SolicitudViatico.ValorEstimado;
             var bdd9 = SolicitudViatico.FechaLlegada;
             var bdd10 = SolicitudViatico.FechaSalida;
@@ -515,7 +515,7 @@ namespace bd.swth.web.Controllers.API
             && p.IdCiudad == bdd4
             && p.IdConfiguracionViatico == bdd5
             && p.FechaSolicitud == bdd6
-            && p.Descripcion == bdd7
+            //&& p.Descripcion == bdd7
             && p.ValorEstimado == bdd8
             && p.FechaLlegada == bdd9
             && p.FechaSalida == bdd10
