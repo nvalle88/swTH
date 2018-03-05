@@ -14,6 +14,14 @@ namespace bd.swth.datos
 
         }
 
+        
+        public virtual DbSet<bd.swth.entidades.Negocio.TipoExamenComplementario> TipoExamenComplementario { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.FichaMedica> FichaMedica { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.AntecedentesFamiliares> AntecedentesFamiliares { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.AntecedentesLaborales> AntecedentesLaborales { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ExamenComplementario> ExamenComplementario { get; set; }
+        
+
 
         public virtual DbSet<bd.swth.entidades.Negocio.AccionPersonal> AccionPersonal { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentoInformacionInstitucional> DocumentoInformacionInstitucional { get; set; }
@@ -220,6 +228,229 @@ namespace bd.swth.datos
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+
+
+            modelBuilder.Entity<AntecedentesFamiliares>(entity =>
+            {
+                entity.HasKey(e => e.IdAntecedentesFamiliares)
+                    .HasName("PK_AntecedentesFamiliares");
+
+                entity.Property(e => e.Enfermedad)
+                    .IsRequired()
+                    .HasColumnType("varchar(250)");
+
+                entity.Property(e => e.Observaciones)
+                    .IsRequired()
+                    .HasColumnType("varchar(500)");
+
+                entity.Property(e => e.Parentesco)
+                    .IsRequired()
+                    .HasColumnName("parentesco")
+                    .HasColumnType("varchar(50)");
+
+                entity.HasOne(d => d.FichaMedica)
+                    .WithMany(p => p.AntecedentesFamiliares)
+                    .HasForeignKey(d => d.IdFichaMedica)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_AntecedentesFamiliares_AntecedentesFamiliares");
+            });
+
+            modelBuilder.Entity<TipoExamenComplementario>(entity =>
+            {
+                entity.HasKey(e => e.IdTipoExamenComplementario)
+                    .HasName("PK_TipoExamenComplementario");
+
+                entity.Property(e => e.Nombre)
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
+            });
+
+            modelBuilder.Entity<AntecedentesLaborales>(entity =>
+            {
+                entity.HasKey(e => e.IdAntecedentesLaborales)
+                    .HasName("PK_AntecedentesLaborales");
+
+                entity.Property(e => e.Cargo)
+                    .IsRequired()
+                    .HasColumnType("varchar(250)");
+
+                entity.Property(e => e.DetalleRiesgosExpuesto)
+                    .IsRequired()
+                    .HasColumnType("varchar(500)");
+
+                entity.Property(e => e.Empresa)
+                    .IsRequired()
+                    .HasColumnType("varchar(250)");
+
+                entity.Property(e => e.EppUtilizados).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.TiempoTrabajo)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.HasOne(d => d.FichaMedica)
+                    .WithMany(p => p.AntecedentesLaborales)
+                    .HasForeignKey(d => d.IdFichaMedica)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_AntecedentesLaborales_FichaMedica");
+            });
+
+            modelBuilder.Entity<FichaMedica>(entity =>
+            {
+                entity.HasKey(e => e.IdFichaMedica)
+                    .HasName("PK_FichaMedica");
+
+                entity.Property(e => e.AbdomenHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.Alergias).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.AntecedenteMedico).HasColumnType("varchar(500)");
+
+                entity.Property(e => e.AntecedenteQuirurgico).HasColumnType("varchar(500)");
+
+                entity.Property(e => e.Anticoncepcion).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.BocaHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.CabezaHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.CicloMenstrual).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.CigarrilloDesde).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.CigarrilloHasta).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.CorazonHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.CuelloHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.DetalleAccidenteEnfermedadOcupacional).HasColumnType("varchar(500)");
+
+                entity.Property(e => e.DetalleEnfermedad).HasColumnType("varchar(500)");
+
+                entity.Property(e => e.Diagnostico)
+                    .IsRequired()
+                    .HasColumnType("varchar(500)");
+
+                entity.Property(e => e.DrogasDesde).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.DrogasHasta).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.EjerciciosFrecuencia).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.EjerciciosTipo).HasColumnType("varchar(500)");
+
+                entity.Property(e => e.EmpresaAccidente).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.EmpresaEnfermedad).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.ExtremidadesInferioresHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.ExtremidadesSuperioresHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.FaringeAmigdalasHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.FechaAccidente).HasColumnType("date");
+
+                entity.Property(e => e.FechaDiagnostico).HasColumnType("date");
+
+                entity.Property(e => e.FechaFichaMedica).HasColumnType("date");
+
+                entity.Property(e => e.FechaUltimaDosis).HasColumnType("date");
+
+                entity.Property(e => e.FrecuenciaCardiaca).HasColumnType("varchar(100)");
+
+                entity.Property(e => e.FrecuenciaCigarrillo).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.FrecuenciaDrogas).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.FrecuenciaRespiratoria).HasColumnType("varchar(100)");
+
+                entity.Property(e => e.GenitalesHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.HabitosObservaciones).HasColumnType("varchar(500)");
+
+                entity.Property(e => e.HerniasHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.LicorDesde).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.LicorFrecuencia)
+                    .HasColumnName("LIcorFrecuencia")
+                    .HasColumnType("varchar(250)");
+
+                entity.Property(e => e.LicorHasta)
+                    .HasColumnName("LIcorHasta")
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(e => e.NarizHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.OidosHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.OjosHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.Peso).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.PielHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.PrimeraMenstruacion).HasColumnType("date");
+
+                entity.Property(e => e.PulmonesHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.Recomendaciones).HasColumnType("varchar(500)");
+
+                entity.Property(e => e.SistemaNerviosoHallazgos).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.Talla).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.TensionArterial).HasColumnType("varchar(100)");
+
+                entity.Property(e => e.UltimaMamografia).HasColumnType("date");
+
+                entity.Property(e => e.UltimaMenstruacion).HasColumnType("date");
+
+                entity.Property(e => e.UltimoPapTest).HasColumnType("date");
+
+                entity.Property(e => e.UsoMedicinaDiaria).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.Vacunas).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.VaricesHallazgos).HasColumnType("varchar(250)");
+
+                entity.HasOne(d => d.Persona)
+                    .WithMany(p => p.FichaMedica)
+                    .HasForeignKey(d => d.IdPersona)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_FichaMedica_Persona");
+            });
+
+            modelBuilder.Entity<ExamenComplementario>(entity =>
+            {
+                entity.HasKey(e => e.IdExamenComplementario)
+                    .HasName("PK_ExamenComplementario");
+
+                entity.Property(e => e.Fecha).HasColumnType("date");
+
+                entity.Property(e => e.Resultado)
+                    .IsRequired()
+                    .HasColumnType("varchar(500)");
+
+                entity.HasOne(d => d.FichaMedica)
+                    .WithMany(p => p.ExamenComplementario)
+                    .HasForeignKey(d => d.IdFichaMedica)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ExamenComplementario_FichaMedica");
+
+                entity.HasOne(d => d.TipoExamenComplementario)
+                    .WithMany(p => p.ExamenComplementario)
+                    .HasForeignKey(d => d.IdTipoExamenComplementario)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ExamenComplementario_ExamenComplementario");
+            });
+
+
+
+
             modelBuilder.Entity<AccionPersonal>(entity =>
             {
                 entity.HasKey(e => e.IdAccionPersonal)
