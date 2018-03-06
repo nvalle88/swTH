@@ -254,13 +254,13 @@ namespace bd.swth.web.Controllers.API
                 var ExperienciaLaboralRequeridaActualizar = (ExperienciaLaboralRequerida)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (ExperienciaLaboralRequeridaActualizar.IdExperienciaLaboralRequerida == experienciaLaboralRequerida.IdExperienciaLaboralRequerida)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
+                    //if (ExperienciaLaboralRequeridaActualizar.IdExperienciaLaboralRequerida == experienciaLaboralRequerida.IdExperienciaLaboralRequerida)
+                    //{
+                    //    return new Response
+                    //    {
+                    //        IsSuccess = true,
+                    //    };
+                    //}
                     return new Response
                     {
                         IsSuccess = false,
