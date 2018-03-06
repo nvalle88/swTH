@@ -57,11 +57,11 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("DatosBancariosPorIdEmpleado")]
-        public async Task<Response> DatosBancariosPorIdEmpleado([FromBody] DatosBancarios datosBancarios)
+        public async Task<Response> DatosBancariosPorIdEmpleado([FromBody] Empleado empleado)
         {
             try
             {
-                var DatosBancarios = await db.DatosBancarios.SingleOrDefaultAsync(m => m.IdEmpleado == datosBancarios.IdEmpleado);
+                var DatosBancarios = await db.DatosBancarios.Include(x=>x.InstitucionFinanciera).SingleOrDefaultAsync(m => m.IdEmpleado == empleado.IdEmpleado);
 
                 var response = new Response
                 {
@@ -160,26 +160,18 @@ namespace bd.swth.web.Controllers.API
                 var DatosBancariosActualizar = (DatosBancarios)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (DatosBancariosActualizar.IdDatosBancarios == datosBancarios.IdDatosBancarios)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
+                  
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
-                var DatosBancarios = db.DatosBancarios.Find(datosBancarios.IdDatosBancarios);
-                
-                DatosBancarios.IdInstitucionFinanciera = datosBancarios.IdInstitucionFinanciera;
-                DatosBancarios.NumeroCuenta = datosBancarios.NumeroCuenta;
-                DatosBancarios.Ahorros = datosBancarios.Ahorros;
+                var datosBancariosActualizar = await db.DatosBancarios.Where(x => x.IdDatosBancarios == datosBancarios.IdDatosBancarios).FirstOrDefaultAsync();
 
-                db.DatosBancarios.Update(DatosBancarios);
+                datosBancariosActualizar.IdInstitucionFinanciera = datosBancarios.IdInstitucionFinanciera;
+                datosBancariosActualizar.NumeroCuenta = datosBancarios.NumeroCuenta;
+                datosBancariosActualizar.Ahorros = datosBancarios.Ahorros;
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -321,8 +313,13 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(DatosBancarios DatosBancarios)
         {
-            var numerocuenta = DatosBancarios.NumeroCuenta.ToUpper().TrimEnd().TrimStart();
-            var DatosBancariosrespuesta = db.DatosBancarios.Where(p => p.NumeroCuenta.ToUpper().TrimStart().TrimEnd() == numerocuenta && p.IdEmpleado == DatosBancarios.IdEmpleado && p.IdInstitucionFinanciera == DatosBancarios.IdInstitucionFinanciera).FirstOrDefault();
+            var numerocuenta = DatosBancarios.NumeroCuenta;
+            var ahorros = DatosBancarios.Ahorros;
+            var institucionfinanciera = DatosBancarios.IdInstitucionFinanciera;
+            var DatosBancariosrespuesta = db.DatosBancarios.Where(p => p.NumeroCuenta.ToUpper().TrimStart().TrimEnd() == numerocuenta 
+            && p.IdEmpleado == DatosBancarios.IdEmpleado 
+            && p.IdInstitucionFinanciera == institucionfinanciera
+            && p.Ahorros == ahorros).FirstOrDefault();
             if (DatosBancariosrespuesta != null)
             {
                 return new Response

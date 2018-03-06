@@ -13,6 +13,7 @@ using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.ViewModels;
+using bd.webappth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -34,7 +35,31 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.EmpleadoFamiliar.OrderBy(x => x.IdPersona).ToListAsync();
+                return await db.EmpleadoFamiliar.Include(x=>x.Persona).Include(x=>x.Parentesco).OrderBy(x => x.IdPersona).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<EmpleadoFamiliar>();
+            }
+        }
+
+        [HttpPost]
+        [Route("ListarEmpleadosFamiliaresPorId")]
+        public async Task<List<EmpleadoFamiliar>> ListarEmpleadosFamiliaresPorId([FromBody] Empleado empleado)
+        {
+            try
+            {
+                return await db.EmpleadoFamiliar.Where(x => x.IdEmpleado == empleado.IdEmpleado).Include(x=>x.Persona).Include(x=>x.Parentesco).OrderBy(x => x.IdPersona).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -67,7 +92,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EmpleadoFamiliar = await db.EmpleadoFamiliar.SingleOrDefaultAsync(m => m.IdEmpleadoFamiliar == id);
+                var EmpleadoFamiliar = await db.EmpleadoFamiliar.Include(x=>x.Persona).Include(x=>x.Parentesco).SingleOrDefaultAsync(m => m.IdEmpleadoFamiliar == id);
 
                 if (EmpleadoFamiliar == null)
                 {
@@ -120,69 +145,185 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(empleadoFamiliarViewModel);
-                if (existe.IsSuccess)
+                var PersonaActual = await db.Persona.Where(x => x.IdPersona == empleadoFamiliarViewModel.IdPersona).FirstOrDefaultAsync();
+                if (PersonaActual.Identificacion == empleadoFamiliarViewModel.Identificacion)
                 {
-                    return new Response
+                    using (var transaction = await db.Database.BeginTransactionAsync())
                     {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
-                    };
-                }
-
-                var EmpleadoFamiliarActualizar = await db.EmpleadoFamiliar.Where(x => x.IdEmpleadoFamiliar == id).FirstOrDefaultAsync();
-
-                if (EmpleadoFamiliarActualizar != null)
-                {
-                    try
-                    {
-                        //EmpleadoFamiliarActualizar.IdPersona = EmpleadoFamiliar.IdPersona;
-                        //EmpleadoFamiliarActualizar.IdEmpleado = EmpleadoFamiliar.IdEmpleado;
-                        //EmpleadoFamiliarActualizar.IdParentesco = EmpleadoFamiliar.IdParentesco;
-                        await db.SaveChangesAsync();
-
-                        return new Response
+                        try
                         {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
+                            if (empleadoFamiliarViewModel.IdNacionalidadIndigena == 0)
+                            {
+                                empleadoFamiliarViewModel.IdNacionalidadIndigena = null;
+                            }
+                            //1. Actualizar Persona 
 
+                            PersonaActual.FechaNacimiento = empleadoFamiliarViewModel.FechaNacimiento;
+                            PersonaActual.IdSexo = empleadoFamiliarViewModel.IdSexo;
+                            PersonaActual.IdTipoIdentificacion = empleadoFamiliarViewModel.IdTipoIdentificacion;
+                            PersonaActual.IdEstadoCivil = empleadoFamiliarViewModel.IdEstadoCivil;
+                            PersonaActual.IdGenero = empleadoFamiliarViewModel.IdGenero;
+                            PersonaActual.IdNacionalidad = empleadoFamiliarViewModel.IdNacionalidad;
+                            PersonaActual.IdTipoSangre = empleadoFamiliarViewModel.IdTipoSangre;
+                            PersonaActual.IdEtnia = empleadoFamiliarViewModel.IdEtnia;
+                            PersonaActual.Identificacion = empleadoFamiliarViewModel.Identificacion;
+                            PersonaActual.Nombres = empleadoFamiliarViewModel.Nombres;
+                            PersonaActual.Apellidos = empleadoFamiliarViewModel.Apellidos;
+                            PersonaActual.TelefonoPrivado = empleadoFamiliarViewModel.TelefonoPrivado;
+                            PersonaActual.TelefonoCasa = empleadoFamiliarViewModel.TelefonoCasa;
+                            PersonaActual.CorreoPrivado = empleadoFamiliarViewModel.CorreoPrivado;
+                            PersonaActual.LugarTrabajo = empleadoFamiliarViewModel.LugarTrabajo;
+                            PersonaActual.IdNacionalidadIndigena = empleadoFamiliarViewModel.IdNacionalidadIndigena;
+                            PersonaActual.CallePrincipal = empleadoFamiliarViewModel.CallePrincipal;
+                            PersonaActual.CalleSecundaria = empleadoFamiliarViewModel.CalleSecundaria;
+                            PersonaActual.Referencia = empleadoFamiliarViewModel.Referencia;
+                            PersonaActual.Numero = empleadoFamiliarViewModel.Numero;
+                            PersonaActual.IdParroquia = empleadoFamiliarViewModel.IdParroquia;
+                            PersonaActual.Ocupacion = empleadoFamiliarViewModel.Ocupacion;
+
+
+                            //await db.SaveChangesAsync();
+
+
+                            //2. Actualizar EmpleadoFamiliar
+                            var EmpleadoFamiliarActualizar = await db.EmpleadoFamiliar.Where(x => x.IdPersona == empleadoFamiliarViewModel.IdPersona).FirstOrDefaultAsync();
+
+                            EmpleadoFamiliarActualizar.IdPersona = empleadoFamiliarViewModel.IdPersona;
+                            EmpleadoFamiliarActualizar.IdEmpleado = empleadoFamiliarViewModel.IdEmpleado;
+                            EmpleadoFamiliarActualizar.IdParentesco = empleadoFamiliarViewModel.IdParentesco;
+
+                            await db.SaveChangesAsync();
+
+
+                            transaction.Commit();
+
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Message = Mensaje.Satisfactorio,
+                            };
+
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                            {
+                                ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                                ExceptionTrace = ex,
+                                Message = Mensaje.Excepcion,
+                                LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                                LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                                UserName = "",
+
+                            });
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = Mensaje.Error,
+                            };
+                        }
                     }
-                    catch (Exception ex)
+                }
+                else
+                {
+                    var existe = Existe(empleadoFamiliarViewModel);
+                    if (existe.IsSuccess)
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = Mensaje.Error,
+                            Message = Mensaje.ExisteRegistro,
                         };
                     }
+                    else
+                    {
+                        using (var transaction = await db.Database.BeginTransactionAsync())
+                        {
+                            try
+                            {
+                                if (empleadoFamiliarViewModel.IdNacionalidadIndigena == 0)
+                                {
+                                    empleadoFamiliarViewModel.IdNacionalidadIndigena = null;
+                                }
+                                //1. Actualizar Persona 
+
+                                PersonaActual.FechaNacimiento = empleadoFamiliarViewModel.FechaNacimiento;
+                                PersonaActual.IdSexo = empleadoFamiliarViewModel.IdSexo;
+                                PersonaActual.IdTipoIdentificacion = empleadoFamiliarViewModel.IdTipoIdentificacion;
+                                PersonaActual.IdEstadoCivil = empleadoFamiliarViewModel.IdEstadoCivil;
+                                PersonaActual.IdGenero = empleadoFamiliarViewModel.IdGenero;
+                                PersonaActual.IdNacionalidad = empleadoFamiliarViewModel.IdNacionalidad;
+                                PersonaActual.IdTipoSangre = empleadoFamiliarViewModel.IdTipoSangre;
+                                PersonaActual.IdEtnia = empleadoFamiliarViewModel.IdEtnia;
+                                PersonaActual.Identificacion = empleadoFamiliarViewModel.Identificacion;
+                                PersonaActual.Nombres = empleadoFamiliarViewModel.Nombres;
+                                PersonaActual.Apellidos = empleadoFamiliarViewModel.Apellidos;
+                                PersonaActual.TelefonoPrivado = empleadoFamiliarViewModel.TelefonoPrivado;
+                                PersonaActual.TelefonoCasa = empleadoFamiliarViewModel.TelefonoCasa;
+                                PersonaActual.CorreoPrivado = empleadoFamiliarViewModel.CorreoPrivado;
+                                PersonaActual.LugarTrabajo = empleadoFamiliarViewModel.LugarTrabajo;
+                                PersonaActual.IdNacionalidadIndigena = empleadoFamiliarViewModel.IdNacionalidadIndigena;
+                                PersonaActual.CallePrincipal = empleadoFamiliarViewModel.CallePrincipal;
+                                PersonaActual.CalleSecundaria = empleadoFamiliarViewModel.CalleSecundaria;
+                                PersonaActual.Referencia = empleadoFamiliarViewModel.Referencia;
+                                PersonaActual.Numero = empleadoFamiliarViewModel.Numero;
+                                PersonaActual.IdParroquia = empleadoFamiliarViewModel.IdParroquia;
+                                PersonaActual.Ocupacion = empleadoFamiliarViewModel.Ocupacion;
+
+
+                                //await db.SaveChangesAsync();
+
+
+                                //2. Actualizar EmpleadoFamiliar
+                                var EmpleadoFamiliarActualizar = await db.EmpleadoFamiliar.Where(x => x.IdPersona == empleadoFamiliarViewModel.IdPersona).FirstOrDefaultAsync();
+
+                                EmpleadoFamiliarActualizar.IdPersona = empleadoFamiliarViewModel.IdPersona;
+                                EmpleadoFamiliarActualizar.IdEmpleado = empleadoFamiliarViewModel.IdEmpleado;
+                                EmpleadoFamiliarActualizar.IdParentesco = empleadoFamiliarViewModel.IdParentesco;
+
+                                await db.SaveChangesAsync();
+
+
+                                transaction.Commit();
+
+                                return new Response
+                                {
+                                    IsSuccess = true,
+                                    Message = Mensaje.Satisfactorio,
+                                };
+
+                            }
+                            catch (Exception ex)
+                            {
+                                transaction.Rollback();
+                                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                                {
+                                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                                    ExceptionTrace = ex,
+                                    Message = Mensaje.Excepcion,
+                                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                                    UserName = "",
+
+                                });
+                                return new Response
+                                {
+                                    IsSuccess = false,
+                                    Message = Mensaje.Error,
+                                };
+                            }
+                        }
+                    }
+
                 }
-
-
-
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
-                };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Excepcion
+                    Message = Mensaje.Error,
                 };
             }
         }
@@ -289,38 +430,40 @@ namespace bd.swth.web.Controllers.API
         [HttpDelete("{id}")]
         public async Task<Response> DeleteEmpleadoFamiliar([FromRoute] int id)
         {
-            try
+            using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                if (!ModelState.IsValid)
+                try
                 {
+
+
+                    //Eliminar Persona
+                    var respuestaEmpleadoFamiliar = await db.EmpleadoFamiliar.SingleOrDefaultAsync(m => m.IdPersona == id);
+                    var respuestaPersona = await db.Persona.SingleOrDefaultAsync(m => m.IdPersona == id);
+                    if (respuestaPersona == null)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.RegistroNoEncontrado,
+                        };
+                    }
+                    db.EmpleadoFamiliar.Remove(respuestaEmpleadoFamiliar);
+                    db.Persona.Remove(respuestaPersona);
+                    await db.SaveChangesAsync();
+                    transaction.Commit();
+
+
                     return new Response
                     {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
                     };
                 }
-
-                var respuesta = await db.EmpleadoFamiliar.SingleOrDefaultAsync(m => m.IdEmpleadoFamiliar == id);
-                if (respuesta == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-                db.EmpleadoFamiliar.Remove(respuesta);
-                await db.SaveChangesAsync();
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                };
-            }
+            
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    transaction.Rollback();
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
@@ -336,6 +479,7 @@ namespace bd.swth.web.Controllers.API
                     Message = Mensaje.Error,
                 };
             }
+         }
         }
 
 

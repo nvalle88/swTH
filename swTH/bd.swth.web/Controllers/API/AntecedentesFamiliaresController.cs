@@ -7,35 +7,34 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
-using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
-
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/PersonasDiscapacidades")]
-    public class PersonasDiscapacidadesController : Controller
+    [Route("api/AntecedentesFamiliares")]
+    public class AntecedentesFamiliaresController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public PersonasDiscapacidadesController(SwTHDbContext db)
+        public AntecedentesFamiliaresController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-
-        // GET: api/PersonaDiscapacidad
+        // GET: api/AntecedentesFamiliares
         [HttpGet]
-        [Route("ListarPersonasDiscapacidades")]
-        public async Task<List<PersonaDiscapacidad>> GetPersonaDiscapacidad()
+        [Route("ListarAntecedentesFamiliares")]
+        public async Task<List<AntecedentesFamiliares>> GetAntecedentesFamiliares()
         {
+
             try
             {
-                return await db.PersonaDiscapacidad.Include(x => x.TipoDiscapacidad).Include(x => x.Persona).OrderBy(x => x.NumeroCarnet).ToListAsync();
+                return await db.AntecedentesFamiliares.Include( x => x.FichaMedica).OrderBy(x => x.IdAntecedentesFamiliares).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -49,42 +48,21 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<PersonaDiscapacidad>();
+                return new List<AntecedentesFamiliares>();
             }
         }
 
-        [HttpPost]
-        [Route("ListarDiscapacidadesEmpleadoPorId")]
-        public async Task<List<PersonaDiscapacidad>> ListarDiscapacidadesEmpleadoPorId([FromBody] Empleado empleado)
-        {
-            try
-            {
-                return await db.PersonaDiscapacidad.Where(x=>x.IdPersona == empleado.IdPersona).Include(x => x.TipoDiscapacidad).Include(x => x.Persona).OrderBy(x => x.NumeroCarnet).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
-                return new List<PersonaDiscapacidad>();
-            }
-        }
 
-        // GET: api/PersonaDiscapacidad/5
+        // GET: api/AntecedentesFamiliares/5
         [HttpGet("{id}")]
-        public async Task<Response> GetPersonaDiscapacidad([FromRoute] int id)
+        public async Task<Response> GetAntecedentesFamiliares([FromRoute] int id)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
+
                     return new Response
                     {
                         IsSuccess = false,
@@ -92,9 +70,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var PersonaDiscapacidad = await db.PersonaDiscapacidad.SingleOrDefaultAsync(m => m.IdPersonaDiscapacidad == id);
+                var AntecedentesFamiliares = await db.AntecedentesFamiliares.SingleOrDefaultAsync(m => m.IdAntecedentesFamiliares == id);
 
-                if (PersonaDiscapacidad == null)
+
+                if (AntecedentesFamiliares == null)
                 {
                     return new Response
                     {
@@ -107,7 +86,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = PersonaDiscapacidad,
+                    Resultado = AntecedentesFamiliares,
                 };
             }
             catch (Exception ex)
@@ -128,11 +107,12 @@ namespace bd.swth.web.Controllers.API
                     Message = Mensaje.Error,
                 };
             }
+
         }
 
-        // PUT: api/PersonaDiscapacidad/5
+        // PUT: api/AntecedentesFamiliares/5
         [HttpPut("{id}")]
-        public async Task<Response> PutPersonaDiscapacidad([FromRoute] int id, [FromBody] PersonaDiscapacidad personaDiscapacidad)
+        public async Task<Response> PutAntecedentesFamiliares([FromRoute] int id, [FromBody] AntecedentesFamiliares AntecedentesFamiliares)
         {
             try
             {
@@ -145,8 +125,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(personaDiscapacidad);
-                var PersonaDiscapacidadActualizar = (PersonaDiscapacidad)existe.Resultado;
+                var existe = Existe(AntecedentesFamiliares);
                 if (existe.IsSuccess)
                 {
                     return new Response
@@ -156,48 +135,72 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var PersonaDiscapacidadAct= await db.PersonaDiscapacidad.Where(x => x.IdPersonaDiscapacidad == personaDiscapacidad.IdPersonaDiscapacidad).FirstOrDefaultAsync();
+                var Actualizar = await db.AntecedentesFamiliares.Where(x => x.IdAntecedentesFamiliares == id).FirstOrDefaultAsync();
+                if (Actualizar != null)
+                {
+                    try
+                    {
 
-                PersonaDiscapacidadAct.IdTipoDiscapacidad = personaDiscapacidad.IdTipoDiscapacidad;
-                PersonaDiscapacidadAct.IdPersona = personaDiscapacidad.IdPersona;
-                PersonaDiscapacidadAct.NumeroCarnet = personaDiscapacidad.NumeroCarnet;
-                PersonaDiscapacidadAct.Porciento = personaDiscapacidad.Porciento;
+                        Actualizar.Parentesco = AntecedentesFamiliares.Parentesco;
+                        Actualizar.Enfermedad = AntecedentesFamiliares.Enfermedad;
+                        Actualizar.Observaciones = AntecedentesFamiliares.Observaciones;
+                        Actualizar.IdFichaMedica = AntecedentesFamiliares.IdFichaMedica;
 
-                await db.SaveChangesAsync();
+                        db.AntecedentesFamiliares.Update(Actualizar);
+
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
 
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro,
                 };
+
 
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.Excepcion,
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
                 };
             }
 
         }
 
-        // POST: api/PersonaDiscapacidad
+        // POST: api/AntecedentesFamiliares
         [HttpPost]
-        [Route("InsertarPersonaDiscapacidad")]
-        public async Task<Response> PostPersonaDiscapacidad([FromBody] PersonaDiscapacidad PersonaDiscapacidad)
+        [Route("InsertarAntecedentesFamiliares")]
+        public async Task<Response> PostAntecedentesFamiliares([FromBody] AntecedentesFamiliares AntecedentesFamiliares)
         {
             try
             {
@@ -210,10 +213,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = Existe(PersonaDiscapacidad);
+                var respuesta = Existe(AntecedentesFamiliares);
                 if (!respuesta.IsSuccess)
                 {
-                    db.PersonaDiscapacidad.Add(PersonaDiscapacidad);
+                    db.AntecedentesFamiliares.Add(AntecedentesFamiliares);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -225,8 +228,9 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro,
+                    Message = Mensaje.ExisteRegistro
                 };
+
 
             }
             catch (Exception ex)
@@ -249,9 +253,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/PersonaDiscapacidad/5
+        // DELETE: api/AntecedentesFamiliares/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeletePersonaDiscapacidad([FromRoute] int id)
+        public async Task<Response> DeleteAntecedentesFamiliares([FromRoute] int id)
         {
             try
             {
@@ -264,7 +268,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.PersonaDiscapacidad.SingleOrDefaultAsync(m => m.IdPersonaDiscapacidad == id);
+                var respuesta = await db.AntecedentesFamiliares.SingleOrDefaultAsync(m => m.IdAntecedentesFamiliares == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -273,7 +277,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.PersonaDiscapacidad.Remove(respuesta);
+                db.AntecedentesFamiliares.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -297,29 +301,39 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.BorradoNoSatisfactorio,
                 };
             }
+
         }
 
-        private Response Existe(PersonaDiscapacidad PersonaDiscapacidad)
-        {
-            var numeroCarnet = PersonaDiscapacidad.NumeroCarnet;
-            var idtipodiscapacidad = PersonaDiscapacidad.IdTipoDiscapacidad;
-            var idpersona = PersonaDiscapacidad.IdPersona;
-            var porciento = PersonaDiscapacidad.Porciento;
-            var PersonaDiscapacidadrespuesta = db.PersonaDiscapacidad.Where(p => p.NumeroCarnet == numeroCarnet 
-            && p.IdPersona == idpersona 
-            && p.IdTipoDiscapacidad == idtipodiscapacidad
-            && p.Porciento == porciento).FirstOrDefault();
 
-            if (PersonaDiscapacidadrespuesta != null)
+
+
+        private Response Existe(AntecedentesFamiliares AntecedentesFamiliares)
+        {
+            var afp = AntecedentesFamiliares.Parentesco.ToUpper().TrimEnd().TrimStart();
+            var afe = AntecedentesFamiliares.Enfermedad.ToUpper().TrimEnd().TrimStart();
+            var afo = AntecedentesFamiliares.Observaciones.ToUpper().TrimEnd().TrimStart();
+            var afi = AntecedentesFamiliares.IdFichaMedica;
+
+
+            var Respuesta = db.AntecedentesFamiliares.Where(
+
+                    p => p.Parentesco.ToUpper().TrimEnd().TrimStart() == afp
+                    && p.Enfermedad.ToUpper().TrimEnd().TrimStart() == afe
+                    && p.Observaciones.ToUpper().TrimEnd().TrimStart() == afo
+                    && p.IdFichaMedica == afi
+
+                ).FirstOrDefault();
+
+            if (Respuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = PersonaDiscapacidadrespuesta,
+                    Resultado = null,
                 };
 
             }
@@ -327,8 +341,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = PersonaDiscapacidadrespuesta,
+                Resultado = Respuesta,
             };
         }
+
     }
 }
