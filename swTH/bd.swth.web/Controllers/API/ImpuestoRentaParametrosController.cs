@@ -150,26 +150,26 @@ namespace bd.swth.web.Controllers.API
                     //fraccionBasica, ExcesoHasta, ImpuestoFraccionBasica, PorcentajeImpuestoFraccionExcedente
 
 
-                    if (ImpuestoRentaParametrosActualizar.IdImpuestoRentaParametros == ImpuestoRentaParametros.IdImpuestoRentaParametros)
-                    {
-                        if (ImpuestoRentaParametros.ExcesoHasta == ImpuestoRentaParametrosActualizar.ExcesoHasta &&
-                        ImpuestoRentaParametros.FraccionBasica == ImpuestoRentaParametrosActualizar.FraccionBasica &&
-                        ImpuestoRentaParametros.ImpuestoFraccionBasica == ImpuestoRentaParametrosActualizar.ImpuestoFraccionBasica &&
-                        ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente == ImpuestoRentaParametrosActualizar.PorcentajeImpuestoFraccionExcedente)
-                        {
-                            return new Response
-                            {
-                                IsSuccess = true,
-                            };
-                        }
+                    //if (ImpuestoRentaParametrosActualizar.IdImpuestoRentaParametros == ImpuestoRentaParametros.IdImpuestoRentaParametros)
+                    //{
+                    //    if (ImpuestoRentaParametros.ExcesoHasta == ImpuestoRentaParametrosActualizar.ExcesoHasta &&
+                    //    ImpuestoRentaParametros.FraccionBasica == ImpuestoRentaParametrosActualizar.FraccionBasica &&
+                    //    ImpuestoRentaParametros.ImpuestoFraccionBasica == ImpuestoRentaParametrosActualizar.ImpuestoFraccionBasica &&
+                    //    ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente == ImpuestoRentaParametrosActualizar.PorcentajeImpuestoFraccionExcedente)
+                    //    {
+                    //        return new Response
+                    //        {
+                    //            IsSuccess = true,
+                    //        };
+                    //    }
 
-                        await Actualizar(ImpuestoRentaParametros);
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-                    }
+                    //    await Actualizar(ImpuestoRentaParametros);
+                    //    return new Response
+                    //    {
+                    //        IsSuccess = true,
+                    //        Message = Mensaje.Satisfactorio,
+                    //    };
+                   // }
                     return new Response
                     {
                         IsSuccess = false,
@@ -328,7 +328,12 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(ImpuestoRentaParametros ImpuestoRentaParametros)
         {
             var bdd = ImpuestoRentaParametros.FraccionBasica;
-            var ImpuestoRentaParametrosrespuesta = db.ImpuestoRentaParametros.Where(p => p.FraccionBasica == bdd).FirstOrDefault();
+            var bdd1 = ImpuestoRentaParametros.ExcesoHasta;
+            var bdd2 = ImpuestoRentaParametros.ImpuestoFraccionBasica;
+            var bdd3 = ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente;
+
+            var ImpuestoRentaParametrosrespuesta = db.ImpuestoRentaParametros.Where(p => p.FraccionBasica == bdd &&
+            p.ExcesoHasta==bdd1 && p.ImpuestoFraccionBasica==bdd2 && p.PorcentajeImpuestoFraccionExcedente==bdd3).FirstOrDefault();
             if (ImpuestoRentaParametrosrespuesta != null)
             {
                 return new Response

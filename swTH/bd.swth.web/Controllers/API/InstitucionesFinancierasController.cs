@@ -138,25 +138,25 @@ namespace bd.swth.web.Controllers.API
                 {
 
 
-                    if (InstitucionFinancieraActualizar.IdInstitucionFinanciera == InstitucionFinanciera.IdInstitucionFinanciera)
-                    {
-                        if (
-                        InstitucionFinanciera.Nombre == InstitucionFinancieraActualizar.Nombre &&
-                        InstitucionFinanciera.SPI == InstitucionFinancieraActualizar.SPI)
-                        {
-                            return new Response
-                            {
-                                IsSuccess = true,
-                            };
-                        }
+                    //if (InstitucionFinancieraActualizar.IdInstitucionFinanciera == InstitucionFinanciera.IdInstitucionFinanciera)
+                    //{
+                    //    if (
+                    //    InstitucionFinanciera.Nombre == InstitucionFinancieraActualizar.Nombre &&
+                    //    InstitucionFinanciera.SPI == InstitucionFinancieraActualizar.SPI)
+                    //    {
+                    //        return new Response
+                    //        {
+                    //            IsSuccess = true,
+                    //        };
+                    //    }
 
-                        await Actualizar(InstitucionFinanciera);
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-                    }
+                    //    await Actualizar(InstitucionFinanciera);
+                    //    return new Response
+                    //    {
+                    //        IsSuccess = true,
+                    //        Message = Mensaje.Satisfactorio,
+                    //    };
+                    //}
                     return new Response
                     {
                         IsSuccess = false,
@@ -306,7 +306,9 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(InstitucionFinanciera InstitucionFinanciera)
         {
             var bdd = InstitucionFinanciera.Nombre;
-            var InstitucionFinancierarespuesta = db.InstitucionFinanciera.Where(p => p.Nombre == bdd).FirstOrDefault();
+            var bdd1 = InstitucionFinanciera.SPI;
+
+            var InstitucionFinancierarespuesta = db.InstitucionFinanciera.Where(p => p.Nombre == bdd && p.SPI == bdd1).FirstOrDefault();
             if (InstitucionFinancierarespuesta != null)
             {
                 return new Response
