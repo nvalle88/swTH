@@ -22,7 +22,7 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<EnfermedadSustituto> EnfermedadSustituto { get; set; }
         public virtual Parentesco Parentesco { get; set; }
         public virtual Persona Persona { get; set; }
-        public virtual Persona PersonaDiscapacidad { get; set; }
+        public virtual PersonaDiscapacidad PersonaDiscapacidad { get; set; }
 
     }
 }
