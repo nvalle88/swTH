@@ -258,13 +258,13 @@ namespace bd.swth.web.Controllers.API
                 var ComportamientoObservableActualizar = (ComportamientoObservable)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (ComportamientoObservableActualizar.IdComportamientoObservable == ComportamientoObservable.IdComportamientoObservable)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
+                    //if (ComportamientoObservableActualizar.IdComportamientoObservable == ComportamientoObservable.IdComportamientoObservable)
+                    //{
+                    //    return new Response
+                    //    {
+                    //        IsSuccess = true,
+                    //    };
+                    //}
                     return new Response
                     {
                         IsSuccess = false,
@@ -472,7 +472,9 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(ComportamientoObservable ComportamientoObservable)
         {
             var bdd = ComportamientoObservable.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var ComportamientoObservablerespuesta = db.ComportamientoObservable.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd && p.IdNivel == ComportamientoObservable.IdNivel && p.IdDenominacionCompetencia == ComportamientoObservable.IdDenominacionCompetencia).FirstOrDefault();
+            var bdd1 = ComportamientoObservable.IdDenominacionCompetencia;
+            var bdd2 = ComportamientoObservable.IdNivel;
+            var ComportamientoObservablerespuesta = db.ComportamientoObservable.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd && p.IdNivel == bdd2 && p.IdDenominacionCompetencia == bdd1).FirstOrDefault();
             if (ComportamientoObservablerespuesta != null)
             {
                 return new Response

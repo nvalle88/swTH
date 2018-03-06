@@ -185,7 +185,15 @@ namespace bd.swrm.web.Controllers.API
                         Message = Mensaje.ModeloInvalido,
                     };
                 }
-
+                var existe = Existe(ciudad);
+                if (existe.IsSuccess)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
                 var ciudadActualizar = await db.Ciudad.Where(x => x.IdCiudad == id).FirstOrDefaultAsync();
                 if (ciudadActualizar != null)
                 {

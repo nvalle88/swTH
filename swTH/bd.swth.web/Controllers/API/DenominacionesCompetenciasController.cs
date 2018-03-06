@@ -137,25 +137,25 @@ namespace bd.swth.web.Controllers.API
                 {
 
 
-                    if (DenominacionCompetenciaActualizar.IdDenominacionCompetencia == DenominacionCompetencia.IdDenominacionCompetencia)
-                    {
-                        if (DenominacionCompetencia.Nombre == DenominacionCompetenciaActualizar.Nombre &&
-                        DenominacionCompetencia.Definicion == DenominacionCompetenciaActualizar.Definicion &&
-                        DenominacionCompetencia.CompetenciaTecnica == DenominacionCompetenciaActualizar.CompetenciaTecnica)
-                        {
-                            return new Response
-                            {
-                                IsSuccess = true,
-                            };
-                        }
+                    //if (DenominacionCompetenciaActualizar.IdDenominacionCompetencia == DenominacionCompetencia.IdDenominacionCompetencia)
+                    //{
+                    //    if (DenominacionCompetencia.Nombre == DenominacionCompetenciaActualizar.Nombre &&
+                    //    DenominacionCompetencia.Definicion == DenominacionCompetenciaActualizar.Definicion &&
+                    //    DenominacionCompetencia.CompetenciaTecnica == DenominacionCompetenciaActualizar.CompetenciaTecnica)
+                    //    {
+                    //        return new Response
+                    //        {
+                    //            IsSuccess = true,
+                    //        };
+                    //    }
 
-                        await Actualizar(DenominacionCompetencia);
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-                    }
+                    //    await Actualizar(DenominacionCompetencia);
+                    //    return new Response
+                    //    {
+                    //        IsSuccess = true,
+                    //        Message = Mensaje.Satisfactorio,
+                    //    };
+                    //}
                     return new Response
                     {
                         IsSuccess = false,
