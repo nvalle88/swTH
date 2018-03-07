@@ -10,30 +10,31 @@ using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/EscalasEvaluacionesTotales")]
-    public class EscalasEvaluacionesTotalesController : Controller
+    [Route("api/AntecedentesLaborales")]
+    public class AntecedentesLaboralesController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public EscalasEvaluacionesTotalesController(SwTHDbContext db)
+        public AntecedentesLaboralesController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        // GET: api/AntecedentesLaborales
         [HttpGet]
-        [Route("ListarEscalasEvaluacionesTotales")]
-        public async Task<List<EscalaEvaluacionTotal>> GetEscalasEvaluacionesTotales()
+        [Route("ListarAntecedentesLaborales")]
+        public async Task<List<AntecedentesLaborales>> GetAntecedentesLaborales()
         {
+
             try
             {
-                return await db.EscalaEvaluacionTotal.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.AntecedentesLaborales.OrderBy(x => x.IdAntecedentesLaborales).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,24 +42,27 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<EscalaEvaluacionTotal>();
+                return new List<AntecedentesLaborales>();
             }
         }
 
-        // GET: api/BasesDatos/5
+
+
+        // GET: api/AntecedentesLaborales/5
         [HttpGet("{id}")]
-        public async Task<Response> GetEscalaEvaluacionTotal([FromRoute] int id)
+        public async Task<Response> GetAntecedentesLaborales([FromRoute] int id)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
+
                     return new Response
                     {
                         IsSuccess = false,
@@ -66,9 +70,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EscalaEvaluacionTotal = await db.EscalaEvaluacionTotal.SingleOrDefaultAsync(m => m.IdEscalaEvaluacionTotal == id);
+                var AntecedentesLaborales = await db.AntecedentesLaborales.SingleOrDefaultAsync(m => m.IdAntecedentesLaborales == id);
 
-                if (EscalaEvaluacionTotal == null)
+
+                if (AntecedentesLaborales == null)
                 {
                     return new Response
                     {
@@ -81,7 +86,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = EscalaEvaluacionTotal,
+                    Resultado = AntecedentesLaborales,
                 };
             }
             catch (Exception ex)
@@ -90,7 +95,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -102,23 +107,12 @@ namespace bd.swth.web.Controllers.API
                     Message = Mensaje.Error,
                 };
             }
+
         }
 
-        private async Task Actualizar(EscalaEvaluacionTotal escalaEvaluacionTotal)
-        {
-            var escalaevatotal = db.EscalaEvaluacionTotal.Find(escalaEvaluacionTotal.IdEscalaEvaluacionTotal);
-
-            escalaevatotal.Name = escalaEvaluacionTotal.Name;
-            escalaevatotal.Descripcion = escalaEvaluacionTotal.Descripcion;
-            escalaevatotal.PorcientoDesde = escalaEvaluacionTotal.PorcientoDesde;
-            escalaevatotal.PorcientoHasta = escalaEvaluacionTotal.PorcientoHasta;
-            db.EscalaEvaluacionTotal.Update(escalaevatotal);
-            await db.SaveChangesAsync();
-        }
-
-        // PUT: api/BasesDatos/5
+        // PUT: api/AntecedentesLaborales/5
         [HttpPut("{id}")]
-        public async Task<Response> PutEscalaEvaluacionTotal([FromRoute] int id, [FromBody] EscalaEvaluacionTotal EscalaEvaluacionTotal)
+        public async Task<Response> PutAntecedentesLaborales([FromRoute] int id, [FromBody] AntecedentesLaborales AntecedentesLaborales)
         {
             try
             {
@@ -131,43 +125,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                if (EscalaEvaluacionTotal.PorcientoDesde > EscalaEvaluacionTotal.PorcientoHasta || EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotal.PorcientoHasta)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "El porcentaje desde no puede ser mayor o igual el porcentaje hasta"
-                    };
-                }
-
-                var existe = Existe(EscalaEvaluacionTotal);
-                var EscalaEvaluacionTotalActualizar = (EscalaEvaluacionTotal)existe.Resultado;
-
+                var existe = Existe(AntecedentesLaborales);
                 if (existe.IsSuccess)
                 {
-
-
-                    //if (EscalaEvaluacionTotalActualizar.IdEscalaEvaluacionTotal == EscalaEvaluacionTotal.IdEscalaEvaluacionTotal)
-                    //{
-                    //    if (EscalaEvaluacionTotal.Name == EscalaEvaluacionTotalActualizar.Name &&
-                    //    EscalaEvaluacionTotal.Descripcion == EscalaEvaluacionTotalActualizar.Descripcion &&
-                    //    EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotalActualizar.PorcientoDesde &&
-                    //    EscalaEvaluacionTotal.PorcientoHasta == EscalaEvaluacionTotalActualizar.PorcientoHasta)
-                    //    {
-                    //        return new Response
-                    //        {
-                    //            IsSuccess = true,
-                    //        };
-                    //    }
-
-                    //    await Actualizar(EscalaEvaluacionTotal);
-                    //    return new Response
-                    //    {
-                    //        IsSuccess = true,
-                    //        Message = Mensaje.Satisfactorio,
-                    //    };
-                    //}
                     return new Response
                     {
                         IsSuccess = false,
@@ -175,64 +135,78 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                await Actualizar(EscalaEvaluacionTotal);
+                var Actualizar = await db.AntecedentesLaborales.Where(x => x.IdAntecedentesLaborales == id).FirstOrDefaultAsync();
+                if (Actualizar != null)
+                {
+                    try
+                    {
+
+                        Actualizar.Empresa = AntecedentesLaborales.Empresa;
+                        Actualizar.Cargo = AntecedentesLaborales.Cargo;
+                        Actualizar.TiempoTrabajo = AntecedentesLaborales.TiempoTrabajo;
+                        Actualizar.DetalleRiesgosExpuesto = AntecedentesLaborales.DetalleRiesgosExpuesto;
+                        Actualizar.EppUtilizados = AntecedentesLaborales.EppUtilizados;
+                        Actualizar.IdFichaMedica = AntecedentesLaborales.IdFichaMedica;
+                        
+
+                        db.AntecedentesLaborales.Update(Actualizar);
+
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
+
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro,
                 };
+
+
             }
             catch (Exception ex)
             {
-
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.Excepcion,
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
                 };
             }
-            }
 
-        // POST: api/BasesDatos
+        }
+
+        // POST: api/AntecedentesLaborales
         [HttpPost]
-        [Route("InsertarEscalaEvaluacionTotal")]
-        public async Task<Response> PostEscalaEvaluacionTotal([FromBody] EscalaEvaluacionTotal EscalaEvaluacionTotal)
+        [Route("InsertarAntecedentesLaborales")]
+        public async Task<Response> PostAntecedentesLaborales([FromBody] AntecedentesLaborales AntecedentesLaborales)
         {
             try
             {
-
-                if (EscalaEvaluacionTotal.PorcientoDesde > EscalaEvaluacionTotal.PorcientoHasta || EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotal.PorcientoHasta)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "El porcentaje desde no puede ser mayor o igual el porcentaje hasta"
-                    };
-                }
-
-                var respuesta = Existe(EscalaEvaluacionTotal);      
-                if (!respuesta.IsSuccess)
-                {
-                    db.EscalaEvaluacionTotal.Add(EscalaEvaluacionTotal);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
-                }
-
                 if (!ModelState.IsValid)
                 {
                     return new Response
@@ -242,11 +216,24 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var respuesta = Existe(AntecedentesLaborales);
+                if (!respuesta.IsSuccess)
+                {
+                    db.AntecedentesLaborales.Add(AntecedentesLaborales);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
                 return new Response
                 {
                     IsSuccess = false,
                     Message = Mensaje.ExisteRegistro
                 };
+
 
             }
             catch (Exception ex)
@@ -255,7 +242,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -269,9 +256,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        // DELETE: api/AntecedentesLaborales/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteEscalaEvaluacionTotal([FromRoute] int id)
+        public async Task<Response> DeleteAntecedentesLaborales([FromRoute] int id)
         {
             try
             {
@@ -284,7 +271,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.EscalaEvaluacionTotal.SingleOrDefaultAsync(m => m.IdEscalaEvaluacionTotal == id);
+                var respuesta = await db.AntecedentesLaborales.SingleOrDefaultAsync(m => m.IdAntecedentesLaborales == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -293,7 +280,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.EscalaEvaluacionTotal.Remove(respuesta);
+                db.AntecedentesLaborales.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -308,7 +295,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -317,25 +304,43 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.BorradoNoSatisfactorio,
                 };
             }
+
         }
 
-        private Response Existe(EscalaEvaluacionTotal EscalaEvaluacionTotal)
+
+
+
+        private Response Existe(AntecedentesLaborales AntecedentesLaborales)
         {
-            var bdd = EscalaEvaluacionTotal.Name;
-            var bdd1 = EscalaEvaluacionTotal.PorcientoDesde;
-            var bdd2 = EscalaEvaluacionTotal.PorcientoHasta;
-            var bdd3 = EscalaEvaluacionTotal.Descripcion;
-            var EscalaEvaluacionTotalrespuesta = db.EscalaEvaluacionTotal.Where(p => p.Name == bdd && p.PorcientoDesde==bdd1 && p.PorcientoHasta==bdd2 && p.Descripcion==bdd3).FirstOrDefault();
-            if (EscalaEvaluacionTotalrespuesta != null)
+            var ale = AntecedentesLaborales.Empresa.ToUpper().TrimEnd().TrimStart();
+            var alc = AntecedentesLaborales.Cargo.ToUpper().TrimEnd().TrimStart();
+            var alt = AntecedentesLaborales.TiempoTrabajo.ToUpper().TrimEnd().TrimStart();
+            var ald = AntecedentesLaborales.DetalleRiesgosExpuesto.ToUpper().TrimEnd().TrimStart();
+            var aleu = AntecedentesLaborales.EppUtilizados.ToUpper().TrimEnd().TrimStart();
+            var ali = AntecedentesLaborales.IdFichaMedica;
+
+
+            var Respuesta = db.AntecedentesLaborales.Where(
+
+                    p => p.Empresa.ToUpper().TrimEnd().TrimStart() == ale
+                    && p.Cargo.ToUpper().TrimEnd().TrimStart() == alc
+                    && p.TiempoTrabajo.ToUpper().TrimEnd().TrimStart() == alt
+                    && p.DetalleRiesgosExpuesto.ToUpper().TrimEnd().TrimStart() == ald
+                    && p.EppUtilizados.ToUpper().TrimEnd().TrimStart() == aleu
+                    && p.IdFichaMedica == ali
+
+                ).FirstOrDefault();
+
+            if (Respuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = EscalaEvaluacionTotalrespuesta,
+                    Resultado = null,
                 };
 
             }
@@ -343,7 +348,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = EscalaEvaluacionTotalrespuesta,
+                Resultado = Respuesta,
             };
         }
     }

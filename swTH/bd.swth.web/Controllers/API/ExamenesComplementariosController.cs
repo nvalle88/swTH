@@ -10,30 +10,32 @@ using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/EscalasEvaluacionesTotales")]
-    public class EscalasEvaluacionesTotalesController : Controller
+    [Route("api/ExamenesComplementarios")]
+    public class ExamenesComplementariosController : Controller
     {
+
         private readonly SwTHDbContext db;
 
-        public EscalasEvaluacionesTotalesController(SwTHDbContext db)
+        public ExamenesComplementariosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        // GET: api/ExamenesComplementarios
         [HttpGet]
-        [Route("ListarEscalasEvaluacionesTotales")]
-        public async Task<List<EscalaEvaluacionTotal>> GetEscalasEvaluacionesTotales()
+        [Route("ListarExamenesComplementarios")]
+        public async Task<List<ExamenComplementario>> GetExamenComplementario()
         {
+
             try
             {
-                return await db.EscalaEvaluacionTotal.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.ExamenComplementario.Include( x => x.TipoExamenComplementario).OrderBy(x => x.IdExamenComplementario).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,24 +43,27 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
 
                 });
-                return new List<EscalaEvaluacionTotal>();
+                return new List<ExamenComplementario>();
             }
         }
 
-        // GET: api/BasesDatos/5
+
+
+        // GET: api/ExamenesComplementarios/5
         [HttpGet("{id}")]
-        public async Task<Response> GetEscalaEvaluacionTotal([FromRoute] int id)
+        public async Task<Response> GetExamenComplementario([FromRoute] int id)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
+
                     return new Response
                     {
                         IsSuccess = false,
@@ -66,9 +71,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EscalaEvaluacionTotal = await db.EscalaEvaluacionTotal.SingleOrDefaultAsync(m => m.IdEscalaEvaluacionTotal == id);
+                var ExamenComplementario = await db.ExamenComplementario.SingleOrDefaultAsync(m => m.IdExamenComplementario == id);
 
-                if (EscalaEvaluacionTotal == null)
+
+                if (ExamenComplementario == null)
                 {
                     return new Response
                     {
@@ -81,7 +87,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = EscalaEvaluacionTotal,
+                    Resultado = ExamenComplementario,
                 };
             }
             catch (Exception ex)
@@ -90,7 +96,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -102,23 +108,12 @@ namespace bd.swth.web.Controllers.API
                     Message = Mensaje.Error,
                 };
             }
+
         }
 
-        private async Task Actualizar(EscalaEvaluacionTotal escalaEvaluacionTotal)
-        {
-            var escalaevatotal = db.EscalaEvaluacionTotal.Find(escalaEvaluacionTotal.IdEscalaEvaluacionTotal);
-
-            escalaevatotal.Name = escalaEvaluacionTotal.Name;
-            escalaevatotal.Descripcion = escalaEvaluacionTotal.Descripcion;
-            escalaevatotal.PorcientoDesde = escalaEvaluacionTotal.PorcientoDesde;
-            escalaevatotal.PorcientoHasta = escalaEvaluacionTotal.PorcientoHasta;
-            db.EscalaEvaluacionTotal.Update(escalaevatotal);
-            await db.SaveChangesAsync();
-        }
-
-        // PUT: api/BasesDatos/5
+        // PUT: api/ExamenesComplementarios/5
         [HttpPut("{id}")]
-        public async Task<Response> PutEscalaEvaluacionTotal([FromRoute] int id, [FromBody] EscalaEvaluacionTotal EscalaEvaluacionTotal)
+        public async Task<Response> PutExamenComplementario([FromRoute] int id, [FromBody] ExamenComplementario ExamenComplementario)
         {
             try
             {
@@ -131,43 +126,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-                if (EscalaEvaluacionTotal.PorcientoDesde > EscalaEvaluacionTotal.PorcientoHasta || EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotal.PorcientoHasta)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "El porcentaje desde no puede ser mayor o igual el porcentaje hasta"
-                    };
-                }
-
-                var existe = Existe(EscalaEvaluacionTotal);
-                var EscalaEvaluacionTotalActualizar = (EscalaEvaluacionTotal)existe.Resultado;
-
+                var existe = Existe(ExamenComplementario);
                 if (existe.IsSuccess)
                 {
-
-
-                    //if (EscalaEvaluacionTotalActualizar.IdEscalaEvaluacionTotal == EscalaEvaluacionTotal.IdEscalaEvaluacionTotal)
-                    //{
-                    //    if (EscalaEvaluacionTotal.Name == EscalaEvaluacionTotalActualizar.Name &&
-                    //    EscalaEvaluacionTotal.Descripcion == EscalaEvaluacionTotalActualizar.Descripcion &&
-                    //    EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotalActualizar.PorcientoDesde &&
-                    //    EscalaEvaluacionTotal.PorcientoHasta == EscalaEvaluacionTotalActualizar.PorcientoHasta)
-                    //    {
-                    //        return new Response
-                    //        {
-                    //            IsSuccess = true,
-                    //        };
-                    //    }
-
-                    //    await Actualizar(EscalaEvaluacionTotal);
-                    //    return new Response
-                    //    {
-                    //        IsSuccess = true,
-                    //        Message = Mensaje.Satisfactorio,
-                    //    };
-                    //}
                     return new Response
                     {
                         IsSuccess = false,
@@ -175,64 +136,76 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                await Actualizar(EscalaEvaluacionTotal);
+                var Actualizar = await db.ExamenComplementario.Where(x => x.IdExamenComplementario == id).FirstOrDefaultAsync();
+                if (Actualizar != null)
+                {
+                    try
+                    {
+
+                        Actualizar.Fecha = ExamenComplementario.Fecha;
+                        Actualizar.Resultado = ExamenComplementario.Resultado;
+                        Actualizar.IdTipoExamenComplementario= ExamenComplementario.IdTipoExamenComplementario;
+                        Actualizar.IdFichaMedica= ExamenComplementario.IdFichaMedica;
+                        
+
+                        db.ExamenComplementario.Update(Actualizar);
+
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
+
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro,
                 };
+
+
             }
             catch (Exception ex)
             {
-
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.Excepcion,
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
                 };
             }
-            }
 
-        // POST: api/BasesDatos
+        }
+
+        // POST: api/ExamenesComplementarios
         [HttpPost]
-        [Route("InsertarEscalaEvaluacionTotal")]
-        public async Task<Response> PostEscalaEvaluacionTotal([FromBody] EscalaEvaluacionTotal EscalaEvaluacionTotal)
+        [Route("InsertarExamenesComplementarios")]
+        public async Task<Response> PostExamenComplementario([FromBody] ExamenComplementario ExamenComplementario)
         {
             try
             {
-
-                if (EscalaEvaluacionTotal.PorcientoDesde > EscalaEvaluacionTotal.PorcientoHasta || EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotal.PorcientoHasta)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "El porcentaje desde no puede ser mayor o igual el porcentaje hasta"
-                    };
-                }
-
-                var respuesta = Existe(EscalaEvaluacionTotal);      
-                if (!respuesta.IsSuccess)
-                {
-                    db.EscalaEvaluacionTotal.Add(EscalaEvaluacionTotal);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
-                }
-
                 if (!ModelState.IsValid)
                 {
                     return new Response
@@ -242,11 +215,24 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var respuesta = Existe(ExamenComplementario);
+                if (!respuesta.IsSuccess)
+                {
+                    db.ExamenComplementario.Add(ExamenComplementario);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
                 return new Response
                 {
                     IsSuccess = false,
                     Message = Mensaje.ExisteRegistro
                 };
+
 
             }
             catch (Exception ex)
@@ -255,7 +241,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -269,9 +255,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // DELETE: api/BasesDatos/5
+        // DELETE: api/ExamenesComplementarios/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteEscalaEvaluacionTotal([FromRoute] int id)
+        public async Task<Response> DeleteExamenComplementario([FromRoute] int id)
         {
             try
             {
@@ -284,7 +270,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.EscalaEvaluacionTotal.SingleOrDefaultAsync(m => m.IdEscalaEvaluacionTotal == id);
+                var respuesta = await db.ExamenComplementario.SingleOrDefaultAsync(m => m.IdExamenComplementario == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -293,7 +279,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.EscalaEvaluacionTotal.Remove(respuesta);
+                db.ExamenComplementario.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -308,7 +294,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
-                                       Message = Mensaje.Excepcion,
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
@@ -317,25 +303,40 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.BorradoNoSatisfactorio,
                 };
             }
+
         }
 
-        private Response Existe(EscalaEvaluacionTotal EscalaEvaluacionTotal)
+
+
+
+        private Response Existe(ExamenComplementario ExamenComplementario)
         {
-            var bdd = EscalaEvaluacionTotal.Name;
-            var bdd1 = EscalaEvaluacionTotal.PorcientoDesde;
-            var bdd2 = EscalaEvaluacionTotal.PorcientoHasta;
-            var bdd3 = EscalaEvaluacionTotal.Descripcion;
-            var EscalaEvaluacionTotalrespuesta = db.EscalaEvaluacionTotal.Where(p => p.Name == bdd && p.PorcientoDesde==bdd1 && p.PorcientoHasta==bdd2 && p.Descripcion==bdd3).FirstOrDefault();
-            if (EscalaEvaluacionTotalrespuesta != null)
+            
+            var ecf = ExamenComplementario.Fecha;
+            var ecr = ExamenComplementario.Resultado.ToUpper().TrimEnd().TrimStart();
+            var ecit = ExamenComplementario.IdTipoExamenComplementario;
+            var ecif = ExamenComplementario.IdFichaMedica;
+
+
+            var Respuesta = db.ExamenComplementario.Where(
+
+                    p => p.Fecha == ecf
+                    && p.Resultado.ToUpper().TrimEnd().TrimStart() == ecr
+                    && p.IdTipoExamenComplementario == ecit
+                    && p.IdFichaMedica == ecif
+
+                ).FirstOrDefault();
+
+            if (Respuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = EscalaEvaluacionTotalrespuesta,
+                    Resultado = null,
                 };
 
             }
@@ -343,8 +344,9 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = EscalaEvaluacionTotalrespuesta,
+                Resultado = Respuesta,
             };
         }
+
     }
 }

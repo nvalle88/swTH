@@ -41,6 +41,9 @@ namespace bd.swth.entidades.Negocio
         public virtual TipoIdentificacion TipoIdentificacion { get; set; }
         public virtual Nacionalidad Nacionalidad { get; set; }
         public int? IdNacionalidad { get; set; }
+
+        public virtual ICollection<FichaMedica> FichaMedica { get; set; }
+
         public virtual ICollection<PersonaEnfermedad> PersonaEnfermedad { get; set; }
         public virtual ICollection<CandidatoConcurso> CandidatoConcurso { get; set; }
         public virtual ICollection<PersonaDiscapacidad> PersonaDiscapacidad { get; set; }
