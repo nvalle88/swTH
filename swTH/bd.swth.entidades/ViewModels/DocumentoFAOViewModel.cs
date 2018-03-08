@@ -18,6 +18,7 @@ namespace bd.swth.entidades.ViewModels
         public string NombreUsuario { get; set; }
         public int idDependencia { get; set; }
         public int idsucursal { get; set; }
+        public int ? estado { get; set; }
 
 
     }

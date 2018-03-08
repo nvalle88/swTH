@@ -80,7 +80,7 @@ namespace bd.swth.web.Controllers.API
                                     apellido = item1.Persona.Apellidos,
                                     NombreUsuario = item1.NombreUsuario,
                                     Identificacion = item1.Persona.Identificacion
-
+                                    
 
 
                                 });
@@ -161,10 +161,8 @@ namespace bd.swth.web.Controllers.API
                                     nombre = item1.Persona.Nombres,
                                     apellido = item1.Persona.Apellidos,
                                     NombreUsuario = item1.NombreUsuario,
-                                    Identificacion = item1.Persona.Identificacion
-
-
-
+                                    Identificacion = item1.Persona.Identificacion,
+                                    estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado
                                 });
 
                             }
