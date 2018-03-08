@@ -31,6 +31,170 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        [HttpPost]
+        [Route("ListarEmpleadosSinFAO")]
+        public async Task<List<DocumentoFAOViewModel>> ListarEmpleadosSinFAO([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+               
+                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x=> x.NombreUsuario== documentoFAOViewModel.NombreUsuario).ToListAsync();
+                
+                var listaSalida = new List<DocumentoFAOViewModel>();
+                var listaSalida2 = new List<DocumentoFAOViewModel>();
+
+                var NombreDependencia = "";
+                int idDependencia ;
+                int idsucursal;
+                int idempleado;
+                foreach (var item in lista)
+                {
+                    if (item.Dependencia == null)
+                    {
+                        NombreDependencia = "No Asignado";
+                        //idDependencia = "";
+                    }
+                    else
+                    {
+                        NombreDependencia = item.Dependencia.Nombre;
+                        idDependencia = item.Dependencia.IdDependencia;
+                        idsucursal = item.Dependencia.IdSucursal;
+                        idempleado = item.IdEmpleado;
+
+
+                         var anio = DateTime.Now.Year;
+                        
+                        var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
+                        foreach (var item1 in lista1)
+                        {
+                            var empleadoid = item1.IdEmpleado;
+                            var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
+                            if (a == null)
+                            {
+                                listaSalida2.Add(new DocumentoFAOViewModel
+                                {
+                                    IdEmpleado = item1.IdEmpleado,
+                                    idDependencia = item1.Dependencia.IdDependencia,
+                                    idsucursal = item1.Dependencia.IdSucursal,
+                                    nombre = item1.Persona.Nombres,
+                                    apellido = item1.Persona.Apellidos,
+                                    NombreUsuario = item1.NombreUsuario,
+                                    Identificacion = item1.Persona.Identificacion
+
+
+
+                                });
+
+                            }
+
+                        }
+                        
+                    }
+                
+                }
+                return listaSalida2;
+                
+
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<DocumentoFAOViewModel>();
+            }
+        }
+        [HttpPost]
+        [Route("ListarEmpleadosConFAO")]
+        public async Task<List<DocumentoFAOViewModel>> ListarEmpleadosConFAO([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+
+                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario).ToListAsync();
+
+                var listaSalida = new List<DocumentoFAOViewModel>();
+                var listaSalida2 = new List<DocumentoFAOViewModel>();
+
+                var NombreDependencia = "";
+                int idDependencia;
+                int idsucursal;
+                int idempleado;
+                foreach (var item in lista)
+                {
+                    if (item.Dependencia == null)
+                    {
+                        NombreDependencia = "No Asignado";
+                        //idDependencia = "";
+                    }
+                    else
+                    {
+                        NombreDependencia = item.Dependencia.Nombre;
+                        idDependencia = item.Dependencia.IdDependencia;
+                        idsucursal = item.Dependencia.IdSucursal;
+                        idempleado = item.IdEmpleado;
+
+
+                        var anio = DateTime.Now.Year;
+
+                        var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
+                        foreach (var item1 in lista1)
+                        {
+                            var empleadoid = item1.IdEmpleado;
+                            
+                            var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
+                            if (a != null)
+                            {
+                                listaSalida2.Add(new DocumentoFAOViewModel
+                                {
+                                    IdEmpleado = item1.IdEmpleado,
+                                    idDependencia = item1.Dependencia.IdDependencia,
+                                    idsucursal = item1.Dependencia.IdSucursal,
+                                    nombre = item1.Persona.Nombres,
+                                    apellido = item1.Persona.Apellidos,
+                                    NombreUsuario = item1.NombreUsuario,
+                                    Identificacion = item1.Persona.Identificacion
+
+
+
+                                });
+
+                            }
+
+                        }
+
+                    }
+
+                }
+                return listaSalida2;
+
+
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<DocumentoFAOViewModel>();
+            }
+        }
+
 
         // GET: api/Empleados
         [HttpGet]
