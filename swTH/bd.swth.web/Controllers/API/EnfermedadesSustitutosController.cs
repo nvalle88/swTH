@@ -10,31 +10,30 @@ using bd.swth.entidades.Negocio;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
-using bd.swth.entidades.Negocio;
+using bd.log.guardar.Enumeradores;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/ImpuestoRentaParametros")]
-    public class ImpuestoRentaParametrosController : Controller
+    [Route("api/EnfermedadesSustitutos")]
+    public class EnfermedadesSustitutosController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public ImpuestoRentaParametrosController(SwTHDbContext db)
+        public EnfermedadesSustitutosController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarImpuestoRentaParametros")]
-        public async Task<List<ImpuestoRentaParametros>> GetImpuestoRentaParametros()
+        [Route("ListarEnfermedadesSustituto")]
+        public async Task<List<EnfermedadSustituto>> GetEnfermedadSustituto()
         {
             try
             {
-                return await db.ImpuestoRentaParametros.OrderBy(x => x.FraccionBasica).ToListAsync();
+                return await db.EnfermedadSustituto.OrderBy(x => x.IdEnfermedadSustituto).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -48,13 +47,13 @@ namespace bd.swth.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<ImpuestoRentaParametros>();
+                return new List<EnfermedadSustituto>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
-        public async Task<Response> GetImpuestoRentaParametros([FromRoute] int id)
+        public async Task<Response> GetEnfermedadSustituto([FromRoute] int id)
         {
             try
             {
@@ -67,9 +66,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var ImpuestoRentaParametros = await db.ImpuestoRentaParametros.SingleOrDefaultAsync(m => m.IdImpuestoRentaParametros == id);
+                var EnfermedadSustituto = await db.EnfermedadSustituto.SingleOrDefaultAsync(m => m.IdEnfermedadSustituto == id);
 
-                if (ImpuestoRentaParametros == null)
+                if (EnfermedadSustituto == null)
                 {
                     return new Response
                     {
@@ -82,7 +81,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = ImpuestoRentaParametros,
+                    Resultado = EnfermedadSustituto,
                 };
             }
             catch (Exception ex)
@@ -105,21 +104,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private async Task Actualizar(ImpuestoRentaParametros ImpuestoRentaParametros)
-        {
-            var impuestorentaparametros = db.ImpuestoRentaParametros.Find(ImpuestoRentaParametros.IdImpuestoRentaParametros);
-           
-            impuestorentaparametros.ExcesoHasta = ImpuestoRentaParametros.ExcesoHasta;
-            impuestorentaparametros.FraccionBasica = ImpuestoRentaParametros.FraccionBasica;
-            impuestorentaparametros.ImpuestoFraccionBasica = ImpuestoRentaParametros.ImpuestoFraccionBasica;
-            impuestorentaparametros.PorcentajeImpuestoFraccionExcedente = ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente;
-            db.ImpuestoRentaParametros.Update(impuestorentaparametros);
-            await db.SaveChangesAsync();
-        }
-
         // PUT: api/BasesDatos/5
         [HttpPut("{id}")]
-        public async Task<Response> PutImpuestoRentaParametros([FromRoute] int id, [FromBody] ImpuestoRentaParametros ImpuestoRentaParametros)
+        public async Task<Response> PutEnfermedadSustituto([FromRoute] int id, [FromBody] EnfermedadSustituto EnfermedadSustituto)
         {
             try
             {
@@ -131,45 +118,10 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ModeloInvalido
                     };
                 }
-                //fraccionBasica, ExcesoHasta, ImpuestoFraccionBasica, PorcentajeImpuestoFraccionExcedente
 
-                if (ImpuestoRentaParametros.FraccionBasica > ImpuestoRentaParametros.ExcesoHasta || ImpuestoRentaParametros.FraccionBasica == ImpuestoRentaParametros.ExcesoHasta)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fracción básica no puede ser mayor o igual a exceso hasta"
-                    };
-                }
-
-                var existe = Existe(ImpuestoRentaParametros);
-                var ImpuestoRentaParametrosActualizar = (ImpuestoRentaParametros)existe.Resultado;
-
+                var existe = Existe(EnfermedadSustituto);
                 if (existe.IsSuccess)
                 {
-                    //fraccionBasica, ExcesoHasta, ImpuestoFraccionBasica, PorcentajeImpuestoFraccionExcedente
-
-
-                    //if (ImpuestoRentaParametrosActualizar.IdImpuestoRentaParametros == ImpuestoRentaParametros.IdImpuestoRentaParametros)
-                    //{
-                    //    if (ImpuestoRentaParametros.ExcesoHasta == ImpuestoRentaParametrosActualizar.ExcesoHasta &&
-                    //    ImpuestoRentaParametros.FraccionBasica == ImpuestoRentaParametrosActualizar.FraccionBasica &&
-                    //    ImpuestoRentaParametros.ImpuestoFraccionBasica == ImpuestoRentaParametrosActualizar.ImpuestoFraccionBasica &&
-                    //    ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente == ImpuestoRentaParametrosActualizar.PorcentajeImpuestoFraccionExcedente)
-                    //    {
-                    //        return new Response
-                    //        {
-                    //            IsSuccess = true,
-                    //        };
-                    //    }
-
-                    //    await Actualizar(ImpuestoRentaParametros);
-                    //    return new Response
-                    //    {
-                    //        IsSuccess = true,
-                    //        Message = Mensaje.Satisfactorio,
-                    //    };
-                   // }
                     return new Response
                     {
                         IsSuccess = false,
@@ -177,71 +129,88 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                await Actualizar(ImpuestoRentaParametros);
+                var EnfermedadSustitutoActualizar = await db.EnfermedadSustituto.Where(x => x.IdEnfermedadSustituto == id).FirstOrDefaultAsync();
+
+                if (EnfermedadSustitutoActualizar != null)
+                {
+                    try
+                    {
+                        EnfermedadSustitutoActualizar.IdTipoEnfermedad = EnfermedadSustituto.IdTipoEnfermedad;
+                        EnfermedadSustitutoActualizar.InstitucionEmite = EnfermedadSustituto.InstitucionEmite;
+                        EnfermedadSustitutoActualizar.IdPersonaSustituto = EnfermedadSustituto.IdPersonaSustituto;
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                            ExceptionTrace = ex,
+                            Message = Mensaje.Excepcion,
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
+
+
+
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.Excepcion,
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarImpuestoRentaParametros")]
-        public async Task<Response> PostImpuestoRentaParametros([FromBody] ImpuestoRentaParametros ImpuestoRentaParametros)
+        [Route("InsertarEnfermedadSustituto")]
+        public async Task<Response> PostEnfermedadSustituto([FromBody] EnfermedadSustituto EnfermedadSustituto)
         {
             try
             {
-                //fraccionBasica, ExcesoHasta, ImpuestoFraccionBasica, PorcentajeImpuestoFraccionExcedente
-
-                if (ImpuestoRentaParametros.FraccionBasica > ImpuestoRentaParametros.ExcesoHasta || ImpuestoRentaParametros.FraccionBasica == ImpuestoRentaParametros.ExcesoHasta)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fracción básica  no puede ser mayor o igual al exceso hasta"
-                    };
-                }
-
-                var respuesta = Existe(ImpuestoRentaParametros);
-                if (!respuesta.IsSuccess)
-                {
-                    db.ImpuestoRentaParametros.Add(ImpuestoRentaParametros);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
-                }
-
                 if (!ModelState.IsValid)
                 {
                     return new Response
                     {
                         IsSuccess = false,
                         Message = ""
+                    };
+                }
+
+                var respuesta = Existe(EnfermedadSustituto);
+                if (!respuesta.IsSuccess)
+                {
+                    db.EnfermedadSustituto.Add(EnfermedadSustituto);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
                     };
                 }
 
@@ -274,7 +243,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteImpuestoRentaParametros([FromRoute] int id)
+        public async Task<Response> DeleteEnfermedadSustituto([FromRoute] int id)
         {
             try
             {
@@ -287,7 +256,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.ImpuestoRentaParametros.SingleOrDefaultAsync(m => m.IdImpuestoRentaParametros == id);
+                var respuesta = await db.EnfermedadSustituto.SingleOrDefaultAsync(m => m.IdEnfermedadSustituto == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -296,7 +265,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.ImpuestoRentaParametros.Remove(respuesta);
+                db.EnfermedadSustituto.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -325,22 +294,21 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(ImpuestoRentaParametros ImpuestoRentaParametros)
+        private Response Existe(EnfermedadSustituto EnfermedadSustituto)
         {
-            var bdd = ImpuestoRentaParametros.FraccionBasica;
-            var bdd1 = ImpuestoRentaParametros.ExcesoHasta;
-            var bdd2 = ImpuestoRentaParametros.ImpuestoFraccionBasica;
-            var bdd3 = ImpuestoRentaParametros.PorcentajeImpuestoFraccionExcedente;
-
-            var ImpuestoRentaParametrosrespuesta = db.ImpuestoRentaParametros.Where(p => p.FraccionBasica == bdd &&
-            p.ExcesoHasta==bdd1 && p.ImpuestoFraccionBasica==bdd2 && p.PorcentajeImpuestoFraccionExcedente==bdd3).FirstOrDefault();
-            if (ImpuestoRentaParametrosrespuesta != null)
+            var bdd1 = EnfermedadSustituto.IdTipoEnfermedad;
+            var bdd2 = EnfermedadSustituto.InstitucionEmite;
+            var bdd3 = EnfermedadSustituto.IdPersonaSustituto;
+            var EnfermedadSustitutorespuesta = db.EnfermedadSustituto.Where(p => p.IdTipoEnfermedad == bdd1
+            && p.InstitucionEmite == bdd2
+            && p.IdPersonaSustituto == bdd3).FirstOrDefault();
+            if (EnfermedadSustitutorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = ImpuestoRentaParametrosrespuesta,
+                    Resultado = null,
                 };
 
             }
@@ -348,7 +316,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = ImpuestoRentaParametrosrespuesta,
+                Resultado = EnfermedadSustitutorespuesta,
             };
         }
     }

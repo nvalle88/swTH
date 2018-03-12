@@ -53,8 +53,8 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<Empleado> Empleado { get; set; }
         public virtual ICollection<EmpleadoContactoEmergencia> EmpleadoContactoEmergencia { get; set; }
         public virtual ICollection<EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
-        public virtual PersonaSustituto PersonaSustitutoPersona { get; set; }
-        public virtual PersonaSustituto PersonaPersonaSustituto { get; set; }
+        //public virtual PersonaSustituto PersonaSustitutoPersona { get; set; }
+        //public virtual PersonaSustituto PersonaPersonaSustituto { get; set; }
 
     }
 }

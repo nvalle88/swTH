@@ -66,7 +66,7 @@ namespace bd.swth.datos
         public virtual DbSet<DependenciaDocumento> DependenciaDocumento { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Destreza> Destreza { get; set; }
         public virtual DbSet<DetalleExamenInduccion> DetalleExamenInduccion { get; set; }
-        public virtual DbSet<DiscapacidadSustituto> DiscapacidadSustituto { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.DiscapacidadSustituto> DiscapacidadSustituto { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngreso> DocumentosIngreso { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngresoEmpleado> DocumentosIngresoEmpleado { get; set; }
         public virtual DbSet<DocumentosParentescodos> DocumentosParentescodos { get; set; }
@@ -81,7 +81,7 @@ namespace bd.swth.datos
         public virtual DbSet<EmpleadoNepotismo> EmpleadoNepotismo { get; set; }
         public virtual DbSet<EmpleadoSaldoVacaciones> EmpleadoSaldoVacaciones { get; set; }
         public virtual DbSet<EmpleadosFormularioDevengacion> EmpleadosFormularioDevengacion { get; set; }
-        public virtual DbSet<EnfermedadSustituto> EnfermedadSustituto { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.EnfermedadSustituto> EnfermedadSustituto { get; set; }
         public virtual DbSet<EscalaEvaluacionTotal> EscalaEvaluacionTotal { get; set; }
         public virtual DbSet<EscalaGrados> EscalaGrados { get; set; }
         public virtual DbSet<EspecificidadExperiencia> EspecificidadExperiencia { get; set; }
@@ -165,7 +165,7 @@ namespace bd.swth.datos
         public virtual DbSet<PersonaDiscapacidad> PersonaDiscapacidad { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.PersonaEnfermedad> PersonaEnfermedad { get; set; }
         public virtual DbSet<PersonaEstudio> PersonaEstudio { get; set; }
-        public virtual DbSet<PersonaSustituto> PersonaSustituto { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.PersonaSustituto> PersonaSustituto { get; set; }
         public virtual DbSet<PersonaPaquetesInformaticos> PersonaPaquetesInformaticos { get; set; }
         public virtual DbSet<PieFirma> PieFirma { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.PlanGestionCambio> PlanGestionCambio { get; set; }
@@ -1447,17 +1447,16 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_PersonaSustituto_Parentesco");
 
-                entity.HasOne(d => d.Persona)
-                    .WithOne(p => p.PersonaSustitutoPersona)
-                    .HasForeignKey<PersonaSustituto>(d => d.IdPersona)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_PersonaSustituto_Persona");
+                //entity.HasOne(d => d.Persona)
+                //    .WithOne(p => p.PersonaSustitutoPersona)
+                //    .HasForeignKey<PersonaSustituto>(d => d.IdPersona)
+                //    .OnDelete(DeleteBehavior.Restrict)
+                //    .HasConstraintName("FK_PersonaSustituto_Persona");
 
                 entity.HasOne(d => d.PersonaDiscapacidad)
-                    .WithOne(p => p.PersonaPersonaSustituto)
-                    .HasForeignKey<PersonaSustituto>(d => d.IdPersonaDiscapacidad)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_PersonaSustituto_Persona1");
+                  .WithMany(p => p.PersonaSustituto)
+                  .HasForeignKey(d => d.IdPersonaDiscapacidad)
+                  .HasConstraintName("FK_PersonaSustituto_PersonaDiscapacidad");
             });
 
             modelBuilder.Entity<EnfermedadSustituto>(entity =>

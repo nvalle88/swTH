@@ -148,25 +148,25 @@ namespace bd.swth.web.Controllers.API
                 {
 
 
-                    if (EvaluacionInducionActualizar.IdEvaluacionInduccion == EvaluacionInducion.IdEvaluacionInduccion)
-                    {
-                        if (EvaluacionInducion.MinimoAprobar == EvaluacionInducionActualizar.MinimoAprobar &&
-                        EvaluacionInducion.MaximoPuntos == EvaluacionInducionActualizar.MaximoPuntos &&
-                        EvaluacionInducion.Nombre == EvaluacionInducionActualizar.Nombre)
-                        {
-                            return new Response
-                            {
-                                IsSuccess = true,
-                            };
-                        }
+                    //if (EvaluacionInducionActualizar.IdEvaluacionInduccion == EvaluacionInducion.IdEvaluacionInduccion)
+                    //{
+                    //    if (EvaluacionInducion.MinimoAprobar == EvaluacionInducionActualizar.MinimoAprobar &&
+                    //    EvaluacionInducion.MaximoPuntos == EvaluacionInducionActualizar.MaximoPuntos &&
+                    //    EvaluacionInducion.Nombre == EvaluacionInducionActualizar.Nombre)
+                    //    {
+                    //        return new Response
+                    //        {
+                    //            IsSuccess = true,
+                    //        };
+                    //    }
 
-                        await Actualizar(EvaluacionInducion);
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-                    }
+                    //    await Actualizar(EvaluacionInducion);
+                    //    return new Response
+                    //    {
+                    //        IsSuccess = true,
+                    //        Message = Mensaje.Satisfactorio,
+                    //    };
+                    //}
                     return new Response
                     {
                         IsSuccess = false,
@@ -324,9 +324,9 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(EvaluacionInducion EvaluacionInducion)
         {
             var bdd = EvaluacionInducion.Nombre.ToUpper().TrimEnd().TrimStart();
-            //var bdd1 = EvaluacionInducion.MinimoAprobar;
-            //var bdd2 = EvaluacionInducion.MinimoAprobar;
-            var EvaluacionInducionrespuesta = db.EvaluacionInducion.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd ).FirstOrDefault();
+            var bdd1 = EvaluacionInducion.MinimoAprobar;
+            var bdd2 = EvaluacionInducion.MaximoPuntos;
+            var EvaluacionInducionrespuesta = db.EvaluacionInducion.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == bdd && p.MinimoAprobar==bdd1 && p.MaximoPuntos==bdd2).FirstOrDefault();
             if (EvaluacionInducionrespuesta != null)
             {
                 return new Response

@@ -125,13 +125,13 @@ namespace bd.swth.web.Controllers.API
                 var FlujoAprobacionActualizar = (FlujoAprobacion)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (FlujoAprobacionActualizar.IdFlujoAprobacion == flujoAprobacion.IdFlujoAprobacion)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
+                    //if (FlujoAprobacionActualizar.IdFlujoAprobacion == flujoAprobacion.IdFlujoAprobacion)
+                    //{
+                    //    return new Response
+                    //    {
+                    //        IsSuccess = true,
+                    //    };
+                    //}
                     return new Response
                     {
                         IsSuccess = false,

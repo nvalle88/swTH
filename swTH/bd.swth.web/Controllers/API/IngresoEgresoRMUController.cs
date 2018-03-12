@@ -123,13 +123,13 @@ namespace bd.swth.web.Controllers.API
                 var IngresoEgresoRMUActualizar = (IngresoEgresoRMU)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (IngresoEgresoRMUActualizar.IdIngresoEgresoRMU == IngresoEgresoRMU.IdIngresoEgresoRMU)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
+                    //if (IngresoEgresoRMUActualizar.IdIngresoEgresoRMU == IngresoEgresoRMU.IdIngresoEgresoRMU)
+                    //{
+                    //    return new Response
+                    //    {
+                    //        IsSuccess = true,
+                    //    };
+                    //}
                     return new Response
                     {
                         IsSuccess = false,
@@ -284,8 +284,9 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(IngresoEgresoRMU IngresoEgresoRMU)
         {
             var bdd = IngresoEgresoRMU.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var bdd1 = IngresoEgresoRMU.IdIngresoEgresoRMU;
             var cuenta = IngresoEgresoRMU.CuentaContable;
-            var IngresoEgresoRMUrespuesta = db.IngresoEgresoRMU.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd && p.IdFormulaRMU == IngresoEgresoRMU.IdFormulaRMU  && p.CuentaContable==cuenta).FirstOrDefault();
+            var IngresoEgresoRMUrespuesta = db.IngresoEgresoRMU.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd && p.IdFormulaRMU == bdd1  && p.CuentaContable==cuenta).FirstOrDefault();
             if (IngresoEgresoRMUrespuesta != null)
             {
                 return new Response

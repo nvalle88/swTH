@@ -382,10 +382,12 @@ namespace bd.swth.web.Controllers.API
             var apellido = empleadoFamiliarViewModel.Apellidos;
             var celular = empleadoFamiliarViewModel.TelefonoPrivado;
             var telefono = empleadoFamiliarViewModel.TelefonoCasa;
-            var Empleadorespuesta = db.Persona.Where(p => p.Nombres == nombre
+            var idparentesco = empleadoFamiliarViewModel.IdParentesco;
+            var Empleadorespuesta = db.Persona.Include(x=>x.EmpleadoContactoEmergencia).ThenInclude(x=>x.Parentesco).Where(p => p.Nombres == nombre
             && p.Apellidos == apellido
             && p.TelefonoPrivado == celular
-            && p.TelefonoCasa == telefono).FirstOrDefault();
+            && p.TelefonoCasa == telefono
+            && p.EmpleadoContactoEmergencia.FirstOrDefault().IdParentesco == idparentesco).FirstOrDefault();
             if (Empleadorespuesta != null)
             {
                 return new Response

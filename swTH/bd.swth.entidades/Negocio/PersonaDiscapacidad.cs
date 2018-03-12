@@ -25,12 +25,14 @@ namespace bd.swth.entidades.Negocio
 
         [Display(Name = "Tipo de discapacidad:")]
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
-        public int? IdTipoDiscapacidad { get; set; }
+        public int IdTipoDiscapacidad { get; set; }
         public virtual TipoDiscapacidad TipoDiscapacidad { get; set; }
 
         [Display(Name = "Persona:")]
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
-        public int? IdPersona { get; set; }
+        public int IdPersona { get; set; }
         public virtual Persona Persona { get; set; }
+
+        public virtual ICollection<PersonaSustituto> PersonaSustituto { get; set; }
     }
 }

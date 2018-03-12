@@ -140,25 +140,25 @@ namespace bd.swth.web.Controllers.API
                 {
 
 
-                    if (ConfiguracionViaticoActualizar.IdConfiguracionViatico == ConfiguracionViatico.IdConfiguracionViatico)
-                    {
-                        if (ConfiguracionViatico.IdRolPuesto == ConfiguracionViaticoActualizar.IdRolPuesto &&
-                        ConfiguracionViatico.ValorEntregadoPorDia == ConfiguracionViaticoActualizar.ValorEntregadoPorDia &&
-                        ConfiguracionViatico.PorCientoAjustificar == ConfiguracionViaticoActualizar.PorCientoAjustificar)
-                        {
-                            return new Response
-                            {
-                                IsSuccess = true,
-                            };
-                        }
+                    //if (ConfiguracionViaticoActualizar.IdConfiguracionViatico == ConfiguracionViatico.IdConfiguracionViatico)
+                    //{
+                    //    if (ConfiguracionViatico.IdRolPuesto == ConfiguracionViaticoActualizar.IdRolPuesto &&
+                    //    ConfiguracionViatico.ValorEntregadoPorDia == ConfiguracionViaticoActualizar.ValorEntregadoPorDia &&
+                    //    ConfiguracionViatico.PorCientoAjustificar == ConfiguracionViaticoActualizar.PorCientoAjustificar)
+                    //    {
+                    //        return new Response
+                    //        {
+                    //            IsSuccess = true,
+                    //        };
+                    //    }
 
-                        await Actualizar(ConfiguracionViatico);
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-                    }
+                        //await Actualizar(ConfiguracionViatico);
+                        //return new Response
+                        //{
+                        //    IsSuccess = true,
+                        //    Message = Mensaje.Satisfactorio,
+                        //};
+                    //}
                     return new Response
                     {
                         IsSuccess = false,
@@ -306,9 +306,14 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(ConfiguracionViatico ConfiguracionViatico)
         {
-            var ConfiguracionViaticorespuesta = db.ConfiguracionViatico.Where(p => p.IdRolPuesto ==ConfiguracionViatico.IdRolPuesto
-                                                && p.PorCientoAjustificar ==ConfiguracionViatico.PorCientoAjustificar
-                                                && p.ValorEntregadoPorDia == ConfiguracionViatico.ValorEntregadoPorDia).FirstOrDefault();
+            var bdd = ConfiguracionViatico.IdRolPuesto;
+            var bdd1 = ConfiguracionViatico.ValorEntregadoPorDia;
+            var bdd2 = ConfiguracionViatico.PorCientoAjustificar;
+
+
+            var ConfiguracionViaticorespuesta = db.ConfiguracionViatico.Where(p => p.IdRolPuesto ==bdd
+                                                && p.PorCientoAjustificar == bdd2
+                                                && p.ValorEntregadoPorDia == bdd1).FirstOrDefault();
             if (ConfiguracionViaticorespuesta != null)
             {
                 return new Response

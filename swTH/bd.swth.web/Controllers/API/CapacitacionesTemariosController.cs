@@ -123,13 +123,13 @@ namespace bd.swth.web.Controllers.API
                 var CapacitacionTemarioActualizar = (CapacitacionTemario)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (CapacitacionTemarioActualizar.IdCapacitacionTemario == CapacitacionTemario.IdCapacitacionTemario)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
+                    //if (CapacitacionTemarioActualizar.IdCapacitacionTemario == CapacitacionTemario.IdCapacitacionTemario && CapacitacionTemarioActualizar.Tema == CapacitacionTemario.Tema)
+                    //{
+                    //    return new Response
+                    //    {
+                    //        IsSuccess = true,
+                    //    };
+                    //}
                     return new Response
                     {
                         IsSuccess = false,
@@ -283,7 +283,8 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(CapacitacionTemario CapacitacionTemario)
         {
             var bdd = CapacitacionTemario.Tema.ToUpper().TrimEnd().TrimStart();
-            var CapacitacionTemariorespuesta = db.CapacitacionTemario.Where(p => p.Tema.ToUpper().TrimStart().TrimEnd() == bdd && p.IdCapacitacionAreaConocimiento== CapacitacionTemario.IdCapacitacionAreaConocimiento).FirstOrDefault();
+            var bdd1 = CapacitacionTemario.IdCapacitacionAreaConocimiento;
+            var CapacitacionTemariorespuesta = db.CapacitacionTemario.Where(p => p.Tema.ToUpper().TrimStart().TrimEnd() == bdd && p.IdCapacitacionAreaConocimiento== bdd1).FirstOrDefault();
             if (CapacitacionTemariorespuesta != null)
             {
                 return new Response

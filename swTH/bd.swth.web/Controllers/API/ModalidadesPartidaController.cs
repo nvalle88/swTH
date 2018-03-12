@@ -151,13 +151,13 @@ namespace bd.swth.web.Controllers.API
                 var ModalidadPartidaActualizar = (ModalidadPartida)existe.Resultado;
                 if (existe.IsSuccess)
                 {
-                    if (ModalidadPartidaActualizar.IdModalidadPartida == ModalidadPartida.IdModalidadPartida)
-                    {
-                        return new Response
-                        {
-                            IsSuccess = true,
-                        };
-                    }
+                    //if (ModalidadPartidaActualizar.IdModalidadPartida == ModalidadPartida.IdModalidadPartida)
+                    //{
+                    //    return new Response
+                    //    {
+                    //        IsSuccess = true,
+                    //    };
+                    //}
                     return new Response
                     {
                         IsSuccess = false,

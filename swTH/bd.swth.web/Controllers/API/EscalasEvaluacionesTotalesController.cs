@@ -148,26 +148,26 @@ namespace bd.swth.web.Controllers.API
                 {
 
 
-                    if (EscalaEvaluacionTotalActualizar.IdEscalaEvaluacionTotal == EscalaEvaluacionTotal.IdEscalaEvaluacionTotal)
-                    {
-                        if (EscalaEvaluacionTotal.Name == EscalaEvaluacionTotalActualizar.Name &&
-                        EscalaEvaluacionTotal.Descripcion == EscalaEvaluacionTotalActualizar.Descripcion &&
-                        EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotalActualizar.PorcientoDesde &&
-                        EscalaEvaluacionTotal.PorcientoHasta == EscalaEvaluacionTotalActualizar.PorcientoHasta)
-                        {
-                            return new Response
-                            {
-                                IsSuccess = true,
-                            };
-                        }
+                    //if (EscalaEvaluacionTotalActualizar.IdEscalaEvaluacionTotal == EscalaEvaluacionTotal.IdEscalaEvaluacionTotal)
+                    //{
+                    //    if (EscalaEvaluacionTotal.Name == EscalaEvaluacionTotalActualizar.Name &&
+                    //    EscalaEvaluacionTotal.Descripcion == EscalaEvaluacionTotalActualizar.Descripcion &&
+                    //    EscalaEvaluacionTotal.PorcientoDesde == EscalaEvaluacionTotalActualizar.PorcientoDesde &&
+                    //    EscalaEvaluacionTotal.PorcientoHasta == EscalaEvaluacionTotalActualizar.PorcientoHasta)
+                    //    {
+                    //        return new Response
+                    //        {
+                    //            IsSuccess = true,
+                    //        };
+                    //    }
 
-                        await Actualizar(EscalaEvaluacionTotal);
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-                    }
+                    //    await Actualizar(EscalaEvaluacionTotal);
+                    //    return new Response
+                    //    {
+                    //        IsSuccess = true,
+                    //        Message = Mensaje.Satisfactorio,
+                    //    };
+                    //}
                     return new Response
                     {
                         IsSuccess = false,
@@ -325,7 +325,10 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(EscalaEvaluacionTotal EscalaEvaluacionTotal)
         {
             var bdd = EscalaEvaluacionTotal.Name;
-            var EscalaEvaluacionTotalrespuesta = db.EscalaEvaluacionTotal.Where(p => p.Name == bdd).FirstOrDefault();
+            var bdd1 = EscalaEvaluacionTotal.PorcientoDesde;
+            var bdd2 = EscalaEvaluacionTotal.PorcientoHasta;
+            var bdd3 = EscalaEvaluacionTotal.Descripcion;
+            var EscalaEvaluacionTotalrespuesta = db.EscalaEvaluacionTotal.Where(p => p.Name == bdd && p.PorcientoDesde==bdd1 && p.PorcientoHasta==bdd2 && p.Descripcion==bdd3).FirstOrDefault();
             if (EscalaEvaluacionTotalrespuesta != null)
             {
                 return new Response
