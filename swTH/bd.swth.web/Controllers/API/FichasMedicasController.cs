@@ -34,64 +34,35 @@ namespace bd.swth.web.Controllers.API
         [Route("ListarFichaMedicaViewModel")]
         public async Task<Response> ListarFichaMedicaViewModel([FromBody] FichaMedicaViewModel fmv)
         {
-            /*
-
-            var xd = await db.Persona.Where( x => x.Identificacion == fmv.DatosBasicosPersonaViewModel.Identificacion).FirstOrDefaultAsync();
-
-
-            var persona = await db.Persona.Where(x => x.Identificacion == fmv.DatosBasicosPersonaViewModel.Identificacion)
-
-                                     .Select(x => new DatosBasicosPersonaViewModel
-                                     {
-                                         IdPersona = x.IdPersona,
-                                         NombresApellidos = x.Nombres +" "+ x.Apellidos,
-                                         Identificacion = x.Identificacion,
-                                         LugarNacimiento = x.Nacionalidad.Nombre + "/ " + x.Parroquia.Nombre,
-                                         FechaNacimiento = x.FechaNacimiento + " ",
-                                         DireccionDomiciliaria = x.CallePrincipal +" "+ x.CalleSecundaria + x.Numero,
-                                         Telefono = x.TelefonoPrivado + " " + x.TelefonoCasa,
-                                         Edad = "CALCULAR!!!!!",
-                                         Genero = x.Sexo.Nombre
-                                         /*
-                                         ,
-                                         NivelEducativo = x.PersonaEstudio.FirstOrDefault().Titulo.Nombre
-                                         /*
-                                         ,
-                                         EstadoCivil = x.EstadoCivil.Nombre,
-                                         Profesion = x.PersonaEstudio.FirstOrDefault().Titulo.Estudio.Nombre,
-                                         NumeroHijos = 0,
-                                         Etnia = x.Etnia.Nombre,
-                                         CondicionEspecial = false,
-                                         TipoDiscapacidad = x.PersonaDiscapacidad.FirstOrDefault().TipoDiscapacidad.Nombre,
-                                         Conadis = x.PersonaDiscapacidad.FirstOrDefault().NumeroCarnet,
-                                         Porcentaje = x.PersonaDiscapacidad.FirstOrDefault().Porciento + " %",
-                                         NombreCargoTrabajo = "calcular",
-                                         DescripcionPuestoTrabajo = x.Ocupacion,
-                                         SedeTrabajo = x.Empleado.FirstOrDefault().Dependencia.Sucursal.Nombre,
-                                         ContactoEmergencias = "ver donde esta",
-                                         Parentesco = x.Empleado.FirstOrDefault().EmpleadoFamiliar.FirstOrDefault().Parentesco.Nombre,
-                                         ParienteTelefono = "calcular"
-                                         
-                                     }
-                                             )
-                                     
-
-
-                                     .FirstOrDefaultAsync(); // Devuelve un solo registro
-*/
-
-
+            
             Persona personaVar = new Persona();
 
-            try
+            if (fmv.DatosBasicosPersonaViewModel.IdPersona < 1  )
             {
-                // funciona
-                personaVar = db.Persona.Where(x => x.Identificacion == fmv.DatosBasicosPersonaViewModel.Identificacion).FirstOrDefault();
-            }
-            catch (Exception ex) {
-                return new Response { IsSuccess = false, Message = Mensaje.RegistroNoEncontrado };
-            }
+                try
+                {
+                    personaVar = db.Persona.Where(x => x.Identificacion == fmv.DatosBasicosPersonaViewModel.Identificacion).FirstOrDefault();
+                }
+                catch (Exception ex)
+                {
+                    return new Response { IsSuccess = false, Message = Mensaje.RegistroNoEncontrado };
+                }
 
+            }
+            else
+            {
+                try
+                {
+                    personaVar = db.Persona.Where(x => x.IdPersona == fmv.DatosBasicosPersonaViewModel.IdPersona).FirstOrDefault();
+                }
+                catch (Exception ex)
+                {
+                    return new Response { IsSuccess = false, Message = Mensaje.RegistroNoEncontrado };
+                }
+            }
+            
+
+            
 
             
             if (personaVar==null)
@@ -194,9 +165,10 @@ namespace bd.swth.web.Controllers.API
                 parentescoVar = db.Parentesco.Where(x => x.IdParentesco == contactoEmergenciaVar.IdParentesco).FirstOrDefault();
             }
 
-            if (personaDiscapacidadVar != null)
+            if (personaDiscapacidadVar != null && personaDiscapacidadVar.IdPersonaDiscapacidad >0)
             {
                discapacidadVar = db.TipoDiscapacidad.Where(x => x.IdTipoDiscapacidad == personaDiscapacidadVar.IdTipoDiscapacidad).FirstOrDefault();
+               datoCondicionEspecial = true;
             }
 
 
@@ -225,7 +197,7 @@ namespace bd.swth.web.Controllers.API
             if (manPuestoVar != null && manPuestoVar.IdManualPuesto > 0)
             {
                 datoPuestoTrabajo = manPuestoVar.Descripcion;
-                datoCargoTrabajo =manPuestoVar.Nombre;
+                datoCargoTrabajo = manPuestoVar.Nombre;
             }
 
 
@@ -258,10 +230,12 @@ namespace bd.swth.web.Controllers.API
                      Profesion = tituloVar.Nombre,
                      NumeroHijos = datoNumHijos,
                      Etnia = etniaVar.Nombre,
+
                      CondicionEspecial = datoCondicionEspecial,
                      TipoDiscapacidad = discapacidadVar.Nombre,
                      Conadis = datoConadis,
                      Porcentaje = datoPorcentaje,
+
                      NombreCargoTrabajo = datoCargoTrabajo,
                      DescripcionPuestoTrabajo = datoPuestoTrabajo,
                      SedeTrabajo = datoSedeTrabajo,
@@ -276,10 +250,11 @@ namespace bd.swth.web.Controllers.API
 
             
             
-            var ListaFichasMedicas = await db.FichaMedica.Where(x => x.IdPersona == personaVar.IdPersona).ToListAsync(); // devuelve una lista
+            
+            var ListaFichasMedicas = await db.FichaMedica.Where(x => x.IdPersona == personaVar.IdPersona).OrderByDescending( x => x.FechaFichaMedica ).ToListAsync(); // devuelve una lista
 
 
-            var fichaMedicaViewModel = new FichaMedicaViewModel { DatosBasicosPersonaViewModel = dbvm, FichasMedicas = ListaFichasMedicas };
+            var fichaMedicaViewModel = new FichaMedicaViewModel { DatosBasicosPersonaViewModel = dbvm, FichasMedicas = ListaFichasMedicas, ListaPersonas = ListaPersonasFichaMedicaView() };
             
 
 
@@ -288,6 +263,81 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+
+        // POST: api/FichasMedicas
+        [HttpPost]
+        [Route("VerUltimaFichaMedica")]
+        public async Task<Response> GetUltimaFichaMedica([FromBody] FichaMedica fichaMedica)
+        {
+
+            FichaMedica UltimaFicha = new FichaMedica();
+
+            try
+            {
+                //Estado 0 = Ficha recién creada
+
+                UltimaFicha = db.FichaMedica.Where(
+                    x => x.Estado == 0 
+                    && x.IdPersona == fichaMedica.IdPersona
+                ).FirstOrDefault();
+
+                
+
+                if (UltimaFicha != null)
+                {
+                    return new Response { IsSuccess = true, Resultado = UltimaFicha };
+                }
+
+                return new Response { IsSuccess = false, Resultado = UltimaFicha, Message = "Sin fichas médicas en edición" };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response { IsSuccess = false, Resultado = UltimaFicha, Message = "Hubo una excepción !!!" };
+
+            }
+            
+        }
+
+
+
+
+        // POST: api/FichasMedicas
+        [HttpPost]
+        [Route("VerIdPersonaPorFicha")]
+        public async Task<Response> GetIdPersonaPorFicha([FromBody] int idFicha)
+        {
+
+            FichaMedica UltimaFicha = new FichaMedica();
+
+            try
+            {
+                //Estado 0 = Ficha recién creada
+
+                UltimaFicha = db.FichaMedica.Where(
+                    x => x.Estado == 0
+                    && x.IdFichaMedica == idFicha
+                ).FirstOrDefault();
+
+
+
+                if (UltimaFicha != null)
+                {
+                    return new Response { IsSuccess = true, Resultado = UltimaFicha };
+                }
+
+                return new Response { IsSuccess = false, Resultado = UltimaFicha, Message = "No existe información de esa ficha médica" };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response { IsSuccess = false, Resultado = UltimaFicha, Message = "Hubo una excepción !!!" };
+
+            }
+
+        }
 
 
 
@@ -305,16 +355,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<FichaMedica>();
             }
         }
@@ -358,16 +399,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -502,7 +534,7 @@ namespace bd.swth.web.Controllers.API
                         Actualizar.VaricesHallazgos = FichaMedica.VaricesHallazgos;
                         Actualizar.SistemaNerviosoHallazgos = FichaMedica.SistemaNerviosoHallazgos;
                         Actualizar.PielHallazgos = FichaMedica.PielHallazgos;
-
+                        Actualizar.Estado = FichaMedica.Estado;
 
                         db.FichaMedica.Update(Actualizar);
 
@@ -517,16 +549,7 @@ namespace bd.swth.web.Controllers.API
                     }
                     catch (Exception ex)
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
+                        
                         return new Response
                         {
                             IsSuccess = false,
@@ -554,6 +577,91 @@ namespace bd.swth.web.Controllers.API
             }
 
         }
+
+        /*
+        // PUT: api/FichasMedicas/5
+        [HttpPut("{id}")]
+        public async Task<Response> PutEstado([FromRoute] int id, [FromBody] FichaMedica FichaMedica)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                var Respuesta1 = new FichaMedica();
+
+
+                Respuesta1 = db.FichaMedica.Where(x => x.IdFichaMedica == FichaMedica.IdFichaMedica).FirstOrDefault(); 
+
+
+
+                if (Respuesta1 == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+
+                var Actualizar = await db.FichaMedica.Where(x => x.IdFichaMedica == id).FirstOrDefaultAsync();
+                if (Actualizar != null)
+                {
+                    try
+                    {
+                        
+                        Actualizar.Estado = FichaMedica.Estado;
+
+                        db.FichaMedica.Update(Actualizar);
+
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.Error,
+                        };
+                    }
+                }
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro,
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+
+        }
+
+        */
+
 
         // POST: api/FichasMedicas
         [HttpPost]
@@ -593,16 +701,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -646,16 +745,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -825,6 +914,102 @@ namespace bd.swth.web.Controllers.API
                 IsSuccess = false,
                 Resultado = Respuesta,
             };
+        }
+
+
+
+        // GET: api/FichasMedicas
+        [HttpGet]
+        [Route("ListarPersonasFichaMedica")]
+        public async Task<List<Persona>> GetListaPersonas()  //este metodo debe devolver
+        {
+            
+            
+
+            return ListaPersonasFichaMedicaView();
+
+        }
+
+
+
+        public List<Persona>ListaPersonasFichaMedicaView()
+        {
+            List<Persona> personasLista = new List<Persona>();
+            
+
+            FichaMedica ficha = new FichaMedica();
+            
+
+            List<FichaMedica> fichasOrdenas = db.FichaMedica.Include(x => x.Persona).OrderBy(x => x.IdPersona).ToList();
+            List<FichaMedica> fichaSinRepeticiones = new List<FichaMedica>();
+
+            List<int> ids = new List<int>();
+
+
+            for (int i = 0; i < fichasOrdenas.Count(); i++)
+            {
+                ficha = fichasOrdenas.ElementAt(i);
+
+                if (ids.Contains(ficha.IdPersona) == true)
+                {
+
+                }
+                else
+                {
+                    fichaSinRepeticiones.Add(ficha); // aqui agrgar la identif, nombre de la persona
+                    ids.Add(ficha.IdPersona);
+
+                    personasLista.Add( new Persona {
+                        IdPersona = fichasOrdenas.ElementAt(i).IdPersona ,
+                        Nombres = fichasOrdenas.ElementAt(i).Persona.Nombres ,
+                        Apellidos = fichasOrdenas.ElementAt(i).Persona.Apellidos ,
+                        Identificacion = fichasOrdenas.ElementAt(i).Persona.Identificacion
+
+
+                    } );
+                }
+            }
+
+            /*
+            for (int i = 0; i < fichaSinRepeticiones.Count(); i++)
+            {
+                ficha = fichaSinRepeticiones.ElementAt(i);
+
+                
+                personasLista.Add(new Persona { IdPersona = ficha.IdPersona });
+            }
+            */
+
+
+            return personasLista;
+
+        }
+
+
+
+        // Post: api/AntecedentesLaborales
+        [HttpPost]
+        [Route("ObtenerFichaPorId")]
+        public async Task<Response> ObtenerFichaPorId([FromBody] int idFicha)
+        {
+
+            Response response = new entidades.Utils.Response();
+
+            try
+            {
+                var lista = await db.FichaMedica.Where(x => x.IdFichaMedica == idFicha).OrderBy(x => x.IdFichaMedica).FirstOrDefaultAsync();
+
+
+                return new Response { IsSuccess = true, Resultado = lista };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response { IsSuccess = false, Message = Mensaje.Excepcion };
+            }
+
+
         }
 
     }

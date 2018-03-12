@@ -277,8 +277,9 @@ namespace bd.swth.entidades.Negocio
 
         [Display(Name = "Hallazgo")]
         public string PielHallazgos { get; set; }
-        
-     
+
+
+        public int Estado { get; set; }
 
 
         public virtual ICollection<AntecedentesFamiliares> AntecedentesFamiliares { get; set; }
