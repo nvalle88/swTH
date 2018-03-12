@@ -32,19 +32,76 @@ namespace bd.swth.web.Controllers.API
         }
 
         [HttpPost]
+        [Route("ObtenerEncabezadoEmpleadosFao")]
+        public async Task<Response> ObtenerEncabezadoEmpleadosFao([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+                //var a =  db.IndiceOcupacionalModalidadPartida.LastOrDefaultAsync().Result.IdEmpleado;
+                var empleado = await db.Empleado.Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario).Select(x => new DocumentoFAOViewModel
+                {
+                    IdEmpleado=x.IdEmpleado,
+                    apellido = x.Persona.Apellidos,
+                    nombre = x.Persona.Nombres,
+                    Identificacion = x.Persona.Identificacion,
+                    UnidadAdministrativa = x.Dependencia.Nombre,
+                    LugarTrabajo = x.Persona.LugarTrabajo,
+                    Institucion = x.Persona.LugarTrabajo,
+                  //Puesto =, 
+                }).FirstOrDefaultAsync();
+                
+                return new Response { IsSuccess=true,Resultado= empleado };
+
+            }
+            catch (Exception ex)
+            {
+                
+                return  new Response { IsSuccess = false, Message = Mensaje.Error }; ;
+            }
+        }
+        [HttpPost]
+        [Route("ObtenerEncabezadoEmpleadosFaoValidar")]
+        public async Task<Response> ObtenerEncabezadoEmpleadosFaoValidar([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+                //var a =  db.IndiceOcupacionalModalidadPartida.LastOrDefaultAsync().Result.IdEmpleado;
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado).Select(x => new DocumentoFAOViewModel
+                {
+                    apellido = x.Persona.Apellidos,
+                    nombre = x.Persona.Nombres+ " "+x.Persona.Apellidos ,
+                    Identificacion = x.Persona.Identificacion,
+                    UnidadAdministrativa = x.Dependencia.Nombre,
+                    LugarTrabajo = x.Persona.LugarTrabajo,
+                    Institucion = x.Persona.LugarTrabajo,
+                    Mision = x.FormularioAnalisisOcupacional.FirstOrDefault().MisionPuesto
+                    //Puesto =, 
+                }).FirstOrDefaultAsync();
+
+                return new Response { IsSuccess = true, Resultado = empleado };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response { IsSuccess = false, Message = Mensaje.Error }; ;
+            }
+        }
+
+        [HttpPost]
         [Route("ListarEmpleadosSinFAO")]
         public async Task<List<DocumentoFAOViewModel>> ListarEmpleadosSinFAO([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
         {
             try
             {
-               
-                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x=> x.NombreUsuario== documentoFAOViewModel.NombreUsuario).ToListAsync();
-                
+
+                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario).ToListAsync();
+
                 var listaSalida = new List<DocumentoFAOViewModel>();
                 var listaSalida2 = new List<DocumentoFAOViewModel>();
 
                 var NombreDependencia = "";
-                int idDependencia ;
+                int idDependencia;
                 int idsucursal;
                 int idempleado;
                 foreach (var item in lista)
@@ -62,8 +119,8 @@ namespace bd.swth.web.Controllers.API
                         idempleado = item.IdEmpleado;
 
 
-                         var anio = DateTime.Now.Year;
-                        
+                        var anio = DateTime.Now.Year;
+
                         var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
                         foreach (var item1 in lista1)
                         {
@@ -80,7 +137,7 @@ namespace bd.swth.web.Controllers.API
                                     apellido = item1.Persona.Apellidos,
                                     NombreUsuario = item1.NombreUsuario,
                                     Identificacion = item1.Persona.Identificacion
-                                    
+
 
 
                                 });
@@ -88,12 +145,12 @@ namespace bd.swth.web.Controllers.API
                             }
 
                         }
-                        
+
                     }
-                
+
                 }
                 return listaSalida2;
-                
+
 
 
             }
@@ -149,7 +206,7 @@ namespace bd.swth.web.Controllers.API
                         foreach (var item1 in lista1)
                         {
                             var empleadoid = item1.IdEmpleado;
-                            
+
                             var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
                             if (a != null)
                             {
@@ -192,7 +249,90 @@ namespace bd.swth.web.Controllers.API
                 return new List<DocumentoFAOViewModel>();
             }
         }
+        [HttpPost]
+        [Route("ListarEmpleadosConFAOJefes")]
+        public async Task<List<DocumentoFAOViewModel>> ListarEmpleadosConFAOJefes([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
 
+                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario).ToListAsync();
+                
+                var listaSalida2 = new List<DocumentoFAOViewModel>();
+
+                var NombreDependencia = "";
+                int idDependencia;
+                int idsucursal;
+                int idempleado;
+                bool jefe;
+                foreach (var item in lista)
+                {
+                    if (item.Dependencia == null)
+                    {
+                        NombreDependencia = "No Asignado";
+                        //idDependencia = "";
+                    }
+                    else
+                    {
+                        NombreDependencia = item.Dependencia.Nombre;
+                        idDependencia = item.Dependencia.IdDependencia;
+                        idsucursal = item.Dependencia.IdSucursal;
+                        idempleado = item.IdEmpleado;
+                        jefe = item.EsJefe;
+                        if (jefe == true)
+                        {
+                            var anio = DateTime.Now.Year;
+
+                            var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
+                            foreach (var item1 in lista1)
+                            {
+                                var empleadoid = item1.IdEmpleado;
+
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
+                                if (a != null)
+                                {
+                                    listaSalida2.Add(new DocumentoFAOViewModel
+                                    {
+                                        IdEmpleado = item1.IdEmpleado,
+                                        idDependencia = item1.Dependencia.IdDependencia,
+                                        idsucursal = item1.Dependencia.IdSucursal,
+                                        nombre = item1.Persona.Nombres,
+                                        apellido = item1.Persona.Apellidos,
+                                        NombreUsuario = item1.NombreUsuario,
+                                        Identificacion = item1.Persona.Identificacion,
+                                        estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado
+                                    });
+
+                                }
+                            }
+
+                        
+
+                        }
+
+                    }
+
+                }
+                return listaSalida2;
+
+
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<DocumentoFAOViewModel>();
+            }
+        }
 
         // GET: api/Empleados
         [HttpGet]
@@ -207,27 +347,27 @@ namespace bd.swth.web.Controllers.API
                 var NombreDependencia = "";
                 foreach (var item in lista)
                 {
-                    if (item.Dependencia==null)
+                    if (item.Dependencia == null)
                     {
-                       NombreDependencia="No Asignado";
+                        NombreDependencia = "No Asignado";
                     }
                     else
                     {
                         NombreDependencia = item.Dependencia.Nombre;
                     }
-                        listaSalida.Add(new ListaEmpleadoViewModel
-                        {
-                            IdEmpleado = item.IdEmpleado,
-                            NombreApellido = string.Format("{0} {1}", item.Persona.Nombres, item.Persona.Apellidos),
-                            Identificacion = item.Persona.Identificacion,
-                            TelefonoPrivado = item.Persona.TelefonoPrivado,
-                            CorreoPrivado = item.Persona.CorreoPrivado,
-                            Dependencia = NombreDependencia,
+                    listaSalida.Add(new ListaEmpleadoViewModel
+                    {
+                        IdEmpleado = item.IdEmpleado,
+                        NombreApellido = string.Format("{0} {1}", item.Persona.Nombres, item.Persona.Apellidos),
+                        Identificacion = item.Persona.Identificacion,
+                        TelefonoPrivado = item.Persona.TelefonoPrivado,
+                        CorreoPrivado = item.Persona.CorreoPrivado,
+                        Dependencia = NombreDependencia,
 
 
-                        });
-                    
-                 
+                    });
+
+
                 }
                 return listaSalida;
 
@@ -255,9 +395,9 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 var name = Constantes.PartidaVacante;
-                var listaIndiceOcupacional =  db.IndiceOcupacional.Include(x => x.ManualPuesto).Include(x=>x.ModalidadPartida)
+                var listaIndiceOcupacional = db.IndiceOcupacional.Include(x => x.ManualPuesto).Include(x => x.ModalidadPartida)
                     .Where(x => x.IdDependencia == indiceocupacional.IdDependencia && x.ModalidadPartida.Nombre == Constantes.PartidaVacante)
-                    .OrderBy(x => x.IdDependencia).DistinctBy(x=>x.IdManualPuesto).ToList();
+                    .OrderBy(x => x.IdDependencia).DistinctBy(x => x.IdManualPuesto).ToList();
 
                 return listaIndiceOcupacional;
             }
@@ -286,7 +426,7 @@ namespace bd.swth.web.Controllers.API
 
                 var listaIndiceOcupacional = db.IndiceOcupacional.Include(x => x.RolPuesto)
                     .Where(x => x.IdManualPuesto == indiceocupacional.IdManualPuesto && x.IdDependencia == indiceocupacional.IdDependencia)
-                    .OrderBy(x => x.IdDependencia).DistinctBy(x=>x.IdRolPuesto).ToList();
+                    .OrderBy(x => x.IdDependencia).DistinctBy(x => x.IdRolPuesto).ToList();
 
                 return listaIndiceOcupacional;
             }
@@ -315,7 +455,7 @@ namespace bd.swth.web.Controllers.API
 
                 var listaIndiceOcupacional = db.IndiceOcupacional.Include(x => x.EscalaGrados)
                     .Where(x => x.IdManualPuesto == indiceocupacional.IdManualPuesto && x.IdDependencia == indiceocupacional.IdDependencia && x.IdRolPuesto == indiceocupacional.IdRolPuesto)
-                    .OrderBy(x => x.IdDependencia).DistinctBy(x=>x.EscalaGrados).ToList();
+                    .OrderBy(x => x.IdDependencia).DistinctBy(x => x.EscalaGrados).ToList();
 
                 return listaIndiceOcupacional;
             }
@@ -377,7 +517,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     foreach (var item2 in item.AccionPersonal)
                     {
-                        if(item2.Estado == 0)
+                        if (item2.Estado == 0)
                         {
                             listaSalida.Add(new ListaEmpleadoViewModel
                             {
@@ -391,7 +531,7 @@ namespace bd.swth.web.Controllers.API
                             });
                         }
                     }
-              
+
 
                 }
                 return listaSalida;
@@ -413,7 +553,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        
+
 
         // GET: api/Empleados/5
         [HttpGet("{id}")]
@@ -473,7 +613,7 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("EmpleadosAsuCargoSolicitudPermiso")]
-        public async Task <List<ListaEmpleadoViewModel>> ListaEmpleadosAsuCargo([FromBody] Empleado empleado)
+        public async Task<List<ListaEmpleadoViewModel>> ListaEmpleadosAsuCargo([FromBody] Empleado empleado)
         {
             try
             {
@@ -495,14 +635,14 @@ namespace bd.swth.web.Controllers.API
                 foreach (var item in listaEmpleado)
                 {
 
-                    bool existeConsulta = listaSolicitudPermiso.Exists(x => ( x.IdEmpleado == item.IdEmpleado) && (x.Estado==0 || x.Estado==-1));
+                    bool existeConsulta = listaSolicitudPermiso.Exists(x => (x.IdEmpleado == item.IdEmpleado) && (x.Estado == 0 || x.Estado == -1));
                     bool existeListaSalida = listaSalida.Exists(x => x.IdEmpleado == item.IdEmpleado);
 
                     if (existeConsulta)
                     {
                         if (!existeListaSalida)
                         {
-                                listaSalida.Add(new ListaEmpleadoViewModel
+                            listaSalida.Add(new ListaEmpleadoViewModel
                             {
                                 IdEmpleado = item.IdEmpleado,
                                 IdPersona = item.IdPersona,
@@ -517,7 +657,7 @@ namespace bd.swth.web.Controllers.API
 
                 }
 
-                
+
                 return listaSalida;
 
             }
@@ -535,15 +675,15 @@ namespace bd.swth.web.Controllers.API
             {
 
                 IndiceOcupacionalModalidadPartida indice = await db.IndiceOcupacionalModalidadPartida
-                                .Where(x=>x.IdEmpleado==idEmpleado)
-                                .Include(x=>x.TipoNombramiento).ThenInclude(x=>x.RelacionLaboral)
+                                .Where(x => x.IdEmpleado == idEmpleado)
+                                .Include(x => x.TipoNombramiento).ThenInclude(x => x.RelacionLaboral)
                                 //.Include(x=>x.ModalidadPartida).ThenInclude(x=>x.RelacionLaboral)
                                 .SingleOrDefaultAsync();
-                
+
                 Empleado oEmpleado = await db.Empleado
                                   .Where(x => x.IdEmpleado == idEmpleado)
-                                  .Include(x=>x.ProvinciaSufragio)
-                                  .Include(x=>x.CiudadNacimiento)
+                                  .Include(x => x.ProvinciaSufragio)
+                                  .Include(x => x.CiudadNacimiento)
                                   .SingleOrDefaultAsync();
 
                 Persona persona = await db.Persona
@@ -553,7 +693,7 @@ namespace bd.swth.web.Controllers.API
                                          .ThenInclude(x => x.Provincia)
                                          .ThenInclude(x => x.Pais)
                                          .FirstOrDefaultAsync();
-                
+
                 DatosBancarios datosBancarios = await db.DatosBancarios
                                   .Where(x => x.IdEmpleado == idEmpleado)
                                   .SingleOrDefaultAsync();
@@ -571,7 +711,7 @@ namespace bd.swth.web.Controllers.API
                     Empleado = oEmpleado,
                     DatosBancarios = datosBancarios,
                     EmpleadoContactoEmergencia = contactoEmergencia,
-               
+
                 };
 
                 return item;
@@ -590,7 +730,7 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                
+
                 Empleado oEmpleado = await db.Empleado
                                   .Where(x => x.IdEmpleado == idEmpleado)
                                   .SingleOrDefaultAsync();
@@ -612,7 +752,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     Persona = persona,
                     Empleado = oEmpleado,
-                    TrayectoriaLaboral= trayectoriaLaboral
+                    TrayectoriaLaboral = trayectoriaLaboral
                 };
 
                 return item;
@@ -894,7 +1034,7 @@ namespace bd.swth.web.Controllers.API
             //Persona persona = new Persona();
             try
             {
-                
+
                 var Empleado = await db.Empleado
                                    .Where(e => e.NombreUsuario == empleado.NombreUsuario).FirstOrDefaultAsync();
                 var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado, IdPersona = Empleado.IdPersona };
@@ -904,7 +1044,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
                     ExceptionTrace = ex,
@@ -997,27 +1137,27 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-          
-                    var listaEmpleados = await db.Empleado.Where(x => x.IdDependencia == empleado.IdDependencia && x.Activo==true).Include(x => x.Persona).ToListAsync();
 
-                    var listaEmpleado = new List<EmpleadoSolicitudViewModel>();
-                    foreach (var item in listaEmpleados)
+                var listaEmpleados = await db.Empleado.Where(x => x.IdDependencia == empleado.IdDependencia && x.Activo == true).Include(x => x.Persona).ToListAsync();
+
+                var listaEmpleado = new List<EmpleadoSolicitudViewModel>();
+                foreach (var item in listaEmpleados)
+                {
+
+                    var empleados = new EmpleadoSolicitudViewModel
                     {
-                  
-                        var empleados = new EmpleadoSolicitudViewModel
-                        {
-                            NombreApellido = item.Persona.Nombres + " " + item.Persona.Apellidos,
-                            Identificacion = item.Persona.Identificacion,
-                            IdEmpleado = item.IdEmpleado,                     
-                        };
+                        NombreApellido = item.Persona.Nombres + " " + item.Persona.Apellidos,
+                        Identificacion = item.Persona.Identificacion,
+                        IdEmpleado = item.IdEmpleado,
+                    };
 
-                        listaEmpleado.Add(empleados);
-                    }
+                    listaEmpleado.Add(empleados);
+                }
 
-                    return listaEmpleado;
-                
+                return listaEmpleado;
 
-              
+
+
             }
             catch (Exception ex)
             {
@@ -1043,17 +1183,17 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                var Empleado = await db.Empleado.Include(x=>x.Persona).SingleOrDefaultAsync(m => m.IdEmpleado == empleado.IdEmpleado);
+                var Empleado = await db.Empleado.Include(x => x.Persona).SingleOrDefaultAsync(m => m.IdEmpleado == empleado.IdEmpleado);
 
 
-                    var empleadoObtenido = new EmpleadoSolicitudViewModel
-                    {
-                        NombreApellido = Empleado.Persona.Nombres + " " + Empleado.Persona.Apellidos,
-                        Identificacion = Empleado.Persona.Identificacion,
-                        IdEmpleado = Empleado.IdEmpleado,
-                    };
+                var empleadoObtenido = new EmpleadoSolicitudViewModel
+                {
+                    NombreApellido = Empleado.Persona.Nombres + " " + Empleado.Persona.Apellidos,
+                    Identificacion = Empleado.Persona.Identificacion,
+                    IdEmpleado = Empleado.IdEmpleado,
+                };
 
-                
+
 
                 return empleadoObtenido;
 
@@ -1099,7 +1239,7 @@ namespace bd.swth.web.Controllers.API
                         var haSolicitado = false;
                         var aprobado = true;
 
-                        if (item.SolicitudPlanificacionVacaciones.Count==0)
+                        if (item.SolicitudPlanificacionVacaciones.Count == 0)
                         {
                             haSolicitado = false;
                             aprobado = false;
@@ -1122,7 +1262,7 @@ namespace bd.swth.web.Controllers.API
 
                         var empleadoSolicitud = new EmpleadoSolicitudViewModel
                         {
-                            NombreApellido = item.Persona.Nombres +" " + item.Persona.Apellidos,
+                            NombreApellido = item.Persona.Nombres + " " + item.Persona.Apellidos,
                             Identificacion = item.Persona.Identificacion,
                             Aprobado = aprobado,
                             IdEmpleado = item.IdEmpleado,
@@ -1162,44 +1302,44 @@ namespace bd.swth.web.Controllers.API
                 //        });
                 //    }
 
-                    // var lista = new List<EmpleadoSolicitudViewModel>();
+                // var lista = new List<EmpleadoSolicitudViewModel>();
 
 
-                    //foreach (var item in listaSalida)
-                    //{
-                    //    var a = new EmpleadoSolicitudViewModel { Apellidos = item.Apellidos, Nombres = item.Nombres, Identificacion = item.Identificacion, Empleado = item.Empleado,Aprobado=true };
-                    //    //var solicitudes =await db.SolicitudPlanificacionVacaciones.Where(x => x.IdEmpleado == item.Empleado.FirstOrDefault().IdEmpleado).ToListAsync();
-                    //    var solicitudes = new List<SolicitudPlanificacionVacaciones>();
-                    //    solicitudes.Add( (from s in db.SolicitudPlanificacionVacaciones
-                    //                           join e in db.Empleado
-                    //                          on s.IdEmpleado equals e.IdEmpleado
-                    //                           join p in db.Persona
-                    //                          on e.IdPersona equals p.IdPersona
-                    //                           where p.IdPersona == item.IdPersona
-                    //                           //group s by s.AdstDescripcion into pg
-                    //                           select new SolicitudPlanificacionVacaciones
-                    //                           {
-                    //                               IdSolicitudPlanificacionVacaciones = s.IdSolicitudPlanificacionVacaciones,
-                    //                               IdEmpleado = s.IdEmpleado,
-                    //                               FechaDesde = s.FechaDesde,
-                    //                               FechaHasta = s.FechaDesde,
-                    //                               Aprobado = s.Aprobado,
-                    //                               Observaciones = s.Observaciones
-                    //                           }));
+                //foreach (var item in listaSalida)
+                //{
+                //    var a = new EmpleadoSolicitudViewModel { Apellidos = item.Apellidos, Nombres = item.Nombres, Identificacion = item.Identificacion, Empleado = item.Empleado,Aprobado=true };
+                //    //var solicitudes =await db.SolicitudPlanificacionVacaciones.Where(x => x.IdEmpleado == item.Empleado.FirstOrDefault().IdEmpleado).ToListAsync();
+                //    var solicitudes = new List<SolicitudPlanificacionVacaciones>();
+                //    solicitudes.Add( (from s in db.SolicitudPlanificacionVacaciones
+                //                           join e in db.Empleado
+                //                          on s.IdEmpleado equals e.IdEmpleado
+                //                           join p in db.Persona
+                //                          on e.IdPersona equals p.IdPersona
+                //                           where p.IdPersona == item.IdPersona
+                //                           //group s by s.AdstDescripcion into pg
+                //                           select new SolicitudPlanificacionVacaciones
+                //                           {
+                //                               IdSolicitudPlanificacionVacaciones = s.IdSolicitudPlanificacionVacaciones,
+                //                               IdEmpleado = s.IdEmpleado,
+                //                               FechaDesde = s.FechaDesde,
+                //                               FechaHasta = s.FechaDesde,
+                //                               Aprobado = s.Aprobado,
+                //                               Observaciones = s.Observaciones
+                //                           }));
 
-                    //    foreach (var item1 in solicitudes)
-                    //    {
-                    //        if (item1.Aprobado==false)
-                    //        {
-                    //            a.Aprobado = false; 
+                //    foreach (var item1 in solicitudes)
+                //    {
+                //        if (item1.Aprobado==false)
+                //        {
+                //            a.Aprobado = false; 
 
-                    //        }
-                    //    }
+                //        }
+                //    }
 
-                        
-                    //    lista.Add(a);
 
-                    //}
+                //    lista.Add(a);
+
+                //}
 
                 //var listaSalida = new List<Persona>();
                 //foreach (var item in ListadoEmpleados)
@@ -1229,7 +1369,7 @@ namespace bd.swth.web.Controllers.API
                 //                                                           }).ToListAsync();
                 //    }   
 
-                
+
 
 
                 //    return listaSalida;
@@ -1282,7 +1422,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             foreach (var item1 in item.SolicitudVacaciones)
                             {
-                             
+
                                 if (item1.Estado == 0)
                                 {
                                     haSolicitado = true;
@@ -1491,7 +1631,7 @@ namespace bd.swth.web.Controllers.API
                                   .Where(x => x.NombreUsuario == nombreUsuario)
                                   .SingleOrDefaultAsync();
 
-                
+
                 return empleadoSegunNombre;
 
             }
@@ -1510,11 +1650,11 @@ namespace bd.swth.web.Controllers.API
 
             using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                    try
-                    {
+                try
+                {
 
                     var respuesta = Existe(datosBasicosEmpleado);
-                    if (datosBasicosEmpleado.IdNacionalidadIndigena==0)
+                    if (datosBasicosEmpleado.IdNacionalidadIndigena == 0)
                     {
                         datosBasicosEmpleado.IdNacionalidadIndigena = null;
                     }
@@ -1539,12 +1679,12 @@ namespace bd.swth.web.Controllers.API
                             LugarTrabajo = datosBasicosEmpleado.LugarTrabajo,
                             IdNacionalidadIndigena = datosBasicosEmpleado.IdNacionalidadIndigena,
                             CallePrincipal = datosBasicosEmpleado.CallePrincipal,
-                            CalleSecundaria=datosBasicosEmpleado.CalleSecundaria,
-                            Referencia=datosBasicosEmpleado.Referencia,
+                            CalleSecundaria = datosBasicosEmpleado.CalleSecundaria,
+                            Referencia = datosBasicosEmpleado.Referencia,
                             Numero = datosBasicosEmpleado.Numero,
                             IdParroquia = datosBasicosEmpleado.IdParroquia,
-                            Ocupacion=datosBasicosEmpleado.Ocupacion,
-                            
+                            Ocupacion = datosBasicosEmpleado.Ocupacion,
+
                         };
                         //1. Insertar Persona 
                         var personaInsertarda = await db.Persona.AddAsync(persona);
@@ -1554,13 +1694,13 @@ namespace bd.swth.web.Controllers.API
                         var empleadoinsertado = new Empleado
                         {
                             IdPersona = personaInsertarda.Entity.IdPersona,
-                            IdCiudadLugarNacimiento=datosBasicosEmpleado.IdCiudadLugarNacimiento,
-                            IdProvinciaLugarSufragio=datosBasicosEmpleado.IdProvinciaLugarSufragio,
+                            IdCiudadLugarNacimiento = datosBasicosEmpleado.IdCiudadLugarNacimiento,
+                            IdProvinciaLugarSufragio = datosBasicosEmpleado.IdProvinciaLugarSufragio,
                         };
                         var empleado = await db.Empleado.AddAsync(empleadoinsertado);
                         await db.SaveChangesAsync();
 
-                    
+
                         transaction.Commit();
 
                         return new Response
@@ -1576,7 +1716,7 @@ namespace bd.swth.web.Controllers.API
                         IsSuccess = false,
                         Message = Mensaje.ExisteRegistro,
                     };
-                    
+
                 }
                 catch (Exception ex)
                 {
@@ -1751,7 +1891,7 @@ namespace bd.swth.web.Controllers.API
                 personaSustituto.IdPersonaDiscapacidad = empleadoViewModel.PersonaSustituto.IdPersonaDiscapacidad;
                 db.PersonaSustituto.Update(personaSustituto);
                 await db.SaveChangesAsync();
-                
+
                 //11. Discapacidad Sustituto
                 foreach (DiscapacidadSustituto itemDiscapacidadSustituto in empleadoViewModel.DiscapacidadSustituto.Where(x => x.IdPersonaSustituto == empleadoViewModel.PersonaSustituto.IdPersonaSustituto).ToList())
                 {
@@ -1764,7 +1904,7 @@ namespace bd.swth.web.Controllers.API
                     await db.SaveChangesAsync();
                 }
 
-              
+
                 //12. Enfermedad Sustituto
                 foreach (EnfermedadSustituto itemEnfermedadSustituto in empleadoViewModel.EnfermedadSustituto.Where(x => x.IdPersonaSustituto == empleadoViewModel.PersonaSustituto.IdPersonaSustituto).ToList())
                 {
@@ -1792,7 +1932,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado= empleadoViewModel
+                    Resultado = empleadoViewModel
                 };
 
             }
@@ -1939,7 +2079,7 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
-        
+
         [HttpPost]
         [Route("InsertarEmpleadoContactoEmergencia")]
         public async Task<Response> InsertarEmpleadoContactoEmergencia([FromBody] EmpleadoContactoEmergencia empleadoContactoEmergencia)
@@ -1982,7 +2122,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-       
+
         [HttpPost]
         [Route("InsertarEmpleadoFamiliar")]
         public async Task<Response> InsertarEmpleadoFamiliar([FromBody] EmpleadoFamiliar empleadoFamiliar)
@@ -2025,8 +2165,8 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        
- 
+
+
         [HttpPost]
         [Route("InsertarEmpleadoNepotismo")]
         public async Task<Response> InsertarEmpleadoNepotismo([FromBody] EmpleadoNepotismo empleadoNepotismo)
@@ -2069,7 +2209,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        
+
 
         [HttpPost]
         [Route("InsertarEmpleadoDatosBancarios")]
@@ -2117,7 +2257,7 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(DatosBasicosEmpleadoViewModel datosBasicosEmpleado)
         {
             var identificacion = datosBasicosEmpleado.Identificacion.ToUpper().TrimEnd().TrimStart();
-            var Empleadorespuesta = db.Persona.Where(p =>p.Identificacion == identificacion).FirstOrDefault();
+            var Empleadorespuesta = db.Persona.Where(p => p.Identificacion == identificacion).FirstOrDefault();
             if (Empleadorespuesta != null)
             {
                 return new Response

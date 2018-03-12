@@ -28,17 +28,37 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                if (!ModelState.IsValid)
+                int fecha = DateTime.Now.Year;
+                if (ModelState.IsValid)
                 {
-                    db.FormularioAnalisisOcupacional.Add(formularioAnalisisOcupacional);
-                    await db.SaveChangesAsync();
-                    return new Response
+                    var empleado =  db.FormularioAnalisisOcupacional.Where(x => x.IdEmpleado == formularioAnalisisOcupacional.IdEmpleado && fecha == formularioAnalisisOcupacional.Anio).FirstOrDefault();
+                    
+                    if (empleado == null)
                     {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
+                        db.FormularioAnalisisOcupacional.Add(formularioAnalisisOcupacional);
+                        await db.SaveChangesAsync();
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio
+                        };
+                    }
+                    else
+                    {
+                        formularioAnalisisOcupacional.IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional;
+                        formularioAnalisisOcupacional.IdEmpleado = empleado.IdEmpleado;
+                        formularioAnalisisOcupacional.MisionPuesto = empleado.MisionPuesto;
+                        formularioAnalisisOcupacional.Estado = empleado.Estado;
+                        db.FormularioAnalisisOcupacional.Update(formularioAnalisisOcupacional);
+                        await db.SaveChangesAsync();
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio
+                        };
+                    }
+                    
                 }
-                
                 return new Response
                 {
                     IsSuccess = false,
