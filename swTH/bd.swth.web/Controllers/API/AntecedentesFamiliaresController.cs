@@ -253,6 +253,36 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+
+        // Post: api/AntecedentesFamiliares
+        [HttpPost]
+        [Route("ListarAntecedentesFamiliaresPorFicha")]
+        public async Task<Response> GetAntecedentesLaboralesPorFicha([FromBody] int idFicha)
+        {
+
+            Response response = new entidades.Utils.Response();
+
+            try
+            {
+                var lista = await db.AntecedentesFamiliares.Where(x => x.IdFichaMedica == idFicha).OrderBy(x => x.IdAntecedentesFamiliares).ToListAsync();
+
+
+                return new Response { IsSuccess = true, Resultado = lista };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response { IsSuccess = false, Message = Mensaje.Excepcion };
+            }
+
+
+        }
+
+
+
+
         // DELETE: api/AntecedentesFamiliares/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteAntecedentesFamiliares([FromRoute] int id)
