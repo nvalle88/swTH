@@ -31,6 +31,11 @@ namespace bd.swth.entidades.ViewModels
         public string LugarTrabajo { get; set; }
         [DisplayName("Mision")]
         public string Mision { get; set; }
+        public string actividad { get; set; }
+        public bool InternoMismoProceso { get; set; }
+        public bool InternoOtroProceso { get; set; }
+        public bool ExternosCiudadania { get; set; }
+        public bool ExtPersJuridicasPubNivelNacional { get; set; }
 
     }
 }

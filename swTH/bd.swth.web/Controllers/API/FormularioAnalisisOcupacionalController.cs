@@ -75,5 +75,50 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+        [HttpPost]
+        [Route("ActualizarFormularioAnalisisOcupacional")]
+        public async Task<Response> ActualizarFormularioAnalisisOcupacional( [FromBody] FormularioAnalisisOcupacional formularioAnalisisOcupacional)
+        {
+            try
+            {
+                int fecha = DateTime.Now.Year;
+                if (ModelState.IsValid)
+                {
+                    var empleado = db.FormularioAnalisisOcupacional.Where(x => x.IdEmpleado == formularioAnalisisOcupacional.IdEmpleado && fecha == formularioAnalisisOcupacional.Anio).FirstOrDefault();
+
+                    if (empleado != null)
+                    {
+                        empleado.MisionPuesto = formularioAnalisisOcupacional.MisionPuesto;
+                        empleado.Estado = formularioAnalisisOcupacional.Estado;
+                        empleado.InternoMismoProceso = formularioAnalisisOcupacional.InternoMismoProceso;
+                        empleado.InternoOtroProceso = formularioAnalisisOcupacional.InternoOtroProceso;
+                        empleado.ExternosCiudadania = formularioAnalisisOcupacional.ExternosCiudadania;
+                        empleado.ExtPersJuridicasPubNivelNacional = formularioAnalisisOcupacional.ExtPersJuridicasPubNivelNacional;
+                        db.FormularioAnalisisOcupacional.Update(empleado);
+                        await db.SaveChangesAsync();
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio
+                        };
+                    }
+
+                }
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
     }
 }

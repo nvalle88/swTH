@@ -69,12 +69,17 @@ namespace bd.swth.web.Controllers.API
                 var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado).Select(x => new DocumentoFAOViewModel
                 {
                     apellido = x.Persona.Apellidos,
-                    nombre = x.Persona.Nombres+ " "+x.Persona.Apellidos ,
+                    nombre = x.Persona.Nombres + " " + x.Persona.Apellidos,
                     Identificacion = x.Persona.Identificacion,
                     UnidadAdministrativa = x.Dependencia.Nombre,
                     LugarTrabajo = x.Persona.LugarTrabajo,
                     Institucion = x.Persona.LugarTrabajo,
-                    Mision = x.FormularioAnalisisOcupacional.FirstOrDefault().MisionPuesto
+                    Mision = x.FormularioAnalisisOcupacional.FirstOrDefault().MisionPuesto,
+                    InternoMismoProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoMismoProceso,
+                    InternoOtroProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoOtroProceso,
+                    ExternosCiudadania = x.FormularioAnalisisOcupacional.FirstOrDefault().ExternosCiudadania,
+                    ExtPersJuridicasPubNivelNacional=x.FormularioAnalisisOcupacional.FirstOrDefault().ExtPersJuridicasPubNivelNacional
+
                     //Puesto =, 
                 }).FirstOrDefaultAsync();
 
