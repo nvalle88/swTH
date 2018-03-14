@@ -11,19 +11,19 @@ namespace bd.swth.entidades.Negocio
 
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "¿Misión del InstitucionFinanciera?")]
-        public bool? InternoMismoProceso { get; set; }
+        public bool InternoMismoProceso { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "¿Otro porceso?")]
-        public bool? InternoOtroProceso { get; set; }
+        public bool InternoOtroProceso { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "¿externos ckiudadanía?")]
-        public bool? ExternosCiudadania { get; set; }
+        public bool ExternosCiudadania { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "¿ExtPersJurídicasPubNivelNacional?")]
-        public bool? ExtPersJurídicasPubNivelNacional { get; set; }
+        public bool ExtPersJuridicasPubNivelNacional { get; set; }
 
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "Fecha de registro:")]
