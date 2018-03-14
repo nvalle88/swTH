@@ -65,6 +65,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
+               var b = db.ActividadesAnalisisOcupacional.Where(x=> x.IdFormularioAnalisisOcupacional== documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
                 //var a =  db.IndiceOcupacionalModalidadPartida.LastOrDefaultAsync().Result.IdEmpleado;
                 var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado).Select(x => new DocumentoFAOViewModel
                 {
@@ -78,11 +79,12 @@ namespace bd.swth.web.Controllers.API
                     InternoMismoProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoMismoProceso,
                     InternoOtroProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoOtroProceso,
                     ExternosCiudadania = x.FormularioAnalisisOcupacional.FirstOrDefault().ExternosCiudadania,
-                    ExtPersJuridicasPubNivelNacional=x.FormularioAnalisisOcupacional.FirstOrDefault().ExtPersJuridicasPubNivelNacional
-
+                    ExtPersJuridicasPubNivelNacional=x.FormularioAnalisisOcupacional.FirstOrDefault().ExtPersJuridicasPubNivelNacional,
+                    ListaActividad=b
+                    
                     //Puesto =, 
                 }).FirstOrDefaultAsync();
-
+              
                 return new Response { IsSuccess = true, Resultado = empleado };
 
             }
@@ -305,7 +307,9 @@ namespace bd.swth.web.Controllers.API
                                         apellido = item1.Persona.Apellidos,
                                         NombreUsuario = item1.NombreUsuario,
                                         Identificacion = item1.Persona.Identificacion,
-                                        estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado
+                                        estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
+                                        IdFormularioAnalisisOcupacional =item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
+
                                     });
 
                                 }
