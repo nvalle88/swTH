@@ -42,6 +42,7 @@
     <Folder Include="Controllers\MVC\" />
     <Folder Include="Properties\PublishProfiles\" />
     <Folder Include="wwwroot\Documentos\" />
+    <Folder Include="wwwroot\ExamenesComplementariosDocumentos\" />
     <Folder Include="wwwroot\Noticias\" />
   </ItemGroup>
   <ItemGroup>

@@ -5,8 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\**" />
     <Compile Remove="NuevoModels\**" />
+    <EmbeddedResource Remove="Migrations\**" />
     <EmbeddedResource Remove="NuevoModels\**" />
+    <None Remove="Migrations\**" />
     <None Remove="NuevoModels\**" />
   </ItemGroup>
 
@@ -21,10 +24,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\bd.swth.entidades\bd.swth.entidades.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

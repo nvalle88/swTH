@@ -12,6 +12,8 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
+using bd.webappth.entidades.ObjectTransfer;
+using bd.swth.servicios.Interfaces;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -19,11 +21,12 @@ namespace bd.swth.web.Controllers.API
     [Route("api/ExamenesComplementarios")]
     public class ExamenesComplementariosController : Controller
     {
-
+        private readonly IUploadFileService uploadFileService;
         private readonly SwTHDbContext db;
 
-        public ExamenesComplementariosController(SwTHDbContext db)
+        public ExamenesComplementariosController(SwTHDbContext db, IUploadFileService uploadFileService)
         {
+            this.uploadFileService = uploadFileService;
             this.db = db;
         }
 
@@ -35,11 +38,11 @@ namespace bd.swth.web.Controllers.API
 
             try
             {
-                return await db.ExamenComplementario.Include( x => x.TipoExamenComplementario).OrderBy(x => x.IdExamenComplementario).ToListAsync();
+                return await db.ExamenComplementario.Include(x => x.TipoExamenComplementario).OrderBy(x => x.IdExamenComplementario).ToListAsync();
             }
             catch (Exception ex)
             {
-                
+
                 return new List<ExamenComplementario>();
             }
         }
@@ -125,9 +128,9 @@ namespace bd.swth.web.Controllers.API
 
                         Actualizar.Fecha = ExamenComplementario.Fecha;
                         Actualizar.Resultado = ExamenComplementario.Resultado;
-                        Actualizar.IdTipoExamenComplementario= ExamenComplementario.IdTipoExamenComplementario;
-                        Actualizar.IdFichaMedica= ExamenComplementario.IdFichaMedica;
-                        
+                        Actualizar.IdTipoExamenComplementario = ExamenComplementario.IdTipoExamenComplementario;
+                        Actualizar.IdFichaMedica = ExamenComplementario.IdFichaMedica;
+
 
                         db.ExamenComplementario.Update(Actualizar);
 
@@ -142,7 +145,7 @@ namespace bd.swth.web.Controllers.API
                     }
                     catch (Exception ex)
                     {
-                       
+
                         return new Response
                         {
                             IsSuccess = false,
@@ -170,6 +173,8 @@ namespace bd.swth.web.Controllers.API
             }
 
         }
+
+     
 
         // POST: api/ExamenesComplementarios
         [HttpPost]
@@ -217,6 +222,152 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+
+
+        // POST: api/ExamenesComplementarios
+        [HttpPost]
+        [Route("UploadFiles")]
+        public async Task<Response> Post([FromBody] ExamenComplementarioTransfer examenComplementarioTransfer)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
+                    };
+                }
+
+                var examenComplementario = new ExamenComplementario
+                {
+                    IdExamenComplementario = examenComplementarioTransfer.IdExamenComplementario,
+                    Fecha = examenComplementarioTransfer.Fecha,
+                    Resultado = examenComplementarioTransfer.Resultado,
+                    IdTipoExamenComplementario = examenComplementarioTransfer.IdTipoExamenComplementario,
+                    IdFichaMedica = examenComplementarioTransfer.IdFichaMedica,
+                    
+                };
+
+                var respuesta = Existe(examenComplementario);
+                if (!respuesta.IsSuccess)
+                {
+                    db.ExamenComplementario.Add(examenComplementario);
+                    await db.SaveChangesAsync();
+
+                    var id = examenComplementario.IdExamenComplementario;
+
+                    await uploadFileService.UploadFile(examenComplementarioTransfer.Fichero, "ExamenesComplementariosDocumentos", Convert.ToString(id), ".pdf");
+
+
+                    var seleccionado = db.ExamenComplementario.Find(examenComplementario.IdExamenComplementario);
+                    seleccionado.Url = string.Format("{0}/{1}.{2}", "ExamenesComplementariosDocumentos", Convert.ToString(id), "pdf");
+                    db.ExamenComplementario.Update(seleccionado);
+                    db.SaveChanges();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
+            }
+            catch (Exception ex)
+            {
+                
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+
+
+        }
+
+
+        // POST: api/ExamenesComplementarios
+        [HttpPost]
+        [Route("UpdateFiles")]
+        public async Task<Response> PostUpdateFiles([FromBody] ExamenComplementarioTransfer examenComplementarioTransfer)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
+                    };
+                }
+
+
+                var Actualizar = await db.ExamenComplementario.Where(x => x.IdExamenComplementario == examenComplementarioTransfer.IdExamenComplementario).FirstOrDefaultAsync();
+
+                Actualizar.Fecha = examenComplementarioTransfer.Fecha;
+                Actualizar.Resultado = examenComplementarioTransfer.Resultado;
+                Actualizar.IdTipoExamenComplementario = examenComplementarioTransfer.IdTipoExamenComplementario;
+                Actualizar.IdFichaMedica = examenComplementarioTransfer.IdFichaMedica;
+
+                /*borrar fichero*/
+
+                try
+                {
+                    ExamenComplementario excm = new ExamenComplementario();
+
+                    excm.IdExamenComplementario = examenComplementarioTransfer.IdExamenComplementario;
+
+                    await DeleteFile(excm);
+                }
+                catch (Exception ex0) { }
+
+                /* Crear nuevo fichero */
+
+                var id = examenComplementarioTransfer.IdExamenComplementario;
+
+                await uploadFileService.UploadFile(examenComplementarioTransfer.Fichero, "ExamenesComplementariosDocumentos", Convert.ToString(id), ".pdf");
+
+
+                /* Edito la nueva Url */
+
+                //var seleccionado = db.ExamenComplementario.Find(examenComplementario.IdExamenComplementario);
+                Actualizar.Url = string.Format("{0}/{1}.{2}", "ExamenesComplementariosDocumentos", Convert.ToString(id), "pdf");
+
+                db.ExamenComplementario.Update(Actualizar);
+                db.SaveChanges();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio
+                };
+                
+                
+            }
+            catch (Exception ex)
+            {
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+
+
+        }
+
+
+
 
 
 
@@ -274,6 +425,19 @@ namespace bd.swth.web.Controllers.API
                 }
                 db.ExamenComplementario.Remove(respuesta);
                 await db.SaveChangesAsync();
+
+
+                /*borrar fichero*/
+
+                try
+                {
+                    ExamenComplementario excm = new ExamenComplementario();
+
+                    excm.IdExamenComplementario = id;
+
+                    await DeleteFile(excm);
+                }
+                catch (Exception ex0) { }
 
                 return new Response
                 {
@@ -340,6 +504,70 @@ namespace bd.swth.web.Controllers.API
                 Resultado = Respuesta,
             };
         }
+
+
+
+        // DELETE: api/ExamenesComplementarios/5
+        [HttpPost]
+        [Route("DeleteFile")]
+        public async Task<Response> DeleteFile([FromBody] ExamenComplementario examenComplementario)
+        {
+
+            try
+            {
+                var respuestaFile = uploadFileService.DeleteFile("ExamenesComplementariosDocumentos", Convert.ToString(examenComplementario.IdExamenComplementario), ".pdf");
+
+                var dato = await db.ExamenComplementario.Where(x => x.IdExamenComplementario == examenComplementario.IdExamenComplementario).FirstOrDefaultAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.BorradoSatisfactorio,
+                    Resultado = respuestaFile,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+
+        // GET: api/ExamenesComplementarios/5
+        [HttpPost]
+        [Route("GetFile")]
+        public async Task<Response> GetFile([FromBody] ExamenComplementario examenComplementario)
+        {
+
+            try
+            {
+                var respuestaFile = uploadFileService.GetFile("ExamenesComplementariosDocumentos", Convert.ToString(examenComplementario.IdExamenComplementario), ".pdf");
+
+                var dato = await db.ExamenComplementario.Where(x => x.IdExamenComplementario == examenComplementario.IdExamenComplementario).FirstOrDefaultAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Exámen complementario #" + dato.IdExamenComplementario + ", archivo adjunto",
+                    Resultado = respuestaFile,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
 
     }
 }

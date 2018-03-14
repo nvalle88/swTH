@@ -5,12 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Negocio\Ejemplo.cs" />
-    <Compile Remove="ViewModels\Ejemplo.cs" />
+    <Compile Remove="EntidadesServicios\**" />
+    <EmbeddedResource Remove="EntidadesServicios\**" />
+    <None Remove="EntidadesServicios\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="EntidadesServicios\" />
+    <Compile Remove="Negocio\Ejemplo.cs" />
+    <Compile Remove="ViewModels\Ejemplo.cs" />
   </ItemGroup>
 
   <ItemGroup>

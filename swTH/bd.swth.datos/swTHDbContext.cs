@@ -436,6 +436,8 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasColumnType("varchar(500)");
 
+                entity.Property(e => e.Url).HasColumnType("varchar(1024)");
+
                 entity.HasOne(d => d.FichaMedica)
                     .WithMany(p => p.ExamenComplementario)
                     .HasForeignKey(d => d.IdFichaMedica)
