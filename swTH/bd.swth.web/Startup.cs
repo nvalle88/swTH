@@ -37,6 +37,7 @@ namespace bd.swth.web
             services.AddSingleton<IUploadFileService, UploadFileService>();
 
             Constantes.PartidaVacante = Configuration.GetSection("PartidaVacante").Value;
+            Constantes.PartidaOcupada = Configuration.GetSection("PartidaOcupada").Value;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
