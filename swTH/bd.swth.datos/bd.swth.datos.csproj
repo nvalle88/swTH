@@ -5,8 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\**" />
     <Compile Remove="NuevoModels\**" />
+    <EmbeddedResource Remove="Migrations\**" />
     <EmbeddedResource Remove="NuevoModels\**" />
+    <None Remove="Migrations\**" />
     <None Remove="NuevoModels\**" />
   </ItemGroup>
 
@@ -17,14 +20,11 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.1" />
     <PackageReference Include="morelinq" Version="2.10.0" />
+    <PackageReference Include="SendMailSMTPNet.Core" Version="1.2.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\bd.swth.entidades\bd.swth.entidades.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

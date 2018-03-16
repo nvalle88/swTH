@@ -204,6 +204,7 @@ namespace bd.swth.web.Controllers.API
             
 
             DateTime year = (DateTime) personaVar.FechaNacimiento;
+            
 
             int yActual = DateTime.Now.Year;
             int yNacimiento = (int)(year.Year);
@@ -220,7 +221,7 @@ namespace bd.swth.web.Controllers.API
                      NombresApellidos = personaVar.Nombres + " " + personaVar.Apellidos,
                      Identificacion = personaVar.Identificacion,
                      LugarNacimiento = NacionalidadVar.Nombre + "/ " + parroquiaVar.Nombre,
-                     FechaNacimiento = personaVar.FechaNacimiento + " ",
+                     FechaNacimiento = year.ToString("dd/MM/yyyy"),
                      DireccionDomiciliaria = personaVar.CallePrincipal + " " + personaVar.CalleSecundaria + " " + personaVar.Numero,
                      Telefono = personaVar.TelefonoPrivado + "   " + personaVar.TelefonoCasa,
                      Edad = datoEdad,

@@ -5,12 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Negocio\Ejemplo.cs" />
-    <Compile Remove="ViewModels\Ejemplo.cs" />
+    <Compile Remove="EntidadesServicios\**" />
+    <EmbeddedResource Remove="EntidadesServicios\**" />
+    <None Remove="EntidadesServicios\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="EntidadesServicios\" />
+    <Compile Remove="Negocio\Ejemplo.cs" />
+    <Compile Remove="ViewModels\Ejemplo.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +21,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.1" />
     <PackageReference Include="morelinq" Version="2.10.0" />
+    <PackageReference Include="SendMailSMTPNet.Core" Version="1.2.4" />
   </ItemGroup>
 
 </Project>

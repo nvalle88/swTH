@@ -20,7 +20,8 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.AntecedentesFamiliares> AntecedentesFamiliares { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AntecedentesLaborales> AntecedentesLaborales { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ExamenComplementario> ExamenComplementario { get; set; }
-        
+
+        public virtual DbSet<ActivarPersonalTalentoHumano> ActivarPersonalTalentoHumano { get; set; }
 
 
         public virtual DbSet<bd.swth.entidades.Negocio.AccionPersonal> AccionPersonal { get; set; }
@@ -230,7 +231,19 @@ namespace bd.swth.datos
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
+            modelBuilder.Entity<ActivarPersonalTalentoHumano>(entity =>
+            {
+                entity.HasKey(e => e.IdActivarPersonalTalentoHumano)
+                    .HasName("PK_ActivarPersonalTalentoHumano");
 
+                entity.Property(e => e.Fecha).HasColumnType("datetime");
+
+                entity.HasOne(d => d.Dependencia)
+                    .WithMany(p => p.ActivarPersonalTalentoHumano)
+                    .HasForeignKey(d => d.IdDependencia)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ActivarPersonalTalentoHumano_Dependencia");
+            });
 
             modelBuilder.Entity<AntecedentesFamiliares>(entity =>
             {
@@ -435,6 +448,8 @@ namespace bd.swth.datos
                 entity.Property(e => e.Resultado)
                     .IsRequired()
                     .HasColumnType("varchar(500)");
+
+                entity.Property(e => e.Url).HasColumnType("varchar(1024)");
 
                 entity.HasOne(d => d.FichaMedica)
                     .WithMany(p => p.ExamenComplementario)

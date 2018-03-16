@@ -22,7 +22,10 @@ namespace bd.swth.entidades.Negocio
         [Display(Name = "Código de ficha médica")]
         public int IdFichaMedica { get; set; }
 
+        public string Url { get; set; }
+
         public virtual FichaMedica FichaMedica { get; set; }
         public virtual TipoExamenComplementario TipoExamenComplementario { get; set; }
     }
 }
+
