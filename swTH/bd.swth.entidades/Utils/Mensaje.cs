@@ -14,5 +14,8 @@ namespace bd.swth.entidades.Utils
         public static string ModeloInvalido { get { return "El Módelo es inválido"; } }
         public static string BorradoNoSatisfactorio { get { return "No es posible eliminar el registro, existen relaciones que dependen de él"; } }
         public static string BorradoSatisfactorio { get { return "El registro se ha eliminado correctamente"; } }
+        public static string GuardadoSatisfactorio { get { return "Los datos se han guardado correctamente"; } }
+        public static string MensajeSatisfactorio { get { return "Mensaje enviado satisfactoriamente"; } }
+
     }
 }

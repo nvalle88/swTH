@@ -43,7 +43,7 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<IndiceOcupacional> IndiceOcupacional { get; set; }
 
-
+        public virtual ICollection<ActivarPersonalTalentoHumano> ActivarPersonalTalentoHumano { get; set; }
 
     }
 }

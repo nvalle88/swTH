@@ -36,7 +36,14 @@ namespace bd.swth.web
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IUploadFileService, UploadFileService>();
 
+            // Constantes de correo
             Constantes.PartidaVacante = Configuration.GetSection("PartidaVacante").Value;
+            Constantes.Smtp = Configuration.GetSection("Smtp").Value;
+            Constantes.PrimaryPort = Configuration.GetSection("PrimaryPort").Value;
+            Constantes.SecureSocketOptions = Configuration.GetSection("SecureSocketOptions").Value;
+            Constantes.CorreoTTHH = Configuration.GetSection("CorreoTTHH").Value;
+            Constantes.PasswordCorreo = Configuration.GetSection("PasswordCorreo").Value;
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
