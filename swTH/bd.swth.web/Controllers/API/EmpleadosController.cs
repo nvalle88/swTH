@@ -37,27 +37,29 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-               
+                var empleado = await db.Empleado.Include(x => x.FormularioAnalisisOcupacional).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == -1).Select(x => new DocumentoFAOViewModel
+                {
+                    IdEmpleado = x.IdEmpleado,
+                    apellido = x.Persona.Apellidos,
+                    nombre = x.Persona.Nombres,
+                    Identificacion = x.Persona.Identificacion,
+                    UnidadAdministrativa = x.Dependencia.Nombre,
+                    LugarTrabajo = x.Persona.LugarTrabajo,
+                    Institucion = x.Persona.LugarTrabajo,
+                    //Puesto =, 
+                }).FirstOrDefaultAsync();
 
-                    var empleado = await db.Empleado.Include(x=> x.FormularioAnalisisOcupacional).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == -1).Select(x => new DocumentoFAOViewModel
-                    {
-                        IdEmpleado = x.IdEmpleado,
-                        apellido = x.Persona.Apellidos,
-                        nombre = x.Persona.Nombres,
-                        Identificacion = x.Persona.Identificacion,
-                        UnidadAdministrativa = x.Dependencia.Nombre,
-                        LugarTrabajo = x.Persona.LugarTrabajo,
-                        Institucion = x.Persona.LugarTrabajo,
-                        //Puesto =, 
-                    }).FirstOrDefaultAsync();
-
+                if (empleado != null)
+                {
                     return new Response { IsSuccess = true, Resultado = empleado };
-                
+                }
+                return new Response { IsSuccess = false };
+
             }
             catch (Exception ex)
             {
-                
-                return  new Response { IsSuccess = false, Message = Mensaje.Error }; ;
+
+                return new Response { IsSuccess = false, Message = Mensaje.Error }; ;
             }
         }
         [HttpPost]
@@ -66,9 +68,9 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-               
-                var b = db.ActividadesAnalisisOcupacional.Where(x=> x.IdFormularioAnalisisOcupacional== documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
-                
+
+                var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
+
                 var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == 0).Select(x => new DocumentoFAOViewModel
                 {
                     apellido = x.Persona.Apellidos,
@@ -81,12 +83,52 @@ namespace bd.swth.web.Controllers.API
                     InternoMismoProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoMismoProceso,
                     InternoOtroProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoOtroProceso,
                     ExternosCiudadania = x.FormularioAnalisisOcupacional.FirstOrDefault().ExternosCiudadania,
-                    ExtPersJuridicasPubNivelNacional=x.FormularioAnalisisOcupacional.FirstOrDefault().ExtPersJuridicasPubNivelNacional,
-                    ListaActividad=b,
+                    ExtPersJuridicasPubNivelNacional = x.FormularioAnalisisOcupacional.FirstOrDefault().ExtPersJuridicasPubNivelNacional,
+                    ListaActividad = b,
                     //ListaExepcion= exep,                 
                     //Puesto =, 
                 }).FirstOrDefaultAsync();
-              
+
+                return new Response { IsSuccess = true, Resultado = empleado };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response { IsSuccess = false, Message = Mensaje.Error }; ;
+            }
+        }
+        [HttpPost]
+        [Route("ObtenerEncabezadoEmpleadosFaoValidarConExepcionesVisualizarJefe")]
+        public async Task<Response> ObtenerEncabezadoEmpleadosFaoValidarConExepcionesVisualizarJefe([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+                //var puesto = db.RolPuesto.ToList();
+                var a = db.ValidacionInmediatoSuperior.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
+                var exep = db.Exepciones.Where(x => x.IdValidacionJefe == a.FirstOrDefault().IdValidacionJefe).ToList();
+                var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
+
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == 2).Select(x => new DocumentoFAOViewModel
+                {
+                    IdEmpleado = x.IdEmpleado,
+                    apellido = x.Persona.Apellidos,
+                    nombre = x.Persona.Nombres + " " + x.Persona.Apellidos,
+                    Identificacion = x.Persona.Identificacion,
+                    UnidadAdministrativa = x.Dependencia.Nombre,
+                    LugarTrabajo = x.Persona.LugarTrabajo,
+                    Institucion = x.Persona.LugarTrabajo,
+                    Mision = x.FormularioAnalisisOcupacional.FirstOrDefault().MisionPuesto,
+                    InternoMismoProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoMismoProceso,
+                    InternoOtroProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoOtroProceso,
+                    ExternosCiudadania = x.FormularioAnalisisOcupacional.FirstOrDefault().ExternosCiudadania,
+                    ExtPersJuridicasPubNivelNacional = x.FormularioAnalisisOcupacional.FirstOrDefault().ExtPersJuridicasPubNivelNacional,
+                    ListaActividad = b,
+                    ListaExepcion = exep,
+                    //ListasRolPUestos=puesto
+                    //Puesto =, 
+                }).FirstOrDefaultAsync();
+
                 return new Response { IsSuccess = true, Resultado = empleado };
 
             }
@@ -122,8 +164,8 @@ namespace bd.swth.web.Controllers.API
                     ExternosCiudadania = x.FormularioAnalisisOcupacional.FirstOrDefault().ExternosCiudadania,
                     ExtPersJuridicasPubNivelNacional = x.FormularioAnalisisOcupacional.FirstOrDefault().ExtPersJuridicasPubNivelNacional,
                     ListaActividad = b,
-                    ListaExepcion= exep,
-                    ListasRolPUestos=puesto
+                    ListaExepcion = exep,
+                    ListasRolPUestos = puesto
                     //Puesto =, 
                 }).FirstOrDefaultAsync();
 
@@ -143,7 +185,7 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 var rh = db.AdministracionTalentoHumano.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).FirstOrDefault();
-                var puesto = db.RolPuesto.Where(x=> x.IdRolPuesto==rh.IdRolPuesto).ToList();
+                var puesto = db.RolPuesto.Where(x => x.IdRolPuesto == rh.IdRolPuesto).ToList();
                 var a = db.ValidacionInmediatoSuperior.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
                 var exep = db.Exepciones.Where(x => x.IdValidacionJefe == a.FirstOrDefault().IdValidacionJefe).ToList();
                 var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
@@ -187,7 +229,7 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario && x.Activo==true).ToListAsync();
+                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario && x.Activo == true).ToListAsync();
 
                 var listaSalida = new List<DocumentoFAOViewModel>();
                 var listaSalida2 = new List<DocumentoFAOViewModel>();
@@ -268,7 +310,7 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario && x.Activo==true).ToListAsync();
+                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario && x.Activo == true).ToListAsync();
 
                 var listaSalida = new List<DocumentoFAOViewModel>();
                 var listaSalida2 = new List<DocumentoFAOViewModel>();
@@ -313,7 +355,7 @@ namespace bd.swth.web.Controllers.API
                                     Identificacion = item1.Persona.Identificacion,
                                     estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
                                     IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
-                                    
+
 
                                 });
 
@@ -352,7 +394,7 @@ namespace bd.swth.web.Controllers.API
             {
 
                 var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario).ToListAsync();
-                
+
                 var listaSalida2 = new List<DocumentoFAOViewModel>();
 
                 var NombreDependencia = "";
@@ -396,14 +438,14 @@ namespace bd.swth.web.Controllers.API
                                         NombreUsuario = item1.NombreUsuario,
                                         Identificacion = item1.Persona.Identificacion,
                                         estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
-                                        IdFormularioAnalisisOcupacional =item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
+                                        IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
 
                                     });
 
                                 }
                             }
 
-                        
+
 
                         }
 
