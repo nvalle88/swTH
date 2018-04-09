@@ -4,7 +4,7 @@ using System.Text;
 
 namespace bd.swth.entidades.Utils
 {
-  public static class Mensaje
+    public static class Mensaje
     {
         public static string Excepcion { get { return "Ha ocurrido una Excepción"; } }
         public static string ExisteRegistro { get { return "Existe un registro de igual información"; } }
@@ -15,7 +15,9 @@ namespace bd.swth.entidades.Utils
         public static string BorradoNoSatisfactorio { get { return "No es posible eliminar el registro, existen relaciones que dependen de él"; } }
         public static string BorradoSatisfactorio { get { return "El registro se ha eliminado correctamente"; } }
         public static string GuardadoSatisfactorio { get { return "Los datos se han guardado correctamente"; } }
-        public static string MensajeSatisfactorio { get { return "Mensaje enviado satisfactoriamente"; } }
+        public static string CorreoSatisfactorio { get { return "Correo enviado satisfactoriamente"; } }
+        public static string ErrorCorreo { get { return "No pudo enviarse el correo"; } }
+        public static string DependenciaSinJefe { get { return "no existe una persona a cargo de la dependencia"; } }
 
     }
 }
