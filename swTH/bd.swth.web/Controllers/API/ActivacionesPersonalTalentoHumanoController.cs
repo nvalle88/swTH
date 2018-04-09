@@ -35,30 +35,71 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+        // MÉTODOS PÚBLICOS
 
         // GET: api/ActivacionesPersonalTalentoHumano
         [HttpGet]
-        [Route("ListarDependencias")]
-        public async Task<List<Dependencia>> ListarDependencias()
+        [Route("GetListDependenciasByFiscalYearActual")]
+        public async Task<List<ActivarPersonalTalentoHumanoViewModel>> GetListDependenciasByFiscalYearActual()
         {
 
-            List<Dependencia> lista = new List<Dependencia>();
+            List<ActivarPersonalTalentoHumanoViewModel> listaResultado = new List<ActivarPersonalTalentoHumanoViewModel>();
+            
 
 
             try
             {
+                var listaDependencias = await db.Dependencia.OrderBy(x => x.IdDependencia).ToListAsync();
+                
+                var listaDependenciasEnviadasCorreoEsteAño = await ListarActivarPersonalTalentoHumanoYearActual();
 
-                lista = await db.Dependencia.OrderBy(x => x.IdDependencia).ToListAsync();
+                var idDependencia = 0;
 
-                return lista;
+
+
+                for (int i = 0; i < listaDependencias.Count; i++)
+                {
+                    ActivarPersonalTalentoHumanoViewModel model = new ActivarPersonalTalentoHumanoViewModel();
+
+                    // Carga de datos del ViewModel
+                    model.IdDependencia = listaDependencias.ElementAt(i).IdDependencia;
+                    model.Fecha = DateTime.Now;
+                    model.Estado = false;
+                    model.Nombre = listaDependencias.ElementAt(i).Nombre;
+
+
+                    // Validación de estado para los checkBox
+                    for (int j = 0; j < listaDependenciasEnviadasCorreoEsteAño.Count; j++)
+                    {
+                        idDependencia = listaDependenciasEnviadasCorreoEsteAño.ElementAt(j).IdDependencia;
+
+                        if (idDependencia == listaDependencias.ElementAt(i).IdDependencia)
+                        {
+                            j = listaDependenciasEnviadasCorreoEsteAño.Count + 1;
+
+                            model.Estado = true;
+                        }
+                    }
+
+
+
+                    listaResultado.Add(model);
+                }
+                    return listaResultado;
+
             }
             catch (Exception ex)
             {
 
-                return new List<Dependencia>();
+                return listaResultado;
             }
 
         }
+
+
+        
+        
+
 
 
         // GET: api/ActivacionesPersonalTalentoHumano
@@ -94,12 +135,21 @@ namespace bd.swth.web.Controllers.API
         // POST: api/ActivacionesPersonalTalentoHumano
         [HttpPost]
         [Route("InsertarActivacionesPersonalTalentoHumano")]
-        public async Task<Response> PostExamenComplementario([FromBody] ListaActivarPersonalTalentoHumanoViewModel listaRecibida)
+        public async Task<Response> InsertarActivacionesPersonalTalentoHumano([FromBody] ListaActivarPersonalTalentoHumanoViewModel listaRecibida)
         {
             using (var transaction = db.Database.BeginTransaction())
             {
+
+                List<Response> correoResponse = new List<Response>();
+
                 try
                 {
+
+                    var resultadoMensaje = "";
+                    var lista = listaRecibida.listaAPTHVM;
+                    var hoy = DateTime.Now.ToString("dd/MM/yyyy");
+                    int estado = 0;
+
 
                     if (!ModelState.IsValid)
                     {
@@ -109,10 +159,8 @@ namespace bd.swth.web.Controllers.API
                             Message = ""
                         };
                     }
+                    
 
-                    var lista = listaRecibida.listaAPTHVM;
-                    var hoy = DateTime.Now.ToString("dd/MM/yyyy");
-                    int estado = 0;
 
                     for (int i = 0; i < lista.Count; i++)
                     {
@@ -140,11 +188,28 @@ namespace bd.swth.web.Controllers.API
 
                             if (!response.IsSuccess && estado == 1)
                             {
+                                var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
 
-                                EnviarCorreoElectronico(activarPersonalTalentoHumano);
+                                if ( empleado != null )
+                                {
+                                    var correo = empleado.Persona.CorreoPrivado;
+                                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano( correo ) );
 
-                                db.ActivarPersonalTalentoHumano.Add(activarPersonalTalentoHumano);
-                                await db.SaveChangesAsync();
+                                    db.ActivarPersonalTalentoHumano.Add(activarPersonalTalentoHumano);
+                                    await db.SaveChangesAsync();
+                                }
+                                else
+                                {
+                                    correoResponse.Add(new Response
+                                        {
+                                            IsSuccess = false,
+                                            Message = Mensaje.DependenciaSinJefe + " " + lista.ElementAt(i).Nombre
+                                        }
+
+                                    );
+                                }
+                                
+
                             }
                             else
                             {
@@ -152,11 +217,29 @@ namespace bd.swth.web.Controllers.API
                                 activarPersonalTalentoHumano.IdActivarPersonalTalentoHumano = Convert.ToInt32(response.Resultado);
                                 db.ActivarPersonalTalentoHumano.Update(activarPersonalTalentoHumano);
                                 */
+                                
                             }
-
 
                         }
 
+                    }
+
+                    for (int k = 0; k < correoResponse.Count; k++)
+                    {
+                        if (correoResponse.ElementAt(k).IsSuccess == false )
+                        {
+
+                            if (resultadoMensaje.Length < 1)
+                            {
+                                resultadoMensaje = Mensaje.ErrorCorreo + ", " + correoResponse.ElementAt(k).Message;
+                            }
+                            else
+                            {
+                                resultadoMensaje = resultadoMensaje + ", " + correoResponse.ElementAt(k).Message + "\n";
+                            }
+
+                            
+                        }
                     }
 
 
@@ -165,7 +248,8 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.GuardadoSatisfactorio,
+                        Message = Mensaje.CorreoSatisfactorio,
+                        Resultado = resultadoMensaje
                     };
 
                 }
@@ -175,10 +259,89 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.Error,
+                        Message = correoResponse.Last().Message,
                     };
                 }
             }
+        }
+
+
+
+
+
+        public Response EnviarMailDesdeCorreoTalentohumano(string correo)
+        {
+            try
+            {
+                
+                //Static class MailConf 
+                MailConfig.HostUri = Constantes.Smtp; 
+                MailConfig.PrimaryPort = Convert.ToInt32(Constantes.PrimaryPort);
+                MailConfig.SecureSocketOptions = Convert.ToInt32(Constantes.SecureSocketOptions);
+
+                //Class for submit the email 
+                var mail = new Mail
+                {
+                    Password = Constantes.PasswordCorreo
+                                     ,
+                    Body = "My Body"
+                                     ,
+                    EmailFrom = Constantes.CorreoTTHH
+                                     ,
+                    EmailTo = correo
+                                     ,
+                    NameFrom = "Talento humano"
+                                     ,
+                    NameTo = "Name To"
+                                     ,
+                    Subject = "La plataforma de activación de requerimientos de personal se encuentra activada"
+                };
+
+                //execute the method Send Mail or SendMailAsync
+                var a = Emails.SendEmailAsync(mail);
+
+                
+                return new Response
+                {
+                    IsSuccess = true,
+                    Resultado = Mensaje.CorreoSatisfactorio,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Resultado = Mensaje.ErrorCorreo + " a: " + correo,
+                };
+            }
+        }
+
+
+
+
+        // MÉTODOS PRIVADOS
+        
+        private async Task<List<ActivarPersonalTalentoHumano>> ListarActivarPersonalTalentoHumanoYearActual()
+        {
+
+            List<ActivarPersonalTalentoHumano> lista = new List<ActivarPersonalTalentoHumano>();
+
+
+            try
+            {
+
+                lista = await db.ActivarPersonalTalentoHumano.Where(x => x.Fecha.Year == DateTime.Now.Year).OrderBy(x => x.IdActivarPersonalTalentoHumano).ToListAsync();
+
+                return lista;
+            }
+            catch (Exception ex)
+            {
+
+                return new List<ActivarPersonalTalentoHumano>();
+            }
+
         }
 
 
@@ -188,7 +351,7 @@ namespace bd.swth.web.Controllers.API
             var Respuesta = db.ActivarPersonalTalentoHumano.Where(p =>
 
                     p.IdDependencia == activarPersonalTalentoHumano.IdDependencia
-                    && p.Fecha == activarPersonalTalentoHumano.Fecha
+                    && p.Fecha.Year == activarPersonalTalentoHumano.Fecha.Year
 
                 ).FirstOrDefault();
 
@@ -209,65 +372,6 @@ namespace bd.swth.web.Controllers.API
                 Resultado = Respuesta,
             };
         }
-
-
-        private Response EnviarCorreoElectronico(ActivarPersonalTalentoHumano activarPersonalTalentoHumano)
-        {
-            try
-            {
-
-                var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
-                var correo = empleado.Persona.CorreoPrivado;
-
-
-                //Static class MailConf 
-                MailConfig.HostUri = Constantes.Smtp; 
-                MailConfig.PrimaryPort = Convert.ToInt32(Constantes.PrimaryPort);
-                MailConfig.SecureSocketOptions = Convert.ToInt32(Constantes.SecureSocketOptions);
-
-                //Class for submit the email 
-                var mail = new Mail
-                {
-                    Password = Constantes.PasswordCorreo
-                                     ,
-                    Body = "My Body"
-                                     ,
-                    EmailFrom = Constantes.CorreoTTHH
-                                     ,
-                    EmailTo = correo
-                                     ,
-                    NameFrom = "Name From"
-                                     ,
-                    NameTo = "Name To"
-                                     ,
-                    Subject = "La plataforma de activación de requerimientos de personal activada"
-                };
-                //execute the method Send Mail or SendMailAsync
-                var a = Emails.SendEmail(mail);
-
-
-
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Resultado = Mensaje.MensajeSatisfactorio,
-                };
-
-            }
-            catch (Exception ex)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Resultado = Mensaje.Excepcion,
-                };
-            }
-        }
-
-
-        
-
 
     }
 }
