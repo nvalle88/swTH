@@ -9,6 +9,7 @@ using bd.swth.entidades.Utils;
 using bd.swth.entidades.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -77,6 +78,15 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="documentoFAOViewModel"></param>
+        /// genera las lista de la actividades
+        /// actualiza la tbala de FormularioIndiceOCupacional
+        /// Inserta en la tabla Validacion Jefe Superior
+        /// <returns></returns>
+
         [HttpPost]
         [Route("ActualizarActividades")]
         public async Task<Response> ActualizarActividades([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
@@ -85,6 +95,9 @@ namespace bd.swth.web.Controllers.API
             {
                 try
                 {
+                    //BUscar el id de empleado logueado
+                    var empleado = await db.Empleado.Include(x => x.Persona).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario).FirstOrDefaultAsync();
+
                     var activarAnalisiOcupacional = new ActividadesAnalisisOcupacional();
                     foreach (var item in documentoFAOViewModel.ListaActividads)
                     {
@@ -92,14 +105,38 @@ namespace bd.swth.web.Controllers.API
                         activarAnalisiOcupacional.Cumple = true;
                         db.ActividadesAnalisisOcupacional.Update(activarAnalisiOcupacional);
                     }
-                    
+
                     await db.SaveChangesAsync();
 
 
                     //cambia de estado en el formulario en FormularioAnalisis Ocupacional
-                    var formularioAnalisisOcupacional = db.FormularioAnalisisOcupacional.Where(x=> x.IdFormularioAnalisisOcupacional==activarAnalisiOcupacional.IdFormularioAnalisisOcupacional).FirstOrDefault();
+                    var formularioAnalisisOcupacional = db.FormularioAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == activarAnalisiOcupacional.IdFormularioAnalisisOcupacional).FirstOrDefault();
                     formularioAnalisisOcupacional.Estado = 1;
                     db.FormularioAnalisisOcupacional.Update(formularioAnalisisOcupacional);
+                    await db.SaveChangesAsync();
+                    //Insercion en la tabla validadrimediato superior
+                    var validacionSuperior = new ValidacionInmediatoSuperior();
+                    validacionSuperior.IdFormularioAnalisisOcupacional = activarAnalisiOcupacional.IdFormularioAnalisisOcupacional;
+                    validacionSuperior.IdEmpleado = empleado.IdEmpleado;
+                    validacionSuperior.Fecha = DateTime.Now;
+                    db.ValidacionInmediatoSuperior.Add(validacionSuperior);
+                    await db.SaveChangesAsync();
+                    // inserta la exepciones si lo tuviera
+
+                    //var validacionjefesuperior = await db.ValidacionInmediatoSuperior.Where(x=> x.Fecha == DateTime.Now.Date).FirstOrDefaultAsync();
+
+
+                    foreach (var item in documentoFAOViewModel.ListaExepciones)
+                    {
+                        if (item != null)
+                        {
+                            var exepcion = new Exepciones();
+                            exepcion.IdValidacionJefe = validacionSuperior.IdValidacionJefe;
+                            exepcion.Detalle = item;
+                            db.Exepciones.Add(exepcion);
+                        }
+
+                    }
                     await db.SaveChangesAsync();
                     transaction.Commit();
                     return new Response
@@ -119,7 +156,7 @@ namespace bd.swth.web.Controllers.API
                 }
             }
         }
-        
+
 
         [HttpPost]
         [Route("ActualizarFormularioAnalisisOcupacional")]
@@ -146,100 +183,31 @@ namespace bd.swth.web.Controllers.API
                             db.FormularioAnalisisOcupacional.Update(empleado);
                             await db.SaveChangesAsync();
 
-                            if (formularioAnalisisOcupacional.actividad1 != null)
+                            foreach (var item in formularioAnalisisOcupacional.ListActividades)
                             {
-                                await db.ActividadesAnalisisOcupacional.AddAsync(new ActividadesAnalisisOcupacional
+                                if (item != null)
                                 {
-                                    Actividades = formularioAnalisisOcupacional.actividad1,
-                                    IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional
-                                });
+                                    var actividad = new ActividadesAnalisisOcupacional();
+                                    actividad.Actividades = item;
+                                    actividad.IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional;
+                                    db.ActividadesAnalisisOcupacional.Add(actividad);
+                                }
+
                             }
-                            if (formularioAnalisisOcupacional.actividad2 != null)
+                            await db.SaveChangesAsync();
+                            transaction.Commit();
+                            return new Response
                             {
-                                await db.ActividadesAnalisisOcupacional.AddAsync(new ActividadesAnalisisOcupacional
-                                {
-                                    IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional,
-                                    Actividades = formularioAnalisisOcupacional.actividad2
-                                });
-                            }
-                            if (formularioAnalisisOcupacional.actividad3 != null)
-                            {
-                                await db.ActividadesAnalisisOcupacional.AddAsync(new ActividadesAnalisisOcupacional
-                                {
-                                    IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional,
-                                    Actividades = formularioAnalisisOcupacional.actividad3
-                                });
-                            }
-                                if (formularioAnalisisOcupacional.actividad4 != null)
-                                {
-                                    await db.ActividadesAnalisisOcupacional.AddAsync(new ActividadesAnalisisOcupacional
-                                    {
-                                        IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional,
-                                        Actividades = formularioAnalisisOcupacional.actividad4
-                                    });
-                                }
-                                if (formularioAnalisisOcupacional.actividad5 != null)
-                                {
-                                    await db.ActividadesAnalisisOcupacional.AddAsync(new ActividadesAnalisisOcupacional
-                                    {
-                                        IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional,
-                                        Actividades = formularioAnalisisOcupacional.actividad5
-                                    });
-                                }
-                                if (formularioAnalisisOcupacional.actividad6 != null)
-                                {
-                                    await db.ActividadesAnalisisOcupacional.AddAsync(new ActividadesAnalisisOcupacional
-                                    {
-                                        IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional,
-                                        Actividades = formularioAnalisisOcupacional.actividad6
-                                    });
-                                }
-                                if (formularioAnalisisOcupacional.actividad7 != null)
-                                {
-                                    await db.ActividadesAnalisisOcupacional.AddAsync(new ActividadesAnalisisOcupacional
-                                    {
-                                        IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional,
-                                        Actividades = formularioAnalisisOcupacional.actividad7
-                                    });
-                                }
-                                if (formularioAnalisisOcupacional.actividad8 != null)
-                                {
-                                    await db.ActividadesAnalisisOcupacional.AddAsync(new ActividadesAnalisisOcupacional
-                                    {
-                                        IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional,
-                                        Actividades = formularioAnalisisOcupacional.actividad8
-                                    });
-                                }
-                                if (formularioAnalisisOcupacional.actividad9 != null)
-                                {
-                                    await db.ActividadesAnalisisOcupacional.AddAsync(new ActividadesAnalisisOcupacional
-                                    {
-                                        IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional,
-                                        Actividades = formularioAnalisisOcupacional.actividad9
-                                    });
-                                }
-                                if (formularioAnalisisOcupacional.actividad10 != null)
-                                {
-                                    await db.ActividadesAnalisisOcupacional.AddAsync(new ActividadesAnalisisOcupacional
-                                    {
-                                        IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional,
-                                        Actividades = formularioAnalisisOcupacional.actividad10
-                                    });
-                                }
-                                await db.SaveChangesAsync();
-                                transaction.Commit();
-                                return new Response
-                                {
-                                    IsSuccess = true,
-                                    Message = Mensaje.Satisfactorio
-                                };
-                            }
+                                IsSuccess = true,
+                                Message = Mensaje.Satisfactorio
+                            };
                         }
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error
-                        };
+                    }
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error
+                    };
 
                 }
                 catch (Exception ex)
@@ -251,6 +219,117 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.Error,
                     };
                 }
+            }
+        }
+
+        [HttpPost]
+        [Route("InsertarAdministracionTalentoHumano")]
+        public async Task<Response> InsertarAdministracionTalentoHumano([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    int fecha = DateTime.Now.Year;
+                    if (ModelState.IsValid)
+                    {
+
+                        var empleado = await db.Empleado.Include(x => x.Persona).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario).FirstOrDefaultAsync();
+                        var idformualario = db.FormularioAnalisisOcupacional.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.Anio == fecha).FirstOrDefault();
+
+                        var administradortalento = new AdministracionTalentoHumano();
+                        if (empleado != null)
+                        { 
+                            foreach (var item in documentoFAOViewModel.ListaRolPUesto)
+                            {
+                                if (item != null)
+                                {
+                                    administradortalento.IdRolPuesto = Convert.ToInt32(item);
+                                    administradortalento.IdFormularioAnalisisOcupacional = idformualario.IdFormularioAnalisisOcupacional;
+                                    administradortalento.EmpleadoResponsable = empleado.IdEmpleado;
+                                    administradortalento.Fecha = DateTime.Now;
+                                    administradortalento.SeAplicaraPolitica = documentoFAOViewModel.Cumple;
+                                    administradortalento.Descripcion = documentoFAOViewModel.Descripcionpuesto;
+                                    administradortalento.SeAplicaraPolitica = documentoFAOViewModel.aplicapolitica;
+                                    db.AdministracionTalentoHumano.Add(administradortalento);
+                                }
+
+                            }
+                            await db.SaveChangesAsync();
+
+                            //cambia de estado
+                            var formularioAnalisisOcupacional = db.FormularioAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == idformualario.IdFormularioAnalisisOcupacional).FirstOrDefault();
+                            formularioAnalisisOcupacional.Estado = 2;
+                            db.FormularioAnalisisOcupacional.Update(formularioAnalisisOcupacional);
+                            await db.SaveChangesAsync();
+                            transaction.Commit();
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Message = Mensaje.Satisfactorio
+                            };
+                        }
+                    }
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error
+                    };
+
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+            }
+        }
+
+
+        [HttpDelete("{id}")]
+        public async Task<Response> Delete([FromRoute] int id)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var respuesta = await db.FormularioAnalisisOcupacional.SingleOrDefaultAsync(m => m.IdEmpleado == id);
+                if (respuesta == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+                db.FormularioAnalisisOcupacional.Remove(respuesta);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
             }
         }
     }

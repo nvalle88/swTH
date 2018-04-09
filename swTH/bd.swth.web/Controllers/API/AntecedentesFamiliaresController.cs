@@ -200,7 +200,7 @@ namespace bd.swth.web.Controllers.API
         // POST: api/AntecedentesFamiliares
         [HttpPost]
         [Route("InsertarAntecedentesFamiliares")]
-        public async Task<Response> PostAntecedentesFamiliares([FromBody] AntecedentesFamiliares AntecedentesFamiliares)
+        public async Task<Response> InsertarAntecedentesFamiliares([FromBody] AntecedentesFamiliares AntecedentesFamiliares)
         {
             try
             {
