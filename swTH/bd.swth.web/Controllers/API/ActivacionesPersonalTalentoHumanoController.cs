@@ -2,24 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.log.guardar.Servicios;
-using bd.log.guardar.ObjectTranfer;
-using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
-using bd.log.guardar.Enumeradores;
-using bd.webappth.entidades.ObjectTransfer;
-using bd.swth.servicios.Interfaces;
-using bd.webappth.entidades.ViewModels;
 using bd.swth.entidades.ViewModels;
-using System.Diagnostics;
-using EnviarCorreo;
-using SendMails.methods;
 using bd.swth.entidades.Constantes;
+using SendMails.methods;
+using EnviarCorreo;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -145,6 +136,7 @@ namespace bd.swth.web.Controllers.API
 
                                 db.ActivarPersonalTalentoHumano.Add(activarPersonalTalentoHumano);
                                 await db.SaveChangesAsync();
+                                transaction.Commit();
                             }
                             else
                             {
@@ -160,7 +152,7 @@ namespace bd.swth.web.Controllers.API
                     }
 
 
-                    transaction.Commit();
+                    
 
                     return new Response
                     {
@@ -226,7 +218,8 @@ namespace bd.swth.web.Controllers.API
                 MailConfig.SecureSocketOptions = Convert.ToInt32(Constantes.SecureSocketOptions);
 
                 //Class for submit the email 
-                var mail = new Mail
+
+                Mail enviar = new Mail
                 {
                     Password = Constantes.PasswordCorreo
                                      ,
@@ -240,10 +233,10 @@ namespace bd.swth.web.Controllers.API
                                      ,
                     NameTo = "Name To"
                                      ,
-                    Subject = "La plataforma de activación de requerimientos de personal activada"
+                    Subject = "La plataforma de activación de requerimientos de personal está activada"
                 };
                 //execute the method Send Mail or SendMailAsync
-                var a = Emails.SendEmail(mail);
+                var a = Emails.SendEmail(enviar);
 
 
 
