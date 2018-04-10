@@ -12,6 +12,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -23,6 +24,7 @@ namespace bd.swth.web.Controllers.API
 
         public CapacitacionesModalidadesController(SwTHDbContext db)
         {
+            
             this.db = db;
         }
 
