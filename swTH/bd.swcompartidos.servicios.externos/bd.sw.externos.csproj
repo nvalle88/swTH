@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="bd.log.guardar" Version="1.0.8" />
     <PackageReference Include="EnviarCorreo" Version="1.1.8" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="SendMailSMTPNet.Core" Version="1.2.4" />
