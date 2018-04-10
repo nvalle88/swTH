@@ -24,12 +24,12 @@ using SendMails.methods;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/ActivacionesPersonalTalentoHumano")]
-    public class ActivacionesPersonalTalentoHumanoController : Controller
+    [Route("api/SeleccionesPersonalTalentoHumano")]
+    public class SeleccionesPersonalTalentoHumanoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public ActivacionesPersonalTalentoHumanoController(SwTHDbContext db)
+        public SeleccionesPersonalTalentoHumanoController(SwTHDbContext db)
         {
             this.db = db;
         }
@@ -37,7 +37,7 @@ namespace bd.swth.web.Controllers.API
 
         // MÉTODOS PÚBLICOS
 
-        // GET: api/ActivacionesPersonalTalentoHumano
+        // GET: api/SeleccionesPersonalTalentoHumano
         [HttpGet]
         [Route("GetListDependenciasByFiscalYearActual")]
         public async Task<List<ActivarPersonalTalentoHumanoViewModel>> GetListDependenciasByFiscalYearActual()
@@ -102,7 +102,7 @@ namespace bd.swth.web.Controllers.API
 
 
 
-        // GET: api/ActivacionesPersonalTalentoHumano
+        // GET: api/SeleccionesPersonalTalentoHumano
         [HttpGet]
         [Route("GetJefePorDependencia")]
         public Empleado GetJefePorDependencia(int idDependencia)
@@ -132,10 +132,10 @@ namespace bd.swth.web.Controllers.API
 
 
 
-        // POST: api/ActivacionesPersonalTalentoHumano
+        // POST: api/SeleccionesPersonalTalentoHumano
         [HttpPost]
-        [Route("InsertarActivacionesPersonalTalentoHumano")]
-        public async Task<Response> InsertarActivacionesPersonalTalentoHumano([FromBody] ListaActivarPersonalTalentoHumanoViewModel listaRecibida)
+        [Route("InsertarSeleccionesPersonalTalentoHumano")]
+        public async Task<Response> InsertarSeleccionesPersonalTalentoHumano([FromBody] ListaActivarPersonalTalentoHumanoViewModel listaRecibida)
         {
             using (var transaction = db.Database.BeginTransaction())
             {

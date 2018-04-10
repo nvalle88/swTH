@@ -43,7 +43,11 @@ namespace bd.swth.web
             Constantes.SecureSocketOptions = Configuration.GetSection("SecureSocketOptions").Value;
             Constantes.CorreoTTHH = Configuration.GetSection("CorreoTTHH").Value;
             Constantes.PasswordCorreo = Configuration.GetSection("PasswordCorreo").Value;
-            
+
+            // Constante de estado para Documento Activacion Personal
+            Constantes.ActivacionPersonalValorActivado = Configuration.GetSection("ActivacionPersonalValorActivado").Value;
+            Constantes.ActivacionPersonalValorDesactivado = Configuration.GetSection("ActivacionPersonalValorDesactivado").Value;
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
