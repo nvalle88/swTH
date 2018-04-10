@@ -37,10 +37,15 @@ namespace bd.swth.entidades.ViewModels
         public List<string> ListaExepciones { get; set; }
         public List<string> ListActividades { get; set; }
         public List<RolPuesto> ListasRolPUestos { get; set; }
+        public List<ManualPuesto> ListasManualPuesto { get; set; }
         public List<string> ListaRolPUesto { get; set; }
         public bool aplicapolitica { get; set; }
         public string Descripcionpuesto { get; set; }
         public bool Cumple { get; set; }
+        public bool Revisar { get; set; }
+        public int IdManualPuesto { get; set; }
+        public int IdAdministracionTalentoHumano { get; set; }
+        public int IdManualPuestoActual { get; set; }
 
     }
 }
