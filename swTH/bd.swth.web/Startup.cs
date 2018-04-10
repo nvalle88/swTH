@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using bd.swth.servicios.Interfaces;
 using bd.swth.servicios.Servicios;
 using bd.swth.entidades.Constantes;
+using System;
 
 namespace bd.swth.web
 {
@@ -43,6 +44,15 @@ namespace bd.swth.web
             Constantes.SecureSocketOptions = Configuration.GetSection("SecureSocketOptions").Value;
             Constantes.CorreoTTHH = Configuration.GetSection("CorreoTTHH").Value;
             Constantes.PasswordCorreo = Configuration.GetSection("PasswordCorreo").Value;
+
+            //Constantes Estados del FAO
+            EstadosFAO.Asignado = Convert.ToInt32(Configuration.GetSection("Asignado").Value);
+            EstadosFAO.RealizadoEmpleado = Convert.ToInt32(Configuration.GetSection("RealizadoEmpleado").Value);
+            EstadosFAO.RealizadoJefe = Convert.ToInt32(Configuration.GetSection("RealizadoJefe").Value);
+            EstadosFAO.RealizadoEspecialistaTH = Convert.ToInt32(Configuration.GetSection("RealizadoEspecialistaTH").Value);
+            EstadosFAO.RealizadoJefeTH = Convert.ToInt32(Configuration.GetSection("RealizadoJefeTH").Value);
+
+
 
             // Constante de estado para Documento Activacion Personal
             Constantes.ActivacionPersonalValorActivado = Configuration.GetSection("ActivacionPersonalValorActivado").Value;
