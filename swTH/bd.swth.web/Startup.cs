@@ -53,6 +53,11 @@ namespace bd.swth.web
             EstadosFAO.RealizadoJefeTH = Convert.ToInt32(Configuration.GetSection("RealizadoJefeTH").Value);
 
 
+
+            // Constante de estado para Documento Activacion Personal
+            Constantes.ActivacionPersonalValorActivado = Configuration.GetSection("ActivacionPersonalValorActivado").Value;
+            Constantes.ActivacionPersonalValorDesactivado = Configuration.GetSection("ActivacionPersonalValorDesactivado").Value;
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
