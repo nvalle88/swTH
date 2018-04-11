@@ -765,7 +765,6 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                //var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).OrderBy(x => x.FechaIngreso).ToListAsync();
                 var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x => x.AccionPersonal).OrderBy(x => x.FechaIngreso).ToListAsync();
                 var listaSalida = new List<ListaEmpleadoViewModel>();
                 foreach (var item in lista)
