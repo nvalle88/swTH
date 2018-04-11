@@ -2770,7 +2770,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.ToString(),
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -2865,7 +2865,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.ToString(),
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -2909,15 +2909,13 @@ namespace bd.swth.web.Controllers.API
                         idsucursal = item.Dependencia.IdSucursal;
                         idempleado = item.IdEmpleado;
                         jefe = item.EsJefe;
-                        
-                            var anio = DateTime.Now.Year;
 
                             var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
                             foreach (var item1 in lista1)
                             {
                                 var empleadoid = item1.IdEmpleado;
 
-                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.IdEmpleado == empleadoid && x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
                                 if (a != null)
                                 {
                                         listaSalida2.Add(new DocumentoFAOViewModel
@@ -2951,7 +2949,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
