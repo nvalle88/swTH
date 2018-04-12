@@ -108,7 +108,7 @@ namespace bd.swth.web.Controllers.API
                 var exep = db.Exepciones.Where(x => x.IdValidacionJefe == a.FirstOrDefault().IdValidacionJefe).ToList();
                 var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
 
-                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEspecialistaTH).Select(x => new DocumentoFAOViewModel
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && (x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEspecialistaTH || x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoJefeTH)).Select(x => new DocumentoFAOViewModel
                 {
                     IdEmpleado = x.IdEmpleado,
                     apellido = x.Persona.Apellidos,
@@ -375,23 +375,27 @@ namespace bd.swth.web.Controllers.API
                         foreach (var item1 in lista1)
                         {
                             var empleadoid = item1.IdEmpleado;
-                            var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
-                            if (a == null)
+                            var modalidadPartida = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
+                            if (modalidadPartida != null)
                             {
-                                listaSalida2.Add(new DocumentoFAOViewModel
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
+                                if (a == null)
                                 {
-                                    IdEmpleado = item1.IdEmpleado,
-                                    idDependencia = item1.Dependencia.IdDependencia,
-                                    idsucursal = item1.Dependencia.IdSucursal,
-                                    nombre = item1.Persona.Nombres,
-                                    apellido = item1.Persona.Apellidos,
-                                    NombreUsuario = item1.NombreUsuario,
-                                    Identificacion = item1.Persona.Identificacion
+                                    listaSalida2.Add(new DocumentoFAOViewModel
+                                    {
+                                        IdEmpleado = item1.IdEmpleado,
+                                        idDependencia = item1.Dependencia.IdDependencia,
+                                        idsucursal = item1.Dependencia.IdSucursal,
+                                        nombre = item1.Persona.Nombres,
+                                        apellido = item1.Persona.Apellidos,
+                                        NombreUsuario = item1.NombreUsuario,
+                                        Identificacion = item1.Persona.Identificacion
 
 
 
-                                });
+                                    });
 
+                                }
                             }
 
                         }
@@ -541,7 +545,7 @@ namespace bd.swth.web.Controllers.API
                             {
                                 var empleadoid = item1.IdEmpleado;
 
-                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && x.Estado != EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && ( x.Estado != EstadosFAO.RealizadoJefeTH || x.Estado == EstadosFAO.RealizadoJefeTH || x.Estado == EstadosFAO.RealizadoEspecialistaTH)).FirstOrDefaultAsync();
                                 if (a != null)
                                 {
                                     listaSalida2.Add(new DocumentoFAOViewModel
