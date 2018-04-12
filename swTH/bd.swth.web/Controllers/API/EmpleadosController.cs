@@ -70,7 +70,7 @@ namespace bd.swth.web.Controllers.API
 
                 var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
 
-                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == 0).Select(x => new DocumentoFAOViewModel
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEmpleado).Select(x => new DocumentoFAOViewModel
                 {
                     apellido = x.Persona.Apellidos,
                     nombre = x.Persona.Nombres + " " + x.Persona.Apellidos,
@@ -108,7 +108,7 @@ namespace bd.swth.web.Controllers.API
                 var exep = db.Exepciones.Where(x => x.IdValidacionJefe == a.FirstOrDefault().IdValidacionJefe).ToList();
                 var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
 
-                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == 2).Select(x => new DocumentoFAOViewModel
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEspecialistaTH).Select(x => new DocumentoFAOViewModel
                 {
                     IdEmpleado = x.IdEmpleado,
                     apellido = x.Persona.Apellidos,
@@ -191,7 +191,7 @@ namespace bd.swth.web.Controllers.API
                 var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
                
                
-                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == 2).Select(x => new DocumentoFAOViewModel
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEspecialistaTH).Select(x => new DocumentoFAOViewModel
                 {
                     IdEmpleado = x.IdEmpleado,
                     apellido = x.Persona.Apellidos,
@@ -541,7 +541,7 @@ namespace bd.swth.web.Controllers.API
                             {
                                 var empleadoid = item1.IdEmpleado;
 
-                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && x.Estado != EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
                                 if (a != null)
                                 {
                                     listaSalida2.Add(new DocumentoFAOViewModel
@@ -765,7 +765,6 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                //var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).OrderBy(x => x.FechaIngreso).ToListAsync();
                 var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x => x.AccionPersonal).OrderBy(x => x.FechaIngreso).ToListAsync();
                 var listaSalida = new List<ListaEmpleadoViewModel>();
                 foreach (var item in lista)
@@ -890,7 +889,7 @@ namespace bd.swth.web.Controllers.API
                 foreach (var item in listaEmpleado)
                 {
 
-                    bool existeConsulta = listaSolicitudPermiso.Exists(x => (x.IdEmpleado == item.IdEmpleado) && (x.Estado == 0 || x.Estado == -1));
+                    bool existeConsulta = listaSolicitudPermiso.Exists(x => (x.IdEmpleado == item.IdEmpleado) && (x.Estado == EstadosFAO.Asignado || x.Estado == EstadosFAO.RealizadoEmpleado));
                     bool existeListaSalida = listaSalida.Exists(x => x.IdEmpleado == item.IdEmpleado);
 
                     if (existeConsulta)
@@ -2909,15 +2908,13 @@ namespace bd.swth.web.Controllers.API
                         idsucursal = item.Dependencia.IdSucursal;
                         idempleado = item.IdEmpleado;
                         jefe = item.EsJefe;
-                        
-                            var anio = DateTime.Now.Year;
 
                             var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
                             foreach (var item1 in lista1)
                             {
                                 var empleadoid = item1.IdEmpleado;
 
-                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.IdEmpleado == empleadoid && x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
                                 if (a != null)
                                 {
                                         listaSalida2.Add(new DocumentoFAOViewModel
