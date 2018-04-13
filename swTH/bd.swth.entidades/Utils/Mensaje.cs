@@ -18,6 +18,6 @@ namespace bd.swth.entidades.Utils
         public static string CorreoSatisfactorio { get { return "Correo enviado satisfactoriamente"; } }
         public static string ErrorCorreo { get { return "No pudo enviarse el correo"; } }
         public static string DependenciaSinJefe { get { return "no existe una persona a cargo de la dependencia"; } }
-
+        public static string AccesoNoAutorizado { get { return "No tiene los permisos necesarios para acceder a este sitio"; } }
     }
 }

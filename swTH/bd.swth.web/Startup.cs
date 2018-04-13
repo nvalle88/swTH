@@ -48,6 +48,11 @@ namespace bd.swth.web
             Constantes.ActivacionPersonalValorActivado = Configuration.GetSection("ActivacionPersonalValorActivado").Value;
             Constantes.ActivacionPersonalValorDesactivado = Configuration.GetSection("ActivacionPersonalValorDesactivado").Value;
 
+            // Constantes GrupoOcupacional
+            ConstantesGrupoOcupacional.GrupoOcupacionalNivelSuperior = Configuration.GetSection("GrupoOcupacionalNivelSuperior").Value;
+
+            ConstantesGrupoOcupacional.GrupoOcupacionalNivelOperativo = Configuration.GetSection("GrupoOcupacionalNivelOperativo").Value;
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
