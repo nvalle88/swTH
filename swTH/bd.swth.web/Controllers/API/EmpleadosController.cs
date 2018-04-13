@@ -48,7 +48,6 @@ namespace bd.swth.web.Controllers.API
                     Institucion = x.Persona.LugarTrabajo,
                     //Puesto =, 
                 }).FirstOrDefaultAsync();
-
                 if (empleado != null)
                 {
                     return new Response { IsSuccess = true, Resultado = empleado };
@@ -71,7 +70,7 @@ namespace bd.swth.web.Controllers.API
 
                 var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
 
-                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == 0).Select(x => new DocumentoFAOViewModel
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEmpleado).Select(x => new DocumentoFAOViewModel
                 {
                     apellido = x.Persona.Apellidos,
                     nombre = x.Persona.Nombres + " " + x.Persona.Apellidos,
@@ -109,7 +108,7 @@ namespace bd.swth.web.Controllers.API
                 var exep = db.Exepciones.Where(x => x.IdValidacionJefe == a.FirstOrDefault().IdValidacionJefe).ToList();
                 var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
 
-                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == 2).Select(x => new DocumentoFAOViewModel
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && (x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEspecialistaTH || x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoJefeTH)).Select(x => new DocumentoFAOViewModel
                 {
                     IdEmpleado = x.IdEmpleado,
                     apellido = x.Persona.Apellidos,
@@ -184,13 +183,15 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
+                
                 var rh = db.AdministracionTalentoHumano.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).FirstOrDefault();
                 var puesto = db.RolPuesto.Where(x => x.IdRolPuesto == rh.IdRolPuesto).ToList();
                 var a = db.ValidacionInmediatoSuperior.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
                 var exep = db.Exepciones.Where(x => x.IdValidacionJefe == a.FirstOrDefault().IdValidacionJefe).ToList();
                 var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
-
-                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == 2).Select(x => new DocumentoFAOViewModel
+               
+               
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEspecialistaTH).Select(x => new DocumentoFAOViewModel
                 {
                     IdEmpleado = x.IdEmpleado,
                     apellido = x.Persona.Apellidos,
@@ -222,6 +223,121 @@ namespace bd.swth.web.Controllers.API
                 return new Response { IsSuccess = false, Message = Mensaje.Error }; ;
             }
         }
+
+        [Route("ObtenerEncabezadoEmpleadosFaoValidarConValidacionJefeTH")]
+        public async Task<Response> ObtenerEncabezadoEmpleadosFaoValidarConValidacionJefeTH([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+                var rh = db.AdministracionTalentoHumano.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).FirstOrDefault();
+                var puesto = db.RolPuesto.Where(x => x.IdRolPuesto == rh.IdRolPuesto).ToList();
+                var manualPuesto = await db.ManualPuesto.ToListAsync();
+                var a = db.ValidacionInmediatoSuperior.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
+                var exep = db.Exepciones.Where(x => x.IdValidacionJefe == a.FirstOrDefault().IdValidacionJefe).ToList();
+                var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
+                var PuestoActual = db.IndiceOcupacionalModalidadPartida.OrderByDescending(x => x.Fecha).Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado).Select(v => new  ManualPuesto{
+                    IdManualPuesto = v.IndiceOcupacional.ManualPuesto.IdManualPuesto,
+                    Nombre = v.IndiceOcupacional.ManualPuesto.Nombre }).FirstOrDefault();
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEspecialistaTH).Select(x => new DocumentoFAOViewModel
+                {
+                    IdEmpleado = x.IdEmpleado,
+                    apellido = x.Persona.Apellidos,
+                    nombre = x.Persona.Nombres + " " + x.Persona.Apellidos,
+                    Identificacion = x.Persona.Identificacion,
+                    UnidadAdministrativa = x.Dependencia.Nombre,
+                    LugarTrabajo = x.Persona.LugarTrabajo,
+                    Institucion = x.Persona.LugarTrabajo,
+                    Mision = x.FormularioAnalisisOcupacional.FirstOrDefault().MisionPuesto,
+                    InternoMismoProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoMismoProceso,
+                    InternoOtroProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoOtroProceso,
+                    ExternosCiudadania = x.FormularioAnalisisOcupacional.FirstOrDefault().ExternosCiudadania,
+                    ExtPersJuridicasPubNivelNacional = x.FormularioAnalisisOcupacional.FirstOrDefault().ExtPersJuridicasPubNivelNacional,
+                    ListaActividad = b,
+                    ListaExepcion = exep,
+                    ListasRolPUestos = puesto,
+                    aplicapolitica = rh.SeAplicaraPolitica,
+                    Cumple = rh.Cumple,
+                    IdAdministracionTalentoHumano = rh.IdAdministracionTalentoHumano,
+                    Descripcionpuesto = rh.Descripcion,
+                    ListasManualPuesto = manualPuesto,
+                    IdManualPuestoActual = PuestoActual.IdManualPuesto,
+                    Puesto = PuestoActual.Nombre
+                    
+                   
+                }).FirstOrDefaultAsync();
+
+                return new Response { IsSuccess = true, Resultado = empleado };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response { IsSuccess = false, Message = Mensaje.Error }; ;
+            }
+        }
+
+        #region informe final FAO
+
+        [Route("InformeFinalFAO")]
+        public async Task<Response> InformeFinalFAO([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+                var rh = db.AdministracionTalentoHumano.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).FirstOrDefault();
+                var puesto = db.RolPuesto.Where(x => x.IdRolPuesto == rh.IdRolPuesto).ToList();
+                var manualPuesto = await db.ManualPuesto.ToListAsync();
+                var a = db.ValidacionInmediatoSuperior.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
+                var exep = db.Exepciones.Where(x => x.IdValidacionJefe == a.FirstOrDefault().IdValidacionJefe).ToList();
+                var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
+                var informeUTH = db.InformeUATH.Where(x => x.IdAdministracionTalentoHumano == rh.IdAdministracionTalentoHumano).FirstOrDefault();
+                var PuestoActual = db.IndiceOcupacionalModalidadPartida.OrderByDescending(x => x.Fecha).Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado).Select(v => new ManualPuesto
+                {
+                    IdManualPuesto = v.IndiceOcupacional.ManualPuesto.IdManualPuesto,
+                    Nombre = v.IndiceOcupacional.ManualPuesto.Nombre
+                }).FirstOrDefault();
+               var puestodesignado = db.ManualPuesto.Where(x => x.IdManualPuesto == informeUTH.IdManualPuestoDestino).FirstOrDefault();
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoJefeTH).Select(x => new DocumentoFAOViewModel
+                {
+                    IdEmpleado = x.IdEmpleado,
+                    apellido = x.Persona.Apellidos,
+                    nombre = x.Persona.Nombres + " " + x.Persona.Apellidos,
+                    Identificacion = x.Persona.Identificacion,
+                    UnidadAdministrativa = x.Dependencia.Nombre,
+                    LugarTrabajo = x.Persona.LugarTrabajo,
+                    Institucion = x.Persona.LugarTrabajo,
+                    Mision = x.FormularioAnalisisOcupacional.FirstOrDefault().MisionPuesto,
+                    InternoMismoProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoMismoProceso,
+                    InternoOtroProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoOtroProceso,
+                    ExternosCiudadania = x.FormularioAnalisisOcupacional.FirstOrDefault().ExternosCiudadania,
+                    ExtPersJuridicasPubNivelNacional = x.FormularioAnalisisOcupacional.FirstOrDefault().ExtPersJuridicasPubNivelNacional,
+                    ListaActividad = b,
+                    ListaExepcion = exep,
+                    ListasRolPUestos = puesto,
+                    aplicapolitica = rh.SeAplicaraPolitica,
+                    Cumple = rh.Cumple,
+                    IdAdministracionTalentoHumano = rh.IdAdministracionTalentoHumano,
+                    Descripcionpuesto = rh.Descripcion,
+                    ListasManualPuesto = manualPuesto,
+                    IdManualPuestoActual = PuestoActual.IdManualPuesto,
+                    Puesto = PuestoActual.Nombre,
+                    Revisar = informeUTH.Revisar,
+                    NuevoPuesto = puestodesignado.Nombre
+
+                }).FirstOrDefaultAsync();
+
+                return new Response { IsSuccess = true, Resultado = empleado };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response { IsSuccess = false, Message = Mensaje.Error }; ;
+            }
+        }
+
+
+        #endregion
+
         [HttpPost]
         [Route("ListarEmpleadosSinFAO")]
         public async Task<List<DocumentoFAOViewModel>> ListarEmpleadosSinFAO([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
@@ -259,23 +375,27 @@ namespace bd.swth.web.Controllers.API
                         foreach (var item1 in lista1)
                         {
                             var empleadoid = item1.IdEmpleado;
-                            var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
-                            if (a == null)
+                            var modalidadPartida = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
+                            if (modalidadPartida != null)
                             {
-                                listaSalida2.Add(new DocumentoFAOViewModel
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
+                                if (a == null)
                                 {
-                                    IdEmpleado = item1.IdEmpleado,
-                                    idDependencia = item1.Dependencia.IdDependencia,
-                                    idsucursal = item1.Dependencia.IdSucursal,
-                                    nombre = item1.Persona.Nombres,
-                                    apellido = item1.Persona.Apellidos,
-                                    NombreUsuario = item1.NombreUsuario,
-                                    Identificacion = item1.Persona.Identificacion
+                                    listaSalida2.Add(new DocumentoFAOViewModel
+                                    {
+                                        IdEmpleado = item1.IdEmpleado,
+                                        idDependencia = item1.Dependencia.IdDependencia,
+                                        idsucursal = item1.Dependencia.IdSucursal,
+                                        nombre = item1.Persona.Nombres,
+                                        apellido = item1.Persona.Apellidos,
+                                        NombreUsuario = item1.NombreUsuario,
+                                        Identificacion = item1.Persona.Identificacion
 
 
 
-                                });
+                                    });
 
+                                }
                             }
 
                         }
@@ -293,7 +413,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -376,7 +496,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -425,7 +545,7 @@ namespace bd.swth.web.Controllers.API
                             {
                                 var empleadoid = item1.IdEmpleado;
 
-                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid).FirstOrDefaultAsync();
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && ( x.Estado != EstadosFAO.RealizadoJefeTH || x.Estado == EstadosFAO.RealizadoJefeTH || x.Estado == EstadosFAO.RealizadoEspecialistaTH)).FirstOrDefaultAsync();
                                 if (a != null)
                                 {
                                     listaSalida2.Add(new DocumentoFAOViewModel
@@ -462,7 +582,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -516,7 +636,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -545,7 +665,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -574,7 +694,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -603,7 +723,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -632,7 +752,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -649,7 +769,6 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                //var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).OrderBy(x => x.FechaIngreso).ToListAsync();
                 var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x => x.AccionPersonal).OrderBy(x => x.FechaIngreso).ToListAsync();
                 var listaSalida = new List<ListaEmpleadoViewModel>();
                 foreach (var item in lista)
@@ -681,7 +800,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -735,7 +854,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -774,7 +893,7 @@ namespace bd.swth.web.Controllers.API
                 foreach (var item in listaEmpleado)
                 {
 
-                    bool existeConsulta = listaSolicitudPermiso.Exists(x => (x.IdEmpleado == item.IdEmpleado) && (x.Estado == 0 || x.Estado == -1));
+                    bool existeConsulta = listaSolicitudPermiso.Exists(x => (x.IdEmpleado == item.IdEmpleado) && (x.Estado == EstadosFAO.Asignado || x.Estado == EstadosFAO.RealizadoEmpleado));
                     bool existeListaSalida = listaSalida.Exists(x => x.IdEmpleado == item.IdEmpleado);
 
                     if (existeConsulta)
@@ -1166,6 +1285,62 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("ObtenerDatosBasicosEmpleado")]
+        public async Task<Response> ObtenerDatosBasicosEmpleado([FromBody]DatosBasicosEmpleadoViewModel empleado)
+        {
+            //Persona persona = new Persona();
+            try
+            {
+                var Empleado = await db.Empleado
+                                   .Where(e => e.IdEmpleado == empleado.IdEmpleado)
+                                   .Select(x => new DatosBasicosEmpleadoViewModel
+                                   {
+
+                                       FechaNacimiento = x.Persona.FechaNacimiento.Value.Date,
+                                       IdSexo = Convert.ToInt32(x.Persona.IdSexo),
+                                       IdTipoIdentificacion = Convert.ToInt32(x.Persona.IdTipoIdentificacion),
+                                       IdEstadoCivil = Convert.ToInt32(x.Persona.IdEstadoCivil),
+                                       IdGenero = Convert.ToInt32(x.Persona.IdGenero),
+                                       IdNacionalidad = Convert.ToInt32(x.Persona.IdNacionalidad),
+                                       IdTipoSangre = Convert.ToInt32(x.Persona.IdTipoSangre),
+                                       IdEtnia = Convert.ToInt32(x.Persona.IdEtnia),
+                                       Identificacion = x.Persona.Identificacion,
+                                       Nombres = x.Persona.Nombres,
+                                       Apellidos = x.Persona.Apellidos,
+                                       TelefonoPrivado = x.Persona.TelefonoPrivado,
+                                       TelefonoCasa = x.Persona.TelefonoCasa,
+                                       CorreoPrivado = x.Persona.CorreoPrivado,
+                                       LugarTrabajo = x.Persona.LugarTrabajo,
+                                       IdNacionalidadIndigena = x.Persona.IdNacionalidadIndigena,
+                                       CallePrincipal = x.Persona.CallePrincipal,
+                                       CalleSecundaria = x.Persona.CalleSecundaria,
+                                       Referencia = x.Persona.Referencia,
+                                       Numero = x.Persona.Numero,
+                                       IdParroquia = Convert.ToInt32(x.Persona.IdParroquia),
+                                       Ocupacion = x.Persona.Ocupacion,
+                                       IdEmpleado = x.IdEmpleado,
+                                       IdProvinciaLugarSufragio = Convert.ToInt32(x.IdProvinciaLugarSufragio),
+                                       IdPaisLugarNacimiento = x.CiudadNacimiento.Provincia.Pais.IdPais,
+                                       IdCiudadLugarNacimiento = x.IdCiudadLugarNacimiento,
+                                       IdPaisLugarSufragio = x.ProvinciaSufragio.Pais.IdPais,
+                                       IdPaisLugarPersona=x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
+                                       IdCiudadLugarPersona=x.Persona.Parroquia.Ciudad.IdCiudad,
+                                       IdProvinciaLugarPersona=x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
+
+                                   }
+                                   ).FirstOrDefaultAsync();
+               
+
+                return new Response {IsSuccess=true,Resultado=Empleado };
+            }
+            catch (Exception ex)
+            {
+                return new Response {IsSuccess=false};
+            }
+        }
+
         [HttpPost]
         [Route("ObtenerEmpleadoLogueado")]
         public async Task<Empleado> ObtenerEmpleadoLogueado([FromBody]Empleado empleado)
@@ -1186,7 +1361,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -1258,7 +1433,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -1303,7 +1478,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -1344,7 +1519,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -1521,7 +1696,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -1596,7 +1771,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -1671,7 +1846,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -1746,7 +1921,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -1782,6 +1957,102 @@ namespace bd.swth.web.Controllers.API
 
 
         // POST: api/Empleados
+
+        [HttpPost]
+        [Route("EditarEmpleado")]
+        public async Task<Response> EditarEmpleado([FromBody] DatosBasicosEmpleadoViewModel datosBasicosEmpleado)
+        {
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var respuesta = Existe(datosBasicosEmpleado);
+
+                    if (datosBasicosEmpleado.IdNacionalidadIndigena == 0)
+                    {
+                        datosBasicosEmpleado.IdNacionalidadIndigena = null;
+                    }
+                    if (!respuesta.IsSuccess)
+                    {
+
+                        var empleadoActual =await db.Empleado.Where(x => x.IdEmpleado == datosBasicosEmpleado.IdEmpleado).FirstOrDefaultAsync();
+                        var personaActual =await db.Persona.Where(x => x.IdPersona == empleadoActual.IdPersona).FirstOrDefaultAsync();
+
+                        personaActual.FechaNacimiento = datosBasicosEmpleado.FechaNacimiento;
+                            personaActual.IdSexo = datosBasicosEmpleado.IdSexo;
+                            personaActual.IdTipoIdentificacion = datosBasicosEmpleado.IdTipoIdentificacion;
+                            personaActual.IdEstadoCivil = datosBasicosEmpleado.IdEstadoCivil;
+                            personaActual.IdGenero = datosBasicosEmpleado.IdGenero;
+                            personaActual.IdNacionalidad = datosBasicosEmpleado.IdNacionalidad;
+                            personaActual.IdTipoSangre = datosBasicosEmpleado.IdTipoSangre;
+                            personaActual.IdEtnia = datosBasicosEmpleado.IdEtnia;
+                            personaActual.Identificacion = datosBasicosEmpleado.Identificacion;
+                            personaActual.Nombres = datosBasicosEmpleado.Nombres;
+                            personaActual.Apellidos = datosBasicosEmpleado.Apellidos;
+                            personaActual.TelefonoPrivado = datosBasicosEmpleado.TelefonoPrivado;
+                            personaActual.TelefonoCasa = datosBasicosEmpleado.TelefonoCasa;
+                            personaActual.CorreoPrivado = datosBasicosEmpleado.CorreoPrivado;
+                            personaActual.LugarTrabajo = datosBasicosEmpleado.LugarTrabajo;
+                            personaActual.IdNacionalidadIndigena = datosBasicosEmpleado.IdNacionalidadIndigena;
+                            personaActual.CallePrincipal = datosBasicosEmpleado.CallePrincipal;
+                            personaActual.CalleSecundaria = datosBasicosEmpleado.CalleSecundaria;
+                            personaActual.Referencia = datosBasicosEmpleado.Referencia;
+                            personaActual.Numero = datosBasicosEmpleado.Numero;
+                            personaActual.IdParroquia = datosBasicosEmpleado.IdParroquia;
+                            personaActual.Ocupacion = datosBasicosEmpleado.Ocupacion;
+                        //1. Actualizar Persona Persona 
+                        var personaInsertarda =  db.Persona.Update(personaActual);
+
+                        //2. Insertar Empleado 
+                        empleadoActual.IdPersona = personaInsertarda.Entity.IdPersona;
+                        empleadoActual.IdCiudadLugarNacimiento = datosBasicosEmpleado.IdCiudadLugarNacimiento;
+                        empleadoActual.IdProvinciaLugarSufragio = datosBasicosEmpleado.IdProvinciaLugarSufragio;
+                        
+                        var empleado =  db.Empleado.Update(empleadoActual);
+                        await db.SaveChangesAsync();
+
+
+                        transaction.Commit();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                            Resultado = empleado.Entity
+                        };
+                    }
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+
+                }
+                catch (Exception ex)
+                {
+
+                    transaction.Rollback();
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    {
+                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                        ExceptionTrace = ex.Message,
+                        Message = Mensaje.Excepcion,
+                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                        UserName = "",
+
+                    });
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+            }
+
+        }
+
         [HttpPost]
         [Route("InsertarEmpleado")]
         public async Task<Response> InsertarEmpleado([FromBody] DatosBasicosEmpleadoViewModel datosBasicosEmpleado)
@@ -1823,6 +2094,7 @@ namespace bd.swth.web.Controllers.API
                             Numero = datosBasicosEmpleado.Numero,
                             IdParroquia = datosBasicosEmpleado.IdParroquia,
                             Ocupacion = datosBasicosEmpleado.Ocupacion,
+                            
 
                         };
                         //1. Insertar Persona 
@@ -1864,7 +2136,7 @@ namespace bd.swth.web.Controllers.API
                     await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                     {
                         ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
+                        ExceptionTrace = ex.Message,
                         Message = Mensaje.Excepcion,
                         LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                         LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -2080,7 +2352,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -2146,7 +2418,7 @@ namespace bd.swth.web.Controllers.API
         //        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
         //        {
         //            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-        //            ExceptionTrace = ex,
+        //            ExceptionTrace = ex.Message,
         //            Message = Mensaje.Excepcion,
         //            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
         //            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -2204,7 +2476,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -2246,7 +2518,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -2289,7 +2561,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -2333,7 +2605,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -2377,7 +2649,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -2396,9 +2668,17 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(DatosBasicosEmpleadoViewModel datosBasicosEmpleado)
         {
             var identificacion = datosBasicosEmpleado.Identificacion.ToUpper().TrimEnd().TrimStart();
-            var Empleadorespuesta = db.Persona.Where(p => p.Identificacion == identificacion).FirstOrDefault();
+            var Empleadorespuesta = db.Persona.Where(p => p.Identificacion == identificacion).Include(x=>x.Empleado).FirstOrDefault();
+            
             if (Empleadorespuesta != null)
             {
+                if (datosBasicosEmpleado.IdEmpleado == Empleadorespuesta.Empleado.FirstOrDefault().IdEmpleado)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                    };
+                }
                 return new Response
                 {
                     IsSuccess = true,
@@ -2449,7 +2729,7 @@ namespace bd.swth.web.Controllers.API
                         await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                         {
                             ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex,
+                            ExceptionTrace = ex.Message,
                             Message = Mensaje.Excepcion,
                             LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                             LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -2483,5 +2763,367 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("ListarEmpleadosConFAOTH")]
+        public async Task<List<DocumentoFAOViewModel>> ListarEmpleadosConFAOTH([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+
+                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario).ToListAsync();
+
+                var listaSalida2 = new List<DocumentoFAOViewModel>();
+
+                var NombreDependencia = "";
+                int idDependencia;
+                int idsucursal;
+                int idempleado;
+                bool jefe;
+                foreach (var item in lista)
+                {
+                    if (item.Dependencia == null)
+                    {
+                        NombreDependencia = "No Asignado";
+                        //idDependencia = "";
+                    }
+                    else
+                    {
+                        NombreDependencia = item.Dependencia.Nombre;
+                        idDependencia = item.Dependencia.IdDependencia;
+                        idsucursal = item.Dependencia.IdSucursal;
+                        idempleado = item.IdEmpleado;
+                        jefe = item.EsJefe;
+                        if (jefe == true)
+                        {
+                            var anio = DateTime.Now.Year;
+
+                            var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
+                            foreach (var item1 in lista1)
+                            {
+                                var empleadoid = item1.IdEmpleado;
+
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && (x.Estado == EstadosFAO.RealizadoEspecialistaTH || x.Estado == EstadosFAO.RealizadoJefeTH)).FirstOrDefaultAsync();
+                                if (a != null)
+                                {
+                                    listaSalida2.Add(new DocumentoFAOViewModel
+                                    {
+                                        IdEmpleado = item1.IdEmpleado,
+                                        idDependencia = item1.Dependencia.IdDependencia,
+                                        idsucursal = item1.Dependencia.IdSucursal,
+                                        nombre = item1.Persona.Nombres,
+                                        apellido = item1.Persona.Apellidos,
+                                        NombreUsuario = item1.NombreUsuario,
+                                        Identificacion = item1.Persona.Identificacion,
+                                        estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
+                                        IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
+
+                                    });
+
+                                }
+                            }
+
+
+
+                        }
+
+                    }
+
+                }
+                return listaSalida2;
+
+
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex.Message,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<DocumentoFAOViewModel>();
+            }
+        }
+
+        #region cambio de puesto fao
+        [HttpPost]
+        [Route("ListarEmpleadosCambioPuestoFao")]
+        public async Task<List<DocumentoFAOViewModel>> ListarEmpleadosCambioPuestoFao([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+
+                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario).ToListAsync();
+
+                var listaSalida2 = new List<DocumentoFAOViewModel>();
+
+                var NombreDependencia = "";
+                int idDependencia;
+                int idsucursal;
+                int idempleado;
+                bool jefe;
+                foreach (var item in lista)
+                {
+                    if (item.Dependencia == null)
+                    {
+                        NombreDependencia = "No Asignado";
+                        //idDependencia = "";
+                    }
+                    else
+                    {
+                        NombreDependencia = item.Dependencia.Nombre;
+                        idDependencia = item.Dependencia.IdDependencia;
+                        idsucursal = item.Dependencia.IdSucursal;
+                        idempleado = item.IdEmpleado;
+                        jefe = item.EsJefe;
+                        
+                            var anio = DateTime.Now.Year;
+
+                            var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
+                            foreach (var item1 in lista1)
+                            {
+                                var empleadoid = item1.IdEmpleado;
+
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid &&  x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
+                                if (a != null)
+                                {
+                                    var cambiopuesto = db.AdministracionTalentoHumano.Where(x => x.IdFormularioAnalisisOcupacional == a.IdFormularioAnalisisOcupacional).Select(v => new InformeUATH
+                                    {
+                                        IdManualPuestoOrigen = v.InformeUATH.FirstOrDefault().IdManualPuestoOrigen,
+                                        IdManualPuestoDestino = v.InformeUATH.FirstOrDefault().IdManualPuestoDestino
+                                       
+                                    }).FirstOrDefault();
+
+                                    if (cambiopuesto.IdManualPuestoDestino != cambiopuesto.IdManualPuestoOrigen)
+                                    {
+                                        listaSalida2.Add(new DocumentoFAOViewModel
+                                        {
+                                            IdEmpleado = item1.IdEmpleado,
+                                            idDependencia = item1.Dependencia.IdDependencia,
+                                            idsucursal = item1.Dependencia.IdSucursal,
+                                            nombre = item1.Persona.Nombres,
+                                            apellido = item1.Persona.Apellidos,
+                                            NombreUsuario = item1.NombreUsuario,
+                                            Identificacion = item1.Persona.Identificacion,
+                                            estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
+                                            IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
+
+                                        });
+                                    }
+
+                                }
+                            }
+
+
+                    }
+
+                }
+                return listaSalida2;
+
+
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex.Message,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<DocumentoFAOViewModel>();
+            }
+        }
+
+        #endregion
+
+        #region Sin cambio de puesto fao
+        [HttpPost]
+        [Route("ListarEmpleadosSinCambioPuestoFao")]
+        public async Task<List<DocumentoFAOViewModel>> ListarEmpleadosSinCambioPuestoFao([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+
+                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario).ToListAsync();
+
+                var listaSalida2 = new List<DocumentoFAOViewModel>();
+
+                var NombreDependencia = "";
+                int idDependencia;
+                int idsucursal;
+                int idempleado;
+                bool jefe;
+                foreach (var item in lista)
+                {
+                    if (item.Dependencia == null)
+                    {
+                        NombreDependencia = "No Asignado";
+                        //idDependencia = "";
+                    }
+                    else
+                    {
+                        NombreDependencia = item.Dependencia.Nombre;
+                        idDependencia = item.Dependencia.IdDependencia;
+                        idsucursal = item.Dependencia.IdSucursal;
+                        idempleado = item.IdEmpleado;
+                        jefe = item.EsJefe;
+                        
+                            var anio = DateTime.Now.Year;
+
+                            var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
+                            foreach (var item1 in lista1)
+                            {
+                                var empleadoid = item1.IdEmpleado;
+
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
+                                if (a != null)
+                                {
+                                    var cambiopuesto = db.AdministracionTalentoHumano.Where(x => x.IdFormularioAnalisisOcupacional == a.IdFormularioAnalisisOcupacional).Select(v => new InformeUATH
+                                    {
+                                        IdManualPuestoOrigen = v.InformeUATH.FirstOrDefault().IdManualPuestoOrigen,
+                                        IdManualPuestoDestino = v.InformeUATH.FirstOrDefault().IdManualPuestoDestino
+
+                                    }).FirstOrDefault();
+
+                                    if (cambiopuesto.IdManualPuestoDestino == cambiopuesto.IdManualPuestoOrigen)
+                                    {
+                                        listaSalida2.Add(new DocumentoFAOViewModel
+                                        {
+                                            IdEmpleado = item1.IdEmpleado,
+                                            idDependencia = item1.Dependencia.IdDependencia,
+                                            idsucursal = item1.Dependencia.IdSucursal,
+                                            nombre = item1.Persona.Nombres,
+                                            apellido = item1.Persona.Apellidos,
+                                            NombreUsuario = item1.NombreUsuario,
+                                            Identificacion = item1.Persona.Identificacion,
+                                            estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
+                                            IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
+
+                                        });
+                                    }
+
+                                }                            
+                            }
+
+                    }
+
+                }
+                return listaSalida2;
+
+
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex.Message,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<DocumentoFAOViewModel>();
+            }
+        }
+
+        #endregion
+
+        #region Historico fao
+        [HttpPost]
+        [Route("ListarEmpleadosHistoricoFao")]
+        public async Task<List<DocumentoFAOViewModel>> ListarEmpleadosHistoricoFao([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+
+                var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario).ToListAsync();
+
+                var listaSalida2 = new List<DocumentoFAOViewModel>();
+
+                var NombreDependencia = "";
+                int idDependencia;
+                int idsucursal;
+                int idempleado;
+                bool jefe;
+                foreach (var item in lista)
+                {
+                    if (item.Dependencia == null)
+                    {
+                        NombreDependencia = "No Asignado";
+                        //idDependencia = "";
+                    }
+                    else
+                    {
+                        NombreDependencia = item.Dependencia.Nombre;
+                        idDependencia = item.Dependencia.IdDependencia;
+                        idsucursal = item.Dependencia.IdSucursal;
+                        idempleado = item.IdEmpleado;
+                        jefe = item.EsJefe;
+
+                            var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
+                            foreach (var item1 in lista1)
+                            {
+                                var empleadoid = item1.IdEmpleado;
+
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.IdEmpleado == empleadoid && x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
+                                if (a != null)
+                                {
+                                        listaSalida2.Add(new DocumentoFAOViewModel
+                                        {
+                                            IdEmpleado = item1.IdEmpleado,
+                                            idDependencia = item1.Dependencia.IdDependencia,
+                                            idsucursal = item1.Dependencia.IdSucursal,
+                                            nombre = item1.Persona.Nombres,
+                                            apellido = item1.Persona.Apellidos,
+                                            NombreUsuario = item1.NombreUsuario,
+                                            Identificacion = item1.Persona.Identificacion,
+                                            Anio = item1.FormularioAnalisisOcupacional.FirstOrDefault().Anio,
+                                            estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
+                                            IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
+
+                                        });
+                                }
+                            }
+                        
+
+                    }
+
+                }
+                return listaSalida2;
+
+
+
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex.Message,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<DocumentoFAOViewModel>();
+            }
+        }
+
+        #endregion
     }
 }

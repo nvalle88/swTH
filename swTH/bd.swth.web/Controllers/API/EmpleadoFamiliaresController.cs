@@ -42,7 +42,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -66,7 +66,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -115,7 +115,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -152,10 +152,6 @@ namespace bd.swth.web.Controllers.API
                     {
                         try
                         {
-                            if (empleadoFamiliarViewModel.IdNacionalidadIndigena == 0)
-                            {
-                                empleadoFamiliarViewModel.IdNacionalidadIndigena = null;
-                            }
                             //1. Actualizar Persona 
 
                             PersonaActual.FechaNacimiento = empleadoFamiliarViewModel.FechaNacimiento;
@@ -163,25 +159,14 @@ namespace bd.swth.web.Controllers.API
                             PersonaActual.IdTipoIdentificacion = empleadoFamiliarViewModel.IdTipoIdentificacion;
                             PersonaActual.IdEstadoCivil = empleadoFamiliarViewModel.IdEstadoCivil;
                             PersonaActual.IdGenero = empleadoFamiliarViewModel.IdGenero;
-                            PersonaActual.IdNacionalidad = empleadoFamiliarViewModel.IdNacionalidad;
-                            PersonaActual.IdTipoSangre = empleadoFamiliarViewModel.IdTipoSangre;
-                            PersonaActual.IdEtnia = empleadoFamiliarViewModel.IdEtnia;
                             PersonaActual.Identificacion = empleadoFamiliarViewModel.Identificacion;
                             PersonaActual.Nombres = empleadoFamiliarViewModel.Nombres;
                             PersonaActual.Apellidos = empleadoFamiliarViewModel.Apellidos;
                             PersonaActual.TelefonoPrivado = empleadoFamiliarViewModel.TelefonoPrivado;
-                            PersonaActual.TelefonoCasa = empleadoFamiliarViewModel.TelefonoCasa;
-                            PersonaActual.CorreoPrivado = empleadoFamiliarViewModel.CorreoPrivado;
                             PersonaActual.LugarTrabajo = empleadoFamiliarViewModel.LugarTrabajo;
-                            PersonaActual.IdNacionalidadIndigena = empleadoFamiliarViewModel.IdNacionalidadIndigena;
-                            PersonaActual.CallePrincipal = empleadoFamiliarViewModel.CallePrincipal;
-                            PersonaActual.CalleSecundaria = empleadoFamiliarViewModel.CalleSecundaria;
-                            PersonaActual.Referencia = empleadoFamiliarViewModel.Referencia;
-                            PersonaActual.Numero = empleadoFamiliarViewModel.Numero;
-                            PersonaActual.IdParroquia = empleadoFamiliarViewModel.IdParroquia;
                             PersonaActual.Ocupacion = empleadoFamiliarViewModel.Ocupacion;
-
-
+                            PersonaActual.TelefonoCasa = empleadoFamiliarViewModel.TelefonoCasa;
+                            
                             //await db.SaveChangesAsync();
 
 
@@ -210,7 +195,7 @@ namespace bd.swth.web.Controllers.API
                             await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                             {
                                 ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                                ExceptionTrace = ex,
+                                ExceptionTrace = ex.Message,
                                 Message = Mensaje.Excepcion,
                                 LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                                 LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -242,10 +227,6 @@ namespace bd.swth.web.Controllers.API
                         {
                             try
                             {
-                                if (empleadoFamiliarViewModel.IdNacionalidadIndigena == 0)
-                                {
-                                    empleadoFamiliarViewModel.IdNacionalidadIndigena = null;
-                                }
                                 //1. Actualizar Persona 
 
                                 PersonaActual.FechaNacimiento = empleadoFamiliarViewModel.FechaNacimiento;
@@ -253,27 +234,14 @@ namespace bd.swth.web.Controllers.API
                                 PersonaActual.IdTipoIdentificacion = empleadoFamiliarViewModel.IdTipoIdentificacion;
                                 PersonaActual.IdEstadoCivil = empleadoFamiliarViewModel.IdEstadoCivil;
                                 PersonaActual.IdGenero = empleadoFamiliarViewModel.IdGenero;
-                                PersonaActual.IdNacionalidad = empleadoFamiliarViewModel.IdNacionalidad;
-                                PersonaActual.IdTipoSangre = empleadoFamiliarViewModel.IdTipoSangre;
-                                PersonaActual.IdEtnia = empleadoFamiliarViewModel.IdEtnia;
                                 PersonaActual.Identificacion = empleadoFamiliarViewModel.Identificacion;
                                 PersonaActual.Nombres = empleadoFamiliarViewModel.Nombres;
                                 PersonaActual.Apellidos = empleadoFamiliarViewModel.Apellidos;
                                 PersonaActual.TelefonoPrivado = empleadoFamiliarViewModel.TelefonoPrivado;
-                                PersonaActual.TelefonoCasa = empleadoFamiliarViewModel.TelefonoCasa;
-                                PersonaActual.CorreoPrivado = empleadoFamiliarViewModel.CorreoPrivado;
                                 PersonaActual.LugarTrabajo = empleadoFamiliarViewModel.LugarTrabajo;
-                                PersonaActual.IdNacionalidadIndigena = empleadoFamiliarViewModel.IdNacionalidadIndigena;
-                                PersonaActual.CallePrincipal = empleadoFamiliarViewModel.CallePrincipal;
-                                PersonaActual.CalleSecundaria = empleadoFamiliarViewModel.CalleSecundaria;
-                                PersonaActual.Referencia = empleadoFamiliarViewModel.Referencia;
-                                PersonaActual.Numero = empleadoFamiliarViewModel.Numero;
-                                PersonaActual.IdParroquia = empleadoFamiliarViewModel.IdParroquia;
                                 PersonaActual.Ocupacion = empleadoFamiliarViewModel.Ocupacion;
 
-
                                 //await db.SaveChangesAsync();
-
 
                                 //2. Actualizar EmpleadoFamiliar
                                 var EmpleadoFamiliarActualizar = await db.EmpleadoFamiliar.Where(x => x.IdPersona == empleadoFamiliarViewModel.IdPersona).FirstOrDefaultAsync();
@@ -300,7 +268,7 @@ namespace bd.swth.web.Controllers.API
                                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                                 {
                                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                                    ExceptionTrace = ex,
+                                    ExceptionTrace = ex.Message,
                                     Message = Mensaje.Excepcion,
                                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -339,10 +307,6 @@ namespace bd.swth.web.Controllers.API
                 {
 
                     var respuesta = Existe(empleadoFamiliarViewModel);
-                    if (empleadoFamiliarViewModel.IdNacionalidadIndigena == 0)
-                    {
-                        empleadoFamiliarViewModel.IdNacionalidadIndigena = null;
-                    }
                     if (!respuesta.IsSuccess)
                     {
 
@@ -353,23 +317,13 @@ namespace bd.swth.web.Controllers.API
                             IdTipoIdentificacion = empleadoFamiliarViewModel.IdTipoIdentificacion,
                             IdEstadoCivil = empleadoFamiliarViewModel.IdEstadoCivil,
                             IdGenero = empleadoFamiliarViewModel.IdGenero,
-                            IdNacionalidad = empleadoFamiliarViewModel.IdNacionalidad,
-                            IdTipoSangre = empleadoFamiliarViewModel.IdTipoSangre,
-                            IdEtnia = empleadoFamiliarViewModel.IdEtnia,
                             Identificacion = empleadoFamiliarViewModel.Identificacion,
                             Nombres = empleadoFamiliarViewModel.Nombres,
                             Apellidos = empleadoFamiliarViewModel.Apellidos,
                             TelefonoPrivado = empleadoFamiliarViewModel.TelefonoPrivado,
-                            TelefonoCasa = empleadoFamiliarViewModel.TelefonoCasa,
-                            CorreoPrivado = empleadoFamiliarViewModel.CorreoPrivado,
                             LugarTrabajo = empleadoFamiliarViewModel.LugarTrabajo,
-                            IdNacionalidadIndigena = empleadoFamiliarViewModel.IdNacionalidadIndigena,
-                            CallePrincipal = empleadoFamiliarViewModel.CallePrincipal,
-                            CalleSecundaria = empleadoFamiliarViewModel.CalleSecundaria,
-                            Referencia = empleadoFamiliarViewModel.Referencia,
-                            Numero = empleadoFamiliarViewModel.Numero,
-                            IdParroquia = empleadoFamiliarViewModel.IdParroquia,
-                            Ocupacion = empleadoFamiliarViewModel.Ocupacion
+                            Ocupacion = empleadoFamiliarViewModel.Ocupacion,
+                            TelefonoCasa=empleadoFamiliarViewModel.TelefonoCasa,
 
                         };
 
@@ -410,7 +364,7 @@ namespace bd.swth.web.Controllers.API
                     await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                     {
                         ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex,
+                        ExceptionTrace = ex.Message,
                         Message = Mensaje.Excepcion,
                         LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                         LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -466,7 +420,7 @@ namespace bd.swth.web.Controllers.API
                     await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),

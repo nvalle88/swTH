@@ -42,7 +42,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -60,14 +60,14 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.PersonaEstudio.Where(x=>x.IdPersona == empleado.IdPersona).Include(x => x.Titulo).Include(x => x.Persona).OrderBy(x => x.FechaGraduado).ToListAsync();
+                return await db.PersonaEstudio.Where(x=>x.IdPersona == empleado.IdPersona).Include(x => x.Persona).Include(x => x.Titulo.AreaConocimiento).Include(x => x.Titulo.Estudio).OrderBy(x => x.FechaGraduado).ToListAsync();
             }
             catch (Exception ex)
             {
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -116,7 +116,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -177,7 +177,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -234,7 +234,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
@@ -287,7 +287,7 @@ namespace bd.swth.web.Controllers.API
                 await GuardarLogService.SaveLogEntry(new LogEntryTranfer
                 {
                     ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex,
+                    ExceptionTrace = ex.Message,
                     Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
