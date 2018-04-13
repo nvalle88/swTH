@@ -20,16 +20,17 @@ using System.Diagnostics;
 using bd.swth.entidades.Constantes;
 using EnviarCorreo;
 using SendMails.methods;
+using MoreLinq;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/SeleccionesPersonalTalentoHumano")]
-    public class SeleccionesPersonalTalentoHumanoController : Controller
+    [Route("api/SeleccionPersonalTalentoHumano")]
+    public class SeleccionPersonalTalentoHumanoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public SeleccionesPersonalTalentoHumanoController(SwTHDbContext db)
+        public SeleccionPersonalTalentoHumanoController(SwTHDbContext db)
         {
             this.db = db;
         }
@@ -37,7 +38,103 @@ namespace bd.swth.web.Controllers.API
 
         // MÉTODOS PÚBLICOS
 
-        // GET: api/SeleccionesPersonalTalentoHumano
+        // GET: api
+        [Route("ListarPuestoVacantesSeleccionPersonal")]
+        public async Task<List<ViewModelSeleccionPersonal>> ListarPuestoVacantesSeleccionPersonal()
+        {
+            try
+            {
+                //var name = Constantes.PartidaVacante;
+                var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaVacante).FirstOrDefaultAsync();
+                var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdModalidadPartida == ModalidadPartida.IdModalidadPartida)
+                 .Select(x => new ViewModelSeleccionPersonal
+                 {
+                    iddependecia = x.IdDependencia,
+                    NumeroPartidaGeneral =  Convert.ToString(x.PartidaGeneral.NumeroPartida),
+                    UnidadAdministrativa = x.Dependencia.Nombre,
+                    NumeroPartidaIndividual = Convert.ToString(x.NumeroPartidaIndividual),
+                    PuestoInstitucional = x.ManualPuesto.Nombre,
+                    grupoOcupacional = x.EscalaGrados.Nombre,
+                    Rol = x.RolPuesto.Nombre,
+                    Remuneracion = Convert.ToDecimal(x.EscalaGrados.Remuneracion),
+                    //NumeroPuesto = x.Count()
+                    //grupoOcupacional = x.
+
+                 }).ToListAsync();
+               // var nuemro =DatosBasicosIndiceOcupacional.GroupBy(b => b.PuestoInstitucional);
+
+                return DatosBasicosIndiceOcupacional;
+            }
+            catch (Exception ex)
+            {
+                return new List<ViewModelSeleccionPersonal>();
+            }
+        }
+
+        [HttpPost]
+        [Route("ObtenerEncabezadopostulante")]
+        public async Task<Response> ObtenerEncabezadopostulante([FromBody] ViewModelSeleccionPersonal viewModelSeleccionPersonal)
+        {
+            try
+            {
+                var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdDependencia == viewModelSeleccionPersonal.iddependecia)
+                 .Select(x => new ViewModelSeleccionPersonal
+                 {
+                     iddependecia = x.IdDependencia,
+                     UnidadAdministrativa = x.Dependencia.Nombre,
+                     PuestoInstitucional = x.ManualPuesto.Nombre,
+
+                 }).FirstOrDefaultAsync();
+
+                return new Response { IsSuccess = true, Resultado = DatosBasicosIndiceOcupacional };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response { IsSuccess = false, Message = Mensaje.Error }; ;
+            }
+        }
+
+        [HttpPost]
+        [Route("ObtenerEncabezadoEmpleadosFaoValidarConActividades")]
+        public async Task<Response> ObtenerEncabezadoEmpleadosFaoValidarConActividades([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
+        {
+            try
+            {
+
+                var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
+
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEmpleado).Select(x => new DocumentoFAOViewModel
+                {
+                    apellido = x.Persona.Apellidos,
+                    nombre = x.Persona.Nombres + " " + x.Persona.Apellidos,
+                    Identificacion = x.Persona.Identificacion,
+                    UnidadAdministrativa = x.Dependencia.Nombre,
+                    LugarTrabajo = x.Persona.LugarTrabajo,
+                    Institucion = x.Persona.LugarTrabajo,
+                    Mision = x.FormularioAnalisisOcupacional.FirstOrDefault().MisionPuesto,
+                    InternoMismoProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoMismoProceso,
+                    InternoOtroProceso = x.FormularioAnalisisOcupacional.FirstOrDefault().InternoOtroProceso,
+                    ExternosCiudadania = x.FormularioAnalisisOcupacional.FirstOrDefault().ExternosCiudadania,
+                    ExtPersJuridicasPubNivelNacional = x.FormularioAnalisisOcupacional.FirstOrDefault().ExtPersJuridicasPubNivelNacional,
+                    ListaActividad = b,
+                    //ListaExepcion= exep,                 
+                    //Puesto =, 
+                }).FirstOrDefaultAsync();
+
+                return new Response { IsSuccess = true, Resultado = empleado };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response { IsSuccess = false, Message = Mensaje.Error }; ;
+            }
+        }
+
+
+
         [HttpGet]
         [Route("GetListDependenciasByFiscalYearActual")]
         public async Task<List<ActivarPersonalTalentoHumanoViewModel>> GetListDependenciasByFiscalYearActual()

@@ -47,6 +47,7 @@ namespace bd.swth.entidades.ViewModels
         public int IdAdministracionTalentoHumano { get; set; }
         public int IdManualPuestoActual { get; set; }
         public string NuevoPuesto { get; set; }
+        public string PuestoActual { get; set; }
 
     }
 }
