@@ -6,12 +6,22 @@ namespace bd.swth.entidades.ViewModels
 {
    public class DatosBasicosEmpleadoViewModel
     {
+        public int IdEmpleado { get; set; }
+        public int IdPersona { get; set; }
         public int IdTipoIdentificacion { get; set; }
         public string Identificacion { get; set; }
         public string Nombres{ get; set; }
         public string Apellidos { get; set; }
         public int IdSexo { get; set; }
         public int IdGenero { get; set; }
+
+        public int IdPaisLugarNacimiento { get; set; }
+        public int IdPaisLugarSufragio { get; set; }
+        public int IdPaisLugarPersona { get; set; }
+        public int IdCiudadLugarPersona { get; set; }
+        public int IdProvinciaLugarPersona { get; set; }
+        
+
         public int IdEstadoCivil { get; set; }
         public int IdTipoSangre { get; set; }
         public int IdNacionalidad { get; set; }

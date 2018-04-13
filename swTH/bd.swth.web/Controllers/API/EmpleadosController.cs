@@ -1287,6 +1287,62 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("ObtenerDatosBasicosEmpleado")]
+        public async Task<Response> ObtenerDatosBasicosEmpleado([FromBody]DatosBasicosEmpleadoViewModel empleado)
+        {
+            //Persona persona = new Persona();
+            try
+            {
+                var Empleado = await db.Empleado
+                                   .Where(e => e.IdEmpleado == empleado.IdEmpleado)
+                                   .Select(x => new DatosBasicosEmpleadoViewModel
+                                   {
+
+                                       FechaNacimiento = x.Persona.FechaNacimiento.Value.Date,
+                                       IdSexo = Convert.ToInt32(x.Persona.IdSexo),
+                                       IdTipoIdentificacion = Convert.ToInt32(x.Persona.IdTipoIdentificacion),
+                                       IdEstadoCivil = Convert.ToInt32(x.Persona.IdEstadoCivil),
+                                       IdGenero = Convert.ToInt32(x.Persona.IdGenero),
+                                       IdNacionalidad = Convert.ToInt32(x.Persona.IdNacionalidad),
+                                       IdTipoSangre = Convert.ToInt32(x.Persona.IdTipoSangre),
+                                       IdEtnia = Convert.ToInt32(x.Persona.IdEtnia),
+                                       Identificacion = x.Persona.Identificacion,
+                                       Nombres = x.Persona.Nombres,
+                                       Apellidos = x.Persona.Apellidos,
+                                       TelefonoPrivado = x.Persona.TelefonoPrivado,
+                                       TelefonoCasa = x.Persona.TelefonoCasa,
+                                       CorreoPrivado = x.Persona.CorreoPrivado,
+                                       LugarTrabajo = x.Persona.LugarTrabajo,
+                                       IdNacionalidadIndigena = x.Persona.IdNacionalidadIndigena,
+                                       CallePrincipal = x.Persona.CallePrincipal,
+                                       CalleSecundaria = x.Persona.CalleSecundaria,
+                                       Referencia = x.Persona.Referencia,
+                                       Numero = x.Persona.Numero,
+                                       IdParroquia = Convert.ToInt32(x.Persona.IdParroquia),
+                                       Ocupacion = x.Persona.Ocupacion,
+                                       IdEmpleado = x.IdEmpleado,
+                                       IdProvinciaLugarSufragio = Convert.ToInt32(x.IdProvinciaLugarSufragio),
+                                       IdPaisLugarNacimiento = x.CiudadNacimiento.Provincia.Pais.IdPais,
+                                       IdCiudadLugarNacimiento = x.IdCiudadLugarNacimiento,
+                                       IdPaisLugarSufragio = x.ProvinciaSufragio.Pais.IdPais,
+                                       IdPaisLugarPersona=x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
+                                       IdCiudadLugarPersona=x.Persona.Parroquia.Ciudad.IdCiudad,
+                                       IdProvinciaLugarPersona=x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
+
+                                   }
+                                   ).FirstOrDefaultAsync();
+               
+
+                return new Response {IsSuccess=true,Resultado=Empleado };
+            }
+            catch (Exception ex)
+            {
+                return new Response {IsSuccess=false};
+            }
+        }
+
         [HttpPost]
         [Route("ObtenerEmpleadoLogueado")]
         public async Task<Empleado> ObtenerEmpleadoLogueado([FromBody]Empleado empleado)
@@ -1903,6 +1959,102 @@ namespace bd.swth.web.Controllers.API
 
 
         // POST: api/Empleados
+
+        [HttpPost]
+        [Route("EditarEmpleado")]
+        public async Task<Response> EditarEmpleado([FromBody] DatosBasicosEmpleadoViewModel datosBasicosEmpleado)
+        {
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var respuesta = Existe(datosBasicosEmpleado);
+
+                    if (datosBasicosEmpleado.IdNacionalidadIndigena == 0)
+                    {
+                        datosBasicosEmpleado.IdNacionalidadIndigena = null;
+                    }
+                    if (!respuesta.IsSuccess)
+                    {
+
+                        var empleadoActual =await db.Empleado.Where(x => x.IdEmpleado == datosBasicosEmpleado.IdEmpleado).FirstOrDefaultAsync();
+                        var personaActual =await db.Persona.Where(x => x.IdPersona == empleadoActual.IdPersona).FirstOrDefaultAsync();
+
+                        personaActual.FechaNacimiento = datosBasicosEmpleado.FechaNacimiento;
+                            personaActual.IdSexo = datosBasicosEmpleado.IdSexo;
+                            personaActual.IdTipoIdentificacion = datosBasicosEmpleado.IdTipoIdentificacion;
+                            personaActual.IdEstadoCivil = datosBasicosEmpleado.IdEstadoCivil;
+                            personaActual.IdGenero = datosBasicosEmpleado.IdGenero;
+                            personaActual.IdNacionalidad = datosBasicosEmpleado.IdNacionalidad;
+                            personaActual.IdTipoSangre = datosBasicosEmpleado.IdTipoSangre;
+                            personaActual.IdEtnia = datosBasicosEmpleado.IdEtnia;
+                            personaActual.Identificacion = datosBasicosEmpleado.Identificacion;
+                            personaActual.Nombres = datosBasicosEmpleado.Nombres;
+                            personaActual.Apellidos = datosBasicosEmpleado.Apellidos;
+                            personaActual.TelefonoPrivado = datosBasicosEmpleado.TelefonoPrivado;
+                            personaActual.TelefonoCasa = datosBasicosEmpleado.TelefonoCasa;
+                            personaActual.CorreoPrivado = datosBasicosEmpleado.CorreoPrivado;
+                            personaActual.LugarTrabajo = datosBasicosEmpleado.LugarTrabajo;
+                            personaActual.IdNacionalidadIndigena = datosBasicosEmpleado.IdNacionalidadIndigena;
+                            personaActual.CallePrincipal = datosBasicosEmpleado.CallePrincipal;
+                            personaActual.CalleSecundaria = datosBasicosEmpleado.CalleSecundaria;
+                            personaActual.Referencia = datosBasicosEmpleado.Referencia;
+                            personaActual.Numero = datosBasicosEmpleado.Numero;
+                            personaActual.IdParroquia = datosBasicosEmpleado.IdParroquia;
+                            personaActual.Ocupacion = datosBasicosEmpleado.Ocupacion;
+                        //1. Actualizar Persona Persona 
+                        var personaInsertarda =  db.Persona.Update(personaActual);
+
+                        //2. Insertar Empleado 
+                        empleadoActual.IdPersona = personaInsertarda.Entity.IdPersona;
+                        empleadoActual.IdCiudadLugarNacimiento = datosBasicosEmpleado.IdCiudadLugarNacimiento;
+                        empleadoActual.IdProvinciaLugarSufragio = datosBasicosEmpleado.IdProvinciaLugarSufragio;
+                        
+                        var empleado =  db.Empleado.Update(empleadoActual);
+                        await db.SaveChangesAsync();
+
+
+                        transaction.Commit();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                            Resultado = empleado.Entity
+                        };
+                    }
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+
+                }
+                catch (Exception ex)
+                {
+
+                    transaction.Rollback();
+                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                    {
+                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                        ExceptionTrace = ex.Message,
+                        Message = Mensaje.Excepcion,
+                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                        UserName = "",
+
+                    });
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+            }
+
+        }
+
         [HttpPost]
         [Route("InsertarEmpleado")]
         public async Task<Response> InsertarEmpleado([FromBody] DatosBasicosEmpleadoViewModel datosBasicosEmpleado)
@@ -1944,6 +2096,7 @@ namespace bd.swth.web.Controllers.API
                             Numero = datosBasicosEmpleado.Numero,
                             IdParroquia = datosBasicosEmpleado.IdParroquia,
                             Ocupacion = datosBasicosEmpleado.Ocupacion,
+                            
 
                         };
                         //1. Insertar Persona 
@@ -2517,9 +2670,17 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(DatosBasicosEmpleadoViewModel datosBasicosEmpleado)
         {
             var identificacion = datosBasicosEmpleado.Identificacion.ToUpper().TrimEnd().TrimStart();
-            var Empleadorespuesta = db.Persona.Where(p => p.Identificacion == identificacion).FirstOrDefault();
+            var Empleadorespuesta = db.Persona.Where(p => p.Identificacion == identificacion).Include(x=>x.Empleado).FirstOrDefault();
+            
             if (Empleadorespuesta != null)
             {
+                if (datosBasicosEmpleado.IdEmpleado == Empleadorespuesta.Empleado.FirstOrDefault().IdEmpleado)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                    };
+                }
                 return new Response
                 {
                     IsSuccess = true,

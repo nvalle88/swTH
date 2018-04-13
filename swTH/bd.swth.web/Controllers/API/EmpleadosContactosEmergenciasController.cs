@@ -205,10 +205,6 @@ namespace bd.swth.web.Controllers.API
                     {
                         try
                         {
-                            if (empleadoFamiliarViewModel.IdNacionalidadIndigena == 0)
-                            {
-                                empleadoFamiliarViewModel.IdNacionalidadIndigena = null;
-                            }
                             //1. Actualizar Persona 
                             PersonaActual.Nombres = empleadoFamiliarViewModel.Nombres;
                             PersonaActual.Apellidos = empleadoFamiliarViewModel.Apellidos;

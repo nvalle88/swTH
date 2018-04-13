@@ -13,5 +13,6 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<AdministracionTalentoHumano> AdministracionTalentoHumano { get; set; }
         public virtual ICollection<ConfiguracionViatico> ConfiguracionViatico { get; set; }
         public virtual ICollection<IndiceOcupacional> IndiceOcupacional { get; set; }
+        public virtual ICollection<SituacionPropuesta> SituacionPropuesta { get; set; }
     }
 }
