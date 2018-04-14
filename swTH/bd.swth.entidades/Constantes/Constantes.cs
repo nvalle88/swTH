@@ -17,6 +17,15 @@ namespace bd.swth.entidades.Constantes
         public static string ActivacionPersonalValorActivado;
         public static string ActivacionPersonalValorDesactivado;
 
-        public static string PartidaVacante { get; set;}  
+
+
+        public static string PartidaVacante { get; set; }
+    }
+
+    public static class ConstantesGrupoOcupacional
+    {
+        // Constantes GrupoOcupacional
+        public static string GrupoOcupacionalNivelSuperior;
+        public static string GrupoOcupacionalNivelOperativo;
     }
 }

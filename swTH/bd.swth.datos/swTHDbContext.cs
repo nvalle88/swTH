@@ -21,8 +21,8 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.AntecedentesLaborales> AntecedentesLaborales { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ExamenComplementario> ExamenComplementario { get; set; }
 
-        public virtual DbSet<ActivarPersonalTalentoHumano> ActivarPersonalTalentoHumano { get; set; }
-
+        public virtual DbSet<bd.swth.entidades.Negocio.ActivarPersonalTalentoHumano> ActivarPersonalTalentoHumano { get; set; }
+        
 
         public virtual DbSet<bd.swth.entidades.Negocio.AccionPersonal> AccionPersonal { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentoInformacionInstitucional> DocumentoInformacionInstitucional { get; set; }
@@ -230,6 +230,7 @@ namespace bd.swth.datos
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            
 
             modelBuilder.Entity<ActivarPersonalTalentoHumano>(entity =>
             {
@@ -3719,18 +3720,38 @@ namespace bd.swth.datos
             modelBuilder.Entity<SituacionPropuesta>(entity =>
             {
                 entity.HasKey(e => e.IdSituacionPropuesta)
-                    .HasName("PK_SituacionPropuesta");
+                    .HasName("PK258");
 
                 entity.HasIndex(e => e.IdDependencia)
-                    .HasName("IX_SituacionPropuesta_IdDependencia");
+                    .HasName("Ref51400");
 
-                entity.Property(e => e.Observaciones)
+                entity.Property(e => e.Descripcion)
                     .IsRequired()
-                    .HasMaxLength(400);
+                    .HasColumnType("varchar(500)");
 
                 entity.HasOne(d => d.Dependencia)
                     .WithMany(p => p.SituacionPropuesta)
-                    .HasForeignKey(d => d.IdDependencia);
+                    .HasForeignKey(d => d.IdDependencia)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_SituacionPropuesta_Dependencia");
+
+                entity.HasOne(d => d.GrupoOcupacional)
+                    .WithMany(p => p.SituacionPropuesta)
+                    .HasForeignKey(d => d.IdGrupoOcupacional)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_SituacionPropuesta_GrupoOcupacional");
+
+                entity.HasOne(d => d.Proceso)
+                    .WithMany(p => p.SituacionPropuesta)
+                    .HasForeignKey(d => d.IdProceso)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_SituacionPropuesta_Proceso");
+
+                entity.HasOne(d => d.RolPuesto)
+                    .WithMany(p => p.SituacionPropuesta)
+                    .HasForeignKey(d => d.IdRolPuesto)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_SituacionPropuesta_RolPuesto");
             });
 
             modelBuilder.Entity<SolicitudAcumulacionDecimos>(entity =>
