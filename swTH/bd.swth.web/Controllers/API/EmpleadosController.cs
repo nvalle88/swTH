@@ -2299,7 +2299,6 @@ namespace bd.swth.web.Controllers.API
                 var personaSustituto = db.PersonaSustituto.Find(empleadoViewModel.PersonaSustituto.IdPersonaSustituto);
                 personaSustituto.IdParentesco = empleadoViewModel.PersonaSustituto.IdParentesco;
                 personaSustituto.IdPersona = empleadoViewModel.PersonaSustituto.IdPersona;
-                personaSustituto.IdPersonaDiscapacidad = empleadoViewModel.PersonaSustituto.IdPersonaDiscapacidad;
                 db.PersonaSustituto.Update(personaSustituto);
                 await db.SaveChangesAsync();
 

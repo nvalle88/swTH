@@ -163,6 +163,11 @@ namespace bd.swth.web.Controllers.API
                 TrayectoriaLaboral.Empresa = trayectoriaLaboral.Empresa;
                 TrayectoriaLaboral.PuestoTrabajo = trayectoriaLaboral.PuestoTrabajo;
                 TrayectoriaLaboral.DescripcionFunciones = trayectoriaLaboral.DescripcionFunciones;
+
+                TrayectoriaLaboral.AreaAsignada = trayectoriaLaboral.AreaAsignada;
+                TrayectoriaLaboral.FormaIngreso = trayectoriaLaboral.FormaIngreso;
+                TrayectoriaLaboral.MotivoSalida = trayectoriaLaboral.MotivoSalida;
+                TrayectoriaLaboral.TipoInstitucion = trayectoriaLaboral.TipoInstitucion;
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -309,11 +314,19 @@ namespace bd.swth.web.Controllers.API
             var Empresa = TrayectoriaLaboral.Empresa;
             var PuestoTrabajo = TrayectoriaLaboral.PuestoTrabajo;
             var DescripcionFunciones = TrayectoriaLaboral.DescripcionFunciones;
+            var tipoInstitucion = TrayectoriaLaboral.TipoInstitucion;
+            var areaAsignada = TrayectoriaLaboral.AreaAsignada;
+            var formaIngreso = TrayectoriaLaboral.FormaIngreso;
+            var motivoSalida = TrayectoriaLaboral.MotivoSalida;
 
             var TrayectoriaLaboralrespuesta = db.TrayectoriaLaboral.Where(p => p.FechaInicio == fechaInicio 
             && p.FechaFin == fechaFin
             && p.Empresa == Empresa
             && p.PuestoTrabajo == PuestoTrabajo
+            && p.TipoInstitucion == tipoInstitucion
+            && p.AreaAsignada == areaAsignada
+            && p.FormaIngreso == formaIngreso
+            && p.MotivoSalida == motivoSalida
             && p.DescripcionFunciones == DescripcionFunciones).FirstOrDefault();
 
             if (TrayectoriaLaboralrespuesta != null)
