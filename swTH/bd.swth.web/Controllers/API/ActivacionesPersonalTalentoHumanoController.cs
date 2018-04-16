@@ -103,7 +103,11 @@ namespace bd.swth.web.Controllers.API
 
 
         
-
+        /// <summary>
+        /// Solo toma los jefes que están activos
+        /// </summary>
+        /// <param name="idDependencia"></param>
+        /// <returns></returns>
         // GET: api/ActivacionesPersonalTalentoHumano
         [HttpGet]
         [Route("GetJefePorDependencia")]
@@ -119,6 +123,7 @@ namespace bd.swth.web.Controllers.API
                 empleado = db.Empleado.Include(x => x.Dependencia).Include(x => x.Persona).Where(x =>
                        x.EsJefe == true
                        && x.Dependencia.IdDependencia == idDependencia
+                       && x.Activo == true
                     ).FirstOrDefault();
 
                 return empleado;
@@ -192,7 +197,7 @@ namespace bd.swth.web.Controllers.API
                             {
                                 var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
 
-                                if (empleado != null)
+                                if (empleado != null && empleado.IdEmpleado > 0)
                                 {
                                     var correo = empleado.Persona.CorreoPrivado;
                                     correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo));
@@ -231,11 +236,28 @@ namespace bd.swth.web.Controllers.API
 
                                     var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
 
-                                    var correo = empleado.Persona.CorreoPrivado;
-                                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo));
 
-                                    db.ActivarPersonalTalentoHumano.Update(actualizar);
-                                    await db.SaveChangesAsync();
+                                    if (empleado != null && empleado.IdEmpleado > 0)
+                                    {
+                                        
+                                        var correo = empleado.Persona.CorreoPrivado;
+                                        correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo));
+
+                                        db.ActivarPersonalTalentoHumano.Update(actualizar);
+                                        await db.SaveChangesAsync();
+
+                                    }
+                                    else
+                                    {
+                                        correoResponse.Add(new Response
+                                            {
+                                                IsSuccess = false,
+                                                Message = Mensaje.DependenciaSinJefe + " " + lista.ElementAt(i).Nombre
+                                            }
+
+                                        );
+                                    }
+
                                 }
                                
                                 
