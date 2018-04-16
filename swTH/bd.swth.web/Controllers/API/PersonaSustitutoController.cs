@@ -28,6 +28,73 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+
+        [HttpPost]
+        [Route("ObtenerEnfermedadSustitutos")]
+        public async Task<Response> ObtenerEnfermedadSustitutos([FromBody] EnfermedadSustitutoRequest viewModel)
+        {
+            try
+            {
+                var enfermedadSustituto = await db.EnfermedadSustituto
+                                                       .Where(y => y.IdEnfermedadSustituto == viewModel.IdEnfermedadSustituto)
+                                                       .Select(c => new EnfermedadSustitutoRequest
+                                                       {
+                                                           IdEnfermedadSustituto=c.IdEnfermedadSustituto,
+                                                           IdPersonaSustituto=Convert.ToInt32(c.IdPersonaSustituto),
+                                                           IdTipoEnfermedad=Convert.ToInt32(c.IdTipoEnfermedad),
+                                                           InstitucionEmite=c.InstitucionEmite,
+                                                           NombreTipoEnfermedad=c.TipoEnfermedad.Nombre,
+                                                       })
+                                 .FirstOrDefaultAsync();
+
+                if (enfermedadSustituto != null)
+                {
+                    return new Response { IsSuccess = true, Resultado = enfermedadSustituto };
+                }
+
+                return new Response { IsSuccess = false, Message = Mensaje.RegistroNoEncontrado };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response { IsSuccess = false, Message = Mensaje.Excepcion };
+            }
+        }
+
+        [HttpPost]
+        [Route("ObtenerDiscapacidadSustitutos")]
+        public async Task<Response> ObtenerDiscapacidadSustitutos([FromBody] DiscapacidadSustitutoRequest viewModel)
+        {
+            try
+            {
+                var discapacidadSustituto = await db.DiscapacidadSustituto
+                                                       .Where(y => y.IdDiscapacidadSustituto == viewModel.IdDiscapacidadSustituto)
+                                                       .Select(c => new DiscapacidadSustitutoRequest
+                                                       {
+                                                           IdDiscapacidadSustituto=c.IdDiscapacidadSustituto,
+                                                           IdPersonaSustituto=Convert.ToInt32(c.IdPersonaSustituto),
+                                                           IdTipoDiscapacidad=Convert.ToInt32(c.IdTipoDiscapacidad),
+                                                           NombreTipoDiscapacidad=c.TipoDiscapacidad.Nombre,
+                                                           NumeroCarnet=c.NumeroCarnet,
+                                                           PorcentajeDiscapacidad=c.PorcentajeDiscapacidad,
+                                                       })
+                                 .FirstOrDefaultAsync();
+
+                if (discapacidadSustituto != null)
+                {
+                    return new Response { IsSuccess = true, Resultado = discapacidadSustituto };
+                }
+
+                return new Response { IsSuccess = false, Message = Mensaje.RegistroNoEncontrado };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response { IsSuccess = false, Message = Mensaje.Excepcion };
+            }
+        }
+
+
         [HttpPost]
         [Route("ObtenerPersonasSustitutos")]
         public async Task<Response> ObtenerPersonasSustitutos([FromBody] ViewModelEmpleadoSustituto viewModel)
@@ -155,6 +222,93 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = false,
                     Message=Mensaje.RegistroNoEncontrado,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response { IsSuccess = false, Message = Mensaje.Excepcion };
+            }
+        }
+
+        [HttpPost]
+        [Route("EditarEnfermedadeSustituto")]
+        public async Task<Response> EditarEnfermedadeSustituto([FromBody] EnfermedadSustitutoRequest viewModel)
+        {
+            try
+            {
+                if (viewModel.IdPersonaSustituto <= 0)
+                {
+                    return new Response { IsSuccess = false };
+                }
+
+                var enfermedadActualizar =await db.EnfermedadSustituto.Where(x => x.IdEnfermedadSustituto == viewModel.IdEnfermedadSustituto).FirstOrDefaultAsync();
+
+
+                if (enfermedadActualizar!=null)
+                {
+                    enfermedadActualizar.IdTipoEnfermedad = viewModel.IdTipoEnfermedad;
+                    enfermedadActualizar.InstitucionEmite = viewModel.InstitucionEmite;
+
+                    db.EnfermedadSustituto.Update(enfermedadActualizar);
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Resultado = enfermedadActualizar,
+                    };
+
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message=Mensaje.RegistroNoEncontrado,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response { IsSuccess = false, Message = Mensaje.Excepcion };
+            }
+        }
+
+        [HttpPost]
+        [Route("EditarDiscapacidadSustituto")]
+        public async Task<Response> EditarDiscapacidadSustituto([FromBody] DiscapacidadSustitutoRequest viewModel)
+        {
+            try
+            {
+                if (viewModel.IdDiscapacidadSustituto <= 0)
+                {
+                    return new Response { IsSuccess = false };
+                }
+
+                var discapacidadActualizar = await db.DiscapacidadSustituto.Where(x => x.IdDiscapacidadSustituto == viewModel.IdDiscapacidadSustituto).FirstOrDefaultAsync();
+
+
+                if (discapacidadActualizar != null)
+                {
+                    discapacidadActualizar.PorcentajeDiscapacidad = viewModel.PorcentajeDiscapacidad;
+                    discapacidadActualizar.NumeroCarnet = viewModel.NumeroCarnet;
+                    discapacidadActualizar.IdTipoDiscapacidad = viewModel.IdTipoDiscapacidad;
+
+                    db.DiscapacidadSustituto.Update(discapacidadActualizar);
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Resultado = discapacidadActualizar,
+                    };
+
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.RegistroNoEncontrado,
                 };
 
             }
