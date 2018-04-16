@@ -420,7 +420,45 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+        [HttpGet]
+        [Route("ObtenerSituacionActual")]
+        public async Task<List<DistributivoViewModel>> ObtenerSituacionActual() {
 
+            var lista = new List<DistributivoViewModel>();
+
+            try {
+
+
+                lista = await db.IndiceOcupacional
+                    .GroupBy(y => new { y.IdDependencia, y.IdRolPuesto })
+
+                    .Select( x => new DistributivoViewModel
+                        {
+                            IdDependencia = Convert.ToInt32(x.FirstOrDefault().IdDependencia),
+                            NombreDependencia = db.Dependencia.Where(y=>y.IdDependencia == x.FirstOrDefault().IdDependencia).FirstOrDefault().Nombre,
+                            
+                            IdRolPuesto = Convert.ToInt32(x.FirstOrDefault().IdRolPuesto),
+                            NombreRolPuesto = db.RolPuesto.Where(z=>z.IdRolPuesto == x.FirstOrDefault().IdRolPuesto).FirstOrDefault().Nombre,
+
+                            IdModalidadPartida = Convert.ToInt32(x.FirstOrDefault().IdModalidadPartida),
+                            NombreModalidadPartida = db.ModalidadPartida.Where(a=>a.IdModalidadPartida == x.FirstOrDefault().IdModalidadPartida).FirstOrDefault().Nombre
+                            
+                        }
+                    )
+                    
+                    
+                    .ToListAsync();
+                
+
+                return lista;
+
+
+            } catch (Exception ex) {
+
+                return lista;
+            }
+
+        }
 
 
     }
