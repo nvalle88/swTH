@@ -183,14 +183,14 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                
+
                 var rh = db.AdministracionTalentoHumano.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).FirstOrDefault();
                 var puesto = db.RolPuesto.Where(x => x.IdRolPuesto == rh.IdRolPuesto).ToList();
                 var a = db.ValidacionInmediatoSuperior.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
                 var exep = db.Exepciones.Where(x => x.IdValidacionJefe == a.FirstOrDefault().IdValidacionJefe).ToList();
                 var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
-               
-               
+
+
                 var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEspecialistaTH).Select(x => new DocumentoFAOViewModel
                 {
                     IdEmpleado = x.IdEmpleado,
@@ -235,9 +235,11 @@ namespace bd.swth.web.Controllers.API
                 var a = db.ValidacionInmediatoSuperior.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
                 var exep = db.Exepciones.Where(x => x.IdValidacionJefe == a.FirstOrDefault().IdValidacionJefe).ToList();
                 var b = db.ActividadesAnalisisOcupacional.Where(x => x.IdFormularioAnalisisOcupacional == documentoFAOViewModel.IdFormularioAnalisisOcupacional).ToList();
-                var PuestoActual = db.IndiceOcupacionalModalidadPartida.OrderByDescending(x => x.Fecha).Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado).Select(v => new  ManualPuesto{
+                var PuestoActual = db.IndiceOcupacionalModalidadPartida.OrderByDescending(x => x.Fecha).Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado).Select(v => new ManualPuesto
+                {
                     IdManualPuesto = v.IndiceOcupacional.ManualPuesto.IdManualPuesto,
-                    Nombre = v.IndiceOcupacional.ManualPuesto.Nombre }).FirstOrDefault();
+                    Nombre = v.IndiceOcupacional.ManualPuesto.Nombre
+                }).FirstOrDefault();
                 var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoEspecialistaTH).Select(x => new DocumentoFAOViewModel
                 {
                     IdEmpleado = x.IdEmpleado,
@@ -262,8 +264,8 @@ namespace bd.swth.web.Controllers.API
                     ListasManualPuesto = manualPuesto,
                     IdManualPuestoActual = PuestoActual.IdManualPuesto,
                     Puesto = PuestoActual.Nombre
-                    
-                   
+
+
                 }).FirstOrDefaultAsync();
 
                 return new Response { IsSuccess = true, Resultado = empleado };
@@ -295,7 +297,7 @@ namespace bd.swth.web.Controllers.API
                     IdManualPuesto = v.IndiceOcupacional.ManualPuesto.IdManualPuesto,
                     Nombre = v.IndiceOcupacional.ManualPuesto.Nombre
                 }).FirstOrDefault();
-               var puestodesignado = db.ManualPuesto.Where(x => x.IdManualPuesto == informeUTH.IdManualPuestoDestino).FirstOrDefault();
+                var puestodesignado = db.ManualPuesto.Where(x => x.IdManualPuesto == informeUTH.IdManualPuestoDestino).FirstOrDefault();
                 var empleado = await db.Empleado.Where(x => x.IdEmpleado == documentoFAOViewModel.IdEmpleado && x.FormularioAnalisisOcupacional.FirstOrDefault().Estado == EstadosFAO.RealizadoJefeTH).Select(x => new DocumentoFAOViewModel
                 {
                     IdEmpleado = x.IdEmpleado,
@@ -545,7 +547,7 @@ namespace bd.swth.web.Controllers.API
                             {
                                 var empleadoid = item1.IdEmpleado;
 
-                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && ( x.Estado != EstadosFAO.RealizadoJefeTH || x.Estado == EstadosFAO.RealizadoJefeTH || x.Estado == EstadosFAO.RealizadoEspecialistaTH)).FirstOrDefaultAsync();
+                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && (x.Estado != EstadosFAO.RealizadoJefeTH || x.Estado == EstadosFAO.RealizadoJefeTH || x.Estado == EstadosFAO.RealizadoEspecialistaTH)).FirstOrDefaultAsync();
                                 if (a != null)
                                 {
                                     listaSalida2.Add(new DocumentoFAOViewModel
@@ -2299,7 +2301,6 @@ namespace bd.swth.web.Controllers.API
                 var personaSustituto = db.PersonaSustituto.Find(empleadoViewModel.PersonaSustituto.IdPersonaSustituto);
                 personaSustituto.IdParentesco = empleadoViewModel.PersonaSustituto.IdParentesco;
                 personaSustituto.IdPersona = empleadoViewModel.PersonaSustituto.IdPersona;
-                personaSustituto.IdPersonaDiscapacidad = empleadoViewModel.PersonaSustituto.IdPersonaDiscapacidad;
                 db.PersonaSustituto.Update(personaSustituto);
                 await db.SaveChangesAsync();
 
@@ -2818,6 +2819,8 @@ namespace bd.swth.web.Controllers.API
                                         estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
                                         IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
 
+
+
                                     });
 
                                 }
@@ -2882,43 +2885,43 @@ namespace bd.swth.web.Controllers.API
                         idsucursal = item.Dependencia.IdSucursal;
                         idempleado = item.IdEmpleado;
                         jefe = item.EsJefe;
-                        
-                            var anio = DateTime.Now.Year;
 
-                            var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
-                            foreach (var item1 in lista1)
+                        var anio = DateTime.Now.Year;
+
+                        var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
+                        foreach (var item1 in lista1)
+                        {
+                            var empleadoid = item1.IdEmpleado;
+
+                            var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
+                            if (a != null)
                             {
-                                var empleadoid = item1.IdEmpleado;
-
-                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid &&  x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
-                                if (a != null)
+                                var cambiopuesto = db.AdministracionTalentoHumano.Where(x => x.IdFormularioAnalisisOcupacional == a.IdFormularioAnalisisOcupacional).Select(v => new InformeUATH
                                 {
-                                    var cambiopuesto = db.AdministracionTalentoHumano.Where(x => x.IdFormularioAnalisisOcupacional == a.IdFormularioAnalisisOcupacional).Select(v => new InformeUATH
+                                    IdManualPuestoOrigen = v.InformeUATH.FirstOrDefault().IdManualPuestoOrigen,
+                                    IdManualPuestoDestino = v.InformeUATH.FirstOrDefault().IdManualPuestoDestino
+
+                                }).FirstOrDefault();
+
+                                if (cambiopuesto.IdManualPuestoDestino != cambiopuesto.IdManualPuestoOrigen)
+                                {
+                                    listaSalida2.Add(new DocumentoFAOViewModel
                                     {
-                                        IdManualPuestoOrigen = v.InformeUATH.FirstOrDefault().IdManualPuestoOrigen,
-                                        IdManualPuestoDestino = v.InformeUATH.FirstOrDefault().IdManualPuestoDestino
-                                       
-                                    }).FirstOrDefault();
+                                        IdEmpleado = item1.IdEmpleado,
+                                        idDependencia = item1.Dependencia.IdDependencia,
+                                        idsucursal = item1.Dependencia.IdSucursal,
+                                        nombre = item1.Persona.Nombres,
+                                        apellido = item1.Persona.Apellidos,
+                                        NombreUsuario = item1.NombreUsuario,
+                                        Identificacion = item1.Persona.Identificacion,
+                                        estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
+                                        IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
 
-                                    if (cambiopuesto.IdManualPuestoDestino != cambiopuesto.IdManualPuestoOrigen)
-                                    {
-                                        listaSalida2.Add(new DocumentoFAOViewModel
-                                        {
-                                            IdEmpleado = item1.IdEmpleado,
-                                            idDependencia = item1.Dependencia.IdDependencia,
-                                            idsucursal = item1.Dependencia.IdSucursal,
-                                            nombre = item1.Persona.Nombres,
-                                            apellido = item1.Persona.Apellidos,
-                                            NombreUsuario = item1.NombreUsuario,
-                                            Identificacion = item1.Persona.Identificacion,
-                                            estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
-                                            IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
-
-                                        });
-                                    }
-
+                                    });
                                 }
+
                             }
+                        }
 
 
                     }
@@ -2978,43 +2981,43 @@ namespace bd.swth.web.Controllers.API
                         idsucursal = item.Dependencia.IdSucursal;
                         idempleado = item.IdEmpleado;
                         jefe = item.EsJefe;
-                        
-                            var anio = DateTime.Now.Year;
 
-                            var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
-                            foreach (var item1 in lista1)
+                        var anio = DateTime.Now.Year;
+
+                        var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
+                        foreach (var item1 in lista1)
+                        {
+                            var empleadoid = item1.IdEmpleado;
+
+                            var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
+                            if (a != null)
                             {
-                                var empleadoid = item1.IdEmpleado;
-
-                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == empleadoid && x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
-                                if (a != null)
+                                var cambiopuesto = db.AdministracionTalentoHumano.Where(x => x.IdFormularioAnalisisOcupacional == a.IdFormularioAnalisisOcupacional).Select(v => new InformeUATH
                                 {
-                                    var cambiopuesto = db.AdministracionTalentoHumano.Where(x => x.IdFormularioAnalisisOcupacional == a.IdFormularioAnalisisOcupacional).Select(v => new InformeUATH
+                                    IdManualPuestoOrigen = v.InformeUATH.FirstOrDefault().IdManualPuestoOrigen,
+                                    IdManualPuestoDestino = v.InformeUATH.FirstOrDefault().IdManualPuestoDestino
+
+                                }).FirstOrDefault();
+
+                                if (cambiopuesto.IdManualPuestoDestino == cambiopuesto.IdManualPuestoOrigen)
+                                {
+                                    listaSalida2.Add(new DocumentoFAOViewModel
                                     {
-                                        IdManualPuestoOrigen = v.InformeUATH.FirstOrDefault().IdManualPuestoOrigen,
-                                        IdManualPuestoDestino = v.InformeUATH.FirstOrDefault().IdManualPuestoDestino
+                                        IdEmpleado = item1.IdEmpleado,
+                                        idDependencia = item1.Dependencia.IdDependencia,
+                                        idsucursal = item1.Dependencia.IdSucursal,
+                                        nombre = item1.Persona.Nombres,
+                                        apellido = item1.Persona.Apellidos,
+                                        NombreUsuario = item1.NombreUsuario,
+                                        Identificacion = item1.Persona.Identificacion,
+                                        estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
+                                        IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
 
-                                    }).FirstOrDefault();
+                                    });
+                                }
 
-                                    if (cambiopuesto.IdManualPuestoDestino == cambiopuesto.IdManualPuestoOrigen)
-                                    {
-                                        listaSalida2.Add(new DocumentoFAOViewModel
-                                        {
-                                            IdEmpleado = item1.IdEmpleado,
-                                            idDependencia = item1.Dependencia.IdDependencia,
-                                            idsucursal = item1.Dependencia.IdSucursal,
-                                            nombre = item1.Persona.Nombres,
-                                            apellido = item1.Persona.Apellidos,
-                                            NombreUsuario = item1.NombreUsuario,
-                                            Identificacion = item1.Persona.Identificacion,
-                                            estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
-                                            IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
-
-                                        });
-                                    }
-
-                                }                            
                             }
+                        }
 
                     }
 
@@ -3074,14 +3077,32 @@ namespace bd.swth.web.Controllers.API
                         idempleado = item.IdEmpleado;
                         jefe = item.EsJefe;
 
-                            var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
-                            foreach (var item1 in lista1)
-                            {
-                                var empleadoid = item1.IdEmpleado;
+                        var lista1 = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Where(x => x.Dependencia.IdDependencia == idDependencia && x.Dependencia.IdSucursal == idsucursal).ToListAsync();
+                        foreach (var item1 in lista1)
+                        {
+                            var empleadoid = item1.IdEmpleado;
 
-                                var a = await db.FormularioAnalisisOcupacional.Where(x => x.IdEmpleado == empleadoid && x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
-                                if (a != null)
+                            var a = await db.FormularioAnalisisOcupacional.Where(x => x.IdEmpleado == empleadoid && x.Estado == EstadosFAO.RealizadoJefeTH).FirstOrDefaultAsync();
+                            if (a != null)
+                            {
+                                var PuestoActual = db.IndiceOcupacionalModalidadPartida.OrderByDescending(x => x.Fecha).Where(x => x.IdEmpleado == empleadoid).Select(v => new ManualPuesto
                                 {
+                                    IdManualPuesto = v.IndiceOcupacional.ManualPuesto.IdManualPuesto,
+                                    Nombre = v.IndiceOcupacional.ManualPuesto.Nombre
+                                }).FirstOrDefault();
+                                if (PuestoActual != null)
+                                {
+                                    var informeuth = await db.InformeUATH.Where(x=> x.IdManualPuestoOrigen == PuestoActual.IdManualPuesto).FirstOrDefaultAsync();
+                                    var puestopropuesto = await db.ManualPuesto.Where(x => x.IdManualPuesto == informeuth.IdManualPuestoDestino).FirstOrDefaultAsync();
+                                    //var puestopropuesto = await db.InformeUATH.Where(x => x.IdManualPuestoDestino == informeuth.IdManualPuestoDestino).Select(e => new ManualPuesto
+                                    //{
+                                    //    IdManualPuesto = e.ManualPuestoDestino.IdManualPuesto,
+                                    //    Nombre = e.ManualPuestoDestino.Nombre
+
+                                    //}).FirstOrDefaultAsync();
+                                    if (puestopropuesto != null)
+                                    {
+
                                         listaSalida2.Add(new DocumentoFAOViewModel
                                         {
                                             IdEmpleado = item1.IdEmpleado,
@@ -3093,13 +3114,15 @@ namespace bd.swth.web.Controllers.API
                                             Identificacion = item1.Persona.Identificacion,
                                             Anio = item1.FormularioAnalisisOcupacional.FirstOrDefault().Anio,
                                             estado = item1.FormularioAnalisisOcupacional.FirstOrDefault().Estado,
-                                            IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional
+                                            IdFormularioAnalisisOcupacional = item1.FormularioAnalisisOcupacional.FirstOrDefault().IdFormularioAnalisisOcupacional,
+                                            PuestoActual = PuestoActual.Nombre,
+                                            NuevoPuesto = puestopropuesto.Nombre
 
                                         });
+                                    }
                                 }
                             }
-                        
-
+                        }
                     }
 
                 }

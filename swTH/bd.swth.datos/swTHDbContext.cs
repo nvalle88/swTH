@@ -1453,10 +1453,6 @@ namespace bd.swth.datos
                     .HasName("IX_PersonaSustituto")
                     .IsUnique();
 
-                entity.HasIndex(e => e.IdPersonaDiscapacidad)
-                    .HasName("IX_PersonaSustituto_1")
-                    .IsUnique();
-
                 entity.HasOne(d => d.Parentesco)
                     .WithMany(p => p.PersonaSustituto)
                     .HasForeignKey(d => d.IdParentesco)
@@ -1469,10 +1465,7 @@ namespace bd.swth.datos
                 //    .OnDelete(DeleteBehavior.Restrict)
                 //    .HasConstraintName("FK_PersonaSustituto_Persona");
 
-                entity.HasOne(d => d.PersonaDiscapacidad)
-                  .WithMany(p => p.PersonaSustituto)
-                  .HasForeignKey(d => d.IdPersonaDiscapacidad)
-                  .HasConstraintName("FK_PersonaSustituto_PersonaDiscapacidad");
+               
             });
 
             modelBuilder.Entity<EnfermedadSustituto>(entity =>
