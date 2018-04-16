@@ -88,6 +88,81 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("EliminarDiscapacidadSustituto")]
+        public async Task<Response> EliminarDiscapacidadSustituto([FromBody] DiscapacidadSustitutoRequest viewModel)
+        {
+            try
+            {
+                if (viewModel.IdDiscapacidadSustituto <= 0)
+                {
+                    return new Response { IsSuccess = false };
+                }
+
+                var discapacidadEliminar = await db.DiscapacidadSustituto.Where(x => x.IdDiscapacidadSustituto == viewModel.IdDiscapacidadSustituto).FirstOrDefaultAsync();
+
+                if (discapacidadEliminar != null)
+                {
+                    db.DiscapacidadSustituto.Remove(discapacidadEliminar);
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Resultado = discapacidadEliminar,
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.RegistroNoEncontrado,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response { IsSuccess = false, Message = Mensaje.Excepcion };
+            }
+        }
+
+        [HttpPost]
+        [Route("EliminarEnfermedadeSustituto")]
+        public async Task<Response> EliminarEnfermedadeSustituto([FromBody] EnfermedadSustitutoRequest viewModel)
+        {
+            try
+            {
+                if (viewModel.IdEnfermedadSustituto <= 0)
+                {
+                    return new Response { IsSuccess = false };
+                }
+
+                var enfermedadEliminar = await db.EnfermedadSustituto.Where(x => x.IdEnfermedadSustituto == viewModel.IdEnfermedadSustituto).FirstOrDefaultAsync();
+
+                if (enfermedadEliminar!=null)
+                {
+                    db.EnfermedadSustituto.Remove(enfermedadEliminar);
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Resultado = enfermedadEliminar,
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message=Mensaje.RegistroNoEncontrado,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response { IsSuccess = false, Message = Mensaje.Excepcion };
+            }
+        }
 
         [HttpPost]
         [Route("InsertarEnfermedadeSustituto")]
@@ -690,9 +765,6 @@ namespace bd.swth.web.Controllers.API
             {
                 try
                 {
-
-
-                    //Eliminar Persona
                     var respuestaPersonaSustituto = await db.PersonaSustituto.SingleOrDefaultAsync(m => m.IdPersona == id);
                     var respuestaPersona = await db.Persona.SingleOrDefaultAsync(m => m.IdPersona == id);
                     var respuestaPersonaDiscapacidad = await db.PersonaDiscapacidad.SingleOrDefaultAsync(m => m.IdPersona == id);
