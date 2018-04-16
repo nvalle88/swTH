@@ -76,10 +76,13 @@ namespace bd.swth.web.Controllers.API
                         if (idDependencia == listaDependencias.ElementAt(i).IdDependencia)
                         {
                             
+                            model.Existe = true; //Esta línea pone true cuando existe el registro (Este año)
+
                             var estadoLista = listaDependenciasEnviadasCorreoThisYear.ElementAt(j).Estado; 
 
                             if (estadoLista == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado)) {
                                 model.Estado = true;
+                                
                             }
 
                             j = listaDependenciasEnviadasCorreoThisYear.Count + 1;
