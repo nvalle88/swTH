@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             {
                 var listaDependencias = await db.Dependencia.OrderBy(x => x.IdDependencia).ToListAsync();
 
-                var listaDependenciasEnviadasCorreoEsteAño = await ListarActivarPersonalTalentoHumanoYearActual();
+                var listaDependenciasEnviadasCorreoThisYear = await ListarActivarPersonalTalentoHumanoYearActual();
 
                 var idDependencia = 0;
 
@@ -69,15 +69,20 @@ namespace bd.swth.web.Controllers.API
 
 
                     // Validación de estado para los checkBox
-                    for (int j = 0; j < listaDependenciasEnviadasCorreoEsteAño.Count; j++)
+                    for (int j = 0; j < listaDependenciasEnviadasCorreoThisYear.Count; j++)
                     {
-                        idDependencia = listaDependenciasEnviadasCorreoEsteAño.ElementAt(j).IdDependencia;
+                        idDependencia = listaDependenciasEnviadasCorreoThisYear.ElementAt(j).IdDependencia;
 
                         if (idDependencia == listaDependencias.ElementAt(i).IdDependencia)
                         {
-                            j = listaDependenciasEnviadasCorreoEsteAño.Count + 1;
+                            
+                            var estadoLista = listaDependenciasEnviadasCorreoThisYear.ElementAt(j).Estado; 
 
-                            model.Estado = true;
+                            if (estadoLista == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado)) {
+                                model.Estado = true;
+                            }
+
+                            j = listaDependenciasEnviadasCorreoThisYear.Count + 1;
                         }
                     }
 
@@ -97,10 +102,7 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-
-
-
-
+        
 
         // GET: api/ActivacionesPersonalTalentoHumano
         [HttpGet]
@@ -186,7 +188,7 @@ namespace bd.swth.web.Controllers.API
 
 
 
-                            if (!response.IsSuccess && estado == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado) )
+                            if (!response.IsSuccess && estado == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado))
                             {
                                 var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
 
@@ -213,11 +215,30 @@ namespace bd.swth.web.Controllers.API
                             }
                             else
                             {
-                                /*
-                                activarPersonalTalentoHumano.IdActivarPersonalTalentoHumano = Convert.ToInt32(response.Resultado);
-                                db.ActivarPersonalTalentoHumano.Update(activarPersonalTalentoHumano);
-                                */
 
+                                var actualizar = await db.ActivarPersonalTalentoHumano
+                                        .Where(apt =>
+                                            apt.IdActivarPersonalTalentoHumano == Convert.ToInt32(response.Resultado)
+                                        ).FirstOrDefaultAsync();
+
+                                if (
+                                    response.IsSuccess 
+                                    && actualizar.Estado == Convert.ToInt32(Constantes.ActivacionPersonalValorDesactivado)
+                                    && estado == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado)
+                                    )
+                                {
+                                    actualizar.Estado = Convert.ToInt32(Constantes.ActivacionPersonalValorActivado);
+
+                                    var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
+
+                                    var correo = empleado.Persona.CorreoPrivado;
+                                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo));
+
+                                    db.ActivarPersonalTalentoHumano.Update(actualizar);
+                                    await db.SaveChangesAsync();
+                                }
+                               
+                                
                             }
 
                         }
