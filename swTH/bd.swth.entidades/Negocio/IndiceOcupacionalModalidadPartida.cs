@@ -44,7 +44,6 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimiento { get; set; }
 
-        public virtual ICollection<PartidasFase> PartidasFase { get; set; }
 
 
     }

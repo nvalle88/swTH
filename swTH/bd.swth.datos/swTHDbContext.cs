@@ -112,7 +112,6 @@ namespace bd.swth.datos
         public virtual DbSet<Exepciones> Exepciones { get; set; }
         public virtual DbSet<Factor> Factor { get; set; }
         public virtual DbSet<FacturaViatico> FacturaViatico { get; set; }
-        public virtual DbSet<FaseConcurso> FaseConcurso { get; set; }
         public virtual DbSet<FondoFinanciamiento> FondoFinanciamiento { get; set; }
         public virtual DbSet<FormularioAnalisisOcupacional> FormularioAnalisisOcupacional { get; set; }
         public virtual DbSet<FormularioCapacitacion> FormularioCapacitacion { get; set; }
@@ -2238,28 +2237,6 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<FaseConcurso>(entity =>
-            {
-                entity.HasKey(e => e.IdFaseConcurso)
-                    .HasName("PK_FaseConcurso");
-
-                entity.HasIndex(e => e.IdTipoConcurso)
-                    .HasName("IX_FaseConcurso_IdTipoConcurso");
-
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasMaxLength(500);
-
-                entity.Property(e => e.Nombre)
-                    .IsRequired()
-                    .HasMaxLength(50);
-
-                entity.HasOne(d => d.TipoConcurso)
-                    .WithMany(p => p.FaseConcurso)
-                    .HasForeignKey(d => d.IdTipoConcurso)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
-
             modelBuilder.Entity<FondoFinanciamiento>(entity =>
             {
                 entity.HasKey(e => e.IdFondoFinanciamiento)
@@ -3047,26 +3024,26 @@ namespace bd.swth.datos
             modelBuilder.Entity<PartidasFase>(entity =>
             {
                 entity.HasKey(e => e.IdPartidasFase)
-                    .HasName("PK_PartidasFase");
+                    .HasName("PK273");
 
-                entity.HasIndex(e => e.IdFaseConcurso)
-                    .HasName("IX_PartidasFase_IdFaseConcurso");
+                entity.HasIndex(e => e.IdIndiceOcupacional)
+                    .HasName("Ref71424");
 
-                entity.HasIndex(e => e.IdIndiceOcupacionalModalidadPartida)
-                    .HasName("IX_PartidasFase_IdIndiceOcupacionalModalidadPartida");
+                entity.Property(e => e.Fecha).HasColumnType("date");
 
-                entity.HasOne(d => d.FaseConcurso)
+                entity.HasOne(d => d.IndiceOcupacional)
                     .WithMany(p => p.PartidasFase)
-                    .HasForeignKey(d => d.IdFaseConcurso)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasForeignKey(d => d.IdIndiceOcupacional)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_PartidasFase_IndiceOcupacional");
 
-                entity.HasOne(d => d.IndiceOcupacionalModalidadPartida)
+                entity.HasOne(d => d.TipoConcurso)
                     .WithMany(p => p.PartidasFase)
-                    .HasForeignKey(d => d.IdIndiceOcupacionalModalidadPartida)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasForeignKey(d => d.IdTipoConcurso)
+                    .HasConstraintName("FK_PartidasFase_TipoConcurso");
             });
 
-           
+
 
             modelBuilder.Entity<Persona>(entity =>
             {
