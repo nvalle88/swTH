@@ -203,7 +203,7 @@ namespace bd.swth.web.Controllers.API
                                 if (empleado != null && empleado.IdEmpleado > 0)
                                 {
                                     var correo = empleado.Persona.CorreoPrivado;
-                                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo));
+                                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo, empleado.Dependencia.Nombre));
 
                                     db.ActivarPersonalTalentoHumano.Add(activarPersonalTalentoHumano);
                                     await db.SaveChangesAsync();
@@ -244,7 +244,7 @@ namespace bd.swth.web.Controllers.API
                                     {
                                         
                                         var correo = empleado.Persona.CorreoPrivado;
-                                        correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo));
+                                        correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo,empleado.Dependencia.Nombre));
 
                                         db.ActivarPersonalTalentoHumano.Update(actualizar);
                                         await db.SaveChangesAsync();
@@ -315,32 +315,46 @@ namespace bd.swth.web.Controllers.API
 
 
 
-        public Response EnviarMailDesdeCorreoTalentohumano(string correo)
+        public Response EnviarMailDesdeCorreoTalentohumano(string correo, string dependenciaNombre)
         {
             try
             {
 
                 //Static class MailConf 
-                MailConfig.HostUri = Constantes.Smtp;
-                MailConfig.PrimaryPort = Convert.ToInt32(Constantes.PrimaryPort);
-                MailConfig.SecureSocketOptions = Convert.ToInt32(Constantes.SecureSocketOptions);
+                MailConfig.HostUri = ConstantesCorreo.Smtp;
+                MailConfig.PrimaryPort = Convert.ToInt32(ConstantesCorreo.PrimaryPort);
+                MailConfig.SecureSocketOptions = Convert.ToInt32(ConstantesCorreo.SecureSocketOptions);
+
+
+                string mensaje = ConstantesCorreo.MensajeCorreoSuperior;
+
+                if (ConstantesCorreo.MensajeCorreoDependencia == "true")
+                {
+                    mensaje = mensaje + dependenciaNombre+ "\n \n";
+                }
+                
+
+                mensaje = mensaje + 
+                ConstantesCorreo.MensajeCorreoMedio +
+                ConstantesCorreo.MensajeCorreoEnlace +
+                ConstantesCorreo.MensajeCorreoInferior;
 
                 //Class for submit the email 
                 Mail mail = new Mail
                 {
-                    Password = Constantes.PasswordCorreo
+                    Password = ConstantesCorreo.PasswordCorreo
                                      ,
-                    Body = "My Body"
+                    Body = mensaje
                                      ,
-                    EmailFrom = Constantes.CorreoTTHH
+                    EmailFrom = ConstantesCorreo.CorreoTTHH
                                      ,
                     EmailTo = correo
                                      ,
-                    NameFrom = "Talento humano"
+                    NameFrom = ConstantesCorreo.NameFrom
                                      ,
                     NameTo = "Name To"
                                      ,
-                    Subject = "La plataforma de activación de requerimientos de personal se encuentra activada"
+                    Subject = ConstantesCorreo.Subject
                 };
 
                 //execute the method Send Mail or SendMailAsync

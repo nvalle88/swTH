@@ -37,13 +37,22 @@ namespace bd.swth.web
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IUploadFileService, UploadFileService>();
 
-            // Constantes de correo
+            
             Constantes.PartidaVacante = Configuration.GetSection("PartidaVacante").Value;
-            Constantes.Smtp = Configuration.GetSection("Smtp").Value;
-            Constantes.PrimaryPort = Configuration.GetSection("PrimaryPort").Value;
-            Constantes.SecureSocketOptions = Configuration.GetSection("SecureSocketOptions").Value;
-            Constantes.CorreoTTHH = Configuration.GetSection("CorreoTTHH").Value;
-            Constantes.PasswordCorreo = Configuration.GetSection("PasswordCorreo").Value;
+
+            // Constantes de correo
+            ConstantesCorreo.Smtp = Configuration.GetSection("Smtp").Value;
+            ConstantesCorreo.PrimaryPort = Configuration.GetSection("PrimaryPort").Value;
+            ConstantesCorreo.SecureSocketOptions = Configuration.GetSection("SecureSocketOptions").Value;
+            ConstantesCorreo.CorreoTTHH = Configuration.GetSection("CorreoTTHH").Value;
+            ConstantesCorreo.PasswordCorreo = Configuration.GetSection("PasswordCorreo").Value; 
+            ConstantesCorreo.NameFrom = Configuration.GetSection("NameFrom").Value;
+            ConstantesCorreo.Subject = Configuration.GetSection("Subject").Value;
+            ConstantesCorreo.MensajeCorreoSuperior = Configuration.GetSection("MensajeCorreoSuperior").Value;
+            ConstantesCorreo.MensajeCorreoDependencia = Configuration.GetSection("MensajeCorreoDependencia").Value;
+            ConstantesCorreo.MensajeCorreoMedio = Configuration.GetSection("MensajeCorreoMedio").Value;
+            ConstantesCorreo.MensajeCorreoEnlace = Configuration.GetSection("MensajeCorreoEnlace").Value;
+            ConstantesCorreo.MensajeCorreoInferior = Configuration.GetSection("MensajeCorreoInferior").Value;
 
             //Constantes Estados del FAO
             EstadosFAO.Asignado = Convert.ToInt32(Configuration.GetSection("Asignado").Value);
