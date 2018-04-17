@@ -6,13 +6,7 @@ namespace bd.swth.entidades.Constantes
 {
     public static class Constantes
     {
-        // Constantes de correo 
-        public static string Smtp;
-        public static string PrimaryPort;
-        public static string SecureSocketOptions;
-        public static string CorreoTTHH;
-        public static string PasswordCorreo;
-
+        
         // Constante de estado para Documento Activacion Personal
         public static string ActivacionPersonalValorActivado;
         public static string ActivacionPersonalValorDesactivado;
@@ -28,4 +22,23 @@ namespace bd.swth.entidades.Constantes
         public static string GrupoOcupacionalNivelSuperior;
         public static string GrupoOcupacionalNivelOperativo;
     }
+
+    public static class ConstantesCorreo
+    {
+        // Constantes de correo 
+        public static string Smtp;
+        public static string PrimaryPort;
+        public static string SecureSocketOptions;
+        public static string CorreoTTHH;
+        public static string PasswordCorreo;
+        public static string NameFrom;
+        public static string Subject;
+        public static string MensajeCorreoSuperior;
+        public static string MensajeCorreoDependencia;
+        public static string MensajeCorreoMedio;
+        public static string MensajeCorreoEnlace;
+        public static string MensajeCorreoInferior;
+        
+    }
+
 }
