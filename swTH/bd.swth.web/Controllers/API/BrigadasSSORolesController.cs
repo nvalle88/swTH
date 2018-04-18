@@ -26,6 +26,30 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        [HttpPost]
+        [Route("ListarBrigadasSSORolesPorBrigadaSSO")]
+        public async Task<List<BrigadaSSORol>> ListarBrigadasSSORolesPorBrigadaSSO([FromBody]BrigadaSSO brigadaSSO)
+        {
+            try
+            {
+                return await db.BrigadaSsorol.Where(x=>x.IdBrigadaSSO==brigadaSSO.IdBrigadaSSO).OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex.Message,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<BrigadaSSORol>();
+            }
+        }
+
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarBrigadasSSORoles")]

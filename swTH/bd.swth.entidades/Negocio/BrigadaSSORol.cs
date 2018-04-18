@@ -1,5 +1,6 @@
 namespace bd.swth.entidades.Negocio
 {
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
 
     public partial class BrigadaSSORol
@@ -18,5 +19,8 @@ namespace bd.swth.entidades.Negocio
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int? IdBrigadaSSO { get; set; }
         public virtual BrigadaSSO BrigadaSSO { get; set; }
+
+
+        public virtual ICollection<Empleado> Empleado { get; set; }
     }
 }
