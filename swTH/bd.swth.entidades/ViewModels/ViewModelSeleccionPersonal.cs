@@ -12,6 +12,7 @@ namespace bd.swth.entidades.ViewModels
 
         public int? iddependecia { get; set; }
         public int idescalagrados { get; set; }
+        public int idIndiceOcupacional { get; set; }
         public string NumeroPartidaGeneral { get; set; }
         public string UnidadAdministrativa { get; set; }
         public string NumeroPartidaIndividual { get; set; }

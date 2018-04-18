@@ -45,22 +45,37 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 //var name = Constantes.PartidaVacante;
-                //var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaVacante).FirstOrDefaultAsync();
-                var DatosBasicosIndiceOcupacional = await db.PartidasFase
-                 .GroupBy(s => s.IdIndiceOcupacional)
-                    .Select(x => new ViewModelSeleccionPersonal 
-                    {
-                        iddependecia=db.IndiceOcupacional.Where(y=>y.IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().IdDependencia,
-                        NumeroPartidaGeneral = db.PartidaGeneral.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().NumeroPartida,
-                        UnidadAdministrativa = db.Dependencia.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().Nombre,
-                        NumeroPartidaIndividual = db.IndiceOcupacional.Where(y => y.IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().NumeroPartidaIndividual,
-                        PuestoInstitucional = db.ManualPuesto.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().Nombre,
-                        grupoOcupacional = db.EscalaGrados.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().Nombre,
-                        Rol = db.RolPuesto.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().Nombre,
-                        Remuneracion = db.EscalaGrados.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().Remuneracion,
-                        NumeroPuesto = x.Count()
+                var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaVacante).FirstOrDefaultAsync();
+                var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdModalidadPartida == ModalidadPartida.IdModalidadPartida)
+                 //.GroupBy(s => s.ManualPuesto.Nombre,d=>d.EscalaGrados.Nombre)
+                 .GroupBy(n => new { grupoOcupacional = n.IdManualPuesto, PuestoInstitucional = n.IdEscalaGrados })
+                 .Select(x => new ViewModelSeleccionPersonal
+                 {
+                     idIndiceOcupacional = x.FirstOrDefault().IdIndiceOcupacional,
+                     iddependecia = x.FirstOrDefault().IdDependencia,
+                     NumeroPartidaGeneral = db.PartidaGeneral.Where(s => s.IdPartidaGeneral == x.FirstOrDefault().IdPartidaGeneral).FirstOrDefault().NumeroPartida,
+                     UnidadAdministrativa = db.Dependencia.Where(s => s.IdDependencia == x.FirstOrDefault().IdDependencia).FirstOrDefault().Nombre,
+                     NumeroPartidaIndividual = Convert.ToString(x.FirstOrDefault().NumeroPartidaIndividual),
+                     PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == x.FirstOrDefault().IdManualPuesto).FirstOrDefault().Nombre,
+                     grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Nombre,
+                     Rol = db.RolPuesto.Where(s => s.IdRolPuesto == x.FirstOrDefault().IdRolPuesto).FirstOrDefault().Nombre,
+                     Remuneracion = db.EscalaGrados.Where(s => s.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Remuneracion
+                     //NumeroPuesto = x.Count()
 
-                    }).ToListAsync();
+                 }).ToListAsync();
+                foreach (var item in DatosBasicosIndiceOcupacional)
+                {
+                    var estado = db.PartidasFase.Where(s => s.IdIndiceOcupacional == item.idIndiceOcupacional).ToList();
+                    foreach (var item1 in estado)
+                    {
+                        if (item.idIndiceOcupacional == item1.IdIndiceOcupacional)
+                        {
+                            item.NumeroPuesto = item1.Vacantes;
+
+                        }
+                    }
+                }
+
 
                 return DatosBasicosIndiceOcupacional;
             }

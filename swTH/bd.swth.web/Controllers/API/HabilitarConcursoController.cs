@@ -24,6 +24,12 @@ using MoreLinq;
 
 namespace bd.swth.web.Controllers.API
 {
+
+    public class ejemplo
+    {
+        public string Nombre { get; set; }
+        public string Escala { get; set; }
+    }
     [Produces("application/json")]
     [Route("api/HabilitarConcurso")]
     public class HabilitarConcursoController : Controller
@@ -65,25 +71,65 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                 var vacantes = await db.PartidasFase
-                    .Select(d => new ViewModelPartidaFase
+                var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaVacante).FirstOrDefaultAsync();
+                var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdModalidadPartida == ModalidadPartida.IdModalidadPartida)
+                 //.GroupBy(s => s.ManualPuesto.Nombre,d=>d.EscalaGrados.Nombre)
+                 .GroupBy(n => new { grupoOcupacional = n.IdManualPuesto, PuestoInstitucional = n.IdEscalaGrados })
+                 .Select(x => new ViewModelPartidaFase
+                 {
+                     Idindiceocupacional  = x.FirstOrDefault().IdIndiceOcupacional,
+                     PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == x.FirstOrDefault().IdManualPuesto).FirstOrDefault().Nombre,
+                     grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Nombre,
+                     Vacantes = x.Count()
+                 })
+                    .ToListAsync();
+
+                foreach (var item in DatosBasicosIndiceOcupacional)
+                {
+                    var estado = db.PartidasFase.Where(s => s.IdIndiceOcupacional == item.Idindiceocupacional).ToList();
+                    foreach (var item1 in estado)
                     {
-                        idescalagrados = Convert.ToInt32(d.IndiceOcupacional.IdEscalaGrados),
-                        PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == d.IndiceOcupacional.IdManualPuesto).FirstOrDefault().Nombre,
-                        grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == d.IndiceOcupacional.IdEscalaGrados).FirstOrDefault().Nombre,
-                        Idindiceocupacional = d.IndiceOcupacional.IdIndiceOcupacional,
-                        IdPartidaFase = d.IdPartidasFase
+                        if ( item.Idindiceocupacional == item1.IdIndiceOcupacional)
+                        {
+                            item.estado = item1.Estado;
+                            item.VacantesCredo = item1.Vacantes;
+                            
+                        } 
+                    }
+                }
+               
 
-                    })
-                 .ToListAsync();
-
-                return vacantes;
+                return DatosBasicosIndiceOcupacional;
             }
             catch (Exception ex)
             {
                 return new List<ViewModelPartidaFase>();
+                
             }
         }
+        //public async Task<List<ViewModelPartidaFase>> ListarConcursosVacantes()
+        //{
+        //    try
+        //    {
+        //         var vacantes = await db.PartidasFase.Where(x=>x.Estado ==0)
+        //            .Select(d => new ViewModelPartidaFase
+        //            {
+        //                idescalagrados = Convert.ToInt32(d.IndiceOcupacional.IdEscalaGrados),
+        //                PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == d.IndiceOcupacional.IdManualPuesto).FirstOrDefault().Nombre,
+        //                grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == d.IndiceOcupacional.IdEscalaGrados).FirstOrDefault().Nombre,
+        //                Idindiceocupacional = d.IndiceOcupacional.IdIndiceOcupacional,
+        //                IdPartidaFase = d.IdPartidasFase
+
+        //            })
+        //         .ToListAsync();
+
+        //        return vacantes;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new List<ViewModelPartidaFase>();
+        //    }
+        //}
 
         [HttpPost]
         [Route("InsertarHabilitarConsurso")]
@@ -95,6 +141,7 @@ namespace bd.swth.web.Controllers.API
                 if (!respuesta.IsSuccess)
                 {
                     partidasFase.Fecha = DateTime.Now;
+                    partidasFase.Estado = 1;
                     db.PartidasFase.Add(partidasFase);
                     await db.SaveChangesAsync();
                     return new Response
