@@ -1409,14 +1409,25 @@ namespace bd.swth.web.Controllers.API
                     Identificacion = empleadoObtenido.Persona.Identificacion,
                     TelefonoPrivado = empleadoObtenido.Persona.TelefonoPrivado,
                     CorreoPrivado = empleadoObtenido.Persona.CorreoPrivado,
-                    Dependencia = empleadoObtenido.Dependencia.Nombre,
-                    InstitucionBancaria = empleadoObtenido.DatosBancarios.FirstOrDefault().InstitucionFinanciera.Nombre,
-                    NoCuenta = empleadoObtenido.DatosBancarios.FirstOrDefault().NumeroCuenta,
-                    TipoCuenta = empleadoObtenido.DatosBancarios.FirstOrDefault().Ahorros,
-                    RolPuesto = empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.Nombre,
-                    FondoFinanciamiento = empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().FondoFinanciamiento.Nombre,
-                    IdConfiguracionViatico = empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.ConfiguracionViatico.FirstOrDefault().IdConfiguracionViatico,
+                    Dependencia = (empleadoObtenido.Dependencia != null)?empleadoObtenido.Dependencia.Nombre:"",
+                    
+                    InstitucionBancaria = (empleadoObtenido.DatosBancarios != null && empleadoObtenido.DatosBancarios.Count > 0)?empleadoObtenido.DatosBancarios.FirstOrDefault().InstitucionFinanciera.Nombre: "",
+                    
+                    NoCuenta = (empleadoObtenido.DatosBancarios != null && empleadoObtenido.DatosBancarios.Count > 0) ? 
+                    empleadoObtenido.DatosBancarios.FirstOrDefault().NumeroCuenta:"",
+                    
+                    TipoCuenta = (empleadoObtenido.DatosBancarios != null && empleadoObtenido.DatosBancarios.Count > 0) ? empleadoObtenido.DatosBancarios.FirstOrDefault().Ahorros:false,
+                    
+                    RolPuesto = (empleadoObtenido.IndiceOcupacionalModalidadPartida != null && empleadoObtenido.IndiceOcupacionalModalidadPartida.Count > 0) ?empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.Nombre :"",
+                     
+                    FondoFinanciamiento = (empleadoObtenido.IndiceOcupacionalModalidadPartida != null && empleadoObtenido.IndiceOcupacionalModalidadPartida.Count > 0) ?empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().FondoFinanciamiento.Nombre:"",
+                    
+                    IdConfiguracionViatico = (empleadoObtenido.IndiceOcupacionalModalidadPartida != null && empleadoObtenido.IndiceOcupacionalModalidadPartida.Count > 0) ? 
+                        (empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional != null && empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.ConfiguracionViatico.Count > 0) ?
+                    empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.ConfiguracionViatico.FirstOrDefault().IdConfiguracionViatico:0:0,
+                    
                     FechaIngreso = empleadoObtenido.FechaIngreso
+                    
                 };
                 empleadoEnviar = empleados;
                 //listaEmpleado.Add(empleados);
@@ -1432,16 +1443,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new ListaEmpleadoViewModel();
             }
         }
