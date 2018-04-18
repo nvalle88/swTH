@@ -1326,6 +1326,10 @@ namespace bd.swth.datos
                 entity.HasOne(d => d.ProvinciaSufragio)
                     .WithMany(p => p.Empleado)
                     .HasForeignKey(d => d.IdProvinciaLugarSufragio);
+
+                entity.HasOne(d => d.BrigadaSSORol)
+                   .WithMany(p => p.Empleado)
+                   .HasForeignKey(d => d.IdBrigadaSSORol);
             });
 
 
