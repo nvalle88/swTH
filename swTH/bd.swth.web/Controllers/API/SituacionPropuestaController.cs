@@ -41,10 +41,10 @@ namespace bd.swth.web.Controllers.API
         /// </summary>
         /// <param name="requerimientoRolPorDependenciaViewModel"></param>
         /// <returns></returns>
-        // GET: api/SituacionActual
+        // POST: api/SituacionActual
         [HttpPost]
         [Route("CrearRequerimientoRolPorDependencia")]
-        public async Task<RequerimientoRolPorDependenciaViewModel> CrearRequerimientoRolPorDependencia([FromBody] RequerimientoRolPorDependenciaViewModel requerimientoRolPorDependenciaViewModel)
+        public async Task<Response> CrearRequerimientoRolPorDependencia([FromBody] RequerimientoRolPorDependenciaViewModel requerimientoRolPorDependenciaViewModel)
         {
 
             
@@ -52,190 +52,423 @@ namespace bd.swth.web.Controllers.API
             
             try
             {
-                var query = db.SituacionPropuesta;
 
-                var dependencia = await db.Dependencia.Where(x => x.IdDependencia == requerimientoRolPorDependenciaViewModel.IdDependencia).FirstOrDefaultAsync();
 
-                requerimiento.IdDependencia = dependencia.IdDependencia;
-                requerimiento.NombreDependencia = dependencia.Nombre;
+                var userResponseSend = new Response { Resultado = requerimientoRolPorDependenciaViewModel.NombreUsuario };
 
-                var grupoOcupacionalSuperior = await db.GrupoOcupacional.Where(x => x.TipoEscala == ConstantesGrupoOcupacional.GrupoOcupacionalNivelSuperior).FirstOrDefaultAsync();
+                Response acceso = await VerificarAcceso(userResponseSend);
 
-                var grupoOcupacionalOperativo = await db.GrupoOcupacional.Where(x => x.TipoEscala == ConstantesGrupoOcupacional.GrupoOcupacionalNivelOperativo).FirstOrDefaultAsync();
+                if (acceso.IsSuccess)
+                {
+                    // Se busca y se asigna la dependencia
+                    requerimientoRolPorDependenciaViewModel.IdDependencia = Convert.ToInt32(acceso.Resultado);
+                    
 
-                requerimiento = new RequerimientoRolPorDependenciaViewModel {
-                    IdDependencia = dependencia.IdDependencia,
-                    NombreDependencia = dependencia.Nombre,
-                    RolesNivelJerarquicoSuperior = new RequerimientoRolPorGrupoOcupacionalViewModel
+                    var registro = await db.ActivarPersonalTalentoHumano
+                    .Where(x =>
+                        x.IdDependencia == requerimientoRolPorDependenciaViewModel.IdDependencia
+                        && x.Fecha.Year == DateTime.Now.Year
+                     ).FirstOrDefaultAsync();
+
+                    if (registro != null)
                     {
-                        IdGrupoOcupacional = grupoOcupacionalSuperior.IdGrupoOcupacional,
-                        NombreGrupoOcupacional = grupoOcupacionalSuperior.TipoEscala,
 
-                        ListaRolesRequeridos = await db.RolPuesto
-                         .Where(x => x.IndiceOcupacional.
-                           Any(y => Convert.ToInt32(y.EscalaGrados.IdGrupoOcupacional) == grupoOcupacionalSuperior.IdGrupoOcupacional)
-                          )
+                        var estado = registro.Estado;
 
-                         .Select(
-                             rol => new RequerimientoRolViewModel
-                             {
-                                 IdRolPuesto = rol.IdRolPuesto,
-                                 NombreRolPuesto = rol.Nombre,
-                                 Cantidad = (query
-                                        .Where(s => 
-                                            s.IdDependencia == dependencia.IdDependencia
-                                            && s.IdRolPuesto == rol.IdRolPuesto
-                                        ).FirstOrDefault() != null 
-                                        ? query
-                                        .Where(s =>
-                                            s.IdDependencia == dependencia.IdDependencia
-                                            && s.IdRolPuesto == rol.IdRolPuesto
-                                        ).FirstOrDefault().Cantidad
-                                        : 0
-                                 ),
-                                 Descripcion = (query
-                                        .Where(s =>
-                                            s.IdDependencia == dependencia.IdDependencia
-                                            && s.IdRolPuesto == rol.IdRolPuesto
-                                        ).FirstOrDefault() != null
-                                        ? query
-                                        .Where(s =>
-                                            s.IdDependencia == dependencia.IdDependencia
-                                            && s.IdRolPuesto == rol.IdRolPuesto
-                                        ).FirstOrDefault().Descripcion
-                                        : ""
-                                 ),
-                             }
-                         )
-                         .ToListAsync()
-                    },
+                        if (estado == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado))
+                        {
+                            var query = db.SituacionPropuesta;
 
-                    RolesNivelOperativo = new RequerimientoRolPorGrupoOcupacionalViewModel
+                            var dependencia = await db.Dependencia.Where(x => x.IdDependencia == requerimientoRolPorDependenciaViewModel.IdDependencia).FirstOrDefaultAsync();
+
+                            requerimiento.IdDependencia = dependencia.IdDependencia;
+                            requerimiento.NombreDependencia = dependencia.Nombre;
+
+                            var grupoOcupacionalSuperior = await db.GrupoOcupacional.Where(x => x.TipoEscala == ConstantesGrupoOcupacional.GrupoOcupacionalNivelSuperior).FirstOrDefaultAsync();
+
+                            var grupoOcupacionalOperativo = await db.GrupoOcupacional.Where(x => x.TipoEscala == ConstantesGrupoOcupacional.GrupoOcupacionalNivelOperativo).FirstOrDefaultAsync();
+
+                            requerimiento = new RequerimientoRolPorDependenciaViewModel
+                            {
+                                IdDependencia = dependencia.IdDependencia,
+                                NombreDependencia = dependencia.Nombre,
+                                RolesNivelJerarquicoSuperior = new RequerimientoRolPorGrupoOcupacionalViewModel
+                                {
+                                    IdGrupoOcupacional = grupoOcupacionalSuperior.IdGrupoOcupacional,
+                                    NombreGrupoOcupacional = grupoOcupacionalSuperior.TipoEscala,
+
+                                    ListaRolesRequeridos = await db.RolPuesto
+                                     .Where(x => x.IndiceOcupacional.
+                                       Any(y => Convert.ToInt32(y.EscalaGrados.IdGrupoOcupacional) == grupoOcupacionalSuperior.IdGrupoOcupacional)
+                                      )
+
+                                     .Select(
+                                         rol => new RequerimientoRolViewModel
+                                         {
+                                             IdRolPuesto = rol.IdRolPuesto,
+                                             NombreRolPuesto = rol.Nombre,
+                                             Cantidad = (query
+                                                    .Where(s =>
+                                                        s.IdDependencia == dependencia.IdDependencia
+                                                        && s.IdRolPuesto == rol.IdRolPuesto
+                                                    ).FirstOrDefault() != null
+                                                    ? query
+                                                    .Where(s =>
+                                                        s.IdDependencia == dependencia.IdDependencia
+                                                        && s.IdRolPuesto == rol.IdRolPuesto
+                                                    ).FirstOrDefault().Cantidad
+                                                    : 0
+                                             ),
+                                             Descripcion = (query
+                                                    .Where(s =>
+                                                        s.IdDependencia == dependencia.IdDependencia
+                                                        && s.IdRolPuesto == rol.IdRolPuesto
+                                                    ).FirstOrDefault() != null
+                                                    ? query
+                                                    .Where(s =>
+                                                        s.IdDependencia == dependencia.IdDependencia
+                                                        && s.IdRolPuesto == rol.IdRolPuesto
+                                                    ).FirstOrDefault().Descripcion
+                                                    : ""
+                                             ),
+                                         }
+                                     )
+                                     .ToListAsync()
+                                },
+
+                                RolesNivelOperativo = new RequerimientoRolPorGrupoOcupacionalViewModel
+                                {
+                                    IdGrupoOcupacional = grupoOcupacionalOperativo.IdGrupoOcupacional,
+                                    NombreGrupoOcupacional = grupoOcupacionalOperativo.TipoEscala,
+
+                                    ListaRolesRequeridos = await db.RolPuesto
+                                     .Where(x => x.IndiceOcupacional.
+                                       Any(y => Convert.ToInt32(y.EscalaGrados.IdGrupoOcupacional) == grupoOcupacionalOperativo.IdGrupoOcupacional)
+                                      )
+
+                                     .Select(
+                                         rol => new RequerimientoRolViewModel
+                                         {
+                                             IdRolPuesto = rol.IdRolPuesto,
+                                             NombreRolPuesto = rol.Nombre,
+                                             Cantidad = (query
+                                                    .Where(s =>
+                                                        s.IdDependencia == dependencia.IdDependencia
+                                                        && s.IdRolPuesto == rol.IdRolPuesto
+                                                    ).FirstOrDefault() != null
+                                                    ? query
+                                                    .Where(s =>
+                                                        s.IdDependencia == dependencia.IdDependencia
+                                                        && s.IdRolPuesto == rol.IdRolPuesto
+                                                    ).FirstOrDefault().Cantidad
+                                                    : 0
+                                             ),
+                                             Descripcion = (query
+                                                    .Where(s =>
+                                                        s.IdDependencia == dependencia.IdDependencia
+                                                        && s.IdRolPuesto == rol.IdRolPuesto
+                                                    ).FirstOrDefault() != null
+                                                    ? query
+                                                    .Where(s =>
+                                                        s.IdDependencia == dependencia.IdDependencia
+                                                        && s.IdRolPuesto == rol.IdRolPuesto
+                                                    ).FirstOrDefault().Descripcion
+                                                    : ""
+                                            )
+                                         }
+                                     )
+                                     .ToListAsync()
+                                },
+
+                            };
+
+
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Resultado = requerimiento
+                            };
+
+                        }
+
+                    }
+
+
+                    return new Response
                     {
-                        IdGrupoOcupacional = grupoOcupacionalOperativo.IdGrupoOcupacional,
-                        NombreGrupoOcupacional = grupoOcupacionalOperativo.TipoEscala,
+                        IsSuccess = false,
+                        Message = Mensaje.ProcesoDesactivado
+                    };
+                }
+                else
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = acceso.Message
 
-                        ListaRolesRequeridos = await db.RolPuesto
-                         .Where(x => x.IndiceOcupacional.
-                           Any(y => Convert.ToInt32(y.EscalaGrados.IdGrupoOcupacional) == grupoOcupacionalOperativo.IdGrupoOcupacional)
-                          )
-
-                         .Select(
-                             rol => new RequerimientoRolViewModel
-                             {
-                                 IdRolPuesto = rol.IdRolPuesto,
-                                 NombreRolPuesto = rol.Nombre,
-                                 Cantidad = (query
-                                        .Where(s =>
-                                            s.IdDependencia == dependencia.IdDependencia
-                                            && s.IdRolPuesto == rol.IdRolPuesto
-                                        ).FirstOrDefault() != null
-                                        ? query
-                                        .Where(s =>
-                                            s.IdDependencia == dependencia.IdDependencia
-                                            && s.IdRolPuesto == rol.IdRolPuesto
-                                        ).FirstOrDefault().Cantidad
-                                        : 0
-                                 ),
-                                 Descripcion = (query
-                                        .Where(s =>
-                                            s.IdDependencia == dependencia.IdDependencia
-                                            && s.IdRolPuesto == rol.IdRolPuesto
-                                        ).FirstOrDefault() != null
-                                        ? query
-                                        .Where(s =>
-                                            s.IdDependencia == dependencia.IdDependencia
-                                            && s.IdRolPuesto == rol.IdRolPuesto
-                                        ).FirstOrDefault().Descripcion
-                                        : ""
-                                )
-                             }
-                         )
-                         .ToListAsync()
-                    },
-
-                };
-
+                    };
+                }
                 
-                
-
-                return requerimiento;
 
             }
             catch (Exception ex)
             {
 
-                return requerimiento;
+                return new Response {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+
+        }
+
+
+        [HttpPost]
+        [Route("ObtenerRequerimientoRolPorIdDependencia")]
+        public async Task<Response> ObtenerRequerimientoRolPorIdDependencia([FromBody] RequerimientoRolPorDependenciaViewModel requerimientoRolPorDependenciaViewModel)
+        {
+            try {
+                // Obtención datos dependencia
+                var dependencia = await db.Dependencia.Where(x => x.IdDependencia == requerimientoRolPorDependenciaViewModel.IdDependencia).FirstOrDefaultAsync();
+
+                // Obtención de datos para saber si el documento está habilitado
+                var actualYear = DateTime.Now.Year;
+
+                var procesoDatos = await db.ActivarPersonalTalentoHumano
+                    .Where(x =>
+                        x.IdDependencia == dependencia.IdDependencia
+                        && x.Fecha.Year == actualYear
+                    )
+
+                    .FirstOrDefaultAsync();
+
+                if (procesoDatos != null)
+                {
+                    if (true)
+                    {
+                        var modelo = new RequerimientoRolPorDependenciaViewModel();
+                        modelo.RolesNivelJerarquicoSuperior = new RequerimientoRolPorGrupoOcupacionalViewModel();
+                        modelo.RolesNivelOperativo = new RequerimientoRolPorGrupoOcupacionalViewModel();
+                        modelo.RolesNivelJerarquicoSuperior.ListaRolesRequeridos = new List<RequerimientoRolViewModel>();
+                        modelo.RolesNivelOperativo.ListaRolesRequeridos = new List<RequerimientoRolViewModel>();
+
+                        // Obtención de los datos actuales por dependencia
+
+                        var grupoOcupacionalSuperior = await db.GrupoOcupacional.Where(x => x.TipoEscala == ConstantesGrupoOcupacional.GrupoOcupacionalNivelSuperior).FirstOrDefaultAsync();
+
+                        var grupoOcupacionalOperativo = await db.GrupoOcupacional.Where(x => x.TipoEscala == ConstantesGrupoOcupacional.GrupoOcupacionalNivelOperativo).FirstOrDefaultAsync();
+
+                        modelo.IdDependencia = requerimientoRolPorDependenciaViewModel.IdDependencia;
+                        modelo.NombreDependencia = dependencia.Nombre;
+
+                        modelo.RolesNivelJerarquicoSuperior = new RequerimientoRolPorGrupoOcupacionalViewModel
+                        {
+                            IdGrupoOcupacional = grupoOcupacionalSuperior.IdGrupoOcupacional,
+                            NombreGrupoOcupacional = grupoOcupacionalSuperior.TipoEscala,
+
+                            ListaRolesRequeridos = await db.SituacionPropuesta
+                            .Where(x =>
+                                x.IdGrupoOcupacional == grupoOcupacionalSuperior.IdGrupoOcupacional
+                                && x.IdDependencia == dependencia.IdDependencia
+                            )
+                            .Select(y => new RequerimientoRolViewModel
+                            {
+                                IdRolPuesto = y.IdRolPuesto,
+                                NombreRolPuesto = y.RolPuesto.Nombre,
+                                Cantidad = y.Cantidad,
+                                Descripcion = y.Descripcion
+                            }
+                            )
+                            .ToListAsync(),
+
+                        };
+
+                        modelo.RolesNivelOperativo = new RequerimientoRolPorGrupoOcupacionalViewModel
+                        {
+                            IdGrupoOcupacional = grupoOcupacionalOperativo.IdGrupoOcupacional,
+                            NombreGrupoOcupacional = grupoOcupacionalOperativo.TipoEscala,
+
+                            ListaRolesRequeridos = await db.SituacionPropuesta
+                            .Where(x =>
+                                x.IdGrupoOcupacional == grupoOcupacionalOperativo.IdGrupoOcupacional
+                                && x.IdDependencia == dependencia.IdDependencia
+                            )
+                            .Select(y => new RequerimientoRolViewModel
+                            {
+                                IdRolPuesto = y.IdRolPuesto,
+                                NombreRolPuesto = y.RolPuesto.Nombre,
+                                Cantidad = y.Cantidad,
+                                Descripcion = y.Descripcion
+                            }
+                            )
+                            .ToListAsync()
+                        };
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Resultado = modelo
+                        };
+
+                    }
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Resultado = Mensaje.RegistroNoEncontrado
+                };
+
+            } catch (Exception ex) {
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+
+                };
             }
 
         }
 
 
         /// <summary>
-        /// Se requiere un IdDependencia
+        /// Se requiere un NombreUsuario
         /// </summary>
         /// <param name="requerimientoRolPorDependenciaViewModel"></param>
         /// <returns></returns>
-        // GET: api/SituacionActual
+            // POST: api/SituacionActual
         [HttpPost]
         [Route("ObtenerRequerimientoRolPorDependencia")]
-        public async Task<RequerimientoRolPorDependenciaViewModel> ObtenerRequerimientoRolPorDependencia([FromBody] RequerimientoRolPorDependenciaViewModel requerimientoRolPorDependenciaViewModel)
+        public async Task<Response> ObtenerRequerimientoRolPorDependencia([FromBody] RequerimientoRolPorDependenciaViewModel requerimientoRolPorDependenciaViewModel)
         {
             var modelo = new RequerimientoRolPorDependenciaViewModel();
+            modelo.RolesNivelJerarquicoSuperior = new RequerimientoRolPorGrupoOcupacionalViewModel();
+            modelo.RolesNivelOperativo = new RequerimientoRolPorGrupoOcupacionalViewModel();
+            modelo.RolesNivelJerarquicoSuperior.ListaRolesRequeridos = new List<RequerimientoRolViewModel>();
+            modelo.RolesNivelOperativo.ListaRolesRequeridos = new List<RequerimientoRolViewModel>();
 
             try
             {
+                var userResponseSend = new Response { Resultado = requerimientoRolPorDependenciaViewModel.NombreUsuario };
 
-                var dependencia = await db.Dependencia.Where(x => x.IdDependencia == requerimientoRolPorDependenciaViewModel.IdDependencia).FirstOrDefaultAsync();
+                Response acceso = await VerificarAcceso(userResponseSend);
 
-                var grupoOcupacionalSuperior = await db.GrupoOcupacional.Where(x => x.TipoEscala == ConstantesGrupoOcupacional.GrupoOcupacionalNivelSuperior).FirstOrDefaultAsync();
-
-                var grupoOcupacionalOperativo = await db.GrupoOcupacional.Where(x => x.TipoEscala == ConstantesGrupoOcupacional.GrupoOcupacionalNivelOperativo).FirstOrDefaultAsync();
-
-                modelo.IdDependencia = requerimientoRolPorDependenciaViewModel.IdDependencia;
-                modelo.NombreDependencia = dependencia.Nombre;
-
-                modelo.RolesNivelJerarquicoSuperior = new RequerimientoRolPorGrupoOcupacionalViewModel {
-                    IdGrupoOcupacional = grupoOcupacionalSuperior.IdGrupoOcupacional,
-                    NombreGrupoOcupacional = grupoOcupacionalSuperior.TipoEscala,
-
-                    ListaRolesRequeridos = await db.SituacionPropuesta
-                    .Where(x => x.IdGrupoOcupacional == grupoOcupacionalSuperior.IdGrupoOcupacional)
-                    .Select(y=> new RequerimientoRolViewModel
-                        {
-                            IdRolPuesto = y.IdRolPuesto,
-                            NombreRolPuesto = y.RolPuesto.Nombre,
-                            Cantidad = y.Cantidad,
-                            Descripcion = y.Descripcion
-                        }
-                    )
-                    .ToListAsync(),
-
-                };
-
-                modelo.RolesNivelOperativo = new RequerimientoRolPorGrupoOcupacionalViewModel
+                if (acceso.IsSuccess)
                 {
-                    IdGrupoOcupacional = grupoOcupacionalOperativo.IdGrupoOcupacional,
-                    NombreGrupoOcupacional = grupoOcupacionalOperativo.TipoEscala,
 
-                    ListaRolesRequeridos = await db.SituacionPropuesta
-                    .Where(x => x.IdGrupoOcupacional == grupoOcupacionalOperativo.IdGrupoOcupacional)
-                    .Select(y => new RequerimientoRolViewModel
+                    requerimientoRolPorDependenciaViewModel.IdDependencia = Convert.ToInt32(acceso.Resultado);
+
+                    // Obtención datos dependencia
+                    var dependencia = await db.Dependencia.Where(x => x.IdDependencia == requerimientoRolPorDependenciaViewModel.IdDependencia).FirstOrDefaultAsync();
+
+                    // Obtención de datos para saber si el documento está habilitado
+                    var actualYear = DateTime.Now.Year;
+
+                    var procesoDatos = await db.ActivarPersonalTalentoHumano
+                        .Where(x =>
+                            x.IdDependencia == dependencia.IdDependencia
+                            && x.Fecha.Year == actualYear
+                        )
+
+                        .FirstOrDefaultAsync();
+
+                    if (procesoDatos != null)
                     {
-                        IdRolPuesto = y.IdRolPuesto,
-                        NombreRolPuesto = y.RolPuesto.Nombre,
-                        Cantidad = y.Cantidad,
-                        Descripcion = y.Descripcion
+                        if (procesoDatos.Estado == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado))
+                        {
+                            /* Ingresa a este proceso cuando existe un documento y está habilitado*/
+
+                            // Obtención de los datos actuales por dependencia
+
+                            var grupoOcupacionalSuperior = await db.GrupoOcupacional.Where(x => x.TipoEscala == ConstantesGrupoOcupacional.GrupoOcupacionalNivelSuperior).FirstOrDefaultAsync();
+
+                            var grupoOcupacionalOperativo = await db.GrupoOcupacional.Where(x => x.TipoEscala == ConstantesGrupoOcupacional.GrupoOcupacionalNivelOperativo).FirstOrDefaultAsync();
+
+                            modelo.IdDependencia = requerimientoRolPorDependenciaViewModel.IdDependencia;
+                            modelo.NombreDependencia = dependencia.Nombre;
+
+                            modelo.RolesNivelJerarquicoSuperior = new RequerimientoRolPorGrupoOcupacionalViewModel
+                            {
+                                IdGrupoOcupacional = grupoOcupacionalSuperior.IdGrupoOcupacional,
+                                NombreGrupoOcupacional = grupoOcupacionalSuperior.TipoEscala,
+
+                                ListaRolesRequeridos = await db.SituacionPropuesta
+                                .Where(x =>
+                                    x.IdGrupoOcupacional == grupoOcupacionalSuperior.IdGrupoOcupacional
+                                    && x.IdDependencia == dependencia.IdDependencia
+                                )
+                                .Select(y => new RequerimientoRolViewModel
+                                {
+                                    IdRolPuesto = y.IdRolPuesto,
+                                    NombreRolPuesto = y.RolPuesto.Nombre,
+                                    Cantidad = y.Cantidad,
+                                    Descripcion = y.Descripcion
+                                }
+                                )
+                                .ToListAsync(),
+
+                            };
+
+                            modelo.RolesNivelOperativo = new RequerimientoRolPorGrupoOcupacionalViewModel
+                            {
+                                IdGrupoOcupacional = grupoOcupacionalOperativo.IdGrupoOcupacional,
+                                NombreGrupoOcupacional = grupoOcupacionalOperativo.TipoEscala,
+
+                                ListaRolesRequeridos = await db.SituacionPropuesta
+                                .Where(x =>
+                                    x.IdGrupoOcupacional == grupoOcupacionalOperativo.IdGrupoOcupacional
+                                    && x.IdDependencia == dependencia.IdDependencia
+                                )
+                                .Select(y => new RequerimientoRolViewModel
+                                {
+                                    IdRolPuesto = y.IdRolPuesto,
+                                    NombreRolPuesto = y.RolPuesto.Nombre,
+                                    Cantidad = y.Cantidad,
+                                    Descripcion = y.Descripcion
+                                }
+                                )
+                                .ToListAsync()
+                            };
+
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Resultado = modelo
+                            };
+
+                        }
                     }
-                    )
-                    .ToListAsync()
-                };
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ProcesoDesactivado
+
+                    };
 
 
-                return modelo;
+                }
+                else
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = acceso.Message
+
+                    };
+                }
+
+
+                
 
             }catch(Exception ex) {
-                return modelo;
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
             }
         }
         
@@ -489,7 +722,12 @@ namespace bd.swth.web.Controllers.API
         {
             try {
 
-                var usuario = await db.Empleado.Where(x=>x.NombreUsuario == response.Resultado.ToString()).ToListAsync();
+                var usuario = await db.Empleado
+                    .Where(x=>
+                        x.NombreUsuario == response.Resultado.ToString()
+                        && x.Activo == true
+                        )
+                    .ToListAsync();
 
                 if (usuario.Count > 0) {
 
@@ -529,7 +767,7 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-            public Response Existe(SituacionPropuesta situacionPropuesta)
+        public Response Existe(SituacionPropuesta situacionPropuesta)
         {
 
             try
@@ -569,6 +807,48 @@ namespace bd.swth.web.Controllers.API
                 };
             }
 
+        }
+
+
+        /// <summary>
+        /// Requiere IdDependencia
+        /// </summary>
+        /// <param name="requerimientoRolPorDependenciaViewModel"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("CerrarProcesoRequerimientoPersona")]
+        public async Task<Response> CerrarProcesoRequerimientoPersona([FromBody] RequerimientoRolPorDependenciaViewModel requerimientoRolPorDependenciaViewModel)
+        {
+            try {
+
+                var registro = await db.ActivarPersonalTalentoHumano
+                    .Where(x => 
+                        x.IdDependencia == requerimientoRolPorDependenciaViewModel.IdDependencia
+                        && x.Fecha.Year == DateTime.Now.Year
+                     ).FirstOrDefaultAsync();
+
+                if (registro != null) {
+
+                    registro.Estado = Convert.ToInt32(Constantes.ActivacionPersonalValorDesactivado);
+                    db.ActivarPersonalTalentoHumano.Update(registro);
+                    await db.SaveChangesAsync();
+                }
+                
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.ProcesoFinalizadoSatisfactorio
+                };
+
+            } catch (Exception ex) {
+
+                return new Response{
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion + ex
+                };
+
+            }
         }
 
     }

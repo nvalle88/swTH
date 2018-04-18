@@ -34,8 +34,7 @@ namespace bd.swth.entidades.Negocio
 
         public string Nivel { get; set; }
 
-
-
+        public virtual ICollection<PartidasFase> PartidasFase { get; set; }
         public virtual ICollection<IndiceOcupacionalExperienciaLaboralRequerida> IndiceOcupacionalExperienciaLaboralRequerida { get; set; }
 
         public virtual ICollection<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }

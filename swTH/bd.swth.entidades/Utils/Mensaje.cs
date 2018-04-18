@@ -19,5 +19,8 @@ namespace bd.swth.entidades.Utils
         public static string ErrorCorreo { get { return "No pudo enviarse el correo"; } }
         public static string DependenciaSinJefe { get { return "no existe una persona a cargo de la dependencia"; } }
         public static string AccesoNoAutorizado { get { return "No tiene los permisos necesarios para acceder a este sitio"; } }
+        public static string ProcesoDesactivado { get { return "Este proceso está desactivado"; } }
+        public static string ProcesoFinalizadoSatisfactorio { get { return "Proceso finalizado correctamente"; } }
+
     }
 }

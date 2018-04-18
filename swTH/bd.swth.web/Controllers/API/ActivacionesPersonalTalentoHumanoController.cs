@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
             {
                 var listaDependencias = await db.Dependencia.OrderBy(x => x.IdDependencia).ToListAsync();
 
-                var listaDependenciasEnviadasCorreoEsteAño = await ListarActivarPersonalTalentoHumanoYearActual();
+                var listaDependenciasEnviadasCorreoThisYear = await ListarActivarPersonalTalentoHumanoYearActual();
 
                 var idDependencia = 0;
 
@@ -69,15 +69,23 @@ namespace bd.swth.web.Controllers.API
 
 
                     // Validación de estado para los checkBox
-                    for (int j = 0; j < listaDependenciasEnviadasCorreoEsteAño.Count; j++)
+                    for (int j = 0; j < listaDependenciasEnviadasCorreoThisYear.Count; j++)
                     {
-                        idDependencia = listaDependenciasEnviadasCorreoEsteAño.ElementAt(j).IdDependencia;
+                        idDependencia = listaDependenciasEnviadasCorreoThisYear.ElementAt(j).IdDependencia;
 
                         if (idDependencia == listaDependencias.ElementAt(i).IdDependencia)
                         {
-                            j = listaDependenciasEnviadasCorreoEsteAño.Count + 1;
+                            
+                            model.Existe = true; //Esta línea pone true cuando existe el registro (Este año)
 
-                            model.Estado = true;
+                            var estadoLista = listaDependenciasEnviadasCorreoThisYear.ElementAt(j).Estado; 
+
+                            if (estadoLista == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado)) {
+                                model.Estado = true;
+                                
+                            }
+
+                            j = listaDependenciasEnviadasCorreoThisYear.Count + 1;
                         }
                     }
 
@@ -97,11 +105,12 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-
-
-
-
-
+        
+        /// <summary>
+        /// Solo toma los jefes que están activos
+        /// </summary>
+        /// <param name="idDependencia"></param>
+        /// <returns></returns>
         // GET: api/ActivacionesPersonalTalentoHumano
         [HttpGet]
         [Route("GetJefePorDependencia")]
@@ -117,6 +126,7 @@ namespace bd.swth.web.Controllers.API
                 empleado = db.Empleado.Include(x => x.Dependencia).Include(x => x.Persona).Where(x =>
                        x.EsJefe == true
                        && x.Dependencia.IdDependencia == idDependencia
+                       && x.Activo == true
                     ).FirstOrDefault();
 
                 return empleado;
@@ -186,14 +196,14 @@ namespace bd.swth.web.Controllers.API
 
 
 
-                            if (!response.IsSuccess && estado == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado) )
+                            if (!response.IsSuccess && estado == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado))
                             {
                                 var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
 
-                                if (empleado != null)
+                                if (empleado != null && empleado.IdEmpleado > 0)
                                 {
                                     var correo = empleado.Persona.CorreoPrivado;
-                                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo));
+                                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo, empleado.Dependencia.Nombre));
 
                                     db.ActivarPersonalTalentoHumano.Add(activarPersonalTalentoHumano);
                                     await db.SaveChangesAsync();
@@ -213,11 +223,47 @@ namespace bd.swth.web.Controllers.API
                             }
                             else
                             {
-                                /*
-                                activarPersonalTalentoHumano.IdActivarPersonalTalentoHumano = Convert.ToInt32(response.Resultado);
-                                db.ActivarPersonalTalentoHumano.Update(activarPersonalTalentoHumano);
-                                */
 
+                                var actualizar = await db.ActivarPersonalTalentoHumano
+                                        .Where(apt =>
+                                            apt.IdActivarPersonalTalentoHumano == Convert.ToInt32(response.Resultado)
+                                        ).FirstOrDefaultAsync();
+
+                                if (
+                                    response.IsSuccess 
+                                    && actualizar.Estado == Convert.ToInt32(Constantes.ActivacionPersonalValorDesactivado)
+                                    && estado == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado)
+                                    )
+                                {
+                                    actualizar.Estado = Convert.ToInt32(Constantes.ActivacionPersonalValorActivado);
+
+                                    var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
+
+
+                                    if (empleado != null && empleado.IdEmpleado > 0)
+                                    {
+                                        
+                                        var correo = empleado.Persona.CorreoPrivado;
+                                        correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo,empleado.Dependencia.Nombre));
+
+                                        db.ActivarPersonalTalentoHumano.Update(actualizar);
+                                        await db.SaveChangesAsync();
+
+                                    }
+                                    else
+                                    {
+                                        correoResponse.Add(new Response
+                                            {
+                                                IsSuccess = false,
+                                                Message = Mensaje.DependenciaSinJefe + " " + lista.ElementAt(i).Nombre
+                                            }
+
+                                        );
+                                    }
+
+                                }
+                               
+                                
                             }
 
                         }
@@ -269,32 +315,46 @@ namespace bd.swth.web.Controllers.API
 
 
 
-        public Response EnviarMailDesdeCorreoTalentohumano(string correo)
+        public Response EnviarMailDesdeCorreoTalentohumano(string correo, string dependenciaNombre)
         {
             try
             {
 
                 //Static class MailConf 
-                MailConfig.HostUri = Constantes.Smtp;
-                MailConfig.PrimaryPort = Convert.ToInt32(Constantes.PrimaryPort);
-                MailConfig.SecureSocketOptions = Convert.ToInt32(Constantes.SecureSocketOptions);
+                MailConfig.HostUri = ConstantesCorreo.Smtp;
+                MailConfig.PrimaryPort = Convert.ToInt32(ConstantesCorreo.PrimaryPort);
+                MailConfig.SecureSocketOptions = Convert.ToInt32(ConstantesCorreo.SecureSocketOptions);
+
+
+                string mensaje = ConstantesCorreo.MensajeCorreoSuperior;
+
+                if (ConstantesCorreo.MensajeCorreoDependencia == "true")
+                {
+                    mensaje = mensaje + dependenciaNombre+ "\n \n";
+                }
+                
+
+                mensaje = mensaje + 
+                ConstantesCorreo.MensajeCorreoMedio +
+                ConstantesCorreo.MensajeCorreoEnlace +
+                ConstantesCorreo.MensajeCorreoInferior;
 
                 //Class for submit the email 
                 Mail mail = new Mail
                 {
-                    Password = Constantes.PasswordCorreo
+                    Password = ConstantesCorreo.PasswordCorreo
                                      ,
-                    Body = "My Body"
+                    Body = mensaje
                                      ,
-                    EmailFrom = Constantes.CorreoTTHH
+                    EmailFrom = ConstantesCorreo.CorreoTTHH
                                      ,
                     EmailTo = correo
                                      ,
-                    NameFrom = "Talento humano"
+                    NameFrom = ConstantesCorreo.NameFrom
                                      ,
                     NameTo = "Name To"
                                      ,
-                    Subject = "La plataforma de activación de requerimientos de personal se encuentra activada"
+                    Subject = ConstantesCorreo.Subject
                 };
 
                 //execute the method Send Mail or SendMailAsync
@@ -374,7 +434,45 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+        [HttpGet]
+        [Route("ObtenerSituacionActual")]
+        public async Task<List<DistributivoViewModel>> ObtenerSituacionActual() {
 
+            var lista = new List<DistributivoViewModel>();
+
+            try {
+
+
+                lista = await db.IndiceOcupacional
+                    .GroupBy(y => new { y.IdDependencia, y.IdRolPuesto })
+
+                    .Select( x => new DistributivoViewModel
+                        {
+                            IdDependencia = Convert.ToInt32(x.FirstOrDefault().IdDependencia),
+                            NombreDependencia = db.Dependencia.Where(y=>y.IdDependencia == x.FirstOrDefault().IdDependencia).FirstOrDefault().Nombre,
+                            
+                            IdRolPuesto = Convert.ToInt32(x.FirstOrDefault().IdRolPuesto),
+                            NombreRolPuesto = db.RolPuesto.Where(z=>z.IdRolPuesto == x.FirstOrDefault().IdRolPuesto).FirstOrDefault().Nombre,
+
+                            IdModalidadPartida = Convert.ToInt32(x.FirstOrDefault().IdModalidadPartida),
+                            NombreModalidadPartida = db.ModalidadPartida.Where(a=>a.IdModalidadPartida == x.FirstOrDefault().IdModalidadPartida).FirstOrDefault().Nombre
+                            
+                        }
+                    )
+                    
+                    
+                    .ToListAsync();
+                
+
+                return lista;
+
+
+            } catch (Exception ex) {
+
+                return lista;
+            }
+
+        }
 
 
     }
