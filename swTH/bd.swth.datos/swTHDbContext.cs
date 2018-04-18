@@ -689,17 +689,28 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdCandidato)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(d => d.Persona)
-                    .WithMany(p => p.CandidatoConcurso)
-                    .HasForeignKey(d => d.IdCandidato)
-                    .OnDelete(DeleteBehavior.Restrict);
-
                 entity.HasOne(d => d.PartidasFase)
                     .WithMany(p => p.CandidatoConcurso)
                     .HasForeignKey(d => d.IdPartidasFase)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+            modelBuilder.Entity<Calificacion>(entity =>
+            {
+                entity.HasKey(e => e.IdCalificacion)
+                    .HasName("PK_Calificacion");
 
+                entity.HasOne(d => d.CandidatoConcurso)
+                    .WithMany(p => p.Calificacion)
+                    .HasForeignKey(d => d.IdCandidatoConcurso)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Calificacion_CandidatoConcurso");
+
+                entity.HasOne(d => d.TipoCalificacion)
+                    .WithMany(p => p.Calificacion)
+                    .HasForeignKey(d => d.IdTipoCalificacion)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Calificacion_TipoCalificacion");
+            });
             modelBuilder.Entity<Candidato>(entity =>
             {
                 entity.HasKey(e => e.IdCandidato)

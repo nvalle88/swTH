@@ -73,7 +73,6 @@ namespace bd.swth.web.Controllers.API
             {
                 var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaVacante).FirstOrDefaultAsync();
                 var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdModalidadPartida == ModalidadPartida.IdModalidadPartida)
-                 //.GroupBy(s => s.ManualPuesto.Nombre,d=>d.EscalaGrados.Nombre)
                  .GroupBy(n => new { grupoOcupacional = n.IdManualPuesto, PuestoInstitucional = n.IdEscalaGrados })
                  .Select(x => new ViewModelPartidaFase
                  {
@@ -94,11 +93,10 @@ namespace bd.swth.web.Controllers.API
                             item.estado = item1.Estado;
                             item.VacantesCredo = item1.Vacantes;
                             
+                            
                         } 
                     }
                 }
-               
-
                 return DatosBasicosIndiceOcupacional;
             }
             catch (Exception ex)
