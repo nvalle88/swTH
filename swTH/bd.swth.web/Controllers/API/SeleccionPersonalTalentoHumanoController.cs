@@ -21,6 +21,8 @@ using bd.swth.entidades.Constantes;
 using EnviarCorreo;
 using SendMails.methods;
 using MoreLinq;
+using Itenso.TimePeriod;
+using bd.swth.entidades.ObjectTransfer;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -45,22 +47,37 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 //var name = Constantes.PartidaVacante;
-                //var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaVacante).FirstOrDefaultAsync();
-                var DatosBasicosIndiceOcupacional = await db.PartidasFase
-                 .GroupBy(s => s.IdIndiceOcupacional)
-                    .Select(x => new ViewModelSeleccionPersonal 
-                    {
-                        iddependecia=db.IndiceOcupacional.Where(y=>y.IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().IdDependencia,
-                        NumeroPartidaGeneral = db.PartidaGeneral.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().NumeroPartida,
-                        UnidadAdministrativa = db.Dependencia.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().Nombre,
-                        NumeroPartidaIndividual = db.IndiceOcupacional.Where(y => y.IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().NumeroPartidaIndividual,
-                        PuestoInstitucional = db.ManualPuesto.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().Nombre,
-                        grupoOcupacional = db.EscalaGrados.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().Nombre,
-                        Rol = db.RolPuesto.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().Nombre,
-                        Remuneracion = db.EscalaGrados.Where(s => s.IndiceOcupacional.FirstOrDefault().IdIndiceOcupacional == x.FirstOrDefault().IdIndiceOcupacional).FirstOrDefault().Remuneracion,
-                        NumeroPuesto = x.Count()
+                var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaVacante).FirstOrDefaultAsync();
+                var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdModalidadPartida == ModalidadPartida.IdModalidadPartida)
+                 .GroupBy(n => new { grupoOcupacional = n.IdManualPuesto, PuestoInstitucional = n.IdEscalaGrados })
+                 .Select(x => new ViewModelSeleccionPersonal
+                 {
+                     idIndiceOcupacional = x.FirstOrDefault().IdIndiceOcupacional,
+                     iddependecia = x.FirstOrDefault().IdDependencia,
+                     NumeroPartidaGeneral = db.PartidaGeneral.Where(s => s.IdPartidaGeneral == x.FirstOrDefault().IdPartidaGeneral).FirstOrDefault().NumeroPartida,
+                     UnidadAdministrativa = db.Dependencia.Where(s => s.IdDependencia == x.FirstOrDefault().IdDependencia).FirstOrDefault().Nombre,
+                     NumeroPartidaIndividual = Convert.ToString(x.FirstOrDefault().NumeroPartidaIndividual),
+                     PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == x.FirstOrDefault().IdManualPuesto).FirstOrDefault().Nombre,
+                     grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Nombre,
+                     Rol = db.RolPuesto.Where(s => s.IdRolPuesto == x.FirstOrDefault().IdRolPuesto).FirstOrDefault().Nombre,
+                     Remuneracion = db.EscalaGrados.Where(s => s.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Remuneracion
+                     //NumeroPuesto = x.Count()
 
-                    }).ToListAsync();
+                 }).ToListAsync();
+                foreach (var item in DatosBasicosIndiceOcupacional)
+                {
+                    var estado = db.PartidasFase.Where(s => s.IdIndiceOcupacional == item.idIndiceOcupacional).ToList();
+                    foreach (var item1 in estado)
+                    {
+                        if (item.idIndiceOcupacional == item1.IdIndiceOcupacional)
+                        {
+                            item.NumeroPuesto = item1.Vacantes;
+                            item.IdPrtidaFase = item1.IdPartidasFase;
+
+                        }
+                    }
+                }
+
 
                 return DatosBasicosIndiceOcupacional;
             }
@@ -76,14 +93,38 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
+                var DatosBasicosIndiceOcupacional1 = new List<ViewModelCandidatoExperiencia>();
+                var DatosBasicosIndiceOcupacional2 = new List<ViewModelCandidatoExperiencia>();
                 var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdDependencia == viewModelSeleccionPersonal.iddependecia)
                  .Select(x => new ViewModelSeleccionPersonal
                  {
                      iddependecia = x.IdDependencia,
                      UnidadAdministrativa = x.Dependencia.Nombre,
-                     PuestoInstitucional = x.ManualPuesto.Nombre,
+                     PuestoInstitucional = x.ManualPuesto.Nombre
 
                  }).FirstOrDefaultAsync();
+                var candidatoConcurso = await db.CandidatoConcurso.Where(x => x.IdPartidasFase == viewModelSeleccionPersonal.IdPrtidaFase).ToListAsync();
+                if (candidatoConcurso.Count() != 0)
+                {
+                    foreach (var item in candidatoConcurso)
+                    {
+                        DatosBasicosIndiceOcupacional1 = await db.Candidato.Where(x => x.IdCandidato == item.IdCandidato)
+                        .Select(x => new ViewModelCandidatoExperiencia
+                        {
+                            Idcandidato = x.IdPersona,
+                            Nombres = x.Persona.Nombres + " " + x.Persona.Apellidos,
+                            Cedula = x.Persona.Identificacion
+                        }).ToListAsync();
+
+                       var dia= await aExperiencia(DatosBasicosIndiceOcupacional1.FirstOrDefault().Idcandidato);
+                        DatosBasicosIndiceOcupacional1.FirstOrDefault().ExperienciaDias = Convert.ToString(dia.dia);
+                        DatosBasicosIndiceOcupacional1.FirstOrDefault().ExperienciaMesAno = dia.Experiencia;
+                        DatosBasicosIndiceOcupacional2.AddRange(DatosBasicosIndiceOcupacional1);
+                    }
+                }
+                //var listacandidatos = await db.CandidatoConcurso
+
+                DatosBasicosIndiceOcupacional.ListasCanditadoExperiencia = DatosBasicosIndiceOcupacional2;
                 return DatosBasicosIndiceOcupacional;
 
             }
@@ -94,83 +135,36 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
         [HttpPost]
-        [Route("InsertarPostulante")]
-        public async Task<Response> InsertarPostulante([FromBody] ViewModelSeleccionPersonal viewModelSeleccionPersonal)
+        [Route("ListaCanditadoApuesto")]
+        public async Task<ViewModelCandidatoExperiencia> ListaCanditadoApuesto([FromBody] ViewModelSeleccionPersonal viewModelSeleccionPersonal)
         {
-            using (var transaction = await db.Database.BeginTransactionAsync())
+            try
             {
-                try
-                {
-                    var respuesta = Existe(viewModelSeleccionPersonal);
-                    if (!respuesta.IsSuccess)
-                    {
-                        var persona = new Persona
-                        {
-                            Identificacion = viewModelSeleccionPersonal.identificacion,
-                            Nombres = viewModelSeleccionPersonal.nombres,
-                            Apellidos = viewModelSeleccionPersonal.Apellidos
+                //var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdDependencia == viewModelSeleccionPersonal.iddependecia)
+                // .Select(x => new ViewModelCandidatoExperiencia
+                // {
 
-                        };
-                        //1. Insertar Persona 
-                        var personaInsertarda = await db.Persona.AddAsync(persona);
-                        await db.SaveChangesAsync();
+                //     //iddependecia = x.IdDependencia,
+                //     //UnidadAdministrativa = x.Dependencia.Nombre,
+                //     //PuestoInstitucional = x.ManualPuesto.Nombre,
 
-                        //2. Insertar Empleado (Inicializado : IdPersona, IdDependencia)
-                        var empleadoinsertado = new Candidato
-                        {
-                            IdPersona = personaInsertarda.Entity.IdPersona
-                        };
-                        var empleado = await db.Candidato.AddAsync(empleadoinsertado);
-                        await db.SaveChangesAsync();
+                // }).FirstOrDefaultAsync();
+                //return DatosBasicosIndiceOcupacional.ListasCanditadoExperiencia;
+                return new ViewModelCandidatoExperiencia();
 
-
-                        transaction.Commit();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                            Resultado = empleado.Entity
-                        };
-                    }
-
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
-                    };
-
-                }
-                catch (Exception ex)
-                {
-
-                    transaction.Rollback();
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex.Message,
-                        Message = Mensaje.Excepcion,
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.Error,
-                    };
-                }
             }
-
+            catch (Exception ex)
+            {
+                ex.ToString();
+                return new ViewModelCandidatoExperiencia();
+            }
         }
 
         private Response Existe(ViewModelSeleccionPersonal viewModelSeleccionPersonal)
         {
             var identificacion = viewModelSeleccionPersonal.identificacion.ToUpper().TrimEnd().TrimStart();
-            var Empleadorespuesta = db.Persona.Where(p => p.Identificacion == identificacion).Include(x => x.CandidatoConcurso).FirstOrDefault();
+            var Empleadorespuesta = db.Persona.Where(p => p.Identificacion == identificacion).FirstOrDefault();
 
             if (Empleadorespuesta != null)
             {
@@ -192,6 +186,26 @@ namespace bd.swth.web.Controllers.API
             {
                 IsSuccess = false,
             };
+        }
+        public async Task<DateRequest> aExperiencia(int candidato)
+        {
+            DateRequest fecha = new DateRequest();
+            var resultado = "";
+           
+            var fechas = db.TrayectoriaLaboral.Where(s => s.IdPersona == candidato).ToList();
+            if (fechas.Count != 0)
+            {
+                foreach (var item in fechas)
+                {
+                    DateDiff periodo = new DateDiff
+                        (
+                        item.FechaInicio, item.FechaFin
+                        );
+                    resultado = "Años: " + periodo.Years + " Mes: " + periodo.Months + " Dia: " + periodo.Days;
+                    fecha.dia = periodo.Days;
+                    fecha.Experiencia = resultado;                }
+            }
+            return fecha;
         }
     }
 }

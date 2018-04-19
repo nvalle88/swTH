@@ -10,6 +10,9 @@ namespace bd.swth.entidades.Negocio
         public int IdPartidasFase { get; set; }
         public int IdIndiceOcupacional { get; set; }
         public int? IdTipoConcurso { get; set; }
+        public int Vacantes { get; set; }
+        public int Estado { get; set; }
+
         public DateTime? Fecha { get; set; }
 
         public virtual ICollection<CandidatoConcurso> CandidatoConcurso { get; set; }
