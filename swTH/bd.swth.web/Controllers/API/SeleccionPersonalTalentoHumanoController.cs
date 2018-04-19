@@ -21,6 +21,8 @@ using bd.swth.entidades.Constantes;
 using EnviarCorreo;
 using SendMails.methods;
 using MoreLinq;
+using Itenso.TimePeriod;
+using bd.swth.entidades.ObjectTransfer;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -102,7 +104,7 @@ namespace bd.swth.web.Controllers.API
 
                  }).FirstOrDefaultAsync();
                 var candidatoConcurso = await db.CandidatoConcurso.Where(x => x.IdPartidasFase == viewModelSeleccionPersonal.IdPrtidaFase).ToListAsync();
-                if (candidatoConcurso.Count() !=0 )
+                if (candidatoConcurso.Count() != 0)
                 {
                     foreach (var item in candidatoConcurso)
                     {
@@ -114,20 +116,14 @@ namespace bd.swth.web.Controllers.API
                             Cedula = x.Persona.Identificacion
                         }).ToListAsync();
 
-                        var fechas = db.TrayectoriaLaboral.Where(s => s.IdPersona == DatosBasicosIndiceOcupacional1.FirstOrDefault().Idcandidato).ToList();
-                        if (fechas!=null)
-                        {
-                            var dia = fechas.FirstOrDefault().FechaFin - fechas.FirstOrDefault().FechaInicio;
-                            DatosBasicosIndiceOcupacional1.FirstOrDefault().ExperienciaDias = Convert.ToString("Dias:"+dia.TotalDays);
-                            DatosBasicosIndiceOcupacional1.FirstOrDefault().ExperienciaMesAno = Convert.ToString("Años: "+"Meses: "+"Dias: "+dia.Days);
-                        }
-                        //DatosBasicosIndiceOcupacional1.FirstOrDefault().ExperienciaDias = 
-                        // FechaFin = db.TrayectoriaLaboral.Where(s => s.IdPersona == x.IdPersona).FirstOrDefault().FechaFin,
+                       var dia= await aExperiencia(DatosBasicosIndiceOcupacional1.FirstOrDefault().Idcandidato);
+                        DatosBasicosIndiceOcupacional1.FirstOrDefault().ExperienciaDias = Convert.ToString(dia.dia);
+                        DatosBasicosIndiceOcupacional1.FirstOrDefault().ExperienciaMesAno = dia.Experiencia;
                         DatosBasicosIndiceOcupacional2.AddRange(DatosBasicosIndiceOcupacional1);
                     }
                 }
                 //var listacandidatos = await db.CandidatoConcurso
-                
+
                 DatosBasicosIndiceOcupacional.ListasCanditadoExperiencia = DatosBasicosIndiceOcupacional2;
                 return DatosBasicosIndiceOcupacional;
 
@@ -165,81 +161,6 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
-
-
-        //[HttpPost]
-        //[Route("InsertarPostulante")]
-        //public async Task<Response> InsertarPostulante([FromBody] ViewModelSeleccionPersonal viewModelSeleccionPersonal)
-        //{
-        //    using (var transaction = await db.Database.BeginTransactionAsync())
-        //    {
-        //        try
-        //        {
-        //            var respuesta = Existe(viewModelSeleccionPersonal);
-        //            if (!respuesta.IsSuccess)
-        //            {
-        //                var persona = new Persona
-        //                {
-        //                    Identificacion = viewModelSeleccionPersonal.identificacion,
-        //                    Nombres = viewModelSeleccionPersonal.nombres,
-        //                    Apellidos = viewModelSeleccionPersonal.Apellidos
-
-        //                };
-        //                //1. Insertar Persona 
-        //                var personaInsertarda = await db.Persona.AddAsync(persona);
-        //                await db.SaveChangesAsync();
-
-        //                //2. Insertar Empleado (Inicializado : IdPersona, IdDependencia)
-        //                var empleadoinsertado = new Candidato
-        //                {
-        //                    IdPersona = personaInsertarda.Entity.IdPersona
-        //                };
-        //                var empleado = await db.Candidato.AddAsync(empleadoinsertado);
-        //                await db.SaveChangesAsync();
-
-
-        //                transaction.Commit();
-
-        //                return new Response
-        //                {
-        //                    IsSuccess = true,
-        //                    Message = Mensaje.Satisfactorio,
-        //                    Resultado = empleado.Entity
-        //                };
-        //            }
-
-        //            return new Response
-        //            {
-        //                IsSuccess = false,
-        //                Message = Mensaje.ExisteRegistro,
-        //            };
-
-        //        }
-        //        catch (Exception ex)
-        //        {
-
-        //            transaction.Rollback();
-        //            await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-        //            {
-        //                ApplicationName = Convert.ToString(Aplicacion.SwTH),
-        //                ExceptionTrace = ex.Message,
-        //                Message = Mensaje.Excepcion,
-        //                LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-        //                LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-        //                UserName = "",
-
-        //            });
-        //            return new Response
-        //            {
-        //                IsSuccess = false,
-        //                Message = Mensaje.Error,
-        //            };
-        //        }
-        //    }
-
-       // }
-
         private Response Existe(ViewModelSeleccionPersonal viewModelSeleccionPersonal)
         {
             var identificacion = viewModelSeleccionPersonal.identificacion.ToUpper().TrimEnd().TrimStart();
@@ -265,6 +186,26 @@ namespace bd.swth.web.Controllers.API
             {
                 IsSuccess = false,
             };
+        }
+        public async Task<DateRequest> aExperiencia(int candidato)
+        {
+            DateRequest fecha = new DateRequest();
+            var resultado = "";
+           
+            var fechas = db.TrayectoriaLaboral.Where(s => s.IdPersona == candidato).ToList();
+            if (fechas.Count != 0)
+            {
+                foreach (var item in fechas)
+                {
+                    DateDiff periodo = new DateDiff
+                        (
+                        item.FechaInicio, item.FechaFin
+                        );
+                    resultado = "Años: " + periodo.Years + " Mes: " + periodo.Months + " Dia: " + periodo.Days;
+                    fecha.dia = periodo.Days;
+                    fecha.Experiencia = resultado;                }
+            }
+            return fecha;
         }
     }
 }
