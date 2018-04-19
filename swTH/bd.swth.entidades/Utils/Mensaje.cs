@@ -21,6 +21,7 @@ namespace bd.swth.entidades.Utils
         public static string AccesoNoAutorizado { get { return "No tiene los permisos necesarios para acceder a este sitio"; } }
         public static string ProcesoDesactivado { get { return "Este proceso está desactivado"; } }
         public static string ProcesoFinalizadoSatisfactorio { get { return "Proceso finalizado correctamente"; } }
+        public static string ErrorEditarDatos { get { return "Los datos ingresados ya existen y no pueden ser editados"; } }
 
     }
 }

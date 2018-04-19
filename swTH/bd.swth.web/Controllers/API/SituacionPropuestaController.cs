@@ -711,7 +711,7 @@ namespace bd.swth.web.Controllers.API
 
         /// <summary>
         /// Recibe el nombre de usuario en el result del response para para validar si es jefe,
-        /// si es jefe da como resultado el IdDependencia
+        /// si es jefe da como resultado el IdDependencia y true como IsSuccess
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
