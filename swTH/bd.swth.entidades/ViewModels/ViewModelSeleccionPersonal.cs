@@ -13,6 +13,7 @@ namespace bd.swth.entidades.ViewModels
         public int? iddependecia { get; set; }
         public int idescalagrados { get; set; }
         public int idIndiceOcupacional { get; set; }
+        public int IdPrtidaFase { get; set; }
         public string NumeroPartidaGeneral { get; set; }
         public string UnidadAdministrativa { get; set; }
         public string NumeroPartidaIndividual { get; set; }
@@ -42,5 +43,6 @@ namespace bd.swth.entidades.ViewModels
 
         //listas
         public List<PersonaEstudio> ListasPersonaEstudio { get; set; }
+        public List<ViewModelCandidatoExperiencia> ListasCanditadoExperiencia { get; set; }
     }
 }

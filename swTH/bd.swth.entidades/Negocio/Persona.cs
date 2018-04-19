@@ -45,7 +45,6 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<FichaMedica> FichaMedica { get; set; }
 
         public virtual ICollection<PersonaEnfermedad> PersonaEnfermedad { get; set; }
-        public virtual ICollection<CandidatoConcurso> CandidatoConcurso { get; set; }
         public virtual ICollection<PersonaDiscapacidad> PersonaDiscapacidad { get; set; }
         public virtual ICollection<PersonaCapacitacion> PersonaCapacitacion { get; set; }
         public virtual ICollection<PersonaEstudio> PersonaEstudio { get; set; }
