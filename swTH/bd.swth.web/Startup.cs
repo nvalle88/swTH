@@ -72,6 +72,9 @@ namespace bd.swth.web
 
             ConstantesGrupoOcupacional.GrupoOcupacionalNivelOperativo = Configuration.GetSection("GrupoOcupacionalNivelOperativo").Value;
 
+            // Configuración Constantes Estado Inducción
+            ConstantesEstadoInduccion.InduccionFinalizada = Configuration.GetSection("InduccionFinalizada").Value;
+            ConstantesEstadoInduccion.InduccionNoFinalizada = Configuration.GetSection("InduccionNoFinalizada").Value;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

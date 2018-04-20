@@ -33,28 +33,67 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+
+        // Get: api/BasesDatos
         [HttpGet]
-        [Route("ListarMaterialesInduccion")]
-        public async Task<List<MaterialInduccion>> GetMaterialesInduccion()
+        [Route("ListarMaterialesInduccionTTHH")]
+        public async Task<List<MaterialInduccion>> ListarMaterialesInduccionTTHH()
         {
+            var lista = new List<MaterialInduccion>();
+
             try
             {
                 return await db.MaterialInduccion.OrderBy(x => x.Titulo).ToListAsync();
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
+                return lista;
+            }
+        }
 
-                });
-                return new List<MaterialInduccion>();
+
+
+        // Post: api/BasesDatos
+        [HttpPost]
+        [Route("ListarMaterialesInduccion")]
+        public async Task<Response> ListarMaterialesInduccion([FromBody] Induccion induccion)
+        {
+            try
+            {
+                var induccionRealizada = await db.Induccion.Where(y=>y.IdEmpleado == induccion.IdEmpleado).ToListAsync();
+
+                if (induccionRealizada.Count > 0)
+                {
+                    // Si existe registro de inducción realizada por ese empleado
+
+                    return new Response
+                    {
+                        IsSuccess = true
+                    };
+
+                }
+                else {
+                    // Si no existe registro de inducción realizada por ese empleado
+
+                    var lista = await db.MaterialInduccion.OrderBy(x => x.Titulo).ToListAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Resultado = lista
+                    };
+                }
+
+                
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
             }
         }
 
@@ -81,7 +120,7 @@ namespace bd.swth.web.Controllers.API
                     Descripcion = documentoInstitucionalTransfer.Descripcion
                 };
 
-                var respuesta = ExisteMaterialInduccion(documentoInstitucional.Titulo);
+                var respuesta = ExisteMaterialInduccion(documentoInstitucional);
                 if (!respuesta.IsSuccess)
                 {
                     if (documentoInstitucionalTransfer.Url==null)
@@ -320,7 +359,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = ExisteMaterialInduccion(documentoInformacionInstitucional.Titulo);
+                var existe = ExisteMaterialInduccion(documentoInformacionInstitucional);
                 if (existe.IsSuccess)
                 {
                     return new Response
@@ -349,16 +388,6 @@ namespace bd.swth.web.Controllers.API
                     }
                     catch (Exception ex)
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
                         return new Response
                         {
                             IsSuccess = false,
@@ -397,11 +426,10 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ModeloInvalido,
                     };
                 }
-
-
-                var respuestaFile = uploadFileService.DeleteFile("MaterialInduccion", Convert.ToString(id), "pdf");
+                
 
                 var respuesta = await db.MaterialInduccion.SingleOrDefaultAsync(m => m.IdMaterialInduccion == id);
+
                 if (respuesta == null)
                 {
                     return new Response
@@ -410,6 +438,9 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
+
+                DeleteFile(respuesta);
+                
                 db.MaterialInduccion.Remove(respuesta);
                 await db.SaveChangesAsync();
 
@@ -421,16 +452,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -461,10 +482,14 @@ namespace bd.swth.web.Controllers.API
             };
         }
 
-        private Response ExisteMaterialInduccion(String nombre)
+        private Response ExisteMaterialInduccion(MaterialInduccion materialInduccion)
         {
-            var bdd = nombre.ToUpper().TrimEnd().TrimStart();
-            var MaterialInduccionrespuesta = db.MaterialInduccion.Where(p => p.Titulo.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+
+            var MaterialInduccionrespuesta = db.MaterialInduccion
+                .Where(p =>
+                    p.Titulo.ToUpper().TrimStart().TrimEnd() == materialInduccion.Titulo.ToUpper().TrimStart().TrimEnd() &&
+                    p.Descripcion.ToUpper().TrimStart().TrimEnd() == materialInduccion.Descripcion.ToUpper().TrimStart().TrimEnd()
+                ).FirstOrDefault();
             if (MaterialInduccionrespuesta != null)
             {
                 return new Response
@@ -482,5 +507,37 @@ namespace bd.swth.web.Controllers.API
                 Resultado = MaterialInduccionrespuesta,
             };
         }
+
+
+        [HttpPost]
+        [Route("DeleteFile")]
+        public async Task<Response> DeleteFile(MaterialInduccion modelo)
+        {
+
+            try
+            {
+
+                var ext = Path.GetExtension(modelo.Url);
+                
+                var respuestaFile = uploadFileService.DeleteFile("MaterialInduccion", Convert.ToString(modelo.IdMaterialInduccion), ext);
+                
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.BorradoSatisfactorio,
+                    Resultado = respuestaFile,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
     }
 }

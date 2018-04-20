@@ -22,7 +22,10 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.ExamenComplementario> ExamenComplementario { get; set; }
 
         public virtual DbSet<bd.swth.entidades.Negocio.ActivarPersonalTalentoHumano> ActivarPersonalTalentoHumano { get; set; }
-        
+
+        public virtual DbSet<bd.swth.entidades.Negocio.LavadoActivoEmpleado> LavadoActivoEmpleado { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.LavadoActivoItem> LavadoActivoItem { get; set; }
+
 
         public virtual DbSet<bd.swth.entidades.Negocio.AccionPersonal> AccionPersonal { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentoInformacionInstitucional> DocumentoInformacionInstitucional { get; set; }
@@ -231,7 +234,36 @@ namespace bd.swth.datos
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
+
+            modelBuilder.Entity<LavadoActivoEmpleado>(entity =>
+            {
+                entity.HasKey(e => e.IdLavadoActivoEmpleado)
+                    .HasName("PK_LavadoActivoEmpleado");
+
+                entity.Property(e => e.Fecha).HasColumnType("date");
+
+                entity.HasOne(d => d.Empleado)
+                    .WithMany(p => p.LavadoActivoEmpleado)
+                    .HasForeignKey(d => d.IdEmpleado)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_LavadoActivoEmpleado_Empleado");
+
+                entity.HasOne(d => d.LavadoActivoItem)
+                    .WithMany(p => p.LavadoActivoEmpleado)
+                    .HasForeignKey(d => d.IdLavadoActivoItem)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_LavadoActivoEmpleado_LavadoActivoItem");
+            });
+
+            modelBuilder.Entity<LavadoActivoItem>(entity =>
+            {
+                entity.HasKey(e => e.IdLavadoActivoItem)
+                    .HasName("PK_LavadoActivoItem");
+
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("varchar(700)");
+            });
 
             modelBuilder.Entity<ActivarPersonalTalentoHumano>(entity =>
             {
