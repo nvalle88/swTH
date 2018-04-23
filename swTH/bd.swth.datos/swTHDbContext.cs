@@ -248,7 +248,7 @@ namespace bd.swth.datos
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            #region Propiedades de navegación de la nómina
+
 
             modelBuilder.Entity<TipoConjuntoNomina>(entity =>
             {
@@ -391,24 +391,6 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdProceso)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("RefProcesoNomina8");
-            });
-
-            #endregion
-           
-
-                entity.Property(e => e.Fecha).HasColumnType("date");
-
-                entity.HasOne(d => d.Empleado)
-                    .WithMany(p => p.LavadoActivoEmpleado)
-                    .HasForeignKey(d => d.IdEmpleado)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_LavadoActivoEmpleado_Empleado");
-
-                entity.HasOne(d => d.LavadoActivoItem)
-                    .WithMany(p => p.LavadoActivoEmpleado)
-                    .HasForeignKey(d => d.IdLavadoActivoItem)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_LavadoActivoEmpleado_LavadoActivoItem");
             });
 
             modelBuilder.Entity<LavadoActivoItem>(entity =>
