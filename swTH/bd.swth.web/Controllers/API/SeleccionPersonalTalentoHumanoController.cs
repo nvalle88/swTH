@@ -80,14 +80,24 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var candidatoConcurso = new CandidatoConcurso
+                var a = await db.CandidatoConcurso.Where(x => x.IdCandidato == viewModelSeleccionPersonal.IdCandidato && x.IdPartidasFase == viewModelSeleccionPersonal.IdPartidaFase).FirstOrDefaultAsync();
+                if (a != null)
                 {
-                    IdCandidato = viewModelSeleccionPersonal.IdCandidato,
-                    IdPartidasFase = viewModelSeleccionPersonal.IdPartidaFase
-                };
-                db.CandidatoConcurso.Add(candidatoConcurso);
-                await db.SaveChangesAsync();
-                return new Response { IsSuccess = true };
+
+                    return new Response { IsSuccess = true };
+                }
+                else
+                {
+                    var candidatoConcurso = new CandidatoConcurso
+                    {
+                        IdCandidato = viewModelSeleccionPersonal.IdCandidato,
+                        IdPartidasFase = viewModelSeleccionPersonal.IdPartidaFase,
+                        Estado = 0
+                    };
+                    db.CandidatoConcurso.Add(candidatoConcurso);
+                    await db.SaveChangesAsync();
+                    return new Response { IsSuccess = true };
+                }
             }
             catch (Exception ex)
             {
@@ -198,9 +208,11 @@ namespace bd.swth.web.Controllers.API
                         var dia = await aExperiencia(DatosBasicosIndiceOcupacional1.FirstOrDefault().Idcandidato);
                         DatosBasicosIndiceOcupacional1.FirstOrDefault().ExperienciaDias = Convert.ToString(dia.dia);
                         DatosBasicosIndiceOcupacional1.FirstOrDefault().ExperienciaMesAno = dia.Experiencia;
+                        DatosBasicosIndiceOcupacional1.FirstOrDefault().Estado = item.Estado;
                         DatosBasicosIndiceOcupacional2.AddRange(DatosBasicosIndiceOcupacional1);
                     }
                 }
+                DatosBasicosIndiceOcupacional.IdPartidaFase = viewModelSeleccionPersonal.IdPartidaFase;
                 DatosBasicosIndiceOcupacional.ListasCanditadoExperiencia = DatosBasicosIndiceOcupacional2;
                 return DatosBasicosIndiceOcupacional;
 
@@ -220,10 +232,11 @@ namespace bd.swth.web.Controllers.API
             {
                 var DatosBasicos = new ViewModelEvaluarCandidato();
                 var ListaEstudioCandidato = new List<ViewModelEstudioCandidato>();
-                var ListaExperienciaCandidato = new List<CandidatoTrayectoriaLaboral>();
+                var ListaExperienciaCandidato = new List<ViewModelCandidatoTrayectoriaLaboral>();
                 var candidatoConcurso = await db.Candidato.Where(x => x.IdCandidato == viewModelEvaluarCandidato.IdCandidato)
                  .Select(x => new ViewModelEvaluarCandidato
                  {
+                     IdPartidaFase = viewModelEvaluarCandidato.IdPartidaFase,
                      IdCandidato = x.IdCandidato,
                      Nombres = x.Nombre + " " + x.Apellido,
                      Identificacion = x.Identificacion
@@ -239,16 +252,24 @@ namespace bd.swth.web.Controllers.API
                         }).ToListAsync();
                     
                     ListaExperienciaCandidato = await db.CandidatoTrayectoriaLaboral.Where(x => x.IdCandidato == candidatoConcurso.IdCandidato)
-                        .Select(x => new CandidatoTrayectoriaLaboral
+                        .Select(x => new ViewModelCandidatoTrayectoriaLaboral
                         {
                             IdCandidato = x.IdCandidato,
                             Institucion = x.Institucion,
                             FechaInicio = x.FechaInicio,
                             FechaFin = x.FechaFin
                         }).ToListAsync();
+                    foreach (var item in ListaExperienciaCandidato)
+                    {
+                        var dia = await aExperiencia(candidatoConcurso.IdCandidato);
+                        item.ExperienciaDias = Convert.ToString(dia.dia);
+                        item.ExperienciaMesAno = dia.Experiencia;
+
+                    }
                     DatosBasicos.IdCandidato = candidatoConcurso.IdCandidato;
                     DatosBasicos.Identificacion = candidatoConcurso.Identificacion;
                     DatosBasicos.Nombres = candidatoConcurso.Nombres;
+                    DatosBasicos.IdPartidaFase = candidatoConcurso.IdPartidaFase;
                     DatosBasicos.ListasPersonaEstudio = ListaEstudioCandidato;
                     DatosBasicos.ListasCanditadoExperiencia = ListaExperienciaCandidato;
 
@@ -260,6 +281,124 @@ namespace bd.swth.web.Controllers.API
             {
                 ex.ToString();
                 return new ViewModelEvaluarCandidato();
+            }
+        }
+        [HttpPost]
+        [Route("ObtenerCandidato")]
+        public async Task<Candidato> ObtenerCandidato([FromBody] Candidato candidato)
+        {
+            try
+            {
+                var a = await db.Candidato.Where(x => x.Identificacion == candidato.Identificacion).FirstOrDefaultAsync();
+                return a;
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToString();
+                return new Candidato();
+            }
+        }
+        [HttpPost]
+        [Route("DetalleCandidatoEvaluar")]
+        public async Task<ViewModelEvaluarCandidato> DetalleCandidatoEvaluar([FromBody] ViewModelEvaluarCandidato viewModelEvaluarCandidato)
+        {
+            try
+            {
+                var DatosBasicos = new ViewModelEvaluarCandidato();
+                var ListaEstudioCandidato = new List<ViewModelEstudioCandidato>();
+                var ListaExperienciaCandidato = new List<ViewModelCandidatoTrayectoriaLaboral>();
+                var candidatoConcurso = await db.Candidato.Where(x => x.IdCandidato == viewModelEvaluarCandidato.IdCandidato)
+                 .Select(x => new ViewModelEvaluarCandidato
+                 {
+                     IdCandidato = x.IdCandidato,
+                     Nombres = x.Nombre + " " + x.Apellido,
+                     Identificacion = x.Identificacion,
+                     Elegido = x.CandidatoConcurso.FirstOrDefault().Preseleccionado,
+                     ApliInstruccion = x.CandidatoConcurso.FirstOrDefault().CumpleInstruccion,
+                     ApliExperiencia = x.CandidatoConcurso.FirstOrDefault().CumpleExperiencia,
+                     PorInstruccion = x.CandidatoConcurso.FirstOrDefault().PorcentajeInstruccion,
+                     PorExperiencia = x.CandidatoConcurso.FirstOrDefault().PorcentajeExperiencia,
+                     Descripcion = x.CandidatoConcurso.FirstOrDefault().Observacion,
+
+
+                 }).FirstOrDefaultAsync();
+                if (candidatoConcurso != null)
+                {
+                    ListaEstudioCandidato = await db.CandidatoEstudio.Where(x => x.IdCandidato == candidatoConcurso.IdCandidato)
+                        .Select(x => new ViewModelEstudioCandidato
+                        {
+                            IdCandidato = x.IdCandidato,
+                            Titulo = x.Titulo.Nombre,
+                            NoSenecity = x.NoSenescyt
+                        }).ToListAsync();
+
+                    ListaExperienciaCandidato = await db.CandidatoTrayectoriaLaboral.Where(x => x.IdCandidato == candidatoConcurso.IdCandidato)
+                        .Select(x => new ViewModelCandidatoTrayectoriaLaboral
+                        {
+                            IdCandidato = x.IdCandidato,
+                            Institucion = x.Institucion,
+                            FechaInicio = x.FechaInicio,
+                            FechaFin = x.FechaFin
+                        }).ToListAsync();
+                    foreach (var item in ListaExperienciaCandidato)
+                    {
+                        var dia = await aExperiencia(candidatoConcurso.IdCandidato);
+                        item.ExperienciaDias = Convert.ToString(dia.dia);
+                        item.ExperienciaMesAno = dia.Experiencia;
+
+                    }
+                    DatosBasicos.IdCandidato = candidatoConcurso.IdCandidato;
+                    DatosBasicos.Identificacion = candidatoConcurso.Identificacion;
+                    DatosBasicos.Nombres = candidatoConcurso.Nombres;
+                    DatosBasicos.ListasPersonaEstudio = ListaEstudioCandidato;
+                    DatosBasicos.ListasCanditadoExperiencia = ListaExperienciaCandidato;
+                    DatosBasicos.ApliInstruccion = candidatoConcurso.ApliInstruccion;
+                    DatosBasicos.ApliExperiencia = candidatoConcurso.ApliExperiencia;
+                    DatosBasicos.PorInstruccion = candidatoConcurso.PorInstruccion;
+                    DatosBasicos.PorExperiencia = candidatoConcurso.PorExperiencia;
+                    DatosBasicos.Elegido = candidatoConcurso.Elegido;
+                    DatosBasicos.Descripcion = candidatoConcurso.Descripcion;
+                    DatosBasicos.Total = Convert.ToInt32(candidatoConcurso.PorExperiencia + candidatoConcurso.PorInstruccion);
+
+                }
+                return DatosBasicos;
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToString();
+                return new ViewModelEvaluarCandidato();
+            }
+        }
+
+        [HttpPost]
+        [Route("InsertarEvaluacion")]
+        public async Task<Response> InsertarEvaluacion([FromBody] ViewModelEvaluarCandidato viewModelEvaluarCandidato)
+        {
+             var a = await db.CandidatoConcurso.Where(x => x.IdCandidato == viewModelEvaluarCandidato.IdCandidato && x.IdPartidasFase== viewModelEvaluarCandidato.IdPartidaFase).FirstOrDefaultAsync();
+            try
+            {
+                a.IdCandidato = viewModelEvaluarCandidato.IdCandidato;
+                a.CumpleInstruccion = viewModelEvaluarCandidato.ApliInstruccion;
+                a.CumpleExperiencia = viewModelEvaluarCandidato.ApliExperiencia;
+                a.PorcentajeInstruccion = viewModelEvaluarCandidato.PorInstruccion;
+                a.PorcentajeExperiencia = viewModelEvaluarCandidato.PorExperiencia;
+                a.Preseleccionado = viewModelEvaluarCandidato.Elegido;
+                a.Observacion = viewModelEvaluarCandidato.Descripcion;
+                a.Estado = 1;
+
+                db.CandidatoConcurso.Update(a);
+                await db.SaveChangesAsync();
+                return new Response { IsSuccess = true };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
             }
         }
 
