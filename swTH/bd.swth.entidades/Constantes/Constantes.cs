@@ -41,4 +41,9 @@ namespace bd.swth.entidades.Constantes
         
     }
 
+    public static class ConstantesEstadoInduccion {
+        public static string InduccionFinalizada;
+        public static string InduccionNoFinalizada;
+    }
+
 }

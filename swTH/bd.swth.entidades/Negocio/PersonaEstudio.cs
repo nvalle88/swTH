@@ -34,5 +34,6 @@ namespace bd.swth.entidades.Negocio
         public int IdPersona { get; set; }
         public virtual Persona Persona { get; set; }
 
+
     }
 }
