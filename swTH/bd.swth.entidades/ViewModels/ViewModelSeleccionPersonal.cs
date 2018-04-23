@@ -7,13 +7,14 @@ namespace bd.swth.entidades.ViewModels
 {
     public class ViewModelSeleccionPersonal
     {
-        
 
 
         public int? iddependecia { get; set; }
+        public int IdCandidato { get; set; }
+        public int IdPartidaFase { get; set; }
+        public int NoSenescyt { get; set; }
         public int idescalagrados { get; set; }
         public int idIndiceOcupacional { get; set; }
-        public int IdPrtidaFase { get; set; }
         public string NumeroPartidaGeneral { get; set; }
         public string UnidadAdministrativa { get; set; }
         public string NumeroPartidaIndividual { get; set; }

@@ -54,6 +54,7 @@ namespace bd.swth.datos
         public virtual DbSet<CapacitacionPregunta> CapacitacionPregunta { get; set; }
         public virtual DbSet<CapacitacionRecibida> CapacitacionRecibida { get; set; }
         public virtual DbSet<CapacitacionRespuesta> CapacitacionRespuesta { get; set; }
+        public virtual DbSet<CandidatoEstudio> CandidatoEstudio { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionTemario> CapacitacionTemario { get; set; }
         public virtual DbSet<CapacitacionTemarioProveedor> CapacitacionTemarioProveedor { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionTipoPregunta> CapacitacionTipoPregunta { get; set; }
@@ -79,6 +80,7 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
         public virtual DbSet<EmpleadoFormularioCapacitacion> EmpleadoFormularioCapacitacion { get; set; }
         public virtual DbSet<EmpleadoIE> EmpleadoIE { get; set; }
+        public virtual DbSet<CandidatoTrayectoriaLaboral> CandidatoTrayectoriaLaboral { get; set; }
         public virtual DbSet<EmpleadoImpuestoRenta> EmpleadoImpuestoRenta { get; set; }
        public virtual DbSet<bd.swth.entidades.Negocio.ImpuestoRentaParametros> ImpuestoRentaParametros { get; set; }
         public virtual DbSet<EmpleadoMovimiento> EmpleadoMovimiento { get; set; }
@@ -746,9 +748,60 @@ namespace bd.swth.datos
             modelBuilder.Entity<Candidato>(entity =>
             {
                 entity.HasKey(e => e.IdCandidato)
-                    .HasName("PK_Candidato");
-            });
+                    .HasName("PK_Canditato");
 
+                entity.Property(e => e.Apellido)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.Property(e => e.Identificacion)
+                    .IsRequired()
+                    .HasColumnType("varchar(13)");
+
+                entity.Property(e => e.Nombre)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+            });
+            modelBuilder.Entity<CandidatoEstudio>(entity =>
+            {
+                entity.HasKey(e => e.IdCandidatoEstudio)
+                    .HasName("PK_CandidatoEstudio");
+
+                entity.Property(e => e.FechaGraduado).HasColumnType("date");
+
+                entity.Property(e => e.NoSenescyt).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.Observaciones).HasColumnType("varchar(300)");
+
+                entity.HasOne(d => d.Candidato)
+                    .WithMany(p => p.CandidatoEstudio)
+                    .HasForeignKey(d => d.IdCandidato)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_CandidatoEstudio_Candidato");
+
+                entity.HasOne(d => d.Titulo)
+                    .WithMany(p => p.CandidatoEstudio)
+                    .HasForeignKey(d => d.IdTitulo)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_CandidatoEstudio_Titulo");
+            });
+            modelBuilder.Entity<CandidatoTrayectoriaLaboral>(entity =>
+            {
+                entity.HasKey(e => e.IdCandidatoTrayectoriaLaboral)
+                    .HasName("PK_CandidatoTrayectoriaLaboral");
+
+                entity.Property(e => e.FechaFin).HasColumnType("date");
+
+                entity.Property(e => e.FechaInicio).HasColumnType("date");
+
+                entity.Property(e => e.Institucion).HasColumnType("varchar(100)");
+
+                entity.HasOne(d => d.Candidato)
+                    .WithMany(p => p.CandidatoTrayectoriaLaboral)
+                    .HasForeignKey(d => d.IdCandidato)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_CandidatoTrayectoriaLaboral_Candidato");
+            });
             modelBuilder.Entity<Capacitacion>(entity =>
             {
                 entity.HasKey(e => e.IdCapacitacion)
@@ -3285,10 +3338,10 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdPersona)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(d => d.Titulo)
-                    .WithMany(p => p.PersonaEstudio)
-                    .HasForeignKey(d => d.IdTitulo)
-                    .OnDelete(DeleteBehavior.Restrict);
+                //entity.HasOne(d => d.Titulo)
+                //    .WithMany(p => p.PersonaEstudio)
+                //    .HasForeignKey(d => d.IdTitulo)
+                //    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<PersonaPaquetesInformaticos>(entity =>
