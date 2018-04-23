@@ -198,5 +198,52 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+
+        /// <summary>
+        /// Solo requiere el IdEmpleado
+        /// </summary>
+        /// <param name="lavadoActivoEmpleadoViewModel"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("ExisteLavadoActivosPorIdEmpleado")]
+        public async Task<Response> ExisteLavadoActivosPorIdEmpleado([FromBody] LavadoActivoEmpleadoViewModel lavadoActivoEmpleadoViewModel)
+        {
+
+            try
+            {
+                var lista = await db.LavadoActivoEmpleado
+                    .Where(w =>
+                        w.IdEmpleado == lavadoActivoEmpleadoViewModel.DatosBasicosEmpleadoViewModel.IdEmpleado
+                     ).ToListAsync();
+
+                if (lista != null && lista.Count > 0)
+                {
+
+                    return new Response
+                    {
+                        IsSuccess = true
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion,
+
+                };
+            }
+
+        }
+
+
+
     }
 }
