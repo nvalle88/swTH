@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace bd.swth.entidades.Negocio
 {
@@ -10,6 +11,7 @@ namespace bd.swth.entidades.Negocio
             LavadoActivoEmpleado = new HashSet<LavadoActivoEmpleado>();
         }
 
+        [Key]
         public int IdLavadoActivoItem { get; set; }
         public string Descripcion { get; set; }
 

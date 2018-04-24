@@ -27,7 +27,6 @@ namespace bd.swth.entidades.Negocio
         public decimal TotalPatrimonio { get; set; }
 
 
-
         public int IdEmpleado { get; set; }
 
         public virtual ICollection<OtroIngreso> OtroIngreso { get; set; }

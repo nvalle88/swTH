@@ -14,7 +14,20 @@ namespace bd.swth.datos
 
         }
 
-        
+        /// <summary>
+        /// Db Set de Configuración de la nómina
+        /// </summary>
+        /// 
+        public virtual DbSet<ConceptoConjuntoNomina> ConceptoConjuntoNomina { get; set; }
+        public virtual DbSet<ConceptoNomina> ConceptoNomina { get; set; }
+        public virtual DbSet<ConjuntoNomina> ConjuntoNomina { get; set; }
+        public virtual DbSet<ProcesoNomina> ProcesoNomina { get; set; }
+        public virtual DbSet<TeconceptoNomina> TeconceptoNomina { get; set; }
+        public virtual DbSet<TipoConjuntoNomina> TipoConjuntoNomina { get; set; }
+
+
+
+
         public virtual DbSet<bd.swth.entidades.Negocio.TipoExamenComplementario> TipoExamenComplementario { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.FichaMedica> FichaMedica { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AntecedentesFamiliares> AntecedentesFamiliares { get; set; }
@@ -235,24 +248,149 @@ namespace bd.swth.datos
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            modelBuilder.Entity<LavadoActivoEmpleado>(entity =>
+
+
+            modelBuilder.Entity<TipoConjuntoNomina>(entity =>
             {
-                entity.HasKey(e => e.IdLavadoActivoEmpleado)
-                    .HasName("PK_LavadoActivoEmpleado");
+                entity.HasKey(e => e.IdTipoConjunto)
+                    .HasName("PK6");
 
-                entity.Property(e => e.Fecha).HasColumnType("date");
+                entity.Property(e => e.Codigo)
+                    .IsRequired()
+                    .HasColumnType("varchar(10)");
 
-                entity.HasOne(d => d.Empleado)
-                    .WithMany(p => p.LavadoActivoEmpleado)
-                    .HasForeignKey(d => d.IdEmpleado)
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+            });
+
+            modelBuilder.Entity<TeconceptoNomina>(entity =>
+            {
+                entity.HasKey(e => e.IdTeconcepto)
+                    .HasName("PK5");
+
+                entity.ToTable("TEConceptoNomina");
+
+                entity.HasIndex(e => e.IdConcepto)
+                    .HasName("Ref210");
+
+                entity.Property(e => e.IdTeconcepto).HasColumnName("IdTEConcepto");
+
+                entity.HasOne(d => d.IdConceptoNavigation)
+                    .WithMany(p => p.TeconceptoNomina)
+                    .HasForeignKey(d => d.IdConcepto)
                     .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_LavadoActivoEmpleado_Empleado");
+                    .HasConstraintName("RefConceptoNomina10");
+            });
 
-                entity.HasOne(d => d.LavadoActivoItem)
-                    .WithMany(p => p.LavadoActivoEmpleado)
-                    .HasForeignKey(d => d.IdLavadoActivoItem)
+            modelBuilder.Entity<ConjuntoNomina>(entity =>
+            {
+                entity.HasKey(e => e.IdConjunto)
+                    .HasName("PK3");
+
+                entity.HasIndex(e => e.IdTipoConjunto)
+                    .HasName("Ref65");
+
+                entity.Property(e => e.Codigo)
+                    .IsRequired()
+                    .HasColumnType("varchar(10)");
+
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.HasOne(d => d.IdTipoConjuntoNavigation)
+                    .WithMany(p => p.ConjuntoNomina)
+                    .HasForeignKey(d => d.IdTipoConjunto)
                     .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_LavadoActivoEmpleado_LavadoActivoItem");
+                    .HasConstraintName("RefTipoConjuntoNomina5");
+            });
+
+            modelBuilder.Entity<ProcesoNomina>(entity =>
+            {
+                entity.HasKey(e => e.IdProceso)
+                    .HasName("PK1");
+
+                entity.Property(e => e.Codigo)
+                    .IsRequired()
+                    .HasColumnType("varchar(10)");
+
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+            });
+
+            modelBuilder.Entity<ConceptoConjuntoNomina>(entity =>
+            {
+                entity.HasKey(e => e.IdConceptoConjunto)
+                    .HasName("PK4");
+
+                entity.HasIndex(e => e.IdConcepto)
+                    .HasName("Ref27");
+
+                entity.HasIndex(e => e.IdConjunto)
+                    .HasName("Ref36");
+
+                entity.HasOne(d => d.IdConceptoNavigation)
+                    .WithMany(p => p.ConceptoConjuntoNomina)
+                    .HasForeignKey(d => d.IdConcepto)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefConceptoNomina7");
+
+                entity.HasOne(d => d.IdConjuntoNavigation)
+                    .WithMany(p => p.ConceptoConjuntoNomina)
+                    .HasForeignKey(d => d.IdConjunto)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefConjuntoNomina6");
+            });
+
+            modelBuilder.Entity<ConceptoNomina>(entity =>
+            {
+                entity.HasKey(e => e.IdConcepto)
+                    .HasName("PK2");
+
+                entity.HasIndex(e => e.IdProceso)
+                    .HasName("Ref18");
+
+                entity.Property(e => e.Abreviatura)
+                    .IsRequired()
+                    .HasColumnType("varchar(10)");
+
+                entity.Property(e => e.Codigo)
+                    .IsRequired()
+                    .HasColumnType("varchar(10)");
+
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.Property(e => e.Estatus)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.Property(e => e.FormulaCalculo).HasColumnType("varchar(500)");
+
+                entity.Property(e => e.NivelAcumulacion)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.Property(e => e.RegistroEn)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.Property(e => e.TipoCalculo)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.Property(e => e.TipoConcepto)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.HasOne(d => d.IdProcesoNavigation)
+                    .WithMany(p => p.ConceptoNomina)
+                    .HasForeignKey(d => d.IdProceso)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefProcesoNomina8");
             });
 
             modelBuilder.Entity<LavadoActivoItem>(entity =>
@@ -497,9 +635,6 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_ExamenComplementario_ExamenComplementario");
             });
-
-
-
 
             modelBuilder.Entity<AccionPersonal>(entity =>
             {
