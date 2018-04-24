@@ -636,9 +636,6 @@ namespace bd.swth.datos
                     .HasConstraintName("FK_ExamenComplementario_ExamenComplementario");
             });
 
-
-
-
             modelBuilder.Entity<AccionPersonal>(entity =>
             {
                 entity.HasKey(e => e.IdAccionPersonal)

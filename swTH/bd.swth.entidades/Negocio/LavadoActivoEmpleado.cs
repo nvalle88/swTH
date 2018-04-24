@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace bd.swth.entidades.Negocio
 {
     public partial class LavadoActivoEmpleado
     {
+        [Key]
         public int IdLavadoActivoEmpleado { get; set; }
         public int IdLavadoActivoItem { get; set; }
         public int IdEmpleado { get; set; }
