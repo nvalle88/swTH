@@ -39,6 +39,7 @@ namespace bd.swth.web
 
             
             Constantes.PartidaVacante = Configuration.GetSection("PartidaVacante").Value;
+            Constantes.PartidaOcupada = Configuration.GetSection("PartidaOcupada").Value;
 
             // Constantes de correo
             ConstantesCorreo.Smtp = Configuration.GetSection("Smtp").Value;
