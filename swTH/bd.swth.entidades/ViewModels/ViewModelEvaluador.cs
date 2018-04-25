@@ -5,16 +5,16 @@ using System.Text;
 
 namespace bd.swth.entidades.ViewModels
 {
-    public class ViewModelEvaluacionDesempeno
+    public class ViewModelEvaluador
     {
         public int IdEmpleado { get; set; }
-        public int IdPersona { get; set; }
         public string NombreApellido { get; set; }
-        public string Identificacion { get; set; }
-        public string ManualPuesto { get; set; }
-        public string Dependencia { get; set; }
-        public int IdDependencia { get; set; }
+        public string Puesto { get; set; }
+        public string Titulo { get; set; }
         public string DatosJefe { get; set; }
+        public DateTime Desde { get; set; }
+        public DateTime Hasta { get; set; }
         public string NombreUsuario { get; set; }
+        public List<ActividadesEsenciales> ListaActividad { get; set; }
     }
 }

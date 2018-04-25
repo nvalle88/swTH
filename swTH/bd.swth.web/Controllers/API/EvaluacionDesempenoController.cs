@@ -23,55 +23,114 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        [HttpGet]
-        [Route("ListarEmpleados")]
-        public async Task<List<ViewModelEvaluacionDesempeno>> GetEmpleados()
+        [HttpPost]
+        [Route("ListarEmpleadosJefes")]
+        public async Task<List<ViewModelEvaluacionDesempeno>> ListarEmpleadosPorJefes([FromBody] ViewModelEvaluacionDesempeno viewModelEvaluacionDesempeno)
         {
+            var DatosBasicos = new List<ViewModelEvaluacionDesempeno>();
             try
             {
-                //var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x=>x.DatosBancarios).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).OrderBy(x => x.FechaIngreso).ToListAsync();
-
-                //var empleado = await db.ModalidadPartida.
-                var DatosBasicos = new List<ViewModelEvaluacionDesempeno>();
-                var a = await db.IndiceOcupacionalModalidadPartida.ToListAsync();
-                foreach (var item in a)
+                var jefe = db.Empleado.Where(x => x.Activo == true && x.EsJefe == true && x.NombreUsuario == viewModelEvaluacionDesempeno.NombreUsuario).FirstOrDefault();
+                if (jefe != null)
                 {
-                    var lista = await db.Empleado
-                                    .Where(x => x.IdEmpleado == item.IdEmpleado && x.Activo==true)
-                                    .Select(x => new ViewModelEvaluacionDesempeno
-                                    {
-                                        IdEmpleado = x.IdEmpleado,
-                                        IdPersona = x.Persona.IdPersona,
-                                        NombreApellido = string.Format("{0} {1}", x.Persona.Nombres, x.Persona.Apellidos),
-                                        Dependencia = x.Dependencia == null ? "No asignado" : x.Dependencia.Nombre,
-                                        IdDependencia = x.Dependencia.IdDependencia,
-                                        Identificacion = x.Persona.Identificacion,
-                                    })
-                                    .FirstOrDefaultAsync();
-                    if (lista != null)
+
+                    var a = await db.IndiceOcupacionalModalidadPartida.ToListAsync();
+                    foreach (var item in a)
                     {
-                        var jefe = db.Empleado.Where(x => x.Activo==true && x.EsJefe == true && x.IdDependencia == lista.IdDependencia).FirstOrDefault();
-                        if (jefe != null)
+                        var lista = await db.Empleado
+                                        .Where(x => x.IdEmpleado == item.IdEmpleado && x.Activo == true && x.IdDependencia == jefe.IdDependencia)
+                                        .Select(x => new ViewModelEvaluacionDesempeno
+                                        {
+                                            IdEmpleado = x.IdEmpleado,
+                                            IdPersona = x.Persona.IdPersona,
+                                            NombreApellido = string.Format("{0} {1}", x.Persona.Nombres, x.Persona.Apellidos),
+                                            Dependencia = x.Dependencia == null ? "No asignado" : x.Dependencia.Nombre,
+                                            IdDependencia = x.Dependencia.IdDependencia,
+                                            Identificacion = x.Persona.Identificacion,
+                                        })
+                                        .FirstOrDefaultAsync();
+                        if (lista != null)
                         {
-                            var dato = db.Persona.Where(x => x.IdPersona == jefe.IdPersona).FirstOrDefault();
-                            lista.DatosJefe = dato.Nombres +""+dato.Apellidos;
-                        }
-                        var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaOcupada).FirstOrDefaultAsync();
-                        var b = db.IndiceOcupacional.Where(y => y.IdIndiceOcupacional == item.IdIndiceOcupacional && y.IdModalidadPartida == ModalidadPartida.IdModalidadPartida).FirstOrDefault();
-                        if (b != null)
-                        {
-                            
-                            lista.ManualPuesto = db.ManualPuesto.Where(y => y.IdManualPuesto == b.IdManualPuesto).FirstOrDefault().Nombre;
-                            DatosBasicos.Add(lista);
+                            var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaOcupada).FirstOrDefaultAsync();
+                            var b = db.IndiceOcupacional.Where(y => y.IdIndiceOcupacional == item.IdIndiceOcupacional && y.IdModalidadPartida == ModalidadPartida.IdModalidadPartida).FirstOrDefault();
+                            if (b != null)
+                            {
+
+                                lista.ManualPuesto = db.ManualPuesto.Where(y => y.IdManualPuesto == b.IdManualPuesto).FirstOrDefault().Nombre;
+                                DatosBasicos.Add(lista);
+                            }
                         }
                     }
                 }
                 return DatosBasicos;
 
+
             }
             catch (Exception ex)
             {
                 return new List<ViewModelEvaluacionDesempeno>();
+            }
+        }
+        [HttpPost]
+        [Route("Evaluar")]
+        public async Task<ViewModelEvaluador> Evaluar([FromBody] ViewModelEvaluador viewModelEvaluador)
+        {
+            var DatosBasicos = new ViewModelEvaluador();
+            var actividades = new List<ActividadesEsenciales>();
+            var actividades1 = new List<ActividadesEsenciales>();
+            var DatosBasicos1 = new ViewModelEvaluador();
+            try
+            {
+                var jefe = db.Empleado.Where(x => x.Activo == true && x.EsJefe == true && x.NombreUsuario == viewModelEvaluador.NombreUsuario).FirstOrDefault();
+                var persona = db.Persona.Where(x => x.IdPersona == jefe.IdPersona).FirstOrDefault();
+                var titulo = db.PersonaEstudio.Include(x => x.Titulo).Where(x => x.IdPersona == jefe.IdPersona).FirstOrDefault();
+                if (true)
+                {
+
+                    var a = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdEmpleado == viewModelEvaluador.IdEmpleado).FirstOrDefaultAsync();
+
+                    var lista = await db.Empleado
+                                    .Where(x => x.IdEmpleado == a.IdEmpleado && x.Activo == true)
+                                    .Select(x => new ViewModelEvaluador
+                                    {
+                                        IdEmpleado = x.IdEmpleado,
+                                        NombreApellido = string.Format("{0} {1}", x.Persona.Nombres, x.Persona.Apellidos)
+
+                                    })
+                                    .FirstOrDefaultAsync();
+                    if (lista != null)
+                    {
+                        var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaOcupada).FirstOrDefaultAsync();
+                        var b = db.IndiceOcupacional.Where(y => y.IdIndiceOcupacional == a.IdIndiceOcupacional && y.IdModalidadPartida == ModalidadPartida.IdModalidadPartida).FirstOrDefault();
+                        if (b != null)
+                        {
+                            // busca las actividades del puesto
+                            var Lista = await db.ActividadesEsenciales
+                                   .Where(act => db.IndiceOcupacionalActividadesEsenciales
+                                                   .Where(y => y.IndiceOcupacional.IdIndiceOcupacional == b.IdIndiceOcupacional)
+                                                   .Select(ioac => ioac.IdActividadesEsenciales)
+                                                   .Contains(act.IdActividadesEsenciales))
+                                          .ToListAsync();
+
+                            lista.Puesto = db.ManualPuesto.Where(y => y.IdManualPuesto == b.IdManualPuesto).FirstOrDefault().Nombre;
+
+                            var datos = jefe.Persona.Nombres;
+                            lista.DatosJefe = persona.Nombres + "" + persona.Apellidos;
+                            lista.Titulo = titulo.Titulo.Nombre;
+                            lista.ListaActividad = Lista;
+                        }
+                        
+                    }
+                    DatosBasicos1 = lista;
+                }
+
+                return DatosBasicos = DatosBasicos1;
+
+
+            }
+            catch (Exception ex)
+            {
+                return new ViewModelEvaluador();
             }
         }
     }
