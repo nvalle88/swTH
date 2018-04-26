@@ -145,7 +145,7 @@ namespace bd.swth.web.Controllers.API
         // POST: api/ActivacionesPersonalTalentoHumano
         [HttpPost]
         [Route("InsertarActivacionesPersonalTalentoHumano")]
-        public async Task<Response> InsertarActivacionesPersonalTalentoHumano([FromBody] ListaActivarPersonalTalentoHumanoViewModel listaRecibida)
+        public async Task<Response> InsertarActivacionesPersonalTalentoHumano([FromBody]ListaActivarPersonalTalentoHumanoViewModel listaRecibida)
         {
             using (var transaction = db.Database.BeginTransaction())
             {

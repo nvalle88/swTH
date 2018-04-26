@@ -29,6 +29,9 @@ namespace bd.swth.entidades.Negocio
         public virtual Proceso Proceso { get; set; }
 
 
+
+        public virtual ICollection<ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
+
         public virtual ICollection<Empleado> Empleado { get; set; }
 
         public virtual ICollection<Evaluador> Evaluador { get; set; }

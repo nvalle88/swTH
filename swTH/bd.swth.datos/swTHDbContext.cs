@@ -38,7 +38,7 @@ namespace bd.swth.datos
 
         public virtual DbSet<bd.swth.entidades.Negocio.LavadoActivoEmpleado> LavadoActivoEmpleado { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.LavadoActivoItem> LavadoActivoItem { get; set; }
-
+        public virtual DbSet<bd.swth.entidades.Negocio.Empleado> Empleado { get; set; }
 
         public virtual DbSet<bd.swth.entidades.Negocio.AccionPersonal> AccionPersonal { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentoInformacionInstitucional> DocumentoInformacionInstitucional { get; set; }
@@ -53,7 +53,7 @@ namespace bd.swth.datos
         public virtual DbSet<AprobacionViatico> AprobacionViatico { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Ambito> Ambito { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AreaConocimiento> AreaConocimiento { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.AvanceGestionCambio> AvanceGestionCambio { get; set; }
+        
         public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSO> BrigadaSSO { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSORol> BrigadaSsorol { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Calificacion> Calificacion { get; set; }
@@ -88,7 +88,6 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngreso> DocumentosIngreso { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngresoEmpleado> DocumentosIngresoEmpleado { get; set; }
         public virtual DbSet<DocumentosParentescodos> DocumentosParentescodos { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.Empleado> Empleado { get; set; }
         public virtual DbSet<EmpleadoContactoEmergencia> EmpleadoContactoEmergencia { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
         public virtual DbSet<EmpleadoFormularioCapacitacion> EmpleadoFormularioCapacitacion { get; set; }
@@ -186,7 +185,6 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.PersonaSustituto> PersonaSustituto { get; set; }
         public virtual DbSet<PersonaPaquetesInformaticos> PersonaPaquetesInformaticos { get; set; }
         public virtual DbSet<PieFirma> PieFirma { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.PlanGestionCambio> PlanGestionCambio { get; set; }
         public virtual DbSet<PlanificacionHE> PlanificacionHE { get; set; }
         public virtual DbSet<Pregunta> Pregunta { get; set; }
         public virtual DbSet<PreguntaRespuesta> PreguntaRespuesta { get; set; }
@@ -248,7 +246,49 @@ namespace bd.swth.datos
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
+            modelBuilder.Entity<Empleado>(entity =>
+            {
+                entity.HasKey(e => e.IdEmpleado)
+                    .HasName("PK_Empleado");
 
+                entity.HasIndex(e => e.IdCiudadLugarNacimiento)
+                    .HasName("IX_Empleado_CiudadNacimientoIdCiudad");
+
+                entity.HasIndex(e => e.IdDependencia)
+                    .HasName("IX_Empleado_IdDependencia");
+
+                entity.HasIndex(e => e.IdPersona)
+                    .HasName("IX_Empleado_IdPersona");
+
+                entity.HasIndex(e => e.IdProvinciaLugarSufragio)
+                    .HasName("IX_Empleado_ProvinciaSufragioIdProvincia");
+
+                entity.Property(e => e.IngresosOtraActividad)
+                    .IsRequired()
+                    .HasMaxLength(20);
+
+                entity.HasOne(d => d.CiudadNacimiento)
+                    .WithMany(p => p.Empleado)
+                    .HasForeignKey(d => d.IdCiudadLugarNacimiento);
+
+                entity.HasOne(d => d.Dependencia)
+                    .WithMany(p => p.Empleado)
+                    .HasForeignKey(d => d.IdDependencia)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(d => d.Persona)
+                    .WithMany(p => p.Empleado)
+                    .HasForeignKey(d => d.IdPersona)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(d => d.ProvinciaSufragio)
+                    .WithMany(p => p.Empleado)
+                    .HasForeignKey(d => d.IdProvinciaLugarSufragio);
+
+                entity.HasOne(d => d.BrigadaSSORol)
+                   .WithMany(p => p.Empleado)
+                   .HasForeignKey(d => d.IdBrigadaSSORol);
+            });
 
             modelBuilder.Entity<TipoConjuntoNomina>(entity =>
             {
@@ -694,24 +734,33 @@ namespace bd.swth.datos
             });
 
 
-           
-
             modelBuilder.Entity<ActividadesGestionCambio>(entity =>
             {
                 entity.HasKey(e => e.IdActividadesGestionCambio)
-                    .HasName("PK_ActividadesGestionCambio");
+                    .HasName("PK260");
 
-                entity.HasIndex(e => e.IdPlanGestionCambio)
-                    .HasName("IX_ActividadesGestionCambio_IdPlanGestionCambio");
+                entity.Property(e => e.Observaciones)
+                    .IsRequired()
+                    .HasMaxLength(1000);
 
-                entity.Property(e => e.Descripcion).IsRequired();
+                entity.Property(e => e.Tarea)
+                    .IsRequired()
+                    .HasMaxLength(200);
 
-                entity.HasOne(d => d.PlanGestionCambio)
+                entity.HasOne(d => d.Dependencia)
                     .WithMany(p => p.ActividadesGestionCambio)
-                    .HasForeignKey(d => d.IdPlanGestionCambio)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
+                    .HasForeignKey(d => d.IdDependencia)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ActividadesGestionCambio_Dependencia");
 
+                entity.HasOne(d => d.Empleado)
+                    .WithMany(p => p.ActividadesGestionCambio)
+                    .HasForeignKey(d => d.IdEmpleado)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ActividadesGestionCambio_Empleado");
+                
+            });
+            
 
             modelBuilder.Entity<AdministracionTalentoHumano>(entity =>
             {
@@ -786,19 +835,7 @@ namespace bd.swth.datos
                     .HasMaxLength(100);
             });
 
-            modelBuilder.Entity<AvanceGestionCambio>(entity =>
-            {
-                entity.HasKey(e => e.IdAvanceGestionCambio)
-                    .HasName("PK_AvanceGestionCambio");
-
-                entity.HasIndex(e => e.IdActividadesGestionCambio)
-                    .HasName("IX_AvanceGestionCambio_IdActividadesGestionCambio");
-
-                entity.HasOne(d => d.ActividadesGestionCambio)
-                    .WithMany(p => p.AvanceGestionCambio)
-                    .HasForeignKey(d => d.IdActividadesGestionCambio)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
+           
 
             modelBuilder.Entity<BrigadaSSO>(entity =>
             {
@@ -1518,49 +1555,7 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<Empleado>(entity =>
-            {
-                entity.HasKey(e => e.IdEmpleado)
-                    .HasName("PK_Empleado");
-
-                entity.HasIndex(e => e.IdCiudadLugarNacimiento)
-                    .HasName("IX_Empleado_CiudadNacimientoIdCiudad");
-
-                entity.HasIndex(e => e.IdDependencia)
-                    .HasName("IX_Empleado_IdDependencia");
-
-                entity.HasIndex(e => e.IdPersona)
-                    .HasName("IX_Empleado_IdPersona");
-
-                entity.HasIndex(e => e.IdProvinciaLugarSufragio)
-                    .HasName("IX_Empleado_ProvinciaSufragioIdProvincia");
-
-                entity.Property(e => e.IngresosOtraActividad)
-                    .IsRequired()
-                    .HasMaxLength(20);
-
-                entity.HasOne(d => d.CiudadNacimiento)
-                    .WithMany(p => p.Empleado)
-                    .HasForeignKey(d => d.IdCiudadLugarNacimiento);
-
-                entity.HasOne(d => d.Dependencia)
-                    .WithMany(p => p.Empleado)
-                    .HasForeignKey(d => d.IdDependencia)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(d => d.Persona)
-                    .WithMany(p => p.Empleado)
-                    .HasForeignKey(d => d.IdPersona)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(d => d.ProvinciaSufragio)
-                    .WithMany(p => p.Empleado)
-                    .HasForeignKey(d => d.IdProvinciaLugarSufragio);
-
-                entity.HasOne(d => d.BrigadaSSORol)
-                   .WithMany(p => p.Empleado)
-                   .HasForeignKey(d => d.IdBrigadaSSORol);
-            });
+            
 
 
             modelBuilder.Entity<EmpleadoContactoEmergencia>(entity =>
@@ -3501,33 +3496,6 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<PlanGestionCambio>(entity =>
-            {
-                entity.HasKey(e => e.IdPlanGestionCambio)
-                    .HasName("PK_PlanGestionCambio");
-
-                entity.HasIndex(e => e.RealizadoPor)
-                    .HasName("IX_PlanGestionCambio_EmpleadoIdRealizadoPor");
-
-                entity.HasIndex(e => e.AprobadoPor)
-                   .HasName("IX_PlanGestionCambio_EmpleadoIdAprobadoPor");
-
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasMaxLength(500);
-
-                entity.Property(e => e.Titulo)
-                    .IsRequired()
-                    .HasMaxLength(20);
-
-                entity.HasOne(d => d.EmpleadoAprobadoPor)
-                    .WithMany(p => p.PlanGestionCambio)
-                    .HasForeignKey(d => d.AprobadoPor);
-
-                entity.HasOne(d => d.EmpleadoRealizadoPor)
-                   .WithMany(p => p.PlanGestionCambio1)
-                   .HasForeignKey(d => d.RealizadoPor);
-            });
 
             modelBuilder.Entity<PlanificacionHE>(entity =>
             {

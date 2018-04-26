@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.entidades.Constantes
 {
@@ -11,7 +12,8 @@ namespace bd.swth.entidades.Constantes
         public static string ActivacionPersonalValorActivado;
         public static string ActivacionPersonalValorDesactivado;
 
-
+        // Constante de estado de actividad de gestión de cambio
+        public static List<EstadoActividadGestionCambioViewModel> ListaEstadosGestionCambio;
 
         public static string PartidaVacante { get; set; }
     }
@@ -45,5 +47,6 @@ namespace bd.swth.entidades.Constantes
         public static string InduccionFinalizada;
         public static string InduccionNoFinalizada;
     }
+    
 
 }
