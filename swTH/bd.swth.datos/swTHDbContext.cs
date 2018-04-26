@@ -339,7 +339,7 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasColumnType("varchar(100)");
 
-                entity.HasOne(d => d.IdTipoConjuntoNavigation)
+                entity.HasOne(d => d.TipoConjunto)
                     .WithMany(p => p.ConjuntoNomina)
                     .HasForeignKey(d => d.IdTipoConjunto)
                     .OnDelete(DeleteBehavior.Restrict)
@@ -371,13 +371,13 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdConjunto)
                     .HasName("Ref36");
 
-                entity.HasOne(d => d.IdConceptoNavigation)
+                entity.HasOne(d => d.Concepto)
                     .WithMany(p => p.ConceptoConjuntoNomina)
                     .HasForeignKey(d => d.IdConcepto)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("RefConceptoNomina7");
 
-                entity.HasOne(d => d.IdConjuntoNavigation)
+                entity.HasOne(d => d.Conjunto)
                     .WithMany(p => p.ConceptoConjuntoNomina)
                     .HasForeignKey(d => d.IdConjunto)
                     .OnDelete(DeleteBehavior.Restrict)
@@ -426,7 +426,7 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasColumnType("varchar(100)");
 
-                entity.HasOne(d => d.IdProcesoNavigation)
+                entity.HasOne(d => d.Proceso)
                     .WithMany(p => p.ConceptoNomina)
                     .HasForeignKey(d => d.IdProceso)
                     .OnDelete(DeleteBehavior.Restrict)

@@ -16,6 +16,7 @@ namespace bd.swth.entidades.Constantes
         public static List<EstadoActividadGestionCambioViewModel> ListaEstadosGestionCambio;
 
         public static string PartidaVacante { get; set; }
+        public static string PartidaOcupada { get; set; }
     }
 
     public static class ConstantesGrupoOcupacional
