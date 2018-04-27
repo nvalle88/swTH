@@ -13,6 +13,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.swth.entidades.ViewModels;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -27,545 +28,127 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/ActividadesGestionCambio
-        [HttpGet]
+        // Post: api/ActividadesGestionCambio
+        [HttpPost]
         [Route("ListarActividadesGestionCambio")]
-        public async Task<List<ActividadesGestionCambio>> GetActividadesGestionCambio()
+        public async Task<List<ActividadesGestionCambioViewModel>> ListarActividadesGestionCambio([FromBody] ActividadesGestionCambioViewModel actividadesGestionCambioViewModel)
         {
-            try
-            {
-                return await db.ActividadesGestionCambio.OrderBy(x => x.FechaInicio).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<ActividadesGestionCambio>();
-            }
-        }
-        //int IdPlanGestionCambio - ListarActividadesGestionCambioconIdPlan
-        // POST: api/ActividadesGestionCambio
-        [HttpPost]
-        [Route("ListarActividadesGestionCambioconIdPlan")]
-        public async Task<List<ActividadesGestionCambioIndex>> ListarActividadesGestionCambioconIdPlan([FromBody] ActividadesGestionCambio actividadesGestionCambio)
-        {
+            
             try
             {
 
-
-                List<ActividadesGestionCambioIndex> listaActividadesGestionCambioTotal = new List<ActividadesGestionCambioIndex>();
-
-                List<ActividadesGestionCambioIndex> ListaActividadGestionCambioAvance = await db.ActividadesGestionCambio
-                                                   .Join(db.PlanGestionCambio
-                                                   , actividades => actividades.IdPlanGestionCambio, planes => planes.IdPlanGestionCambio,
-                                                   (actividades, planes) => new { ActividadesGestionCambio = actividades, PlanGestionCambio = planes })
-                                                   .Join(db.AvanceGestionCambio
-                                                   , actividades => actividades.ActividadesGestionCambio.IdActividadesGestionCambio, avance => avance.IdActividadesGestionCambio,
-                                                   (actividades, avance) => new { ActividadesGestion = actividades, AvanceGestionCambio = avance })
-                                                   .GroupBy(
-                                                       x =>
-                                                       new
-                                                       {
-                                                           x.ActividadesGestion.ActividadesGestionCambio.IdPlanGestionCambio,
-                                                           x.ActividadesGestion.ActividadesGestionCambio.IdActividadesGestionCambio,
-                                                           x.ActividadesGestion.ActividadesGestionCambio.FechaInicio,
-                                                           x.ActividadesGestion.ActividadesGestionCambio.FechaFin,
-                                                           x.ActividadesGestion.ActividadesGestionCambio.Indicador,
-                                                           x.ActividadesGestion.ActividadesGestionCambio.Porciento,
-                                                           x.ActividadesGestion.ActividadesGestionCambio.Descripcion
-                                                       })
-                                                       .Select(index => new ActividadesGestionCambioIndex
-                                                       {
-                                                           IdPlanGestionCambio = index.Key.IdPlanGestionCambio,
-                                                           IdActividadesGestionCambio = index.Key.IdActividadesGestionCambio,
-                                                           FechaInicio = index.Key.FechaInicio,
-                                                           FechaFin = index.Key.FechaFin,
-                                                           Indicador = index.Key.Indicador,
-                                                           Porciento = index.Key.Porciento,
-                                                           Descripcion = index.Key.Descripcion,
-                                                           Suma = ((decimal?)index.Sum(actividades => actividades.AvanceGestionCambio.Indicadorreal)) ?? 0,
-                                                           Porcentaje = ((decimal?)(index.Sum(actividades => actividades.AvanceGestionCambio.Indicadorreal) * 100) / index.Key.Indicador) ?? 0
-
-                                                       })
-                                                       .Where(x => x.IdPlanGestionCambio == actividadesGestionCambio.IdPlanGestionCambio)
-                                                       .ToListAsync();
-
-                var ListaActividadGestionCambioPlan = db.ActividadesGestionCambio
-                                                           .Where(x => x.IdPlanGestionCambio == actividadesGestionCambio.IdPlanGestionCambio);
-
-                if (ListaActividadGestionCambioAvance.Count != 0)
-                {
-
-                    foreach (var elementoPlan in ListaActividadGestionCambioPlan)
-                    {
-
-                        foreach (var elementoAvance in ListaActividadGestionCambioAvance)
-                        {
-                            bool existeConsulta = ListaActividadGestionCambioAvance.Exists(x => x.IdActividadesGestionCambio == elementoPlan.IdActividadesGestionCambio);
-
-                            bool existeLista = listaActividadesGestionCambioTotal.Exists(x => x.IdActividadesGestionCambio == elementoPlan.IdActividadesGestionCambio);
-
-                            if (!existeConsulta)
-                            {
-                                if (!existeLista)
-                                {
-                                    ActividadesGestionCambioIndex actividad = new ActividadesGestionCambioIndex();
-                                    actividad.IdPlanGestionCambio = elementoPlan.IdPlanGestionCambio;
-                                    actividad.IdActividadesGestionCambio = elementoPlan.IdActividadesGestionCambio;
-                                    actividad.FechaInicio = elementoPlan.FechaInicio;
-                                    actividad.FechaFin = elementoPlan.FechaFin;
-                                    actividad.Indicador = elementoPlan.Indicador;
-                                    actividad.Porciento = elementoPlan.Porciento;
-                                    actividad.Descripcion = elementoPlan.Descripcion;
-                                    actividad.Suma = 0;
-                                    actividad.Porcentaje = 0;
-                                    listaActividadesGestionCambioTotal.Add(actividad);
-
-                                }
-                            }
-                            else
-                            {
-                                if (!existeLista)
-                                {
-                                    if (elementoAvance.IdActividadesGestionCambio == elementoPlan.IdActividadesGestionCambio)
-                                    {
-                                        ActividadesGestionCambioIndex actividad = new ActividadesGestionCambioIndex();
-                                        actividad.IdPlanGestionCambio = elementoAvance.IdPlanGestionCambio;
-                                        actividad.IdActividadesGestionCambio = elementoAvance.IdActividadesGestionCambio;
-                                        actividad.FechaInicio = elementoAvance.FechaInicio;
-                                        actividad.FechaFin = elementoAvance.FechaFin;
-                                        actividad.Indicador = elementoAvance.Indicador;
-                                        actividad.Porciento = elementoAvance.Porciento;
-                                        actividad.Descripcion = elementoAvance.Descripcion;
-                                        actividad.Suma = elementoAvance.Suma;
-                                        actividad.Porcentaje = elementoAvance.Porcentaje;
-
-                                        listaActividadesGestionCambioTotal.Add(actividad);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (ListaActividadGestionCambioAvance.Count == 0)
-                    {
-                        foreach (var elementoPlan in ListaActividadGestionCambioPlan)
-                        {
-                            ActividadesGestionCambioIndex actividad = new ActividadesGestionCambioIndex();
-                            actividad.IdPlanGestionCambio = elementoPlan.IdPlanGestionCambio;
-                            actividad.IdActividadesGestionCambio = elementoPlan.IdActividadesGestionCambio;
-                            actividad.FechaInicio = elementoPlan.FechaInicio;
-                            actividad.FechaFin = elementoPlan.FechaFin;
-                            actividad.Indicador = elementoPlan.Indicador;
-                            actividad.Porciento = elementoPlan.Porciento;
-                            actividad.Descripcion = elementoPlan.Descripcion;
-                            actividad.Suma = 0;
-                            actividad.Porcentaje = 0;
-                            listaActividadesGestionCambioTotal.Add(actividad);
-                        }
-                    }
-                }
-                    return listaActividadesGestionCambioTotal;
-
+                var empleado = db.Empleado.Include(d=>d.Dependencia)
+                    .Where(x=>x.NombreUsuario == actividadesGestionCambioViewModel.NombreUsuario)
+                    .FirstOrDefault()
+                ;
                 
+                
+                
+                return await db.ActividadesGestionCambio.Include(d=>d.Dependencia).Include(e=>e.Empleado).ThenInclude(p=>p.Persona)
+                    .Where(w=>w.Dependencia.IdSucursal == empleado.Dependencia.IdSucursal)
+                    .Select(x=>new ActividadesGestionCambioViewModel
+                        {   
+                            IdActividadesGestionCambio = x.IdActividadesGestionCambio,
+
+                            IdDependencia = x.IdDependencia,
+                            NombreDependencia = x.Dependencia.Nombre,
+
+                            IdEmpleado = x.IdEmpleado,
+                            NombreEmpleado = x.Empleado.Persona.Nombres+ " "+x.Empleado.Persona.Apellidos,
+
+                            Avance = x.Avance,
+                            FechaInicio = x.FechaInicio,
+                            FechaFin = x.FechaFin,
+                            Observaciones = x.Observaciones,
+                            Tarea = x.Tarea,
+                            
+                            ValorEstado = x.EstadoActividadesGestionCambio,
+                            Estado = Constantes.ListaEstadosGestionCambio.Where(a=>a.Valor == x.EstadoActividadesGestionCambio).FirstOrDefault().Nombre
+                    }
+                    )
+                    .ToListAsync();
+                    
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<ActividadesGestionCambioIndex>();
+                return new List<ActividadesGestionCambioViewModel>();
             }
         }
 
-        //int IdActividadesGestionCambio - ActividadesGestionCambioconIdActividad
+
+
         // POST: api/ActividadesGestionCambio
         [HttpPost]
-        [Route("ActividadesGestionCambioconIdActividad")]
-        public async Task<Response> ActividadesGestionCambioconIdActividad([FromBody] ActividadesGestionCambio actividadesGestionCambio)
+        [Route("CrearActividadesGestionCambio")]
+        public async Task<CrearActividadesGestionCambioViewModel> CrearActividadesGestionCambio([FromBody] ActividadesGestionCambioViewModel actividadesGestionCambioViewModel)
         {
+            var modelo = new CrearActividadesGestionCambioViewModel();
+
+            modelo.actividadesGestionCambioViewModel = new ActividadesGestionCambioViewModel {
+                FechaInicio = DateTime.Now,
+                FechaFin = DateTime.Now,
+                Observaciones = ""
+            };
+
+            modelo.ListaDatosBasicosEmpleadoViewModel = new List<DatosBasicosEmpleadoViewModel>();
+            modelo.ListaEstadoActividadGestionCambioViewModel = new List<EstadoActividadGestionCambioViewModel>();
+            modelo.ListaDependenciasViewModel = new List<DependenciaViewModel>();
+
             try
             {
+                var empleado = db.Empleado.Include(d => d.Dependencia)
+                    .Where(x => x.NombreUsuario == actividadesGestionCambioViewModel.NombreUsuario)
+                    .FirstOrDefault()
+                ;
+                
 
-                var actividadesGestionCambioResultado = await db.ActividadesGestionCambio.SingleOrDefaultAsync(m => m.IdActividadesGestionCambio == actividadesGestionCambio.IdActividadesGestionCambio);
+                // Obtención de estados desde las constantes
+                modelo.ListaEstadoActividadGestionCambioViewModel = Constantes.ListaEstadosGestionCambio;
 
-                var response = new Response
-                {
-                    IsSuccess = true,
-                    Resultado = actividadesGestionCambioResultado,
-                };
-
-                return response;
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response { };
-            }
-        }
-
-
-        // GET: api/ActividadesGestionCambio/5
-        [HttpGet("{id}")]
-        public async Task<Response> GetActividadesGestionCambio([FromRoute] int id)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
-
-                var ActividadesGestionCambio = await db.ActividadesGestionCambio.SingleOrDefaultAsync(m => m.IdActividadesGestionCambio == id);
-
-                if (ActividadesGestionCambio == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = ActividadesGestionCambio,
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
-        // PUT: api/ActividadesGestionCambio/5
-        [HttpPut("{id}")]
-        public async Task<Response> PutActividadesGestionCambio([FromRoute] int id, [FromBody] ActividadesGestionCambio actividadesGestionCambio)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
-
-                if (actividadesGestionCambio.FechaInicio <= DateTime.Today)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha de inicio no puede ser menor o igual que la fecha de hoy"
-                    };
-                }
-
-                if (actividadesGestionCambio.Indicador == 0)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "El indicador no puede ser cero"
-                    };
-                }
-
-                if (actividadesGestionCambio.FechaFin <= DateTime.Today)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha fin no puede ser menor o igual que la fecha de hoy"
-                    };
-                }
-
-                if (actividadesGestionCambio.FechaInicio > actividadesGestionCambio.FechaFin)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha de inicio no puede ser mayor que la fecha fin"
-                    };
-                }
-
-                string fechaInicio = actividadesGestionCambio.FechaInicio.DayOfWeek.ToString();
-
-                if (fechaInicio.Equals("Saturday") || fechaInicio.Equals("Sunday"))
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha de inicio no puede ser fin de semana"
-                    };
-                }
-
-
-                string fechaFin = actividadesGestionCambio.FechaFin.DayOfWeek.ToString();
-
-                if (fechaFin.Equals("Saturday") || fechaFin.Equals("Sunday"))
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha fin no puede ser fin de semana"
-                    };
-                }
-
-
-                PlanGestionCambio Planes = db.PlanGestionCambio.Find(actividadesGestionCambio.IdPlanGestionCambio);
-
-                if (Planes.FechaInicio > actividadesGestionCambio.FechaInicio)
-                {
-
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha inicio del plan no puede ser mayor a la fecha inicio de actividades"
-                    };
-                }
-                var existe = Existe(actividadesGestionCambio);
-                var ActividadesGestionCambioActualizar = (ActividadesGestionCambio)existe.Resultado;
-                if (existe.IsSuccess)
-                {
-                    if (ActividadesGestionCambioActualizar.IdActividadesGestionCambio == actividadesGestionCambio.IdActividadesGestionCambio)
-                    {
-                        return new Response
+                // Obtención de los empleados por sucursal
+                modelo.ListaDatosBasicosEmpleadoViewModel = await db.Empleado
+                    .Where(w=>
+                        w.Dependencia.IdSucursal == empleado.Dependencia.IdSucursal
+                    )
+                    .Select(s=> new DatosBasicosEmpleadoViewModel
                         {
-                            IsSuccess = true,
-                        };
-                    }
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
-                    };
-                }
-                var ActividadesGestionCambio = db.ActividadesGestionCambio.Find(actividadesGestionCambio.IdActividadesGestionCambio);
+                            IdEmpleado = s.IdEmpleado,
+                            Nombres = s.Persona.Nombres + " "+ s.Persona.Apellidos
+                        }                    
+                    )
+                    .ToListAsync();
 
-                ActividadesGestionCambio.FechaInicio = actividadesGestionCambio.FechaInicio;
-                ActividadesGestionCambio.FechaFin = actividadesGestionCambio.FechaFin;
-                ActividadesGestionCambio.Indicador = actividadesGestionCambio.Indicador;
-                ActividadesGestionCambio.Porciento = actividadesGestionCambio.Porciento;
-                ActividadesGestionCambio.Descripcion = actividadesGestionCambio.Descripcion;
+                // Obtención de dependencias por sucursal
+                modelo.ListaDependenciasViewModel = await db.Dependencia
+                    .Where(w=>
+                        w.IdSucursal == empleado.Dependencia.IdSucursal
+                    )
+                    .Select(s=> new DependenciaViewModel
+                        {
+                            IdDependencia = s.IdDependencia,
+                            NombreDependencia = s.Nombre,
+                            IdSucursal = s.IdSucursal
+                        }
+                    )
+                    .ToListAsync();
 
-                db.ActividadesGestionCambio.Update(ActividadesGestionCambio);
-                await db.SaveChangesAsync();
 
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                };
-
+                return modelo;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Excepcion,
-                };
+                return modelo;
             }
-
         }
+
 
         // POST: api/ActividadesGestionCambio
         [HttpPost]
         [Route("InsertarActividadesGestionCambio")]
-        public async Task<Response> PostActividadesGestionCambio([FromBody] ActividadesGestionCambio ActividadesGestionCambio)
+        public async Task<Response> InsertarActividadesGestionCambio([FromBody] ActividadesGestionCambioViewModel actividadesGestionCambioViewModel)
         {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = ""
-                    };
-                }
+            try {
 
-                if (ActividadesGestionCambio.FechaInicio <= DateTime.Today)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha de inicio no puede ser menor o igual que la fecha de hoy"
-                    };
-                }
-
-
-                if (ActividadesGestionCambio.Indicador == 0)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "El indicador no puede ser cero"
-                    };
-                }
-
-
-
-                if (ActividadesGestionCambio.FechaFin <= DateTime.Today)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha fin no puede ser menor o igual que la fecha de hoy"
-                    };
-                }
-
-                if (ActividadesGestionCambio.FechaInicio > ActividadesGestionCambio.FechaFin)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha de inicio no puede ser mayor que la fecha fin"
-                    };
-                }
-
-                string fechaInicio = ActividadesGestionCambio.FechaInicio.DayOfWeek.ToString();
-
-                if (fechaInicio.Equals("Saturday") || fechaInicio.Equals("Sunday"))
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha de inicio no puede ser fin de semana"
-                    };
-                }
-
-
-                string fechaFin = ActividadesGestionCambio.FechaFin.DayOfWeek.ToString();
-
-                if (fechaFin.Equals("Saturday") || fechaFin.Equals("Sunday"))
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha fin no puede ser fin de semana"
-                    };
-                }
-                
-               
-                PlanGestionCambio Planes = db.PlanGestionCambio.Find(ActividadesGestionCambio.IdPlanGestionCambio);
-
-                if (Planes.FechaInicio > ActividadesGestionCambio.FechaInicio)
-                {
-
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = "La fecha inicio del plan no puede ser mayor a la fecha inicio de actividades"
-                    };
-                }
-
-                var respuesta = Existe(ActividadesGestionCambio);
-                if (!respuesta.IsSuccess)
-                {
-                    db.ActividadesGestionCambio.Add(ActividadesGestionCambio);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro,
-                };
-
-
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
-        // DELETE: api/ActividadesGestionCambio/5
-        [HttpDelete("{id}")]
-        public async Task<Response> DeleteActividadesGestionCambio([FromRoute] int id)
-        {
-            try
-            {
                 if (!ModelState.IsValid)
                 {
                     return new Response
@@ -575,70 +158,314 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.ActividadesGestionCambio.SingleOrDefaultAsync(m => m.IdActividadesGestionCambio == id);
-                if (respuesta == null)
+                var modelo = new ActividadesGestionCambio{
+                        IdDependencia = actividadesGestionCambioViewModel.IdDependencia,
+                        IdEmpleado = actividadesGestionCambioViewModel.IdEmpleado,
+
+                        Avance = actividadesGestionCambioViewModel.Avance,
+                        EstadoActividadesGestionCambio = actividadesGestionCambioViewModel.ValorEstado,
+                        Tarea = actividadesGestionCambioViewModel.Tarea,
+                        FechaInicio = actividadesGestionCambioViewModel.FechaInicio,
+                        FechaFin = actividadesGestionCambioViewModel.FechaFin,
+                        Observaciones = (String.IsNullOrEmpty(actividadesGestionCambioViewModel.Observaciones)) ? "" : actividadesGestionCambioViewModel.Observaciones
+                };
+
+                
+
+                if (Existe(modelo).Result.IsSuccess) {
+
+                    return new Response {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro
+                    };
+                }
+
+                db.ActividadesGestionCambio.Add(modelo);
+                await db.SaveChangesAsync();
+
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Response {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+        }
+
+
+
+        /// <summary>
+        /// se necesita el IdActividadGestionCambio y el nombreUsuario
+        /// </summary>
+        /// <param name="actividadesGestionCambioViewModel"></param>
+        /// <returns></returns>
+        // Post: api/ActividadesGestionCambio
+        [HttpPost]
+        [Route("ObtenerActividadesGestionCambioPorId")]
+        public async Task<CrearActividadesGestionCambioViewModel> ObtenerActividadesGestionCambioPorId([FromBody] ActividadesGestionCambioViewModel actividadesGestionCambioViewModel)
+        {
+
+            var modelo = new CrearActividadesGestionCambioViewModel();
+
+            modelo.actividadesGestionCambioViewModel = new ActividadesGestionCambioViewModel
+            {
+                FechaInicio = DateTime.Now,
+                FechaFin = DateTime.Now
+            };
+
+            modelo.ListaDatosBasicosEmpleadoViewModel = new List<DatosBasicosEmpleadoViewModel>();
+            modelo.ListaEstadoActividadGestionCambioViewModel = new List<EstadoActividadGestionCambioViewModel>();
+            modelo.ListaDependenciasViewModel = new List<DependenciaViewModel>();
+
+            try
+            {
+                var empleado = db.Empleado.Include(d => d.Dependencia)
+                    .Where(x => x.NombreUsuario == actividadesGestionCambioViewModel.NombreUsuario)
+                    .FirstOrDefault()
+                ;
+
+                var idSucursal = empleado.Dependencia.IdSucursal;
+
+                // Obtención de estados desde las constantes
+                modelo.ListaEstadoActividadGestionCambioViewModel = Constantes.ListaEstadosGestionCambio;
+
+                // Obtención de los empleados por sucursal
+                modelo.ListaDatosBasicosEmpleadoViewModel = await db.Empleado
+                    .Where(w =>
+                        w.Dependencia.IdSucursal == idSucursal
+                    )
+                    .Select(s => new DatosBasicosEmpleadoViewModel
+                    {
+                        IdEmpleado = s.IdEmpleado,
+                        Nombres = s.Persona.Nombres + " " + s.Persona.Apellidos
+                    }
+                    )
+                    .ToListAsync();
+
+                // Obtención de dependencias por sucursal
+                modelo.ListaDependenciasViewModel = await db.Dependencia
+                    .Where(w =>
+                        w.IdSucursal == empleado.Dependencia.IdSucursal
+                    )
+                    .Select(s => new DependenciaViewModel
+                    {
+                        IdDependencia = s.IdDependencia,
+                        NombreDependencia = s.Nombre,
+                        IdSucursal = s.IdSucursal
+                    }
+                    )
+                    .ToListAsync();
+
+                //Obtención del registro
+                modelo.actividadesGestionCambioViewModel = await db.ActividadesGestionCambio.Include(d => d.Dependencia).Include(e => e.Empleado).ThenInclude(p => p.Persona)
+                    .Where(w => 
+                    w.IdActividadesGestionCambio == actividadesGestionCambioViewModel.IdActividadesGestionCambio
+                    )
+                    .Select(x => new ActividadesGestionCambioViewModel
+                    {
+                        IdActividadesGestionCambio = x.IdActividadesGestionCambio,
+
+                        IdDependencia = x.IdDependencia,
+                        NombreDependencia = x.Dependencia.Nombre,
+
+                        IdEmpleado = x.IdEmpleado,
+                        NombreEmpleado = x.Empleado.Persona.Nombres + " " + x.Empleado.Persona.Apellidos,
+
+                        Avance = x.Avance,
+                        FechaInicio = x.FechaInicio,
+                        FechaFin = x.FechaFin,
+                        Observaciones = x.Observaciones,
+                        Tarea = x.Tarea,
+
+                        ValorEstado = x.EstadoActividadesGestionCambio,
+                        Estado = Constantes.ListaEstadosGestionCambio.Where(a => a.Valor == x.EstadoActividadesGestionCambio).FirstOrDefault().Nombre
+                    }
+                    )
+                    .FirstOrDefaultAsync();
+
+                return modelo;
+            }
+            catch (Exception ex)
+            {
+                return modelo;
+            }
+        }
+
+        
+        
+        /// <summary>
+        /// Necesita: NombreUsuario e IdDependencia
+        /// </summary>
+        /// <param name="actividadesGestionCambioViewModel"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("ObtenerEmpleadosPorSucursalYDependencia")]
+        public async Task<List<DatosBasicosEmpleadoViewModel>> ObtenerEmpleadosPorSucursalYDependencia([FromBody] ActividadesGestionCambioViewModel actividadesGestionCambioViewModel)
+        {
+            try
+            {
+                var empleado = db.Empleado.Include(d => d.Dependencia)
+                    .Where(x => x.NombreUsuario == actividadesGestionCambioViewModel.NombreUsuario)
+                    .FirstOrDefault()
+                ;
+                
+                // Obtención de los empleados por sucursal
+                var modelo = await db.Empleado
+                    .Where(w =>
+                        w.Dependencia.IdSucursal == empleado.Dependencia.IdSucursal
+                        && w.IdDependencia == actividadesGestionCambioViewModel.IdDependencia
+                    )
+                    .Select(s => new DatosBasicosEmpleadoViewModel
+                    {
+                        IdEmpleado = s.IdEmpleado,
+                        Nombres = s.Persona.Nombres + " " + s.Persona.Apellidos
+                    }
+                    )
+                    .ToListAsync();
+
+               
+                return modelo;
+            }
+            catch (Exception ex)
+            {
+                return new List<DatosBasicosEmpleadoViewModel>();
+            }
+        }
+        
+
+        // POST: api/ActividadesGestionCambio
+        [HttpPost]
+        [Route("EditarActividadesGestionCambio")]
+        public async Task<Response> EditarActividadesGestionCambio([FromBody] ActividadesGestionCambioViewModel actividadesGestionCambioViewModel)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
-                db.ActividadesGestionCambio.Remove(respuesta);
+
+                var modelo = new ActividadesGestionCambio
+                {
+                    IdActividadesGestionCambio = actividadesGestionCambioViewModel.IdActividadesGestionCambio,
+                    IdDependencia = actividadesGestionCambioViewModel.IdDependencia,
+                    IdEmpleado = actividadesGestionCambioViewModel.IdEmpleado,
+
+                    Avance = actividadesGestionCambioViewModel.Avance,
+                    EstadoActividadesGestionCambio = actividadesGestionCambioViewModel.ValorEstado,
+                    Tarea = actividadesGestionCambioViewModel.Tarea,
+                    FechaInicio = actividadesGestionCambioViewModel.FechaInicio,
+                    FechaFin = actividadesGestionCambioViewModel.FechaFin,
+                    Observaciones = actividadesGestionCambioViewModel.Observaciones
+                };
+
+
+
+                if (Existe(modelo).Result.IsSuccess)
+                {
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro
+                    };
+                }
+
+                var actualizar = await db.ActividadesGestionCambio
+                    .Where(x=>
+                        x.IdActividadesGestionCambio == actividadesGestionCambioViewModel.IdActividadesGestionCambio
+                    ).FirstOrDefaultAsync();
+
+                actualizar.IdDependencia = actividadesGestionCambioViewModel.IdDependencia;
+                actualizar.IdEmpleado = actividadesGestionCambioViewModel.IdEmpleado;
+                actualizar.Avance = actividadesGestionCambioViewModel.Avance;
+                actualizar.EstadoActividadesGestionCambio = actividadesGestionCambioViewModel.ValorEstado;
+                actualizar.Tarea = actividadesGestionCambioViewModel.Tarea;
+                actualizar.FechaInicio = actividadesGestionCambioViewModel.FechaInicio;
+                actualizar.FechaFin = actividadesGestionCambioViewModel.FechaFin;
+                actualizar.Observaciones = (String.IsNullOrEmpty(actividadesGestionCambioViewModel.Observaciones))?"": actividadesGestionCambioViewModel.Observaciones;
+                
+
+                db.ActividadesGestionCambio.Update(actualizar);
                 await db.SaveChangesAsync();
+
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.GuardadoSatisfactorio
                 };
+
+
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.Excepcion
                 };
             }
         }
 
-        private Response Existe(ActividadesGestionCambio ActividadesGestionCambio)
-        {
-            var bdd = ActividadesGestionCambio.FechaInicio;
-            var ActividadesGestionCambiorespuesta = db.ActividadesGestionCambio.Where(p => p.FechaInicio == ActividadesGestionCambio.FechaInicio &&
-                                                                                      p.FechaFin == ActividadesGestionCambio.FechaFin &&
-                                                                                      p.Descripcion == ActividadesGestionCambio.Descripcion &&
-                                                                                      p.IdPlanGestionCambio == ActividadesGestionCambio.IdPlanGestionCambio
-                                                                                      ).FirstOrDefault();
-            if (ActividadesGestionCambiorespuesta != null)
+        private async Task<Response> Existe( ActividadesGestionCambio modelo) {
+
+            try
+            {
+                var lista = await db.ActividadesGestionCambio
+                    .Where(x=>
+                        x.Tarea.ToUpper().TrimEnd().TrimStart() == modelo.Tarea.ToUpper().TrimEnd().TrimStart()
+                        //&& x.FechaInicio.ToString("dd-mm-yyyy") == modelo.FechaInicio.ToString("dd-mm-yyyy")
+                        //&& x.FechaFin.ToString("dd-mm-yyyy") == modelo.FechaFin.ToString("dd-mm-yyyy")
+                        && x.IdDependencia == modelo.IdDependencia
+                        && x.IdEmpleado == modelo.IdEmpleado
+                    )
+                    .ToListAsync();
+
+                if (
+                    lista != null 
+                    && lista.Count > 0 
+                    && modelo.IdActividadesGestionCambio != lista.FirstOrDefault().IdActividadesGestionCambio
+                    )
+                {
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.ExisteRegistro
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false
+                };
+
+            }
+            catch (Exception)
             {
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
-                    Resultado = ActividadesGestionCambiorespuesta,
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
                 };
-
             }
 
-            return new Response
-            {
-                IsSuccess = false,
-                Resultado = ActividadesGestionCambiorespuesta,
-            };
         }
-
-
+        
     }
 }

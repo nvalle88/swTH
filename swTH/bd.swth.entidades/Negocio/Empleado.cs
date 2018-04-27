@@ -168,10 +168,6 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<FacturaViatico> FacturaViatico { get; set; }
 
-        public virtual ICollection<PlanGestionCambio> PlanGestionCambio { get; set; }
-
-        public virtual ICollection<PlanGestionCambio> PlanGestionCambio1 { get; set; }
-
         public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimiento { get; set; }
 
         public virtual ICollection<RMU> RMU { get; set; }
@@ -196,7 +192,7 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<DocumentosIngresoEmpleado> DocumentosIngresoEmpleado { get; set; }
         public virtual ICollection<PersonaSustituto> PersonaSustituto { get; set; }
-
+        public virtual ICollection<ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
 
     }
 }
