@@ -63,6 +63,37 @@ namespace bd.swth.web.Controllers.API
             return ListaComportamientoObservables;
         }
 
+        [HttpPost]
+        [Route("ListarComportamientosObservablesPorIndiceOcupacionalEstado")]
+        public async Task<List<ComportamientoObservableViewModel>> ListarComportamientosObservablesPorIndiceOcupacionalEstado([FromBody]VIewCompetencias vIewCompetencias)
+        {
+            var ListaComportamientoObservables = await db.IndiceOcupacionalComportamientoObservable
+                                                .Join(db.IndiceOcupacional
+                                                , indiceComportamiento => indiceComportamiento.IdIndiceOcupacional, indice => indice.IdIndiceOcupacional,
+                                                (indiceConocimiento, indice) => new { IndiceOcupacionalComportamientoObservable = indiceConocimiento, IndiceOcupacional = indice })
+                                                .Join(db.ComportamientoObservable
+                                                , indice_1 => indice_1.IndiceOcupacionalComportamientoObservable.IdComportamientoObservable, comportamientoObservable => comportamientoObservable.IdComportamientoObservable,
+                                                (indice_1, comportamientoObservable) => new { ca = indice_1, rt = comportamientoObservable })
+                                                .Where(ds => ds.ca.IndiceOcupacional.IdIndiceOcupacional == vIewCompetencias.IdIndiceOcupacional && ds.rt.DenominacionCompetencia.CompetenciaTecnica == vIewCompetencias.CompetenciaTecnica)
+                                                .Select(t => new ComportamientoObservableViewModel
+                                                {
+                                                    IdComportamientoObservable = t.rt.IdComportamientoObservable,
+                                                    Descripcion = t.rt.Descripcion,
+                                                    CompetenciaTecnicaDenominacionCompetencia = t.rt.DenominacionCompetencia.CompetenciaTecnica,
+                                                    DefinicionDenominacionCompetencia = t.rt.DenominacionCompetencia.Definicion,
+                                                    IdDenominacionCompetencia = Convert.ToInt32(t.rt.IdDenominacionCompetencia),
+                                                    IdIndiceOcupacional = t.ca.IndiceOcupacional.IdIndiceOcupacional,
+                                                    IdNivel = Convert.ToInt32(t.rt.IdNivel),
+                                                    NombreDenominacionCompetencia = t.rt.DenominacionCompetencia.Nombre,
+                                                    NombreNivel = t.rt.Nivel.Nombre,
+
+                                                })
+                                                .ToListAsync();
+
+
+            return ListaComportamientoObservables;
+        }
+
 
         // GET: api/BasesDatos
         [HttpGet]

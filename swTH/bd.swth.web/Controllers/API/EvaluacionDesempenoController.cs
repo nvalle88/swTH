@@ -76,8 +76,6 @@ namespace bd.swth.web.Controllers.API
         public async Task<ViewModelEvaluador> Evaluar([FromBody] ViewModelEvaluador viewModelEvaluador)
         {
             var DatosBasicos = new ViewModelEvaluador();
-            var actividades = new List<ActividadesEsenciales>();
-            var actividades1 = new List<ActividadesEsenciales>();
             var DatosBasicos1 = new ViewModelEvaluador();
             try
             {
@@ -118,6 +116,7 @@ namespace bd.swth.web.Controllers.API
                             lista.DatosJefe = persona.Nombres + "" + persona.Apellidos;
                             lista.Titulo = titulo.Titulo.Nombre;
                             lista.ListaActividad = Lista;
+                            lista.IdIndiceOcupacional = a.IdIndiceOcupacional;
                         }
                         
                     }
