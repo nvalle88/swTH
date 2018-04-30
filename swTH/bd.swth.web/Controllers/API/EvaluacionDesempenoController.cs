@@ -76,8 +76,6 @@ namespace bd.swth.web.Controllers.API
         public async Task<ViewModelEvaluador> Evaluar([FromBody] ViewModelEvaluador viewModelEvaluador)
         {
             var DatosBasicos = new ViewModelEvaluador();
-            var actividades = new List<ActividadesEsenciales>();
-            var actividades1 = new List<ActividadesEsenciales>();
             var DatosBasicos1 = new ViewModelEvaluador();
             try
             {
@@ -118,6 +116,7 @@ namespace bd.swth.web.Controllers.API
                             lista.DatosJefe = persona.Nombres + "" + persona.Apellidos;
                             lista.Titulo = titulo.Titulo.Nombre;
                             lista.ListaActividad = Lista;
+                            lista.IdIndiceOcupacional = a.IdIndiceOcupacional;
                         }
                         
                     }
@@ -132,6 +131,31 @@ namespace bd.swth.web.Controllers.API
             {
                 return new ViewModelEvaluador();
             }
+        }
+
+        [HttpPost]
+        [Route("Actividades")]
+        public async Task<ViewModelEvaluador> Actividades([FromBody] ViewModelEvaluador viewModelEvaluador)
+        {
+            try
+            {
+                var DatosBasicos = new ViewModelEvaluador();
+                // busca las actividades del puesto
+                var Lista = await db.ActividadesEsenciales
+                       .Where(act => db.IndiceOcupacionalActividadesEsenciales
+                                       .Where(y => y.IndiceOcupacional.IdIndiceOcupacional == viewModelEvaluador.IdIndiceOcupacional)
+                                       .Select(ioac => ioac.IdActividadesEsenciales)
+                                       .Contains(act.IdActividadesEsenciales))
+                              .ToListAsync();
+                DatosBasicos.ListaActividad = Lista;
+                return DatosBasicos;
+            }
+            catch (Exception)
+            {
+                return new ViewModelEvaluador();
+            }
+
+
         }
     }
 }
