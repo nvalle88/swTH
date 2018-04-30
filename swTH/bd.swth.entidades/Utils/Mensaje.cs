@@ -22,6 +22,8 @@ namespace bd.swth.entidades.Utils
         public static string ProcesoDesactivado { get { return "Este proceso está desactivado"; } }
         public static string ProcesoFinalizadoSatisfactorio { get { return "Proceso finalizado correctamente"; } }
         public static string ErrorEditarDatos { get { return "Los datos ingresados ya existen y no pueden ser editados"; } }
+        public static string ErrorActualizarArchivo { get { return "No se ha podido actualizar el archivo"; } }
+
 
     }
 }

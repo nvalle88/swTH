@@ -579,15 +579,20 @@ namespace bd.swth.web.Controllers.API
 
                 var id = fichaOdontologicaViewModel.IdPersona;
 
-                await uploadFileService.UploadFile(fichaOdontologicaViewModel.Fichero, "FichasOdontologicasDocumentos", Convert.ToString(id), ".pdf");
+                var respuestaFile = uploadFileService.DeleteFile("FichasOdontologicasDocumentos", Convert.ToString(id), ".pdf");
+
+                var estado = await uploadFileService.UploadFile(fichaOdontologicaViewModel.Fichero, "FichasOdontologicasDocumentos", Convert.ToString(id), ".pdf");
+
+                var url = "FichasOdontologicasDocumentos" + Convert.ToString(id) + ".pdf";
                 
 
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio
-                };
-
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                
+                
 
             }
             catch (Exception ex)
@@ -601,6 +606,35 @@ namespace bd.swth.web.Controllers.API
             }
 
 
+        }
+
+
+
+        // GET: api/ExamenesComplementarios/5
+        [HttpPost]
+        [Route("ObtenerFichaOdontologica")]
+        public async Task<Response> ObtenerFichaOdontologica([FromBody] FichaOdontologicaViewModel fichaOdontologicaViewModel)
+        {
+
+            try
+            {
+                var respuestaFile = uploadFileService.GetFile("FichasOdontologicasDocumentos", Convert.ToString(fichaOdontologicaViewModel.IdPersona), ".pdf");
+                
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Resultado = respuestaFile,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
         }
 
 
