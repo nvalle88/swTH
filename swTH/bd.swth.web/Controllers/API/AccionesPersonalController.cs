@@ -11,6 +11,7 @@ using bd.swth.entidades.Utils;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -321,5 +322,93 @@ namespace bd.swth.web.Controllers.API
                 Resultado = estadocivilrespuesta,
             };
         }
+
+
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("ListarAccionesPersonalPorEmpleado")]
+        public async Task<AccionesPersonalPorEmpleadoViewModel> ListarAccionesPersonalPorEmpleado(AccionesPersonalPorEmpleadoViewModel accionesPersonalPorEmpleadoViewModel)
+        {
+            var modelo = new AccionesPersonalPorEmpleadoViewModel {
+                    ListaAccionPersonal = new List<AccionPersonalViewModel>(),
+                    DatosBasicosEmpleadoViewModel = new DatosBasicosEmpleadoViewModel()
+            };
+
+            try {
+
+                var empleadoActual = db.Empleado.Include(d => d.Dependencia)
+                    .Where(x => x.NombreUsuario == accionesPersonalPorEmpleadoViewModel.NombreUsuarioActual)
+                    .FirstOrDefault()
+                ;
+                
+                var datosEmpleado = db.Empleado
+                    .Include(me => me.Persona)
+                    .Include(md=>md.Dependencia)
+                        .Where(we => 
+                            we.Persona.Identificacion 
+                            == accionesPersonalPorEmpleadoViewModel.DatosBasicosEmpleadoViewModel.Identificacion
+                            && we.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal
+                            )
+                            .Select(se => new DatosBasicosEmpleadoViewModel
+                            {
+                                IdEmpleado = se.IdEmpleado,
+                                Nombres = se.Persona.Nombres + " " + se.Persona.Apellidos,
+
+                            }
+                        ).FirstOrDefault();
+
+                var lista = await db.AccionPersonal.Include(map => map.TipoAccionPersonal)
+                    .Where(w => w.IdEmpleado == datosEmpleado.IdEmpleado)
+                    .Select(s => new AccionPersonalViewModel
+                    {
+                        IdAccionPersonal = s.IdAccionPersonal,
+                        Fecha = s.Fecha,
+                        Numero = s.Numero,
+                        Solicitud = s.Solicitud,
+                        Explicacion = s.Explicacion,
+                        FechaRige = s.FechaRige,
+                        FechaRigeHasta = s.FechaRigeHasta,
+                        NoDias = s.NoDias,
+                        Estado = s.Estado,
+
+                        TipoAccionPersonalViewModel = db.TipoAccionPersonal
+                            .Where(tapw => tapw.IdTipoAccionPersonal == s.IdTipoAccionPersonal)
+                            .Select(st => new TipoAccionesPersonalViewModel
+                                {
+                                    IdTipoAccionPersonal = st.IdTipoAccionPersonal,
+                                    Nombre = st.Nombre,
+                                    NDiasMinimo = st.NDiasMinimo,
+                                    NDiasMaximo = st.NDiasMaximo,
+                                    NHorasMinimo = st.NHorasMinimo,
+                                    NHorasMaximo = st.NHorasMaximo,
+                                    DiasHabiles = st.DiasHabiles,
+                                    ImputableVacaciones = st.ImputableVacaciones,
+                                    ProcesoNomina = st.ProcesoNomina,
+                                    EsResponsableTH = st.EsResponsableTH,
+                                    Matriz = st.Matriz,
+                                    Descripcion = st.Descripcion,
+                                    GeneraAccionPersonal = st.GeneraAccionPersonal,
+                                    ModificaDistributivo = st.ModificaDistributivo,
+                                    IdEstadoTipoAccionPersonal = st.IdEstadoTipoAccionPersonal
+
+                                }
+                            )
+                            .FirstOrDefault()
+                    }
+
+                    ).ToListAsync();
+
+                modelo.DatosBasicosEmpleadoViewModel = datosEmpleado;
+                modelo.ListaAccionPersonal = lista;
+
+                return modelo;
+
+
+            } catch (Exception) {
+                return modelo;
+            }
+        }
+
+
     }
 }

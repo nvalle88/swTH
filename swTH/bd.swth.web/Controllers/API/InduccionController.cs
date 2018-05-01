@@ -35,15 +35,21 @@ namespace bd.swth.web.Controllers.API
 
 
         // Get: api/Induccion
-        [HttpGet]
+        [HttpPost]
         [Route("ListarEstadoInduccionEmpleados")]
-        public async Task<List<InduccionViewModel>> ListarEstadoInduccionEmpleados()
+        public async Task<List<InduccionViewModel>> ListarEstadoInduccionEmpleados(UsuarioViewModel usuario)
         {
             var lista = new List<InduccionViewModel>();
             
             try
             {
-                lista = await db.Empleado
+                var empleadoActual = db.Empleado.Include(d => d.Dependencia)
+                    .Where(x => x.NombreUsuario == usuario.NombreUsuarioActual)
+                    .FirstOrDefault()
+                ;
+
+                lista = await db.Empleado.Include(ei=>ei.Dependencia)
+                    .Where(w=>w.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal)
                     .Select(x => new InduccionViewModel
                         {
                             IdEmpleado = x.IdEmpleado,
