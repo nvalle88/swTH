@@ -48,6 +48,12 @@ namespace bd.swth.entidades.Constantes
         public static string InduccionFinalizada;
         public static string InduccionNoFinalizada;
     }
-    
+
+
+    public static class ConstantesEstadosAprobacionMovimientoInterno
+    {
+        public static List<AprobacionMovimientoInternoViewModel> ListaEstadosAprobacionMovimientoInterno { get; set; }
+
+    }
 
 }

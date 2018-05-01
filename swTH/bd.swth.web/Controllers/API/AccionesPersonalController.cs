@@ -12,6 +12,7 @@ using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.ViewModels;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -193,13 +194,19 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/BasesDatos
+        // POST: api/AccionesPersonal
         [HttpPost]
         [Route("InsertarAccionPersonal")]
-        public async Task<Response> PostAccionPersonal([FromBody] AccionPersonal AccionPersonal)
+        public async Task<Response> InsertarAccionPersonal([FromBody] AccionPersonal AccionPersonal)
         {
             try
             {
+
+                var empleado = db.Empleado.Include(ie=>ie.Persona)
+                    .Where(w=>w.IdEmpleado == AccionPersonal.IdEmpleado)
+                    .FirstOrDefault()
+                ;
+
                 if (!ModelState.IsValid)
                 {
                     return new Response
@@ -210,36 +217,30 @@ namespace bd.swth.web.Controllers.API
                 }
 
                 var respuesta = Existe(AccionPersonal);
+
                 if (!respuesta.IsSuccess)
                 {
                     db.AccionPersonal.Add(AccionPersonal);
                     await db.SaveChangesAsync();
+
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = Mensaje.Satisfactorio,
+                        Resultado = empleado.Persona.Identificacion
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = empleado.Persona.Identificacion
                 };
 
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -303,9 +304,16 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(AccionPersonal AccionPersonal)
         {
-            var bdd = AccionPersonal.IdEmpleado;
-            var estadocivilrespuesta = db.AccionPersonal.Where(p => p.IdEmpleado == bdd).FirstOrDefault();
-            if (estadocivilrespuesta != null)
+            var registro = db.AccionPersonal
+                .Where(p => 
+                    p.IdEmpleado == AccionPersonal.IdEmpleado
+                    && p.Solicitud.ToString().ToUpper().TrimEnd().TrimStart() == AccionPersonal.Solicitud.ToString().ToUpper().TrimEnd().TrimStart()
+                && p.FechaRige == AccionPersonal.FechaRige
+                && p.IdTipoAccionPersonal == AccionPersonal.IdTipoAccionPersonal
+                )
+                .FirstOrDefault();
+
+            if (registro != null)
             {
                 return new Response
                 {
@@ -319,7 +327,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = estadocivilrespuesta,
+                Resultado = registro,
             };
         }
 
@@ -327,7 +335,7 @@ namespace bd.swth.web.Controllers.API
         // POST: api/AccionesPersonal
         [HttpPost]
         [Route("ListarAccionesPersonalPorEmpleado")]
-        public async Task<AccionesPersonalPorEmpleadoViewModel> ListarAccionesPersonalPorEmpleado(AccionesPersonalPorEmpleadoViewModel accionesPersonalPorEmpleadoViewModel)
+        public async Task<AccionesPersonalPorEmpleadoViewModel> ListarAccionesPersonalPorEmpleado([FromBody] AccionesPersonalPorEmpleadoViewModel accionesPersonalPorEmpleadoViewModel)
         {
             var modelo = new AccionesPersonalPorEmpleadoViewModel {
                     ListaAccionPersonal = new List<AccionPersonalViewModel>(),
@@ -357,6 +365,9 @@ namespace bd.swth.web.Controllers.API
                             }
                         ).FirstOrDefault();
 
+                var ListaEstados = ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno;
+
+
                 var lista = await db.AccionPersonal.Include(map => map.TipoAccionPersonal)
                     .Where(w => w.IdEmpleado == datosEmpleado.IdEmpleado)
                     .Select(s => new AccionPersonalViewModel
@@ -370,6 +381,21 @@ namespace bd.swth.web.Controllers.API
                         FechaRigeHasta = s.FechaRigeHasta,
                         NoDias = s.NoDias,
                         Estado = s.Estado,
+                        EstadoDirector = (ListaEstados.Count > 0)
+                            ? 
+                                ListaEstados.Where(wle=>
+                                    wle.GrupoAprobacion == 0
+                                    && wle.ValorEstado == s.Estado
+                                ).FirstOrDefault().NombreEstado
+                            :"",
+                        EstadoValidacionTTHH = (ListaEstados.Count > 0)
+                            ?
+                                ListaEstados.Where(wle =>
+                                    wle.GrupoAprobacion == 1
+                                    && wle.ValorEstado == s.Estado
+                                ).FirstOrDefault().NombreEstado
+                            : "",
+
 
                         TipoAccionPersonalViewModel = db.TipoAccionPersonal
                             .Where(tapw => tapw.IdTipoAccionPersonal == s.IdTipoAccionPersonal)
@@ -404,8 +430,24 @@ namespace bd.swth.web.Controllers.API
                 return modelo;
 
 
-            } catch (Exception) {
+            } catch (Exception ex) {
                 return modelo;
+            }
+        }
+
+
+        // GET: api/AccionesPersonal
+        [HttpGet]
+        [Route("ListarEstadosAprobacionTTHH")]
+        public async Task<List<AprobacionMovimientoInternoViewModel>> ListarEstadosAprobacionTTHH() {
+
+            try {
+                var lista = ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno.Where(w=>w.GrupoAprobacion == 1).ToList();
+
+                return lista;
+
+            } catch(Exception){
+                return new List<AprobacionMovimientoInternoViewModel>();
             }
         }
 

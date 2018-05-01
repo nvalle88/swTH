@@ -82,6 +82,9 @@ namespace bd.swth.web
 
             // Configuración Constantes Estado Gestión Cambio
             Constantes.ListaEstadosGestionCambio = JsonConvert.DeserializeObject<List<EstadoActividadGestionCambioViewModel>>(Configuration.GetSection("ListaEstadosGestionCambio").Value);
+
+            // Configuración Estados Aprobación Movimiento Interno
+            ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno = JsonConvert.DeserializeObject<List<AprobacionMovimientoInternoViewModel>>(Configuration.GetSection("ListaEstadosAprobacionMovimientoInterno").Value);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
