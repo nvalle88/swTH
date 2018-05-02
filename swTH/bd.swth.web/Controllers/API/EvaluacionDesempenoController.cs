@@ -2,13 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using bd.swth.datos;
-using bd.swth.entidades.Constantes;
-using bd.swth.entidades.Negocio;
-using bd.swth.entidades.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using bd.swth.datos;
+using bd.swth.entidades.Negocio;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.Enumeradores;
 using Microsoft.EntityFrameworkCore;
+using bd.log.guardar.ObjectTranfer;
+using bd.swth.entidades.Enumeradores;
+using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -118,7 +123,7 @@ namespace bd.swth.web.Controllers.API
                             lista.ListaActividad = Lista;
                             lista.IdIndiceOcupacional = a.IdIndiceOcupacional;
                         }
-                        
+
                     }
                     DatosBasicos1 = lista;
                 }
@@ -156,6 +161,44 @@ namespace bd.swth.web.Controllers.API
             }
 
 
+        }
+        [HttpPost]
+        [Route("Insertarctividades")]
+        public async Task<Response> Insertarctividades([FromBody] ViewModelEvaluador viewModelEvaluador)
+        {
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var evaluar = new ViewModelEvaluador();
+                    //var respuesta = Existe(pais);
+                    //if (!respuesta.IsSuccess)
+                    //{
+                    //        db.EvaluacionActividadesPuestoTrabajo.Add(pais);
+                    //await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                    // }
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro
+                    };
+
+                }
+                catch (Exception ex)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+            }
         }
     }
 }
