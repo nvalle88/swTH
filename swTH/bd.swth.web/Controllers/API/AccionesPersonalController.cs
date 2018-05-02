@@ -452,5 +452,166 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+
+        // POST: api/AccionesPersonal
+        /// <summary>
+        /// Necesario: IdAccionPersonal
+        /// </summary>
+        /// <param name="accionPersonalViewModel"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("ObtenerAccionPersonalViewModel")]
+        public async Task<Response> ObtenerAccionPersonalViewModel([FromBody] AccionPersonalViewModel accionPersonalViewModel) {
+            try
+            {
+
+                var modelo = db.AccionPersonal
+                    .Where(w => w.IdAccionPersonal == accionPersonalViewModel.IdAccionPersonal)
+                    .Select( s=> new AccionPersonalViewModel
+                        {
+                            IdAccionPersonal = s.IdAccionPersonal,
+                            Solicitud = s.Solicitud,
+                            Estado = s.Estado,
+                            Explicacion = s.Explicacion,
+                            Fecha = s.Fecha,
+                            FechaRige = s.FechaRige,
+                            FechaRigeHasta = s.FechaRigeHasta,
+                            NoDias = s.NoDias,
+                            Numero = s.Numero,
+                            
+
+                        TipoAccionPersonalViewModel = db.TipoAccionPersonal
+                            .Where(tapw => tapw.IdTipoAccionPersonal == s.IdTipoAccionPersonal)
+                            .Select(st => new TipoAccionesPersonalViewModel
+                            {
+                                IdTipoAccionPersonal = st.IdTipoAccionPersonal,
+                                Nombre = st.Nombre,
+                                NDiasMinimo = st.NDiasMinimo,
+                                NDiasMaximo = st.NDiasMaximo,
+                                NHorasMinimo = st.NHorasMinimo,
+                                NHorasMaximo = st.NHorasMaximo,
+                                DiasHabiles = st.DiasHabiles,
+                                ImputableVacaciones = st.ImputableVacaciones,
+                                ProcesoNomina = st.ProcesoNomina,
+                                EsResponsableTH = st.EsResponsableTH,
+                                Matriz = st.Matriz,
+                                Descripcion = st.Descripcion,
+                                GeneraAccionPersonal = st.GeneraAccionPersonal,
+                                ModificaDistributivo = st.ModificaDistributivo,
+                                IdEstadoTipoAccionPersonal = st.IdEstadoTipoAccionPersonal
+
+                            }
+                            )
+                            .FirstOrDefault(),
+
+                            DatosBasicosEmpleadoViewModel = db.Empleado
+                                   .Where(e => e.IdEmpleado == s.IdEmpleado)
+                                   .Select(x => new DatosBasicosEmpleadoViewModel
+                                   {
+
+                                       FechaNacimiento = x.Persona.FechaNacimiento.Value.Date,
+                                       IdSexo = Convert.ToInt32(x.Persona.IdSexo),
+                                       IdTipoIdentificacion = Convert.ToInt32(x.Persona.IdTipoIdentificacion),
+                                       IdEstadoCivil = Convert.ToInt32(x.Persona.IdEstadoCivil),
+                                       IdGenero = Convert.ToInt32(x.Persona.IdGenero),
+                                       IdNacionalidad = Convert.ToInt32(x.Persona.IdNacionalidad),
+                                       IdTipoSangre = Convert.ToInt32(x.Persona.IdTipoSangre),
+                                       IdEtnia = Convert.ToInt32(x.Persona.IdEtnia),
+                                       Identificacion = x.Persona.Identificacion,
+                                       Nombres = x.Persona.Nombres,
+                                       Apellidos = x.Persona.Apellidos,
+                                       TelefonoPrivado = x.Persona.TelefonoPrivado,
+                                       TelefonoCasa = x.Persona.TelefonoCasa,
+                                       CorreoPrivado = x.Persona.CorreoPrivado,
+                                       LugarTrabajo = x.Persona.LugarTrabajo,
+                                       IdNacionalidadIndigena = x.Persona.IdNacionalidadIndigena,
+                                       CallePrincipal = x.Persona.CallePrincipal,
+                                       CalleSecundaria = x.Persona.CalleSecundaria,
+                                       Referencia = x.Persona.Referencia,
+                                       Numero = x.Persona.Numero,
+                                       IdParroquia = Convert.ToInt32(x.Persona.IdParroquia),
+                                       Ocupacion = x.Persona.Ocupacion,
+                                       IdEmpleado = x.IdEmpleado,
+                                       IdProvinciaLugarSufragio = Convert.ToInt32(x.IdProvinciaLugarSufragio),
+                                       IdPaisLugarNacimiento = x.CiudadNacimiento.Provincia.Pais.IdPais,
+                                       IdCiudadLugarNacimiento = x.IdCiudadLugarNacimiento,
+                                       IdPaisLugarSufragio = x.ProvinciaSufragio.Pais.IdPais,
+                                       IdPaisLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
+                                       IdCiudadLugarPersona = x.Persona.Parroquia.Ciudad.IdCiudad,
+                                       IdProvinciaLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
+
+                                   }
+                                   ).FirstOrDefault()
+
+                            }
+                    )
+                    .FirstOrDefault();
+
+
+
+                return new Response {
+                    IsSuccess = true,
+                    Resultado = modelo
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion +" "+ ex
+                };
+            }
+        }
+
+
+
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("EditarAccionPersonal")]
+        public async Task<Response> EditarAccionPersonal([FromBody] AccionPersonal accionPersonal)
+        {
+            try {
+
+                var accionPersonalActualizar = await db.AccionPersonal
+                    .Where(w => w.IdAccionPersonal == accionPersonal.IdAccionPersonal).FirstOrDefaultAsync();
+
+                if (!Existe(accionPersonal).IsSuccess) {
+
+                    accionPersonalActualizar.IdEmpleado = accionPersonal.IdEmpleado;
+                    accionPersonalActualizar.IdTipoAccionPersonal = accionPersonal.IdTipoAccionPersonal;
+                    accionPersonalActualizar.Fecha = accionPersonal.Fecha;
+                    accionPersonalActualizar.Numero = accionPersonal.Numero;
+                    accionPersonalActualizar.Solicitud = accionPersonal.Solicitud;
+                    accionPersonalActualizar.Explicacion = accionPersonal.Explicacion;
+                    accionPersonalActualizar.FechaRige = accionPersonal.FechaRige;
+                    accionPersonalActualizar.FechaRigeHasta = accionPersonal.FechaRigeHasta;
+                    accionPersonalActualizar.NoDias = accionPersonal.NoDias;
+                    accionPersonalActualizar.Estado = accionPersonal.Estado;
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
+
+            } catch (Exception ex) {
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion +" "+ ex,
+                };
+            }
+        }
+
     }
 }
