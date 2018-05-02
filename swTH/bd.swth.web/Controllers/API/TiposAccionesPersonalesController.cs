@@ -77,16 +77,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<TipoAccionPersonal>();
             }
         }
@@ -359,5 +349,11 @@ namespace bd.swth.web.Controllers.API
                 Resultado = TipoAccionPersonalrespuesta,
             };
         }
+
+
+        
+
+
+
     }
 }

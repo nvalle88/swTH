@@ -229,6 +229,7 @@ namespace bd.swth.web.Controllers.API
         public async Task<Response> ObtenerRequerimientoRolPorIdDependencia([FromBody] RequerimientoRolPorDependenciaViewModel requerimientoRolPorDependenciaViewModel)
         {
             try {
+
                 // Obtención datos dependencia
                 var dependencia = await db.Dependencia.Where(x => x.IdDependencia == requerimientoRolPorDependenciaViewModel.IdDependencia).FirstOrDefaultAsync();
 
