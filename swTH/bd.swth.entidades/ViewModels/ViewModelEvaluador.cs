@@ -17,5 +17,9 @@ namespace bd.swth.entidades.ViewModels
         public DateTime Hasta { get; set; }
         public string NombreUsuario { get; set; }
         public List<ActividadesEsenciales> ListaActividad { get; set; }
+        public List<string> ListaActividades { get; set; }
+        public List<string> ListaIndicadores { get; set; }
+        public List<string> ListaMetaPeriodo { get; set; }
+        public List<string> ListaActividadescumplidos { get; set; }
     }
 }

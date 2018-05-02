@@ -11,14 +11,15 @@ namespace bd.swth.entidades.Negocio
         [Required(ErrorMessage = "Debe introducir {0}")]
         [Display(Name = "Nombre:")]
         [StringLength(50, MinimumLength = 2, ErrorMessage = "El {0} no puede tener más de {1} y menos de {2}")]
-        public string Nombre { get; set; }
-
-        //Propiedades Virtuales Referencias a otras clases
+        
+        public int IdIndiceOcupacionalActividadesEsenciales { get; set; }
+        public int? IdIndicador { get; set; }
+        public string DescripcionActividad { get; set; }
+        public int MetaPeriodo { get; set; }
+        public int ActividadesCumplidas { get; set; }
 
         public virtual ICollection<Eval001> Eval001 { get; set; }
-
-        public virtual ICollection<EvaluacionActividadesPuestoTrabajoFactor> EvaluacionActividadesPuestoTrabajoFactor { get; set; }
-
-        public virtual ICollection<EvaluacionActividadesPuestoTrabajoDetalle> EvaluacionActividadesPuestoTrabajoDetalle { get; set; }
+        public virtual Indicador Indicador { get; set; }
+        public virtual IndiceOcupacionalActividadesEsenciales IndiceOcupacionalActividadesEsenciales { get; set; }
     }
 }

@@ -7,18 +7,13 @@ namespace bd.swth.entidades.Negocio
     {
         [Key]
         public int IdEvaluacionCompetenciasUniversales { get; set; }
-
-        [Required(ErrorMessage = "Debe introducir {0}")]
-        [Display(Name = "Nombre:")]
-        [StringLength(50, MinimumLength = 2, ErrorMessage = "El {0} no puede tener más de {1} y menos de {2}")]
-        public string Nombre { get; set; }
-
-        //Propiedades Virtuales Referencias a otras clases
+        public int? IdDestreza { get; set; }
+        public int? IdRelevancia { get; set; }
+        public int? IdFrecuenciaAplicacion { get; set; }
 
         public virtual ICollection<Eval001> Eval001 { get; set; }
-
-        public virtual ICollection<EvaluacionCompetenciasUniversalesFactor> EvaluacionCompetenciasUniversalesFactor { get; set; }
-
-        public virtual ICollection<EvaluacionCompetenciasUniversalesDetalle> EvaluacionCompetenciasUniversalesDetalle { get; set; }
+        public virtual Destreza Destreza { get; set; }
+        public virtual FrecuenciaAplicacion FrecuenciaAplicacion { get; set; }
+        public virtual Relevancia Relevancia { get; set; }
     }
 }
