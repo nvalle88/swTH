@@ -23,5 +23,11 @@ namespace bd.swth.entidades.ViewModels
         public List<string> ListaIndicadores { get; set; }
         public List<string> ListaMetaPeriodo { get; set; }
         public List<string> ListaActividadescumplidos { get; set; }
+        public List<string> ConocimientosEsenciales { get; set; }
+        public List<string> IdAreaConocimiento { get; set; }
+
+        //Competencias Tecnicas Puesto
+        public List<string> IdComportamientoObervable { get; set; }
+        public List<string> IdNivelDesarrollos { get; set; }
     }
 }
