@@ -712,15 +712,12 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-
-           
-
-
             modelBuilder.Entity<ActividadesEsenciales>(entity =>
             {
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                entity.HasKey(e => e.IdActividadesEsenciales)
+                    .HasName("PK221");
+
+                entity.Property(e => e.Descripcion).HasMaxLength(100);
             });
 
 
@@ -1931,64 +1928,40 @@ namespace bd.swth.datos
             modelBuilder.Entity<Eval001>(entity =>
             {
                 entity.HasKey(e => e.IdEval001)
-                    .HasName("PK_Eval001");
+                    .HasName("PK49");
 
                 entity.HasIndex(e => e.IdEmpleadoEvaluado)
-                    .HasName("IX_Eval001_EmpleadoIdEmpleado");
+                    .HasName("Ref1576");
 
                 entity.HasIndex(e => e.IdEscalaEvaluacionTotal)
-                    .HasName("IX_Eval001_IdEscalaEvaluacionTotal");
-
-                entity.HasIndex(e => e.IdEvaluacionActividadesPuestoTrabajo)
-                    .HasName("IX_Eval001_IdEvaluacionActividadesPuestoTrabajo");
-
-                entity.HasIndex(e => e.IdEvaluacionCompetenciasTecnicasPuesto)
-                    .HasName("IX_Eval001_IdEvaluacionCompetenciasTecnicasPuesto");
-
-                entity.HasIndex(e => e.IdEvaluacionCompetenciasUniversales)
-                    .HasName("IX_Eval001_IdEvaluacionCompetenciasUniversales");
-
-                entity.HasIndex(e => e.IdEvaluacionConocimiento)
-                    .HasName("IX_Eval001_IdEvaluacionConocimiento");
-
-                entity.HasIndex(e => e.IdEvaluacionTrabajoEquipoIniciativaLiderazgo)
-                    .HasName("IX_Eval001_IdEvaluacionTrabajoEquipoIniciativaLiderazgo");
+                    .HasName("Ref5078");
 
                 entity.HasIndex(e => e.IdEvaluador)
-                    .HasName("IX_Eval001_IdEvaluador");
+                    .HasName("Ref182301");
 
-                entity.HasOne(d => d.Empleado)
+                entity.Property(e => e.FechaEvaluacionDesde).HasColumnType("date");
+
+                entity.Property(e => e.FechaEvaluacionHasta).HasColumnType("date");
+
+                entity.Property(e => e.FechaRegistro).HasColumnType("date");
+
+                entity.Property(e => e.Observaciones).HasColumnType("text");
+
+                entity.HasOne(d => d.EmpleadoEvaluado)
                     .WithMany(p => p.Eval001)
-                    .HasForeignKey(d => d.IdEmpleadoEvaluado);
+                    .HasForeignKey(d => d.IdEmpleadoEvaluado)
+                    .HasConstraintName("FK_Eval001_Empleado");
 
                 entity.HasOne(d => d.EscalaEvaluacionTotal)
                     .WithMany(p => p.Eval001)
-                    .HasForeignKey(d => d.IdEscalaEvaluacionTotal);
-
-                entity.HasOne(d => d.EvaluacionActividadesPuestoTrabajo)
-                    .WithMany(p => p.Eval001)
-                    .HasForeignKey(d => d.IdEvaluacionActividadesPuestoTrabajo);
-
-                entity.HasOne(d => d.EvaluacionCompetenciasTecnicasPuesto)
-                    .WithMany(p => p.Eval001)
-                    .HasForeignKey(d => d.IdEvaluacionCompetenciasTecnicasPuesto);
-
-                entity.HasOne(d => d.EvaluacionCompetenciasUniversales)
-                    .WithMany(p => p.Eval001)
-                    .HasForeignKey(d => d.IdEvaluacionCompetenciasUniversales);
-
-                entity.HasOne(d => d.EvaluacionConocimiento)
-                    .WithMany(p => p.Eval001)
-                    .HasForeignKey(d => d.IdEvaluacionConocimiento);
-
-                entity.HasOne(d => d.EvaluacionTrabajoEquipoIniciativaLiderazgo)
-                    .WithMany(p => p.Eval001)
-                    .HasForeignKey(d => d.IdEvaluacionTrabajoEquipoIniciativaLiderazgo);
+                    .HasForeignKey(d => d.IdEscalaEvaluacionTotal)
+                    .HasConstraintName("RefEscalaEvaluacionTotal78");
 
                 entity.HasOne(d => d.Evaluador)
                     .WithMany(p => p.Eval001)
                     .HasForeignKey(d => d.IdEvaluador)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefEvaluador301");
             });
 
             modelBuilder.Entity<EvaluacionActividadesPuestoTrabajo>(entity =>
@@ -1999,24 +1972,26 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdIndicador)
                     .HasName("Ref3157");
 
-                entity.HasIndex(e => e.IdIndiceOcupacionalActividadesEsenciales)
-                    .HasName("Ref3356");
-
                 entity.Property(e => e.DescripcionActividad)
                     .IsRequired()
                     .HasColumnType("varchar(50)");
+
+                entity.HasOne(d => d.ActividadesEsenciales)
+                    .WithMany(p => p.EvaluacionActividadesPuestoTrabajo)
+                    .HasForeignKey(d => d.IdActividadesEsenciales)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_EvaluacionActividadesPuestoTrabajo_ActividadesEsenciales");
+
+                entity.HasOne(d => d.Eval001)
+                    .WithMany(p => p.EvaluacionActividadesPuestoTrabajo)
+                    .HasForeignKey(d => d.IdEval001)
+                    .HasConstraintName("FK_EvaluacionActividadesPuestoTrabajo_Eval001");
 
                 entity.HasOne(d => d.Indicador)
                     .WithMany(p => p.EvaluacionActividadesPuestoTrabajo)
                     .HasForeignKey(d => d.IdIndicador)
                     .HasConstraintName("RefIndicador57");
-
-                entity.HasOne(d => d.IndiceOcupacionalActividadesEsenciales)
-                    .WithMany(p => p.EvaluacionActividadesPuestoTrabajo)
-                    .HasForeignKey(d => d.IdIndiceOcupacionalActividadesEsenciales)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_EvaluacionActividadesPuestoTrabajo_IndiceOcupacionalActividadesEsenciales");
-            }); ;
+            });
 
 
             modelBuilder.Entity<EvaluacionCompetenciasTecnicasPuesto>(entity =>
@@ -2037,6 +2012,11 @@ namespace bd.swth.datos
                     .WithMany(p => p.EvaluacionCompetenciasTecnicasPuesto)
                     .HasForeignKey(d => d.IdDestreza)
                     .HasConstraintName("RefDestreza63");
+
+                entity.HasOne(d => d.Eval001)
+                    .WithMany(p => p.EvaluacionCompetenciasTecnicasPuesto)
+                    .HasForeignKey(d => d.IdEval001)
+                    .HasConstraintName("FK_EvaluacionCompetenciasTecnicasPuesto_Eval001");
 
                 entity.HasOne(d => d.NivelDesarrollo)
                     .WithMany(p => p.EvaluacionCompetenciasTecnicasPuesto)
@@ -2493,22 +2473,25 @@ namespace bd.swth.datos
             modelBuilder.Entity<IndiceOcupacionalActividadesEsenciales>(entity =>
             {
                 entity.HasKey(e => e.IdIndiceOcupacionalActividadesEsenciales)
-                    .HasName("PK_IndiceOcupacionalActividadesEsenciales");
+                    .HasName("PK223");
 
                 entity.HasIndex(e => e.IdActividadesEsenciales)
-                    .HasName("IX_IndiceOcupacionalActividadesEsenciales_IdActividadesEsenciales");
+                    .HasName("Ref221341");
 
                 entity.HasIndex(e => e.IdIndiceOcupacional)
-                    .HasName("IX_IndiceOcupacionalActividadesEsenciales_IdIndiceOcupacional");
+                    .HasName("Ref69344");
 
                 entity.HasOne(d => d.ActividadesEsenciales)
                     .WithMany(p => p.IndiceOcupacionalActividadesEsenciales)
-                    .HasForeignKey(d => d.IdActividadesEsenciales);
+                    .HasForeignKey(d => d.IdActividadesEsenciales)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefActividadesEsenciales341");
 
                 entity.HasOne(d => d.IndiceOcupacional)
                     .WithMany(p => p.IndiceOcupacionalActividadesEsenciales)
                     .HasForeignKey(d => d.IdIndiceOcupacional)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefIndiceOcupacional344");
             });
 
             modelBuilder.Entity<IndiceOcupacionalAreaConocimiento>(entity =>

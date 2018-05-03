@@ -10,9 +10,10 @@ namespace bd.swth.entidades.Negocio
         public int? IdDestreza { get; set; }
         public int? IdRelevancia { get; set; }
         public int? IdFrecuenciaAplicacion { get; set; }
+        public int? IdEval001 { get; set; }
 
-        public virtual ICollection<Eval001> Eval001 { get; set; }
         public virtual Destreza Destreza { get; set; }
+        public virtual Eval001 Eval001 { get; set; }
         public virtual FrecuenciaAplicacion FrecuenciaAplicacion { get; set; }
         public virtual Relevancia Relevancia { get; set; }
     }

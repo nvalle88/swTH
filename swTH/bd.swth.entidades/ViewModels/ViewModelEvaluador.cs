@@ -8,6 +8,8 @@ namespace bd.swth.entidades.ViewModels
     public class ViewModelEvaluador
     {
         public int IdEmpleado { get; set; }
+        public int IdEval001 { get; set; }
+        public int IdJefe { get; set; }
         public int IdIndiceOcupacional { get; set; }
         public string NombreApellido { get; set; }
         public string Puesto { get; set; }

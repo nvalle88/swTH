@@ -122,6 +122,7 @@ namespace bd.swth.web.Controllers.API
                             lista.Titulo = titulo.Titulo.Nombre;
                             lista.ListaActividad = Lista;
                             lista.IdIndiceOcupacional = a.IdIndiceOcupacional;
+                            lista.IdJefe = jefe.IdEmpleado;
                         }
 
                     }
@@ -170,28 +171,92 @@ namespace bd.swth.web.Controllers.API
             {
                 try
                 {
-                    var evaluar = new ViewModelEvaluador();
-                    //var respuesta = Existe(pais);
-                    //if (!respuesta.IsSuccess)
-                    //{
-                    //        db.EvaluacionActividadesPuestoTrabajo.Add(pais);
-                    //await db.SaveChangesAsync();
+
+                    var lista = new List<ViewModelEvaluador>();
+                    lista.Add(viewModelEvaluador);
+
+                    foreach (var item in lista)
+                    {
+                        var indicador = new Indicador
+                        {
+                            Nombre = item.ListaIndicadores.FirstOrDefault()
+
+                        };
+                        var IndicadoresInsertarda = await db.Indicador.AddAsync(indicador);
+                        await db.SaveChangesAsync();
+
+                        var evaluacionActividadesPuestoTrabajo = new EvaluacionActividadesPuestoTrabajo
+                        {
+                            IdIndicador = IndicadoresInsertarda.Entity.IdIndicador,
+                            MetaPeriodo = Convert.ToInt32(item.ListaMetaPeriodo.FirstOrDefault()),
+                            ActividadesCumplidas = Convert.ToInt32(item.ListaActividadescumplidos.FirstOrDefault()),
+                            IdActividadesEsenciales = Convert.ToInt32(item.ListaActividades.FirstOrDefault()),
+                            IdEval001 = viewModelEvaluador.IdEval001,
+                            DescripcionActividad = ""
+
+                        };
+                        await db.EvaluacionActividadesPuestoTrabajo.AddAsync(evaluacionActividadesPuestoTrabajo);
+                        await db.SaveChangesAsync();
+                    }
+                    transaction.Commit();
                     return new Response
                     {
                         IsSuccess = true,
                         Message = Mensaje.Satisfactorio
                     };
-                    // }
-
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro
-                    };
 
                 }
                 catch (Exception ex)
                 {
+                    transaction.Rollback();
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+            }
+        }
+        [HttpPost]
+        [Route("InsertarEval001")]
+        public async Task<Response> InsertarEval001([FromBody] ViewModelEvaluador viewModelEvaluador)
+        {
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var a = await db.Evaluador.Where(x => x.IdEmpleado == viewModelEvaluador.IdJefe).FirstOrDefaultAsync();
+
+                    if (a != null)
+                    {
+                        var eval001 = new Eval001
+                        {
+                            IdEmpleadoEvaluado = viewModelEvaluador.IdEmpleado,
+                            IdEvaluador = a.IdEmpleado,
+                            FechaEvaluacionDesde = viewModelEvaluador.Desde,
+                            FechaEvaluacionHasta = viewModelEvaluador.Hasta,
+                            FechaRegistro = DateTime.Now
+                        };
+                        var eval001Insertarda = await db.Eval001.AddAsync(eval001);
+                        await db.SaveChangesAsync();
+                        var Ideval001 = eval001Insertarda.Entity.IdEval001;
+                        transaction.Commit();
+                        return new Response
+                        {
+                            Resultado = Ideval001,
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio
+                        };
+                    }
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error
+                    };
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
                     return new Response
                     {
                         IsSuccess = false,
