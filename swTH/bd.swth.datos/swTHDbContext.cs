@@ -41,7 +41,7 @@ namespace bd.swth.datos
 
         public virtual DbSet<bd.swth.entidades.Negocio.LavadoActivoEmpleado> LavadoActivoEmpleado { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.LavadoActivoItem> LavadoActivoItem { get; set; }
-
+        public virtual DbSet<bd.swth.entidades.Negocio.Empleado> Empleado { get; set; }
 
         public virtual DbSet<bd.swth.entidades.Negocio.AccionPersonal> AccionPersonal { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentoInformacionInstitucional> DocumentoInformacionInstitucional { get; set; }
@@ -56,7 +56,7 @@ namespace bd.swth.datos
         public virtual DbSet<AprobacionViatico> AprobacionViatico { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Ambito> Ambito { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AreaConocimiento> AreaConocimiento { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.AvanceGestionCambio> AvanceGestionCambio { get; set; }
+        
         public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSO> BrigadaSSO { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSORol> BrigadaSsorol { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Calificacion> Calificacion { get; set; }
@@ -91,7 +91,6 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngreso> DocumentosIngreso { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngresoEmpleado> DocumentosIngresoEmpleado { get; set; }
         public virtual DbSet<DocumentosParentescodos> DocumentosParentescodos { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.Empleado> Empleado { get; set; }
         public virtual DbSet<EmpleadoContactoEmergencia> EmpleadoContactoEmergencia { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
         public virtual DbSet<EmpleadoFormularioCapacitacion> EmpleadoFormularioCapacitacion { get; set; }
@@ -114,21 +113,11 @@ namespace bd.swth.datos
         public virtual DbSet<Etnia> Etnia { get; set; }
         public virtual DbSet<Eval001> Eval001 { get; set; }
         public virtual DbSet<EvaluacionActividadesPuestoTrabajo> EvaluacionActividadesPuestoTrabajo { get; set; }
-        public virtual DbSet<EvaluacionActividadesPuestoTrabajoDetalle> EvaluacionActividadesPuestoTrabajoDetalle { get; set; }
-        public virtual DbSet<EvaluacionActividadesPuestoTrabajoFactor> EvaluacionActividadesPuestoTrabajoFactor { get; set; }
         public virtual DbSet<EvaluacionCompetenciasTecnicasPuesto> EvaluacionCompetenciasTecnicasPuesto { get; set; }
-        public virtual DbSet<EvaluacionCompetenciasTecnicasPuestoDetalle> EvaluacionCompetenciasTecnicasPuestoDetalle { get; set; }
-        public virtual DbSet<EvaluacionCompetenciasTecnicasPuestoFactor> EvaluacionCompetenciasTecnicasPuestoFactor { get; set; }
         public virtual DbSet<EvaluacionCompetenciasUniversales> EvaluacionCompetenciasUniversales { get; set; }
-        public virtual DbSet<EvaluacionCompetenciasUniversalesDetalle> EvaluacionCompetenciasUniversalesDetalle { get; set; }
-        public virtual DbSet<EvaluacionCompetenciasUniversalesFactor> EvaluacionCompetenciasUniversalesFactor { get; set; }
         public virtual DbSet<EvaluacionConocimiento> EvaluacionConocimiento { get; set; }
-        public virtual DbSet<EvaluacionConocimientoDetalle> EvaluacionConocimientoDetalle { get; set; }
-        public virtual DbSet<EvaluacionConocimientoFactor> EvaluacionConocimientoFactor { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.EvaluacionInducion> EvaluacionInducion { get; set; }
         public virtual DbSet<EvaluacionTrabajoEquipoIniciativaLiderazgo> EvaluacionTrabajoEquipoIniciativaLiderazgo { get; set; }
-        public virtual DbSet<EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle> EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle { get; set; }
-        public virtual DbSet<EvaluacionTrabajoEquipoIniciativaLiderazgoFactor> EvaluacionTrabajoEquipoIniciativaLiderazgoFactor { get; set; }
         public virtual DbSet<Evaluador> Evaluador { get; set; }
         public virtual DbSet<Exepciones> Exepciones { get; set; }
         public virtual DbSet<Factor> Factor { get; set; }
@@ -190,7 +179,6 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.PersonaSustituto> PersonaSustituto { get; set; }
         public virtual DbSet<PersonaPaquetesInformaticos> PersonaPaquetesInformaticos { get; set; }
         public virtual DbSet<PieFirma> PieFirma { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.PlanGestionCambio> PlanGestionCambio { get; set; }
         public virtual DbSet<PlanificacionHE> PlanificacionHE { get; set; }
         public virtual DbSet<Pregunta> Pregunta { get; set; }
         public virtual DbSet<PreguntaRespuesta> PreguntaRespuesta { get; set; }
@@ -252,7 +240,49 @@ namespace bd.swth.datos
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
+            modelBuilder.Entity<Empleado>(entity =>
+            {
+                entity.HasKey(e => e.IdEmpleado)
+                    .HasName("PK_Empleado");
 
+                entity.HasIndex(e => e.IdCiudadLugarNacimiento)
+                    .HasName("IX_Empleado_CiudadNacimientoIdCiudad");
+
+                entity.HasIndex(e => e.IdDependencia)
+                    .HasName("IX_Empleado_IdDependencia");
+
+                entity.HasIndex(e => e.IdPersona)
+                    .HasName("IX_Empleado_IdPersona");
+
+                entity.HasIndex(e => e.IdProvinciaLugarSufragio)
+                    .HasName("IX_Empleado_ProvinciaSufragioIdProvincia");
+
+                entity.Property(e => e.IngresosOtraActividad)
+                    .IsRequired()
+                    .HasMaxLength(20);
+
+                entity.HasOne(d => d.CiudadNacimiento)
+                    .WithMany(p => p.Empleado)
+                    .HasForeignKey(d => d.IdCiudadLugarNacimiento);
+
+                entity.HasOne(d => d.Dependencia)
+                    .WithMany(p => p.Empleado)
+                    .HasForeignKey(d => d.IdDependencia)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(d => d.Persona)
+                    .WithMany(p => p.Empleado)
+                    .HasForeignKey(d => d.IdPersona)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(d => d.ProvinciaSufragio)
+                    .WithMany(p => p.Empleado)
+                    .HasForeignKey(d => d.IdProvinciaLugarSufragio);
+
+                entity.HasOne(d => d.BrigadaSSORol)
+                   .WithMany(p => p.Empleado)
+                   .HasForeignKey(d => d.IdBrigadaSSORol);
+            });
 
             modelBuilder.Entity<TipoConjuntoNomina>(entity =>
             {
@@ -698,24 +728,33 @@ namespace bd.swth.datos
             });
 
 
-           
-
             modelBuilder.Entity<ActividadesGestionCambio>(entity =>
             {
                 entity.HasKey(e => e.IdActividadesGestionCambio)
-                    .HasName("PK_ActividadesGestionCambio");
+                    .HasName("PK260");
 
-                entity.HasIndex(e => e.IdPlanGestionCambio)
-                    .HasName("IX_ActividadesGestionCambio_IdPlanGestionCambio");
+                entity.Property(e => e.Observaciones)
+                    .IsRequired()
+                    .HasMaxLength(1000);
 
-                entity.Property(e => e.Descripcion).IsRequired();
+                entity.Property(e => e.Tarea)
+                    .IsRequired()
+                    .HasMaxLength(200);
 
-                entity.HasOne(d => d.PlanGestionCambio)
+                entity.HasOne(d => d.Dependencia)
                     .WithMany(p => p.ActividadesGestionCambio)
-                    .HasForeignKey(d => d.IdPlanGestionCambio)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
+                    .HasForeignKey(d => d.IdDependencia)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ActividadesGestionCambio_Dependencia");
 
+                entity.HasOne(d => d.Empleado)
+                    .WithMany(p => p.ActividadesGestionCambio)
+                    .HasForeignKey(d => d.IdEmpleado)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ActividadesGestionCambio_Empleado");
+                
+            });
+            
 
             modelBuilder.Entity<AdministracionTalentoHumano>(entity =>
             {
@@ -790,19 +829,7 @@ namespace bd.swth.datos
                     .HasMaxLength(100);
             });
 
-            modelBuilder.Entity<AvanceGestionCambio>(entity =>
-            {
-                entity.HasKey(e => e.IdAvanceGestionCambio)
-                    .HasName("PK_AvanceGestionCambio");
-
-                entity.HasIndex(e => e.IdActividadesGestionCambio)
-                    .HasName("IX_AvanceGestionCambio_IdActividadesGestionCambio");
-
-                entity.HasOne(d => d.ActividadesGestionCambio)
-                    .WithMany(p => p.AvanceGestionCambio)
-                    .HasForeignKey(d => d.IdActividadesGestionCambio)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
+           
 
             modelBuilder.Entity<BrigadaSSO>(entity =>
             {
@@ -1522,49 +1549,7 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<Empleado>(entity =>
-            {
-                entity.HasKey(e => e.IdEmpleado)
-                    .HasName("PK_Empleado");
-
-                entity.HasIndex(e => e.IdCiudadLugarNacimiento)
-                    .HasName("IX_Empleado_CiudadNacimientoIdCiudad");
-
-                entity.HasIndex(e => e.IdDependencia)
-                    .HasName("IX_Empleado_IdDependencia");
-
-                entity.HasIndex(e => e.IdPersona)
-                    .HasName("IX_Empleado_IdPersona");
-
-                entity.HasIndex(e => e.IdProvinciaLugarSufragio)
-                    .HasName("IX_Empleado_ProvinciaSufragioIdProvincia");
-
-                entity.Property(e => e.IngresosOtraActividad)
-                    .IsRequired()
-                    .HasMaxLength(20);
-
-                entity.HasOne(d => d.CiudadNacimiento)
-                    .WithMany(p => p.Empleado)
-                    .HasForeignKey(d => d.IdCiudadLugarNacimiento);
-
-                entity.HasOne(d => d.Dependencia)
-                    .WithMany(p => p.Empleado)
-                    .HasForeignKey(d => d.IdDependencia)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(d => d.Persona)
-                    .WithMany(p => p.Empleado)
-                    .HasForeignKey(d => d.IdPersona)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(d => d.ProvinciaSufragio)
-                    .WithMany(p => p.Empleado)
-                    .HasForeignKey(d => d.IdProvinciaLugarSufragio);
-
-                entity.HasOne(d => d.BrigadaSSORol)
-                   .WithMany(p => p.Empleado)
-                   .HasForeignKey(d => d.IdBrigadaSSORol);
-            });
+            
 
 
             modelBuilder.Entity<EmpleadoContactoEmergencia>(entity =>
@@ -2013,243 +1998,109 @@ namespace bd.swth.datos
             modelBuilder.Entity<EvaluacionActividadesPuestoTrabajo>(entity =>
             {
                 entity.HasKey(e => e.IdEvaluacionActividadesPuestoTrabajo)
-                    .HasName("PK_EvaluacionActividadesPuestoTrabajo");
-
-                entity.Property(e => e.Nombre)
-                    .IsRequired()
-                    .HasMaxLength(50);
-            });
-
-            modelBuilder.Entity<EvaluacionActividadesPuestoTrabajoDetalle>(entity =>
-            {
-                entity.HasKey(e => e.IdEvaluacionActividadesPuestoTrabajoDetalle)
-                    .HasName("PK_EvaluacionActividadesPuestoTrabajoDetalle");
-
-                entity.HasIndex(e => e.IdEvaluacionActividadesPuestoTrabajo)
-                    .HasName("IX_EvaluacionActividadesPuestoTrabajoDetalle_IdEvaluacionActividadesPuestoTrabajo");
+                    .HasName("PK34");
 
                 entity.HasIndex(e => e.IdIndicador)
-                    .HasName("IX_EvaluacionActividadesPuestoTrabajoDetalle_IdIndicador");
+                    .HasName("Ref3157");
+
+                entity.HasIndex(e => e.IdIndiceOcupacionalActividadesEsenciales)
+                    .HasName("Ref3356");
 
                 entity.Property(e => e.DescripcionActividad)
                     .IsRequired()
-                    .HasMaxLength(50);
-
-                entity.HasOne(d => d.EvaluacionActividadesPuestoTrabajo)
-                    .WithMany(p => p.EvaluacionActividadesPuestoTrabajoDetalle)
-                    .HasForeignKey(d => d.IdEvaluacionActividadesPuestoTrabajo)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasColumnType("varchar(50)");
 
                 entity.HasOne(d => d.Indicador)
-                    .WithMany(p => p.EvaluacionActividadesPuestoTrabajoDetalle)
-                    .HasForeignKey(d => d.IdIndicador);
-            });
+                    .WithMany(p => p.EvaluacionActividadesPuestoTrabajo)
+                    .HasForeignKey(d => d.IdIndicador)
+                    .HasConstraintName("RefIndicador57");
 
-            modelBuilder.Entity<EvaluacionActividadesPuestoTrabajoFactor>(entity =>
-            {
-                entity.HasKey(e => e.IdEvaluacionActividadesPuestoTrabajoFactor)
-                    .HasName("PK_EvaluacionActividadesPuestoTrabajoFactor");
+                entity.HasOne(d => d.IndiceOcupacionalActividadesEsenciales)
+                    .WithMany(p => p.EvaluacionActividadesPuestoTrabajo)
+                    .HasForeignKey(d => d.IdIndiceOcupacionalActividadesEsenciales)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_EvaluacionActividadesPuestoTrabajo_IndiceOcupacionalActividadesEsenciales");
+            }); ;
 
-                entity.HasIndex(e => e.IdEvaluacionActividadesPuestoTrabajo)
-                    .HasName("IX_EvaluacionActividadesPuestoTrabajoFactor_IdEvaluacionActividadesPuestoTrabajo");
-
-                entity.HasIndex(e => e.IdFactor)
-                    .HasName("IX_EvaluacionActividadesPuestoTrabajoFactor_IdFactor");
-
-                entity.HasOne(d => d.EvaluacionActividadesPuestoTrabajo)
-                    .WithMany(p => p.EvaluacionActividadesPuestoTrabajoFactor)
-                    .HasForeignKey(d => d.IdEvaluacionActividadesPuestoTrabajo);
-
-                entity.HasOne(d => d.Factor)
-                    .WithMany(p => p.EvaluacionActividadesPuestoTrabajoFactor)
-                    .HasForeignKey(d => d.IdFactor);
-            });
 
             modelBuilder.Entity<EvaluacionCompetenciasTecnicasPuesto>(entity =>
             {
                 entity.HasKey(e => e.IdEvaluacionCompetenciasTecnicasPuesto)
-                    .HasName("PK_EvaluacionCompetenciasTecnicasPuesto");
-
-                entity.Property(e => e.Nombre)
-                    .IsRequired()
-                    .HasMaxLength(20);
-            });
-
-            modelBuilder.Entity<EvaluacionCompetenciasTecnicasPuestoDetalle>(entity =>
-            {
-                entity.HasKey(e => e.IdEvaluacionCompetenciasTecnicasPuestoDetalle)
-                    .HasName("PK_EvaluacionCompetenciasTecnicasPuestoDetalle");
+                    .HasName("PK39");
 
                 entity.HasIndex(e => e.IdDestreza)
-                    .HasName("IX_EvaluacionCompetenciasTecnicasPuestoDetalle_IdDestreza");
-
-                entity.HasIndex(e => e.IdEvaluacionCompetenciasTecnicasPuesto)
-                    .HasName("IX_EvaluacionCompetenciasTecnicasPuestoDetalle_IdEvaluacionCompetenciasTecnicasPuesto");
+                    .HasName("Ref4063");
 
                 entity.HasIndex(e => e.IdNivelDesarrollo)
-                    .HasName("IX_EvaluacionCompetenciasTecnicasPuestoDetalle_IdNivelDesarrollo");
+                    .HasName("Ref4265");
 
                 entity.HasIndex(e => e.IdRelevancia)
-                    .HasName("IX_EvaluacionCompetenciasTecnicasPuestoDetalle_IdRelevancia");
+                    .HasName("Ref4164");
 
                 entity.HasOne(d => d.Destreza)
-                    .WithMany(p => p.EvaluacionCompetenciasTecnicasPuestoDetalle)
-                    .HasForeignKey(d => d.IdDestreza);
-
-                entity.HasOne(d => d.EvaluacionCompetenciasTecnicasPuesto)
-                    .WithMany(p => p.EvaluacionCompetenciasTecnicasPuestoDetalle)
-                    .HasForeignKey(d => d.IdEvaluacionCompetenciasTecnicasPuesto)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .WithMany(p => p.EvaluacionCompetenciasTecnicasPuesto)
+                    .HasForeignKey(d => d.IdDestreza)
+                    .HasConstraintName("RefDestreza63");
 
                 entity.HasOne(d => d.NivelDesarrollo)
-                    .WithMany(p => p.EvaluacionCompetenciasTecnicasPuestoDetalle)
-                    .HasForeignKey(d => d.IdNivelDesarrollo);
+                    .WithMany(p => p.EvaluacionCompetenciasTecnicasPuesto)
+                    .HasForeignKey(d => d.IdNivelDesarrollo)
+                    .HasConstraintName("RefNivelDesarrollo65");
 
                 entity.HasOne(d => d.Relevancia)
-                    .WithMany(p => p.EvaluacionCompetenciasTecnicasPuestoDetalle)
-                    .HasForeignKey(d => d.IdRelevancia);
+                    .WithMany(p => p.EvaluacionCompetenciasTecnicasPuesto)
+                    .HasForeignKey(d => d.IdRelevancia)
+                    .HasConstraintName("RefRelevancia64");
             });
 
-            modelBuilder.Entity<EvaluacionCompetenciasTecnicasPuestoFactor>(entity =>
-            {
-                entity.HasKey(e => e.IdEvaluacionCompetenciasTecnicasPuestoFactor)
-                    .HasName("PK_EvaluacionCompetenciasTecnicasPuestoFactor");
 
-                entity.HasIndex(e => e.IdEvaluacionCompetenciasTecnicasPuesto)
-                    .HasName("IX_EvaluacionCompetenciasTecnicasPuestoFactor_IdEvaluacionCompetenciasTecnicasPuesto");
-
-                entity.HasIndex(e => e.IdFactor)
-                    .HasName("IX_EvaluacionCompetenciasTecnicasPuestoFactor_IdFactor");
-
-                entity.HasOne(d => d.EvaluacionCompetenciasTecnicasPuesto)
-                    .WithMany(p => p.EvaluacionCompetenciasTecnicasPuestoFactor)
-                    .HasForeignKey(d => d.IdEvaluacionCompetenciasTecnicasPuesto);
-
-                entity.HasOne(d => d.Factor)
-                    .WithMany(p => p.EvaluacionCompetenciasTecnicasPuestoFactor)
-                    .HasForeignKey(d => d.IdFactor)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
 
             modelBuilder.Entity<EvaluacionCompetenciasUniversales>(entity =>
             {
                 entity.HasKey(e => e.IdEvaluacionCompetenciasUniversales)
-                    .HasName("PK_EvaluacionCompetenciasUniversales");
-
-                entity.Property(e => e.Nombre)
-                    .IsRequired()
-                    .HasMaxLength(50);
-            });
-
-            modelBuilder.Entity<EvaluacionCompetenciasUniversalesDetalle>(entity =>
-            {
-                entity.HasKey(e => e.IdEvaluacionCompetenciasUniversalesDetalle)
-                    .HasName("PK_EvaluacionCompetenciasUniversalesDetalle");
+                    .HasName("PK44");
 
                 entity.HasIndex(e => e.IdDestreza)
-                    .HasName("IX_EvaluacionCompetenciasUniversalesDetalle_IdDestreza");
-
-                entity.HasIndex(e => e.IdEvaluacionCompetenciasUniversales)
-                    .HasName("IX_EvaluacionCompetenciasUniversalesDetalle_IdEvaluacionCompetenciasUniversales");
+                    .HasName("Ref4068");
 
                 entity.HasIndex(e => e.IdFrecuenciaAplicacion)
-                    .HasName("IX_EvaluacionCompetenciasUniversalesDetalle_IdFrecuenciaAplicacion");
+                    .HasName("Ref4570");
 
                 entity.HasIndex(e => e.IdRelevancia)
-                    .HasName("IX_EvaluacionCompetenciasUniversalesDetalle_IdRelevancia");
+                    .HasName("Ref4169");
 
                 entity.HasOne(d => d.Destreza)
-                    .WithMany(p => p.EvaluacionCompetenciasUniversalesDetalle)
-                    .HasForeignKey(d => d.IdDestreza);
-
-                entity.HasOne(d => d.EvaluacionCompetenciasUniversales)
-                    .WithMany(p => p.EvaluacionCompetenciasUniversalesDetalle)
-                    .HasForeignKey(d => d.IdEvaluacionCompetenciasUniversales)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_EvaluacionCompUnivlesDetalle_EvaluacionCompsUni_IdEvalnCompsUniversales");
+                    .WithMany(p => p.EvaluacionCompetenciasUniversales)
+                    .HasForeignKey(d => d.IdDestreza)
+                    .HasConstraintName("RefDestreza68");
 
                 entity.HasOne(d => d.FrecuenciaAplicacion)
-                    .WithMany(p => p.EvaluacionCompetenciasUniversalesDetalle)
-                    .HasForeignKey(d => d.IdFrecuenciaAplicacion);
+                    .WithMany(p => p.EvaluacionCompetenciasUniversales)
+                    .HasForeignKey(d => d.IdFrecuenciaAplicacion)
+                    .HasConstraintName("RefFrecuenciaAplicacion70");
 
                 entity.HasOne(d => d.Relevancia)
-                    .WithMany(p => p.EvaluacionCompetenciasUniversalesDetalle)
-                    .HasForeignKey(d => d.IdRelevancia);
+                    .WithMany(p => p.EvaluacionCompetenciasUniversales)
+                    .HasForeignKey(d => d.IdRelevancia)
+                    .HasConstraintName("RefRelevancia69");
             });
 
-            modelBuilder.Entity<EvaluacionCompetenciasUniversalesFactor>(entity =>
-            {
-                entity.HasKey(e => e.IdEvaluacionCompetenciasUniversalesFactor)
-                    .HasName("PK_EvaluacionCompetenciasUniversalesFactor");
 
-                entity.HasIndex(e => e.IdEvaluacionCompetenciasUniversales)
-                    .HasName("IX_EvaluacionCompetenciasUniversalesFactor_IdEvaluacionCompetenciasUniversales");
-
-                entity.HasIndex(e => e.IdFactor)
-                    .HasName("IX_EvaluacionCompetenciasUniversalesFactor_IdFactor");
-
-                entity.HasOne(d => d.EvaluacionCompetenciasUniversales)
-                    .WithMany(p => p.EvaluacionCompetenciasUniversalesFactor)
-                    .HasForeignKey(d => d.IdEvaluacionCompetenciasUniversales)
-                    .HasConstraintName("FK_EvaluacionCompetenciasUniversalesFactor_EvaluacionCompetenciasUniversales_IdEvaCompUnives");
-
-                entity.HasOne(d => d.Factor)
-                    .WithMany(p => p.EvaluacionCompetenciasUniversalesFactor)
-                    .HasForeignKey(d => d.IdFactor)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
 
             modelBuilder.Entity<EvaluacionConocimiento>(entity =>
             {
                 entity.HasKey(e => e.IdEvaluacionConocimiento)
-                    .HasName("PK_EvaluacionConocimiento");
-
-                entity.Property(e => e.Nombre)
-                    .IsRequired()
-                    .HasMaxLength(50);
-            });
-
-            modelBuilder.Entity<EvaluacionConocimientoDetalle>(entity =>
-            {
-                entity.HasKey(e => e.IdEvaluacionConocimientoDetalle)
-                    .HasName("PK_EvaluacionConocimientoDetalle");
-
-                entity.HasIndex(e => e.IdEvaluacionConocimiento)
-                    .HasName("IX_EvaluacionConocimientoDetalle_IdEvaluacionConocimiento");
+                    .HasName("PK36");
 
                 entity.HasIndex(e => e.IdNivelConocimiento)
-                    .HasName("IX_EvaluacionConocimientoDetalle_IdNivelConocimiento");
-
-                entity.HasOne(d => d.EvaluacionConocimiento)
-                    .WithMany(p => p.EvaluacionConocimientoDetalle)
-                    .HasForeignKey(d => d.IdEvaluacionConocimiento)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasName("Ref3759");
 
                 entity.HasOne(d => d.NivelConocimiento)
-                    .WithMany(p => p.EvaluacionConocimientoDetalle)
-                    .HasForeignKey(d => d.IdNivelConocimiento);
+                    .WithMany(p => p.EvaluacionConocimiento)
+                    .HasForeignKey(d => d.IdNivelConocimiento)
+                    .HasConstraintName("RefNivelConocimiento59");
             });
 
-            modelBuilder.Entity<EvaluacionConocimientoFactor>(entity =>
-            {
-                entity.HasKey(e => e.IdEvaluacionConocimientoFactor)
-                    .HasName("PK_EvaluacionConocimientoFactor");
-
-                entity.HasIndex(e => e.IdEvaluacionConocimiento)
-                    .HasName("IX_EvaluacionConocimientoFactor_IdEvaluacionConocimiento");
-
-                entity.HasIndex(e => e.IdFactor)
-                    .HasName("IX_EvaluacionConocimientoFactor_IdFactor");
-
-                entity.HasOne(d => d.EvaluacionConocimiento)
-                    .WithMany(p => p.EvaluacionConocimientoFactor)
-                    .HasForeignKey(d => d.IdEvaluacionConocimiento);
-
-                entity.HasOne(d => d.Factor)
-                    .WithMany(p => p.EvaluacionConocimientoFactor)
-                    .HasForeignKey(d => d.IdFactor)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
 
             modelBuilder.Entity<EvaluacionInducion>(entity =>
             {
@@ -2278,73 +2129,24 @@ namespace bd.swth.datos
             modelBuilder.Entity<EvaluacionTrabajoEquipoIniciativaLiderazgo>(entity =>
             {
                 entity.HasKey(e => e.IdEvaluacionTrabajoEquipoIniciativaLiderazgo)
-                    .HasName("PK_EvaluacionTrabajoEquipoIniciativaLiderazgo");
-
-                entity.Property(e => e.Nombre)
-                    .IsRequired()
-                    .HasMaxLength(20);
-
-                entity.Property(e => e.ObservacionesJefeInmediato).IsRequired();
-            });
-
-            modelBuilder.Entity<EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle>(entity =>
-            {
-                entity.HasKey(e => e.IdEvaluacionTrabajoEquipoIniciativaLiderazgoDetalle)
-                    .HasName("PK_EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle");
-
-                entity.HasIndex(e => e.IdEvaluacionTrabajoEquipoIniciativaLiderazgo)
-                    .HasName("IX_EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle_IdEvaluacionTrabajoEquipoIniciativaLiderazgo");
+                    .HasName("PK47");
 
                 entity.HasIndex(e => e.IdFrecuenciaAplicacion)
-                    .HasName("IX_EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle_IdFrecuenciaAplicacion");
+                    .HasName("Ref4574");
 
                 entity.HasIndex(e => e.IdRelevancia)
-                    .HasName("IX_EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle_IdRelevancia");
-
-                entity.HasIndex(e => e.IdTrabajoEquipoIniciativaLiderazgo)
-                    .HasName("IX_EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle_IdTrabajoEquipoIniciativaLiderazgo");
-
-                entity.HasOne(d => d.EvaluacionTrabajoEquipoIniciativaLiderazgo)
-                    .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle)
-                    .HasForeignKey(d => d.IdEvaluacionTrabajoEquipoIniciativaLiderazgo)
-                    .HasConstraintName("FK_EvaluacionTrabajoEquIniLidDetall_EvalTrabEquiIniLid_IdEvaluacionTrabajoEquipoIniciativaLiderazgo");
+                    .HasName("Ref4173");
 
                 entity.HasOne(d => d.FrecuenciaAplicacion)
-                    .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle)
-                    .HasForeignKey(d => d.IdFrecuenciaAplicacion);
+                    .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgo)
+                    .HasForeignKey(d => d.IdFrecuenciaAplicacion)
+                    .HasConstraintName("RefFrecuenciaAplicacion74");
 
                 entity.HasOne(d => d.Relevancia)
-                    .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle)
-                    .HasForeignKey(d => d.IdRelevancia);
-
-                entity.HasOne(d => d.TrabajoEquipoIniciativaLiderazgo)
-                    .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgoDetalle)
-                    .HasForeignKey(d => d.IdTrabajoEquipoIniciativaLiderazgo);
+                    .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgo)
+                    .HasForeignKey(d => d.IdRelevancia)
+                    .HasConstraintName("RefRelevancia73");
             });
-
-            modelBuilder.Entity<EvaluacionTrabajoEquipoIniciativaLiderazgoFactor>(entity =>
-            {
-                entity.HasKey(e => e.IdEvalTjoEquiInicLidFac)
-                    .HasName("PK_EvaluacionTrabajoEquipoIniciativaLiderazgoFactor");
-
-                entity.HasIndex(e => e.IdEvaluacionTrabajoEquipoIniciativaLiderazgo)
-                    .HasName("IX_EvaluacionTrabajoEquipoIniciativaLiderazgoFactor_IdEvaluacionTrabajoEquipoIniciativaLiderazgo");
-
-                entity.HasIndex(e => e.IdFactor)
-                    .HasName("IX_EvaluacionTrabajoEquipoIniciativaLiderazgoFactor_IdFactor");
-
-                entity.HasOne(d => d.EvaluacionTrabajoEquipoIniciativaLiderazgo)
-                    .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgoFactor)
-                    .HasForeignKey(d => d.IdEvaluacionTrabajoEquipoIniciativaLiderazgo)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_EvalTrabEqIniLidFac_EvaTrabEquiIniLid_IdEvaluacionTrabajoEquipoIniciativaLiderazgo");
-
-                entity.HasOne(d => d.Factor)
-                    .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgoFactor)
-                    .HasForeignKey(d => d.IdFactor)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
-
             modelBuilder.Entity<Evaluador>(entity =>
             {
                 entity.HasKey(e => e.IdEvaluador)
@@ -3505,33 +3307,6 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<PlanGestionCambio>(entity =>
-            {
-                entity.HasKey(e => e.IdPlanGestionCambio)
-                    .HasName("PK_PlanGestionCambio");
-
-                entity.HasIndex(e => e.RealizadoPor)
-                    .HasName("IX_PlanGestionCambio_EmpleadoIdRealizadoPor");
-
-                entity.HasIndex(e => e.AprobadoPor)
-                   .HasName("IX_PlanGestionCambio_EmpleadoIdAprobadoPor");
-
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasMaxLength(500);
-
-                entity.Property(e => e.Titulo)
-                    .IsRequired()
-                    .HasMaxLength(20);
-
-                entity.HasOne(d => d.EmpleadoAprobadoPor)
-                    .WithMany(p => p.PlanGestionCambio)
-                    .HasForeignKey(d => d.AprobadoPor);
-
-                entity.HasOne(d => d.EmpleadoRealizadoPor)
-                   .WithMany(p => p.PlanGestionCambio1)
-                   .HasForeignKey(d => d.RealizadoPor);
-            });
 
             modelBuilder.Entity<PlanificacionHE>(entity =>
             {

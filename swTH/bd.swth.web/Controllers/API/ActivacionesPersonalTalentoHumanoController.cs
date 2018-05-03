@@ -37,19 +37,26 @@ namespace bd.swth.web.Controllers.API
 
         // MÉTODOS PÚBLICOS
 
-        // GET: api/ActivacionesPersonalTalentoHumano
-        [HttpGet]
+        // POST: api/ActivacionesPersonalTalentoHumano
+        [HttpPost]
         [Route("GetListDependenciasByFiscalYearActual")]
-        public async Task<List<ActivarPersonalTalentoHumanoViewModel>> GetListDependenciasByFiscalYearActual()
+        public async Task<List<ActivarPersonalTalentoHumanoViewModel>> GetListDependenciasByFiscalYearActual(UsuarioViewModel usuario)
         {
 
             List<ActivarPersonalTalentoHumanoViewModel> listaResultado = new List<ActivarPersonalTalentoHumanoViewModel>();
-
-
-
+            
             try
             {
-                var listaDependencias = await db.Dependencia.OrderBy(x => x.IdDependencia).ToListAsync();
+
+                var empleadoActual = db.Empleado.Include(d => d.Dependencia)
+                    .Where(x => x.NombreUsuario == usuario.NombreUsuarioActual)
+                    .FirstOrDefault()
+                ;
+
+
+                var listaDependencias = await db.Dependencia
+                    .Where(w=>w.IdSucursal == empleadoActual.Dependencia.IdSucursal)
+                    .OrderBy(x => x.IdDependencia).ToListAsync();
 
                 var listaDependenciasEnviadasCorreoThisYear = await ListarActivarPersonalTalentoHumanoYearActual();
 
@@ -88,9 +95,7 @@ namespace bd.swth.web.Controllers.API
                             j = listaDependenciasEnviadasCorreoThisYear.Count + 1;
                         }
                     }
-
-
-
+                    
                     listaResultado.Add(model);
                 }
                 return listaResultado;
@@ -145,7 +150,7 @@ namespace bd.swth.web.Controllers.API
         // POST: api/ActivacionesPersonalTalentoHumano
         [HttpPost]
         [Route("InsertarActivacionesPersonalTalentoHumano")]
-        public async Task<Response> InsertarActivacionesPersonalTalentoHumano([FromBody] ListaActivarPersonalTalentoHumanoViewModel listaRecibida)
+        public async Task<Response> InsertarActivacionesPersonalTalentoHumano([FromBody]ListaActivarPersonalTalentoHumanoViewModel listaRecibida)
         {
             using (var transaction = db.Database.BeginTransaction())
             {

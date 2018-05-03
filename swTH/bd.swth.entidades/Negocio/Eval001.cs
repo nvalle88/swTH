@@ -76,6 +76,6 @@ namespace bd.swth.entidades.Negocio
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int IdEvaluador { get; set; }
         public virtual Evaluador Evaluador { get; set; }
-  
+
     }
 }

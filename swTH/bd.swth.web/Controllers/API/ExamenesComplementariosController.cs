@@ -14,6 +14,7 @@ using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
 using bd.webappth.entidades.ObjectTransfer;
 using bd.swth.servicios.Interfaces;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -365,10 +366,7 @@ namespace bd.swth.web.Controllers.API
 
 
         }
-
-
-
-
+        
 
 
         // Post: api/ExamenesComplementarios
@@ -447,16 +445,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -567,6 +556,86 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        // POST: api/ExamenesComplementarios
+        [HttpPost]
+        [Route("CrearFicheroOdontologicoPdf")]
+        public async Task<Response> CrearFicheroOdontologicoPdf([FromBody] FichaOdontologicaViewModel fichaOdontologicaViewModel)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = ""
+                    };
+                }
+                
+
+                /* Crear nuevo fichero */
+
+                var id = fichaOdontologicaViewModel.IdPersona;
+
+                var respuestaFile = uploadFileService.DeleteFile("FichasOdontologicasDocumentos", Convert.ToString(id), ".pdf");
+
+                var estado = await uploadFileService.UploadFile(fichaOdontologicaViewModel.Fichero, "FichasOdontologicasDocumentos", Convert.ToString(id), ".pdf");
+
+                var url = "FichasOdontologicasDocumentos" + Convert.ToString(id) + ".pdf";
+                
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                
+                
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+
+
+        }
+
+
+
+        // GET: api/ExamenesComplementarios/5
+        [HttpPost]
+        [Route("ObtenerFichaOdontologica")]
+        public async Task<Response> ObtenerFichaOdontologica([FromBody] FichaOdontologicaViewModel fichaOdontologicaViewModel)
+        {
+
+            try
+            {
+                var respuestaFile = uploadFileService.GetFile("FichasOdontologicasDocumentos", Convert.ToString(fichaOdontologicaViewModel.IdPersona), ".pdf");
+                
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Resultado = respuestaFile,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
 
 
     }

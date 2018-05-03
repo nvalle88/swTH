@@ -10,6 +10,9 @@ using bd.swth.servicios.Interfaces;
 using bd.swth.servicios.Servicios;
 using bd.swth.entidades.Constantes;
 using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web
 {
@@ -76,6 +79,12 @@ namespace bd.swth.web
             // Configuración Constantes Estado Inducción
             ConstantesEstadoInduccion.InduccionFinalizada = Configuration.GetSection("InduccionFinalizada").Value;
             ConstantesEstadoInduccion.InduccionNoFinalizada = Configuration.GetSection("InduccionNoFinalizada").Value;
+
+            // Configuración Constantes Estado Gestión Cambio
+            Constantes.ListaEstadosGestionCambio = JsonConvert.DeserializeObject<List<EstadoActividadGestionCambioViewModel>>(Configuration.GetSection("ListaEstadosGestionCambio").Value);
+
+            // Configuración Estados Aprobación Movimiento Interno
+            ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno = JsonConvert.DeserializeObject<List<AprobacionMovimientoInternoViewModel>>(Configuration.GetSection("ListaEstadosAprobacionMovimientoInterno").Value);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

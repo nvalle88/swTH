@@ -9,26 +9,18 @@ namespace bd.swth.entidades.Negocio
     {
         [Key]
         public int IdActividadesGestionCambio { get; set; }
-        
+        public int IdDependencia { get; set; }
+        public int IdEmpleado { get; set; }
+        public int EstadoActividadesGestionCambio { get; set; }
+        public string Tarea { get; set; }
         public DateTime FechaInicio { get; set; }
-        
         public DateTime FechaFin { get; set; }
+        public int Avance { get; set; }
+        public string Observaciones { get; set; }
 
-        public int Indicador { get; set; }
-        
-        public bool Porciento { get; set; }
-
-        public string Descripcion { get; set; }
-
-
-        //Propiedades Virtuales Referencias a otras clases
-
-        public int IdPlanGestionCambio { get; set; }
-        public virtual PlanGestionCambio PlanGestionCambio { get; set; }
+        public virtual Dependencia Dependencia { get; set; }
+        public virtual Empleado Empleado { get; set; }
 
 
-        public virtual ICollection<AvanceGestionCambio> AvanceGestionCambio { get; set; }
-
-        
     }
 }

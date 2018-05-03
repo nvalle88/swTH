@@ -11,6 +11,8 @@ using bd.swth.entidades.Utils;
 using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
+using bd.swth.entidades.ViewModels;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -192,13 +194,19 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/BasesDatos
+        // POST: api/AccionesPersonal
         [HttpPost]
         [Route("InsertarAccionPersonal")]
-        public async Task<Response> PostAccionPersonal([FromBody] AccionPersonal AccionPersonal)
+        public async Task<Response> InsertarAccionPersonal([FromBody] AccionPersonal AccionPersonal)
         {
             try
             {
+
+                var empleado = db.Empleado.Include(ie=>ie.Persona)
+                    .Where(w=>w.IdEmpleado == AccionPersonal.IdEmpleado)
+                    .FirstOrDefault()
+                ;
+
                 if (!ModelState.IsValid)
                 {
                     return new Response
@@ -209,36 +217,30 @@ namespace bd.swth.web.Controllers.API
                 }
 
                 var respuesta = Existe(AccionPersonal);
+
                 if (!respuesta.IsSuccess)
                 {
                     db.AccionPersonal.Add(AccionPersonal);
                     await db.SaveChangesAsync();
+
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = Mensaje.Satisfactorio,
+                        Resultado = empleado.Persona.Identificacion
                     };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = empleado.Persona.Identificacion
                 };
 
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -302,9 +304,16 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(AccionPersonal AccionPersonal)
         {
-            var bdd = AccionPersonal.IdEmpleado;
-            var estadocivilrespuesta = db.AccionPersonal.Where(p => p.IdEmpleado == bdd).FirstOrDefault();
-            if (estadocivilrespuesta != null)
+            var registro = db.AccionPersonal
+                .Where(p => 
+                    p.IdEmpleado == AccionPersonal.IdEmpleado
+                    && p.Solicitud.ToString().ToUpper().TrimEnd().TrimStart() == AccionPersonal.Solicitud.ToString().ToUpper().TrimEnd().TrimStart()
+                && p.FechaRige == AccionPersonal.FechaRige
+                && p.IdTipoAccionPersonal == AccionPersonal.IdTipoAccionPersonal
+                )
+                .FirstOrDefault();
+
+            if (registro != null)
             {
                 return new Response
                 {
@@ -318,8 +327,473 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = estadocivilrespuesta,
+                Resultado = registro,
             };
         }
+
+
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("ListarAccionesPersonalPorEmpleado")]
+        public async Task<AccionesPersonalPorEmpleadoViewModel> ListarAccionesPersonalPorEmpleado([FromBody] AccionesPersonalPorEmpleadoViewModel accionesPersonalPorEmpleadoViewModel)
+        {
+            var modelo = new AccionesPersonalPorEmpleadoViewModel {
+                    ListaAccionPersonal = new List<AccionPersonalViewModel>(),
+                    DatosBasicosEmpleadoViewModel = new DatosBasicosEmpleadoViewModel()
+            };
+
+            try {
+
+                var empleadoActual = db.Empleado.Include(d => d.Dependencia)
+                    .Where(x => x.NombreUsuario == accionesPersonalPorEmpleadoViewModel.NombreUsuarioActual)
+                    .FirstOrDefault()
+                ;
+                
+                var datosEmpleado = db.Empleado
+                    .Include(me => me.Persona)
+                    .Include(md=>md.Dependencia)
+                        .Where(we => 
+                            we.Persona.Identificacion 
+                            == accionesPersonalPorEmpleadoViewModel.DatosBasicosEmpleadoViewModel.Identificacion
+                            && we.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal
+                            )
+                            .Select(se => new DatosBasicosEmpleadoViewModel
+                            {
+                                IdEmpleado = se.IdEmpleado,
+                                Nombres = se.Persona.Nombres + " " + se.Persona.Apellidos,
+
+                            }
+                        ).FirstOrDefault();
+
+                var ListaEstados = ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno;
+
+
+                var lista = await db.AccionPersonal.Include(map => map.TipoAccionPersonal)
+                    .Where(w => w.IdEmpleado == datosEmpleado.IdEmpleado)
+                    .Select(s => new AccionPersonalViewModel
+                    {
+                        IdAccionPersonal = s.IdAccionPersonal,
+                        Fecha = s.Fecha,
+                        Numero = s.Numero,
+                        Solicitud = s.Solicitud,
+                        Explicacion = s.Explicacion,
+                        FechaRige = s.FechaRige,
+                        FechaRigeHasta = s.FechaRigeHasta,
+                        NoDias = s.NoDias,
+                        Estado = s.Estado,
+                        EstadoDirector = (ListaEstados.Count > 0)
+                            ? 
+                                ListaEstados.Where(wle=>
+                                    wle.GrupoAprobacion == 0
+                                    && wle.ValorEstado == s.Estado
+                                ).FirstOrDefault().NombreEstado
+                            :"",
+                        EstadoValidacionTTHH = (ListaEstados.Count > 0)
+                            ?
+                                ListaEstados.Where(wle =>
+                                    wle.GrupoAprobacion == 1
+                                    && wle.ValorEstado == s.Estado
+                                ).FirstOrDefault().NombreEstado
+                            : "",
+
+
+                        TipoAccionPersonalViewModel = db.TipoAccionPersonal
+                            .Where(tapw => tapw.IdTipoAccionPersonal == s.IdTipoAccionPersonal)
+                            .Select(st => new TipoAccionesPersonalViewModel
+                                {
+                                    IdTipoAccionPersonal = st.IdTipoAccionPersonal,
+                                    Nombre = st.Nombre,
+                                    NDiasMinimo = st.NDiasMinimo,
+                                    NDiasMaximo = st.NDiasMaximo,
+                                    NHorasMinimo = st.NHorasMinimo,
+                                    NHorasMaximo = st.NHorasMaximo,
+                                    DiasHabiles = st.DiasHabiles,
+                                    ImputableVacaciones = st.ImputableVacaciones,
+                                    ProcesoNomina = st.ProcesoNomina,
+                                    EsResponsableTH = st.EsResponsableTH,
+                                    Matriz = st.Matriz,
+                                    Descripcion = st.Descripcion,
+                                    GeneraAccionPersonal = st.GeneraAccionPersonal,
+                                    ModificaDistributivo = st.ModificaDistributivo,
+                                    IdEstadoTipoAccionPersonal = st.IdEstadoTipoAccionPersonal
+
+                                }
+                            )
+                            .FirstOrDefault()
+                    }
+
+                    ).ToListAsync();
+
+                modelo.DatosBasicosEmpleadoViewModel = datosEmpleado;
+                modelo.ListaAccionPersonal = lista;
+
+                return modelo;
+
+
+            } catch (Exception ex) {
+                return modelo;
+            }
+        }
+
+
+        // GET: api/AccionesPersonal
+        [HttpGet]
+        [Route("ListarEstadosAprobacionTTHH")]
+        public async Task<List<AprobacionMovimientoInternoViewModel>> ListarEstadosAprobacionTTHH() {
+
+            try {
+                var lista = ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno.Where(w=>w.GrupoAprobacion == 1).ToList();
+
+                return lista;
+
+            } catch(Exception){
+                return new List<AprobacionMovimientoInternoViewModel>();
+            }
+        }
+
+
+        // GET: api/AccionesPersonal
+        [HttpGet]
+        [Route("ListarEstadosAprobacion")]
+        public async Task<List<AprobacionMovimientoInternoViewModel>> ListarEstadosAprobacion()
+        {
+
+            try
+            {
+                var lista = ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno.Where(w => w.GrupoAprobacion == 0).ToList();
+
+                return lista;
+
+            }
+            catch (Exception)
+            {
+                return new List<AprobacionMovimientoInternoViewModel>();
+            }
+        }
+
+
+        // POST: api/AccionesPersonal
+        /// <summary>
+        /// Necesario: IdAccionPersonal
+        /// </summary>
+        /// <param name="accionPersonalViewModel"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("ObtenerAccionPersonalViewModel")]
+        public async Task<Response> ObtenerAccionPersonalViewModel([FromBody] AccionPersonalViewModel accionPersonalViewModel) {
+            try
+            {
+
+                var modelo = db.AccionPersonal
+                    .Where(w => w.IdAccionPersonal == accionPersonalViewModel.IdAccionPersonal)
+                    .Select( s=> new AccionPersonalViewModel
+                        {
+                            IdAccionPersonal = s.IdAccionPersonal,
+                            Solicitud = s.Solicitud,
+                            Estado = s.Estado,
+                            Explicacion = s.Explicacion,
+                            Fecha = s.Fecha,
+                            FechaRige = s.FechaRige,
+                            FechaRigeHasta = s.FechaRigeHasta,
+                            NoDias = s.NoDias,
+                            Numero = s.Numero,
+                            
+
+                        TipoAccionPersonalViewModel = db.TipoAccionPersonal
+                            .Where(tapw => tapw.IdTipoAccionPersonal == s.IdTipoAccionPersonal)
+                            .Select(st => new TipoAccionesPersonalViewModel
+                            {
+                                IdTipoAccionPersonal = st.IdTipoAccionPersonal,
+                                Nombre = st.Nombre,
+                                NDiasMinimo = st.NDiasMinimo,
+                                NDiasMaximo = st.NDiasMaximo,
+                                NHorasMinimo = st.NHorasMinimo,
+                                NHorasMaximo = st.NHorasMaximo,
+                                DiasHabiles = st.DiasHabiles,
+                                ImputableVacaciones = st.ImputableVacaciones,
+                                ProcesoNomina = st.ProcesoNomina,
+                                EsResponsableTH = st.EsResponsableTH,
+                                Matriz = st.Matriz,
+                                Descripcion = st.Descripcion,
+                                GeneraAccionPersonal = st.GeneraAccionPersonal,
+                                ModificaDistributivo = st.ModificaDistributivo,
+                                IdEstadoTipoAccionPersonal = st.IdEstadoTipoAccionPersonal
+
+                            }
+                            )
+                            .FirstOrDefault(),
+
+                            DatosBasicosEmpleadoViewModel = db.Empleado
+                                   .Where(e => e.IdEmpleado == s.IdEmpleado)
+                                   .Select(x => new DatosBasicosEmpleadoViewModel
+                                   {
+
+                                       FechaNacimiento = x.Persona.FechaNacimiento.Value.Date,
+                                       IdSexo = Convert.ToInt32(x.Persona.IdSexo),
+                                       IdTipoIdentificacion = Convert.ToInt32(x.Persona.IdTipoIdentificacion),
+                                       IdEstadoCivil = Convert.ToInt32(x.Persona.IdEstadoCivil),
+                                       IdGenero = Convert.ToInt32(x.Persona.IdGenero),
+                                       IdNacionalidad = Convert.ToInt32(x.Persona.IdNacionalidad),
+                                       IdTipoSangre = Convert.ToInt32(x.Persona.IdTipoSangre),
+                                       IdEtnia = Convert.ToInt32(x.Persona.IdEtnia),
+                                       Identificacion = x.Persona.Identificacion,
+                                       Nombres = x.Persona.Nombres,
+                                       Apellidos = x.Persona.Apellidos,
+                                       TelefonoPrivado = x.Persona.TelefonoPrivado,
+                                       TelefonoCasa = x.Persona.TelefonoCasa,
+                                       CorreoPrivado = x.Persona.CorreoPrivado,
+                                       LugarTrabajo = x.Persona.LugarTrabajo,
+                                       IdNacionalidadIndigena = x.Persona.IdNacionalidadIndigena,
+                                       CallePrincipal = x.Persona.CallePrincipal,
+                                       CalleSecundaria = x.Persona.CalleSecundaria,
+                                       Referencia = x.Persona.Referencia,
+                                       Numero = x.Persona.Numero,
+                                       IdParroquia = Convert.ToInt32(x.Persona.IdParroquia),
+                                       Ocupacion = x.Persona.Ocupacion,
+                                       IdEmpleado = x.IdEmpleado,
+                                       IdProvinciaLugarSufragio = Convert.ToInt32(x.IdProvinciaLugarSufragio),
+                                       IdPaisLugarNacimiento = x.CiudadNacimiento.Provincia.Pais.IdPais,
+                                       IdCiudadLugarNacimiento = x.IdCiudadLugarNacimiento,
+                                       IdPaisLugarSufragio = x.ProvinciaSufragio.Pais.IdPais,
+                                       IdPaisLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
+                                       IdCiudadLugarPersona = x.Persona.Parroquia.Ciudad.IdCiudad,
+                                       IdProvinciaLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
+
+                                   }
+                                   ).FirstOrDefault()
+
+                            }
+                    )
+                    .FirstOrDefault();
+
+
+
+                return new Response {
+                    IsSuccess = true,
+                    Resultado = modelo
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion +" "+ ex
+                };
+            }
+        }
+
+
+
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("EditarAccionPersonalTTHH")]
+        public async Task<Response> EditarAccionPersonalTTHH([FromBody] AccionPersonal accionPersonal)
+        {
+            try {
+
+                var empleado = await db.Empleado.Include(ie=>ie.Persona)
+                    .Where(w=>w.IdEmpleado == accionPersonal.IdEmpleado)
+                    .FirstOrDefaultAsync()
+                    ;
+
+                var accionPersonalActualizar = await db.AccionPersonal
+                    .Where(w => w.IdAccionPersonal == accionPersonal.IdAccionPersonal).FirstOrDefaultAsync();
+
+                var coincidencia = await db.AccionPersonal
+                    .Where(w => 
+                            w.IdEmpleado == accionPersonal.IdEmpleado
+                            && w.Solicitud.ToString().ToUpper().TrimEnd().TrimStart() == accionPersonal.Solicitud.ToString().ToUpper().TrimEnd().TrimStart()
+                            && w.Fecha == accionPersonal.Fecha
+                            && w.IdTipoAccionPersonal == accionPersonal.IdTipoAccionPersonal
+                        )
+                    .FirstOrDefaultAsync();
+
+                if (
+                        coincidencia != null && coincidencia.IdAccionPersonal == accionPersonal.IdAccionPersonal ||
+                        coincidencia == null && accionPersonalActualizar!= null
+                    ) {
+
+                    accionPersonalActualizar.IdEmpleado = accionPersonal.IdEmpleado;
+                    accionPersonalActualizar.IdTipoAccionPersonal = accionPersonal.IdTipoAccionPersonal;
+                    accionPersonalActualizar.Fecha = accionPersonal.Fecha;
+                    accionPersonalActualizar.Numero = accionPersonal.Numero;
+                    accionPersonalActualizar.Solicitud = accionPersonal.Solicitud;
+                    accionPersonalActualizar.Explicacion = accionPersonal.Explicacion;
+                    accionPersonalActualizar.FechaRige = accionPersonal.FechaRige;
+                    accionPersonalActualizar.FechaRigeHasta = accionPersonal.FechaRigeHasta;
+                    accionPersonalActualizar.NoDias = accionPersonal.NoDias;
+                    accionPersonalActualizar.Estado = accionPersonal.Estado;
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                        Resultado = empleado.Persona.Identificacion
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = empleado.Persona.Identificacion
+                };
+
+            } catch (Exception ex) {
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion +" "+ ex,
+                };
+            }
+        }
+
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("EditarAccionPersonal")]
+        public async Task<Response> EditarAccionPersonal([FromBody] AccionPersonal accionPersonal)
+        {
+            try
+            {
+
+                var empleado = await db.Empleado.Include(ie => ie.Persona)
+                    .Where(w => w.IdEmpleado == accionPersonal.IdEmpleado)
+                    .FirstOrDefaultAsync()
+                    ;
+
+                var accionPersonalActualizar = await db.AccionPersonal
+                    .Where(w => w.IdAccionPersonal == accionPersonal.IdAccionPersonal).FirstOrDefaultAsync();
+
+                
+
+                if (
+                        accionPersonalActualizar != null
+                    )
+                {
+                    
+                    accionPersonalActualizar.Estado = accionPersonal.Estado;
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                        Resultado = empleado.Persona.Identificacion
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro,
+                    Resultado = empleado.Persona.Identificacion
+                };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion + " " + ex,
+                };
+            }
+        }
+
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("ListarEmpleadosConAccionPersonal")]
+        public async Task<List<AccionPersonalViewModel>> ListarEmpleadosConAccionPersonal([FromBody] AccionesPersonalPorEmpleadoViewModel accionesPersonalPorEmpleadoViewModel)
+        {
+
+            try {
+
+                var empleadoActual = db.Empleado.Include(d => d.Dependencia)
+                    .Where(x => x.NombreUsuario == accionesPersonalPorEmpleadoViewModel.NombreUsuarioActual)
+                    .FirstOrDefault()
+                ;
+
+                var ListaEstados = ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno;
+
+                var lista = await db.AccionPersonal
+                    .Where(w => w.Empleado.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal)
+                    .Select(s=> new AccionPersonalViewModel
+                        {
+                            DatosBasicosEmpleadoViewModel = new DatosBasicosEmpleadoViewModel {
+                                Nombres = s.Empleado.Persona.Nombres + " " + s.Empleado.Persona.Apellidos,
+                                Identificacion = s.Empleado.Persona.Identificacion
+                            },
+                            
+
+                            TipoAccionPersonalViewModel = db.TipoAccionPersonal
+                                .Where(tapw => tapw.IdTipoAccionPersonal == s.IdTipoAccionPersonal)
+                                .Select(st => new TipoAccionesPersonalViewModel
+                                {
+                                    IdTipoAccionPersonal = st.IdTipoAccionPersonal,
+                                    Nombre = st.Nombre,
+                                    NDiasMinimo = st.NDiasMinimo,
+                                    NDiasMaximo = st.NDiasMaximo,
+                                    NHorasMinimo = st.NHorasMinimo,
+                                    NHorasMaximo = st.NHorasMaximo,
+                                    DiasHabiles = st.DiasHabiles,
+                                    ImputableVacaciones = st.ImputableVacaciones,
+                                    ProcesoNomina = st.ProcesoNomina,
+                                    EsResponsableTH = st.EsResponsableTH,
+                                    Matriz = st.Matriz,
+                                    Descripcion = st.Descripcion,
+                                    GeneraAccionPersonal = st.GeneraAccionPersonal,
+                                    ModificaDistributivo = st.ModificaDistributivo,
+                                    IdEstadoTipoAccionPersonal = st.IdEstadoTipoAccionPersonal
+
+                                }
+                                )
+                                .FirstOrDefault(),
+
+                            IdAccionPersonal = s.IdAccionPersonal,
+                            Estado = s.Estado,
+                            Explicacion = s.Explicacion,
+                            Fecha = s.Fecha,
+                            FechaRige = s.FechaRige,
+                            FechaRigeHasta = s.FechaRigeHasta,
+                            NoDias = s.NoDias,
+                            Numero = s.Numero,
+                            Solicitud = s.Solicitud,
+
+                        EstadoDirector = (ListaEstados.Count > 0)
+                            ?
+                                ListaEstados.Where(wle =>
+                                    wle.GrupoAprobacion == 0
+                                    && wle.ValorEstado == s.Estado
+                                ).FirstOrDefault().NombreEstado
+                            : "",
+
+                        EstadoValidacionTTHH = (ListaEstados.Count > 0)
+                            ?
+                                ListaEstados.Where(wle =>
+                                    wle.GrupoAprobacion == 1
+                                    && wle.ValorEstado == s.Estado
+                                ).FirstOrDefault().NombreEstado
+                            : ""
+
+
+                    }
+                    )
+                    .ToListAsync();
+
+                return lista;
+
+            }
+            catch (Exception ex)
+            {
+
+                return new List<AccionPersonalViewModel>();
+            }
+        }
+
+
     }
 }
