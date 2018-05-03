@@ -185,23 +185,13 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                if (ex.InnerException.InnerException.Message.Contains("FK"))
-                {
+             
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.BorradoNoSatisfactorio,
                     };
-                }
-                else
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = ex.InnerException.InnerException.Message,
-                    };
-                }
-
+               
             }
         }
 
