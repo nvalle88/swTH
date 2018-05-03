@@ -86,7 +86,7 @@ namespace bd.swth.web.Controllers.API
                                                     IdNivel = Convert.ToInt32(t.rt.IdNivel),
                                                     NombreDenominacionCompetencia = t.rt.DenominacionCompetencia.Nombre,
                                                     NombreNivel = t.rt.Nivel.Nombre,
-
+                                                    
                                                 })
                                                 .ToListAsync();
 

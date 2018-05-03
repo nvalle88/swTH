@@ -819,14 +819,11 @@ namespace bd.swth.datos
             modelBuilder.Entity<AreaConocimiento>(entity =>
             {
                 entity.HasKey(e => e.IdAreaConocimiento)
-                    .HasName("PK_AreaConocimiento");
+                    .HasName("PK219");
 
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasMaxLength(100);
+                entity.Property(e => e.Descripcion).HasMaxLength(100);
             });
 
-           
 
             modelBuilder.Entity<BrigadaSSO>(entity =>
             {
@@ -2003,19 +2000,13 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdEvaluacionCompetenciasTecnicasPuesto)
                     .HasName("PK39");
 
-                entity.HasIndex(e => e.IdDestreza)
-                    .HasName("Ref4063");
-
                 entity.HasIndex(e => e.IdNivelDesarrollo)
                     .HasName("Ref4265");
 
-                entity.HasIndex(e => e.IdRelevancia)
-                    .HasName("Ref4164");
-
-                entity.HasOne(d => d.Destreza)
+                entity.HasOne(d => d.ComportamientoObservable)
                     .WithMany(p => p.EvaluacionCompetenciasTecnicasPuesto)
-                    .HasForeignKey(d => d.IdDestreza)
-                    .HasConstraintName("RefDestreza63");
+                    .HasForeignKey(d => d.IdComportamientoObservable)
+                    .HasConstraintName("FK_EvaluacionCompetenciasTecnicasPuesto_ComportamientoObservable");
 
                 entity.HasOne(d => d.Eval001)
                     .WithMany(p => p.EvaluacionCompetenciasTecnicasPuesto)
@@ -2026,43 +2017,30 @@ namespace bd.swth.datos
                     .WithMany(p => p.EvaluacionCompetenciasTecnicasPuesto)
                     .HasForeignKey(d => d.IdNivelDesarrollo)
                     .HasConstraintName("RefNivelDesarrollo65");
-
-                entity.HasOne(d => d.Relevancia)
-                    .WithMany(p => p.EvaluacionCompetenciasTecnicasPuesto)
-                    .HasForeignKey(d => d.IdRelevancia)
-                    .HasConstraintName("RefRelevancia64");
             });
-
-
 
             modelBuilder.Entity<EvaluacionCompetenciasUniversales>(entity =>
             {
                 entity.HasKey(e => e.IdEvaluacionCompetenciasUniversales)
                     .HasName("PK44");
 
-                entity.HasIndex(e => e.IdDestreza)
-                    .HasName("Ref4068");
-
                 entity.HasIndex(e => e.IdFrecuenciaAplicacion)
                     .HasName("Ref4570");
 
-                entity.HasIndex(e => e.IdRelevancia)
-                    .HasName("Ref4169");
-
-                entity.HasOne(d => d.Destreza)
+                entity.HasOne(d => d.ComportamientoObservable)
                     .WithMany(p => p.EvaluacionCompetenciasUniversales)
-                    .HasForeignKey(d => d.IdDestreza)
-                    .HasConstraintName("RefDestreza68");
+                    .HasForeignKey(d => d.IdComportamientoObservable)
+                    .HasConstraintName("FK_EvaluacionCompetenciasUniversales_ComportamientoObservable");
+
+                entity.HasOne(d => d.Eval001)
+                    .WithMany(p => p.EvaluacionCompetenciasUniversales)
+                    .HasForeignKey(d => d.IdEval001)
+                    .HasConstraintName("FK_EvaluacionCompetenciasUniversales_Eval001");
 
                 entity.HasOne(d => d.FrecuenciaAplicacion)
                     .WithMany(p => p.EvaluacionCompetenciasUniversales)
                     .HasForeignKey(d => d.IdFrecuenciaAplicacion)
                     .HasConstraintName("RefFrecuenciaAplicacion70");
-
-                entity.HasOne(d => d.Relevancia)
-                    .WithMany(p => p.EvaluacionCompetenciasUniversales)
-                    .HasForeignKey(d => d.IdRelevancia)
-                    .HasConstraintName("RefRelevancia69");
             });
 
 
@@ -2074,6 +2052,16 @@ namespace bd.swth.datos
 
                 entity.HasIndex(e => e.IdNivelConocimiento)
                     .HasName("Ref3759");
+
+                entity.HasOne(d => d.AreaConocimiento)
+                    .WithMany(p => p.EvaluacionConocimiento)
+                    .HasForeignKey(d => d.IdAreaConocimiento)
+                    .HasConstraintName("FK_EvaluacionConocimiento_AreaConocimiento");
+
+                entity.HasOne(d => d.Eval001)
+                    .WithMany(p => p.EvaluacionConocimiento)
+                    .HasForeignKey(d => d.IdEval001)
+                    .HasConstraintName("FK_EvaluacionConocimiento_Eval001");
 
                 entity.HasOne(d => d.NivelConocimiento)
                     .WithMany(p => p.EvaluacionConocimiento)

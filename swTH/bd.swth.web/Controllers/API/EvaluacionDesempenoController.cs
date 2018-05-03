@@ -171,33 +171,30 @@ namespace bd.swth.web.Controllers.API
             {
                 try
                 {
-
-                    var lista = new List<ViewModelEvaluador>();
-                    lista.Add(viewModelEvaluador);
-
-                    foreach (var item in lista)
+                    var listaEvaluador1 = new List<EvaluacionActividadesPuestoTrabajo>();
+                    var cont = 0;
+                    foreach (var item in viewModelEvaluador.ListaIndicadores)
                     {
                         var indicador = new Indicador
                         {
-                            Nombre = item.ListaIndicadores.FirstOrDefault()
+                            Nombre = item
 
                         };
                         var IndicadoresInsertarda = await db.Indicador.AddAsync(indicador);
                         await db.SaveChangesAsync();
 
-                        var evaluacionActividadesPuestoTrabajo = new EvaluacionActividadesPuestoTrabajo
-                        {
-                            IdIndicador = IndicadoresInsertarda.Entity.IdIndicador,
-                            MetaPeriodo = Convert.ToInt32(item.ListaMetaPeriodo.FirstOrDefault()),
-                            ActividadesCumplidas = Convert.ToInt32(item.ListaActividadescumplidos.FirstOrDefault()),
-                            IdActividadesEsenciales = Convert.ToInt32(item.ListaActividades.FirstOrDefault()),
-                            IdEval001 = viewModelEvaluador.IdEval001,
-                            DescripcionActividad = ""
-
-                        };
-                        await db.EvaluacionActividadesPuestoTrabajo.AddAsync(evaluacionActividadesPuestoTrabajo);
-                        await db.SaveChangesAsync();
+                        var evaluacionActividadesPuestoTrabajo = new EvaluacionActividadesPuestoTrabajo();
+                        evaluacionActividadesPuestoTrabajo.MetaPeriodo = Convert.ToInt32(viewModelEvaluador.ListaMetaPeriodo[cont]);
+                        evaluacionActividadesPuestoTrabajo.ActividadesCumplidas = Convert.ToInt32(viewModelEvaluador.ListaActividadescumplidos[cont]);
+                        evaluacionActividadesPuestoTrabajo.IdActividadesEsenciales = Convert.ToInt32(viewModelEvaluador.ListaActividades[cont]);
+                        evaluacionActividadesPuestoTrabajo.IdIndicador = IndicadoresInsertarda.Entity.IdIndicador;
+                        evaluacionActividadesPuestoTrabajo.IdEval001 = viewModelEvaluador.IdEval001;
+                        evaluacionActividadesPuestoTrabajo.DescripcionActividad = "";
+                        listaEvaluador1.Add(evaluacionActividadesPuestoTrabajo);
+                        cont++;
                     }
+                    await db.EvaluacionActividadesPuestoTrabajo.AddRangeAsync(listaEvaluador1);
+                    await db.SaveChangesAsync();
                     transaction.Commit();
                     return new Response
                     {
@@ -253,6 +250,127 @@ namespace bd.swth.web.Controllers.API
                         IsSuccess = false,
                         Message = Mensaje.Error
                     };
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+            }
+        }
+        [HttpPost]
+        [Route("InsertarConocimientos")]
+        public async Task<Response> InsertarConocimientos([FromBody] ViewModelEvaluador viewModelEvaluador)
+        {
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var listaEvaluador1 = new List<EvaluacionConocimiento>();
+                    var cont = 0;
+                    foreach (var item in viewModelEvaluador.ConocimientosEsenciales)
+                    {
+                        var evaluacionConocimiento = new EvaluacionConocimiento();
+                        evaluacionConocimiento.IdNivelConocimiento = Convert.ToInt32(item);
+                        evaluacionConocimiento.IdAreaConocimiento = Convert.ToInt32(viewModelEvaluador.IdAreaConocimiento[cont]);
+                        evaluacionConocimiento.IdEval001 = viewModelEvaluador.IdEval001;
+                        listaEvaluador1.Add(evaluacionConocimiento);
+                        cont++;
+
+                    }
+                    await db.EvaluacionConocimiento.AddRangeAsync(listaEvaluador1);
+                    await db.SaveChangesAsync();
+                    transaction.Commit();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+            }
+        }
+        [HttpPost]
+        [Route("InsertarCompetenciasTecnicas")]
+        public async Task<Response> InsertarCompetenciasTecnicas([FromBody] ViewModelEvaluador viewModelEvaluador)
+        {
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var listaEvaluador1 = new List<EvaluacionCompetenciasTecnicasPuesto>();
+                    var cont = 0;
+                    foreach (var item in viewModelEvaluador.IdComportamientoObervable)
+                    {
+                        var evaluacionCompetenciasTecnicasPuesto = new EvaluacionCompetenciasTecnicasPuesto();
+                        evaluacionCompetenciasTecnicasPuesto.IdComportamientoObservable = Convert.ToInt32(viewModelEvaluador.IdComportamientoObervable[cont]);
+                        evaluacionCompetenciasTecnicasPuesto.IdNivelDesarrollo = Convert.ToInt32(viewModelEvaluador.IdNivelDesarrollos[cont]);
+                        evaluacionCompetenciasTecnicasPuesto.IdEval001 = viewModelEvaluador.IdEval001;
+                        listaEvaluador1.Add(evaluacionCompetenciasTecnicasPuesto);
+                        cont++;
+                    }
+                    await db.EvaluacionCompetenciasTecnicasPuesto.AddRangeAsync(listaEvaluador1);
+                    await db.SaveChangesAsync();
+                    transaction.Commit();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+            }
+        }
+        [HttpPost]
+        [Route("InsertarCompetenciasUniversales")]
+        public async Task<Response> InsertarCompetenciasUniversales([FromBody] ViewModelEvaluador viewModelEvaluador)
+        {
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var listaEvaluador1 = new List<EvaluacionCompetenciasUniversales>();
+                    var cont = 0;
+                    foreach (var item in viewModelEvaluador.IdComportamientoObervable)
+                    {
+                        var evaluacionCompetenciasTecnicasPuesto = new EvaluacionCompetenciasUniversales();
+                        evaluacionCompetenciasTecnicasPuesto.IdComportamientoObservable = Convert.ToInt32(viewModelEvaluador.IdComportamientoObervable[cont]);
+                        evaluacionCompetenciasTecnicasPuesto.IdFrecuenciaAplicacion = Convert.ToInt32(viewModelEvaluador.IdNivelDesarrollos[cont]);
+                        evaluacionCompetenciasTecnicasPuesto.IdEval001 = viewModelEvaluador.IdEval001;
+                        listaEvaluador1.Add(evaluacionCompetenciasTecnicasPuesto);
+                        cont++;
+                    }
+                    await db.EvaluacionCompetenciasUniversales.AddRangeAsync(listaEvaluador1);
+                    await db.SaveChangesAsync();
+                    transaction.Commit();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+
                 }
                 catch (Exception ex)
                 {

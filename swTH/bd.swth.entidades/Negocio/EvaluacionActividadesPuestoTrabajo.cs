@@ -13,6 +13,7 @@ namespace bd.swth.entidades.Negocio
         public int ActividadesCumplidas { get; set; }
         public int IdActividadesEsenciales { get; set; }
         public int? IdEval001 { get; set; }
+        public int? Aumento { get; set; }
 
         public virtual ActividadesEsenciales ActividadesEsenciales { get; set; }
         public virtual Eval001 Eval001 { get; set; }
