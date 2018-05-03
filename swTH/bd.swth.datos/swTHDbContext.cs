@@ -24,6 +24,9 @@ namespace bd.swth.datos
         public virtual DbSet<ProcesoNomina> ProcesoNomina { get; set; }
         public virtual DbSet<TeconceptoNomina> TeconceptoNomina { get; set; }
         public virtual DbSet<TipoConjuntoNomina> TipoConjuntoNomina { get; set; }
+        public virtual DbSet<PeriodoNomina> PeriodoNomina { get; set; }
+        public virtual DbSet<SriNomina> SriNomina { get; set; }
+        public virtual DbSet<SriDetalle> SriDetalle { get; set; }
 
 
 
@@ -137,6 +140,7 @@ namespace bd.swth.datos
         public virtual DbSet<FormulasRMU> FormulasRMU { get; set; }
         public virtual DbSet<FrecuenciaAplicacion> FrecuenciaAplicacion { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.FlujoAprobacion> FlujoAprobacion { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ConstanteNomina> ConstanteNomina { get; set; }
         public virtual DbSet<GastoRubro> GastoRubro { get; set; }
         public virtual DbSet<Genero> Genero { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.GrupoOcupacional> GrupoOcupacional { get; set; }
@@ -276,7 +280,7 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.IdTeconcepto).HasColumnName("IdTEConcepto");
 
-                entity.HasOne(d => d.IdConceptoNavigation)
+                entity.HasOne(d => d.ConceptoNomina)
                     .WithMany(p => p.TeconceptoNomina)
                     .HasForeignKey(d => d.IdConcepto)
                     .OnDelete(DeleteBehavior.Restrict)
@@ -299,7 +303,7 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasColumnType("varchar(100)");
 
-                entity.HasOne(d => d.TipoConjunto)
+                entity.HasOne(d => d.TipoConjuntoNomina)
                     .WithMany(p => p.ConjuntoNomina)
                     .HasForeignKey(d => d.IdTipoConjunto)
                     .OnDelete(DeleteBehavior.Restrict)
@@ -331,13 +335,13 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdConjunto)
                     .HasName("Ref36");
 
-                entity.HasOne(d => d.Concepto)
+                entity.HasOne(d => d.ConceptoNomina)
                     .WithMany(p => p.ConceptoConjuntoNomina)
                     .HasForeignKey(d => d.IdConcepto)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("RefConceptoNomina7");
 
-                entity.HasOne(d => d.Conjunto)
+                entity.HasOne(d => d.ConjuntoNomina)
                     .WithMany(p => p.ConceptoConjuntoNomina)
                     .HasForeignKey(d => d.IdConjunto)
                     .OnDelete(DeleteBehavior.Restrict)
@@ -386,7 +390,7 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasColumnType("varchar(100)");
 
-                entity.HasOne(d => d.Proceso)
+                entity.HasOne(d => d.ProcesoNomina)
                     .WithMany(p => p.ConceptoNomina)
                     .HasForeignKey(d => d.IdProceso)
                     .OnDelete(DeleteBehavior.Restrict)

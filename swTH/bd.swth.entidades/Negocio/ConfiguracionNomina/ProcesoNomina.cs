@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace bd.swth.entidades.Negocio
 {
@@ -15,5 +14,6 @@ namespace bd.swth.entidades.Negocio
         public string Descripcion { get; set; }
 
         public virtual ICollection<ConceptoNomina> ConceptoNomina { get; set; }
+        public virtual ICollection<PeriodoNomina> PeriodoNomina { get; set; }
     }
 }

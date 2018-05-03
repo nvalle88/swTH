@@ -29,7 +29,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ConceptoNomina.Include(x => x.Proceso).ToListAsync();
+                return await db.ConceptoNomina.Include(x => x.ProcesoNomina).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -68,6 +68,51 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = false,
                     Message = Mensaje.Error,
+                };
+            }
+        }
+
+        [HttpPost]
+        [Route("EditarFormula")]
+        public async Task<Response> EditarFormula([FromBody] ConceptoNomina ConceptoNomina)
+        {
+            try
+            {
+                if (await Existe(ConceptoNomina))
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro,
+                    };
+                }
+
+                var ConceptoNominaActualizar = await db.ConceptoNomina.Where(x => x.IdConcepto == ConceptoNomina.IdConcepto).FirstOrDefaultAsync();
+                if (ConceptoNominaActualizar == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                    };
+
+                }
+
+                ConceptoNominaActualizar.FormulaCalculo = ConceptoNomina.FormulaCalculo;
+                db.ConceptoNomina.Update(ConceptoNominaActualizar);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Resultado = ConceptoNominaActualizar
+                };
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
                 };
             }
         }

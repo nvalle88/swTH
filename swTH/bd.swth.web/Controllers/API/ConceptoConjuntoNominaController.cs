@@ -24,15 +24,15 @@ namespace bd.swth.web.Controllers.API
         }
 
         // GET: api/BasesDatos
-        [HttpGet]
+        [HttpPost]
         [Route("ListarConceptoConjuntoNomina")]
-        public async Task<List<ConceptoConjuntoNomina>> ListarConceptoConjuntoNomina()
+        public async Task<List<ConceptoConjuntoNomina>> ListarConceptoConjuntoNomina([FromBody] ConceptoNomina conceptoNomina)
         {
             try
             {
-                return await db.ConceptoConjuntoNomina.Include(x=>x.Concepto).Include(x => x.Conjunto).ToListAsync();
+                return await db.ConceptoConjuntoNomina.Where(x=>x.IdConcepto==conceptoNomina.IdConcepto).Include(x=>x.ConceptoNomina).Include(x => x.ConjuntoNomina).ToListAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new List<ConceptoConjuntoNomina>();
             }

@@ -182,24 +182,15 @@ namespace bd.swth.web.Controllers.API
                     Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                if (ex.InnerException.InnerException.Message.Contains("FK"))
-                {
+                
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.BorradoNoSatisfactorio,
                     };
-                }
-                else
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = ex.InnerException.InnerException.Message,
-                    };
-                }
+              
                
             }
         }
