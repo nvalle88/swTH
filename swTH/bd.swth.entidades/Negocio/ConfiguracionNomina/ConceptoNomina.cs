@@ -25,6 +25,6 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<ConceptoConjuntoNomina> ConceptoConjuntoNomina { get; set; }
         public virtual ICollection<TeconceptoNomina> TeconceptoNomina { get; set; }
-        public virtual ProcesoNomina Proceso { get; set; }
+        public virtual ProcesoNomina ProcesoNomina { get; set; }
     }
 }

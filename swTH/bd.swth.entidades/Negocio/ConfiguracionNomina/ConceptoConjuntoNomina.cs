@@ -11,7 +11,7 @@ namespace bd.swth.entidades.Negocio
         public bool? Suma { get; set; }
         public bool? Resta { get; set; }
 
-        public virtual ConceptoNomina Concepto { get; set; }
-        public virtual ConjuntoNomina Conjunto { get; set; }
+        public virtual ConceptoNomina ConceptoNomina { get; set; }
+        public virtual ConjuntoNomina ConjuntoNomina { get; set; }
     }
 }

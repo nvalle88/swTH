@@ -16,6 +16,6 @@ namespace bd.swth.entidades.Negocio
         public string Descripcion { get; set; }
 
         public virtual ICollection<ConceptoConjuntoNomina> ConceptoConjuntoNomina { get; set; }
-        public virtual TipoConjuntoNomina TipoConjunto { get; set; }
+        public virtual TipoConjuntoNomina TipoConjuntoNomina { get; set; }
     }
 }

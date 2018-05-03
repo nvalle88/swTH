@@ -5,49 +5,47 @@ using System.Threading.Tasks;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.swth.entidades.Utils;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/ConjuntoNomina")]
-    public class ConjuntoNominaController : Controller
+    [Route("api/PeriodoNomina")]
+    public class PeriodoNominaController : Controller
     {
-        
         private readonly SwTHDbContext db;
 
-        public ConjuntoNominaController(SwTHDbContext db)
+        public PeriodoNominaController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarConjuntoNomina")]
-        public async Task<List<ConjuntoNomina>> ListarConjuntoNomina()
+        [Route("ListarPeriodoNomina")]
+        public async Task<List<PeriodoNomina>> ListarPeriodoNomina()
         {
             try
             {
-                return await db.ConjuntoNomina.OrderBy(x => x.Codigo).Include(x=>x.TipoConjuntoNomina).ToListAsync();
+                return await db.PeriodoNomina.Include(x => x.ProcesoNomina).ToListAsync();
             }
             catch (Exception ex)
             {
-                return new List<ConjuntoNomina>();
+                return new List<PeriodoNomina>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet]
-        [HttpPost("ObtenerConjuntoNomina")]
-        public async Task<Response> ObtenerConjuntoNomina([FromBody] ConjuntoNomina ConjuntoNomina)
+        [HttpPost("ObtenerPeriodoNomina")]
+        public async Task<Response> ObtenerPeriodoNomina([FromBody] PeriodoNomina PeriodoNomina)
         {
             try
             {
-                var conjuntoNomina = await db.ConjuntoNomina.SingleOrDefaultAsync(m => m.IdConjunto == ConjuntoNomina.IdConjunto);
+                var periodoNomina = await db.PeriodoNomina.SingleOrDefaultAsync(m => m.IdPeriodo == PeriodoNomina.IdPeriodo);
 
-                if (conjuntoNomina == null)
+                if (periodoNomina == null)
                 {
                     return new Response
                     {
@@ -60,7 +58,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = conjuntoNomina,
+                    Resultado = periodoNomina,
                 };
             }
             catch (Exception)
@@ -73,14 +71,15 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+      
         // PUT: api/BasesDatos/5
         [HttpPost]
-        [Route("EditarConjuntoNomina")]
-        public async Task<Response> EditarConjuntoNomina([FromBody] ConjuntoNomina ConjuntoNomina)
+        [Route("EditarPeriodoNomina")]
+        public async Task<Response> EditarPeriodoNomina([FromBody] PeriodoNomina PeriodoNomina)
         {
             try
             {
-                if (await Existe(ConjuntoNomina))
+                if (await Existe(PeriodoNomina))
                 {
                     return new Response
                     {
@@ -89,8 +88,8 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var ConjuntoNominaActualizar = await db.ConjuntoNomina.Where(x => x.IdConjunto == ConjuntoNomina.IdConjunto).FirstOrDefaultAsync();
-                if (ConjuntoNominaActualizar == null)
+                var PeriodoNominaActualizar = await db.PeriodoNomina.Where(x => x.IdPeriodo == PeriodoNomina.IdPeriodo).FirstOrDefaultAsync();
+                if (PeriodoNominaActualizar == null)
                 {
                     return new Response
                     {
@@ -99,16 +98,18 @@ namespace bd.swth.web.Controllers.API
 
                 }
 
-                ConjuntoNominaActualizar.Codigo = ConjuntoNomina.Codigo;
-                ConjuntoNominaActualizar.Descripcion = ConjuntoNomina.Descripcion;
-                ConjuntoNominaActualizar.IdTipoConjunto = ConjuntoNomina.IdTipoConjunto;
-                db.ConjuntoNomina.Update(ConjuntoNominaActualizar);
+                PeriodoNominaActualizar.IdProceso = PeriodoNomina.IdProceso;
+                PeriodoNominaActualizar.FechaInicio = PeriodoNomina.FechaInicio;
+                PeriodoNominaActualizar.FechaFin = PeriodoNomina.FechaFin;
+                PeriodoNominaActualizar.Descripcion = PeriodoNomina.Descripcion;
+                PeriodoNominaActualizar.Abierto = PeriodoNomina.Abierto;
+                db.PeriodoNomina.Update(PeriodoNominaActualizar);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Resultado = ConjuntoNominaActualizar
+                    Resultado = PeriodoNominaActualizar
                 };
             }
             catch (Exception)
@@ -123,21 +124,21 @@ namespace bd.swth.web.Controllers.API
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarConjuntoNomina")]
-        public async Task<Response> PostConjuntoNomina([FromBody] ConjuntoNomina ConjuntoNomina)
+        [Route("InsertarPeriodoNomina")]
+        public async Task<Response> PostPeriodoNomina([FromBody] PeriodoNomina PeriodoNomina)
         {
             try
             {
 
-                if (!await Existe(ConjuntoNomina))
+                if (!await Existe(PeriodoNomina))
                 {
-                    db.ConjuntoNomina.Add(ConjuntoNomina);
+                    db.PeriodoNomina.Add(PeriodoNomina);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
                         Message = Mensaje.Satisfactorio,
-                        Resultado = ConjuntoNomina,
+                        Resultado = PeriodoNomina,
                     };
                 }
 
@@ -160,12 +161,12 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpPost]
-        [Route("EliminarConjuntoNomina")]
-        public async Task<Response> EliminarConjuntoNomina([FromBody]ConjuntoNomina ConjuntoNomina)
+        [Route("EliminarPeriodoNomina")]
+        public async Task<Response> EliminarPeriodoNomina([FromBody]PeriodoNomina PeriodoNomina)
         {
             try
             {
-                var respuesta = await db.ConjuntoNomina.Where(m => m.IdConjunto == ConjuntoNomina.IdConjunto).FirstOrDefaultAsync();
+                var respuesta = await db.PeriodoNomina.Where(m => m.IdPeriodo == PeriodoNomina.IdPeriodo).FirstOrDefaultAsync();
                 if (respuesta == null)
                 {
                     return new Response
@@ -174,7 +175,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.ConjuntoNomina.Remove(respuesta);
+                db.PeriodoNomina.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -205,12 +206,12 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private async Task<bool> Existe(ConjuntoNomina ConjuntoNomina)
+        private async Task<bool> Existe(PeriodoNomina PeriodoNomina)
         {
-            var bdd = ConjuntoNomina.Codigo.ToUpper().TrimEnd().TrimStart();
-            var ConjuntoNominarespuesta = await db.ConjuntoNomina.Where(p => p.Codigo.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefaultAsync();
+            var descripcion = PeriodoNomina.Descripcion;
+            var PeriodoNominarespuesta = await db.PeriodoNomina.Where(p => p.Descripcion == descripcion).FirstOrDefaultAsync();
 
-            if (ConjuntoNominarespuesta == null || ConjuntoNominarespuesta.IdConjunto == ConjuntoNomina.IdConjunto)
+            if (PeriodoNominarespuesta == null || PeriodoNominarespuesta.IdPeriodo == PeriodoNomina.IdPeriodo)
             {
                 return false;
             }
