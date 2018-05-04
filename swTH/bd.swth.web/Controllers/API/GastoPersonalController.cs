@@ -12,41 +12,41 @@ using Microsoft.EntityFrameworkCore;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/TipoDeGastoPersonal")]
-    public class TipoGastoPersonalController : Controller
+    [Route("api/GastoPersonal")]
+    public class GastoPersonalController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public TipoGastoPersonalController(SwTHDbContext db)
+        public GastoPersonalController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarTipoDeGastoPersonal")]
-        public async Task<List<TipoDeGastoPersonal>> ListarTipoDeGastoPersonal()
+        [Route("ListarGastoPersonal")]
+        public async Task<List<GastoPersonal>> ListarGastoPersonal()
         {
             try
             {
-                return await db.TipoDeGastoPersonal.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.GastoPersonal.OrderBy(x => x.Valor).Include(x => x.TipoDeGastoPersonal).ToListAsync();
             }
-            catch (Exception )
+            catch (Exception ex)
             {
-                return new List<TipoDeGastoPersonal>();
+                return new List<GastoPersonal>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet]
-        [HttpPost("ObtenerTipoDeGastoPersonal")]
-        public async Task<Response> ObtenerTipoDeGastoPersonal([FromBody] TipoDeGastoPersonal TipoDeGastoPersonal)
+        [HttpPost("ObtenerGastoPersonal")]
+        public async Task<Response> ObtenerGastoPersonal([FromBody] GastoPersonal GastoPersonal)
         {
             try
             {
-                var tipoDeGastoPersonal = await db.TipoDeGastoPersonal.SingleOrDefaultAsync(m => m.IdTipoGastoPersonal == TipoDeGastoPersonal.IdTipoGastoPersonal);
+                var gastoPersonal = await db.GastoPersonal.SingleOrDefaultAsync(m => m.IdGastoPersonal == GastoPersonal.IdGastoPersonal);
 
-                if (tipoDeGastoPersonal == null)
+                if (gastoPersonal == null)
                 {
                     return new Response
                     {
@@ -59,7 +59,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = tipoDeGastoPersonal,
+                    Resultado = gastoPersonal,
                 };
             }
             catch (Exception)
@@ -74,12 +74,12 @@ namespace bd.swth.web.Controllers.API
 
         // PUT: api/BasesDatos/5
         [HttpPost]
-        [Route("EditarTipoDeGastoPersonal")]
-        public async Task<Response> EditarTipoDeGastoPersonal([FromBody] TipoDeGastoPersonal TipoDeGastoPersonal)
+        [Route("EditarGastoPersonal")]
+        public async Task<Response> EditarGastoPersonal([FromBody] GastoPersonal GastoPersonal)
         {
             try
             {
-                if (await Existe(TipoDeGastoPersonal))
+                if (await Existe(GastoPersonal))
                 {
                     return new Response
                     {
@@ -88,8 +88,8 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var TipoDeGastoPersonalActualizar = await db.TipoDeGastoPersonal.Where(x => x.IdTipoGastoPersonal == TipoDeGastoPersonal.IdTipoGastoPersonal).FirstOrDefaultAsync();
-                if (TipoDeGastoPersonalActualizar == null)
+                var GastoPersonalActualizar = await db.GastoPersonal.Where(x => x.IdGastoPersonal == GastoPersonal.IdGastoPersonal).FirstOrDefaultAsync();
+                if (GastoPersonalActualizar == null)
                 {
                     return new Response
                     {
@@ -98,14 +98,15 @@ namespace bd.swth.web.Controllers.API
 
                 }
 
-                TipoDeGastoPersonalActualizar.Descripcion = TipoDeGastoPersonal.Descripcion;
-                db.TipoDeGastoPersonal.Update(TipoDeGastoPersonalActualizar);
+                GastoPersonalActualizar.Valor = GastoPersonal.Valor;
+                GastoPersonalActualizar.IdTipoGasto = GastoPersonal.IdTipoGasto;
+                db.GastoPersonal.Update(GastoPersonalActualizar);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Resultado = TipoDeGastoPersonalActualizar
+                    Resultado = GastoPersonalActualizar
                 };
             }
             catch (Exception)
@@ -120,21 +121,21 @@ namespace bd.swth.web.Controllers.API
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarTipoDeGastoPersonal")]
-        public async Task<Response> PostTipoDeGastoPersonal([FromBody] TipoDeGastoPersonal TipoDeGastoPersonal)
+        [Route("InsertarGastoPersonal")]
+        public async Task<Response> PostGastoPersonal([FromBody] GastoPersonal GastoPersonal)
         {
             try
             {
 
-                if (!await Existe(TipoDeGastoPersonal))
+                if (!await Existe(GastoPersonal))
                 {
-                    db.TipoDeGastoPersonal.Add(TipoDeGastoPersonal);
+                    db.GastoPersonal.Add(GastoPersonal);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
                         Message = Mensaje.Satisfactorio,
-                        Resultado = TipoDeGastoPersonal,
+                        Resultado = GastoPersonal,
                     };
                 }
 
@@ -145,7 +146,7 @@ namespace bd.swth.web.Controllers.API
                 };
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new Response
                 {
@@ -157,12 +158,12 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpPost]
-        [Route("EliminarTipoDeGastoPersonal")]
-        public async Task<Response> EliminarTipoDeGastoPersonal([FromBody]TipoDeGastoPersonal TipoDeGastoPersonal)
+        [Route("EliminarGastoPersonal")]
+        public async Task<Response> EliminarGastoPersonal([FromBody]GastoPersonal GastoPersonal)
         {
             try
             {
-                var respuesta = await db.TipoDeGastoPersonal.Where(m => m.IdTipoGastoPersonal == TipoDeGastoPersonal.IdTipoGastoPersonal).FirstOrDefaultAsync();
+                var respuesta = await db.GastoPersonal.Where(m => m.IdGastoPersonal == GastoPersonal.IdGastoPersonal).FirstOrDefaultAsync();
                 if (respuesta == null)
                 {
                     return new Response
@@ -171,7 +172,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.TipoDeGastoPersonal.Remove(respuesta);
+                db.GastoPersonal.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -180,22 +181,25 @@ namespace bd.swth.web.Controllers.API
                     Message = Mensaje.Satisfactorio,
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
                 return new Response
                 {
                     IsSuccess = false,
                     Message = Mensaje.BorradoNoSatisfactorio,
                 };
+
             }
         }
 
-        private async Task<bool> Existe(TipoDeGastoPersonal TipoDeGastoPersonal)
+        private async Task<bool> Existe(GastoPersonal GastoPersonal)
         {
-            var bdd = TipoDeGastoPersonal.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var TipoDeGastoPersonalrespuesta = await db.TipoDeGastoPersonal.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefaultAsync();
+            var tipoGasto = GastoPersonal.IdTipoGasto;
+            var ano = GastoPersonal.Ano;
+            var GastoPersonalrespuesta = await db.GastoPersonal.Where(p => p.IdTipoGasto== tipoGasto && p.Ano==ano).FirstOrDefaultAsync();
 
-            if (TipoDeGastoPersonalrespuesta == null || TipoDeGastoPersonalrespuesta.IdTipoGastoPersonal == TipoDeGastoPersonal.IdTipoGastoPersonal)
+            if (GastoPersonalrespuesta == null || GastoPersonalrespuesta.IdGastoPersonal == GastoPersonal.IdGastoPersonal)
             {
                 return false;
             }

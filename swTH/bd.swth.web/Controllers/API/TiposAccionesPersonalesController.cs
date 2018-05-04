@@ -160,30 +160,31 @@ namespace bd.swth.web.Controllers.API
                 }
 
 
-                var TipoAccionPersonal = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
-                
-                TipoAccionPersonal.Nombre = tipoAccionPersonal.Nombre;
-                TipoAccionPersonal.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
-                TipoAccionPersonal.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
-                TipoAccionPersonal.NHorasMaximo = tipoAccionPersonal.NHorasMaximo;
-                TipoAccionPersonal.NHorasMinimo = tipoAccionPersonal.NHorasMinimo;
-                TipoAccionPersonal.DiasHabiles = tipoAccionPersonal.DiasHabiles;
-                TipoAccionPersonal.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
-                TipoAccionPersonal.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
-                TipoAccionPersonal.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
-                TipoAccionPersonal.Matriz = tipoAccionPersonal.Matriz;
-                TipoAccionPersonal.Descripcion = TipoAccionPersonal.Descripcion;
-                TipoAccionPersonal.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
-                TipoAccionPersonal.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
-                TipoAccionPersonal.IdEstadoTipoAccionPersonal = tipoAccionPersonal.IdEstadoTipoAccionPersonal;
-                db.TipoAccionPersonal.Update(TipoAccionPersonal);
+                var TipoAccionPersonalActualizar = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
+
+                TipoAccionPersonalActualizar.Nombre = tipoAccionPersonal.Nombre;
+                TipoAccionPersonalActualizar.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
+                TipoAccionPersonalActualizar.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
+                TipoAccionPersonalActualizar.NHorasMaximo = tipoAccionPersonal.NHorasMaximo;
+                TipoAccionPersonalActualizar.NHorasMinimo = tipoAccionPersonal.NHorasMinimo;
+                TipoAccionPersonalActualizar.DiasHabiles = tipoAccionPersonal.DiasHabiles;
+                TipoAccionPersonalActualizar.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
+                TipoAccionPersonalActualizar.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
+                TipoAccionPersonalActualizar.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
+                TipoAccionPersonalActualizar.Matriz = tipoAccionPersonal.Matriz;
+                TipoAccionPersonalActualizar.Descripcion = tipoAccionPersonal.Descripcion;
+                TipoAccionPersonalActualizar.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
+                TipoAccionPersonalActualizar.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
+                TipoAccionPersonalActualizar.IdEstadoTipoAccionPersonal = tipoAccionPersonal.IdEstadoTipoAccionPersonal;
+
+                db.TipoAccionPersonal.Update(TipoAccionPersonalActualizar);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = TipoAccionPersonal,
+                    Message = Mensaje.GuardadoSatisfactorio,
+                    Resultado = TipoAccionPersonalActualizar,
                 };
 
             }
@@ -212,7 +213,7 @@ namespace bd.swth.web.Controllers.API
         // POST: api/TipoAccionPersonal
         [HttpPost]
         [Route("InsertarTipoAccionPersonal")]
-        public async Task<Response> PostTipoAccionPersonal([FromBody] TipoAccionPersonal TipoAccionPersonal)
+        public async Task<Response> InsertarTipoAccionPersonal([FromBody] TipoAccionPersonal TipoAccionPersonal)
         {
             try
             {
@@ -242,7 +243,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
+                        Message = Mensaje.GuardadoSatisfactorio,
                         Resultado = TipoAccionPersonal
                     };
                 }
@@ -256,16 +257,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -304,21 +295,12 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.BorradoSatisfactorio,
                 };
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,

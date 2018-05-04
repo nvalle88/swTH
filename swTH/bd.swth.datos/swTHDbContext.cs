@@ -27,6 +27,8 @@ namespace bd.swth.datos
         public virtual DbSet<PeriodoNomina> PeriodoNomina { get; set; }
         public virtual DbSet<SriNomina> SriNomina { get; set; }
         public virtual DbSet<SriDetalle> SriDetalle { get; set; }
+        public virtual DbSet<TipoDeGastoPersonal> TipoDeGastoPersonal { get; set; }
+        public virtual DbSet<GastoPersonal> GastoPersonal { get; set; }
 
 
 
@@ -235,7 +237,6 @@ namespace bd.swth.datos
         public virtual DbSet<TrabajoEquipoIniciativaLiderazgo> TrabajoEquipoIniciativaLiderazgo { get; set; }
         public virtual DbSet<TrayectoriaLaboral> TrayectoriaLaboral { get; set; }
         public virtual DbSet<ValidacionInmediatoSuperior> ValidacionInmediatoSuperior { get; set; }
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
