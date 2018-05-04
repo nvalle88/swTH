@@ -597,6 +597,34 @@ namespace bd.swth.web.Controllers.API
 
         // GET: api/Empleados
         [HttpGet]
+        [Route("ListarEmpleadosActivos")]
+        public async Task<List<ListaEmpleadoViewModel>> ListarEmpleadosActivos()
+        {
+            try
+            {
+                //var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x=>x.DatosBancarios).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).OrderBy(x => x.FechaIngreso).ToListAsync();
+                var lista = await db.Empleado.Where(x=>x.Activo==true)
+                                    .Select(x => new ListaEmpleadoViewModel
+                                    {
+                                        IdEmpleado = x.IdEmpleado,
+                                        IdPersona = x.Persona.IdPersona,
+                                        NombreApellido = string.Format("{0} {1}", x.Persona.Nombres, x.Persona.Apellidos),
+                                        TelefonoPrivado = x.Persona.TelefonoPrivado,
+                                        CorreoPrivado = x.Persona.CorreoPrivado,
+                                        Dependencia = x.Dependencia == null ? "No asignado" : x.Dependencia.Nombre,
+                                        Identificacion = x.Persona.Identificacion,
+
+                                    })
+                                    .ToListAsync();
+                return lista;
+
+            }
+            catch (Exception ex)
+            {
+                return new List<ListaEmpleadoViewModel>();
+            }
+        }
+        [HttpGet]
         [Route("ListarEmpleados")]
         public async Task<List<ListaEmpleadoViewModel>> GetEmpleados()
         {
