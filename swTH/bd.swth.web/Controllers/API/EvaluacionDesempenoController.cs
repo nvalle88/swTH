@@ -173,6 +173,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     var listaEvaluador1 = new List<EvaluacionActividadesPuestoTrabajo>();
                     var cont = 0;
+                    var aumento = viewModelEvaluador.PorcentajeAumento;
                     foreach (var item in viewModelEvaluador.ListaIndicadores)
                     {
                         var indicador = new Indicador
@@ -187,6 +188,9 @@ namespace bd.swth.web.Controllers.API
                         evaluacionActividadesPuestoTrabajo.MetaPeriodo = Convert.ToInt32(viewModelEvaluador.ListaMetaPeriodo[cont]);
                         evaluacionActividadesPuestoTrabajo.ActividadesCumplidas = Convert.ToInt32(viewModelEvaluador.ListaActividadescumplidos[cont]);
                         evaluacionActividadesPuestoTrabajo.IdActividadesEsenciales = Convert.ToInt32(viewModelEvaluador.ListaActividades[cont]);
+                        evaluacionActividadesPuestoTrabajo.PorcetajeCumplimiento = Convert.ToInt32(viewModelEvaluador.PorcentajeCumplido[cont]);
+                        evaluacionActividadesPuestoTrabajo.NivelCumplimiento = Convert.ToInt32(viewModelEvaluador.NivelCumplimiento[cont]);
+                        evaluacionActividadesPuestoTrabajo.Aumento = Convert.ToInt32(viewModelEvaluador.PorcentajeAumento);
                         evaluacionActividadesPuestoTrabajo.IdIndicador = IndicadoresInsertarda.Entity.IdIndicador;
                         evaluacionActividadesPuestoTrabajo.IdEval001 = viewModelEvaluador.IdEval001;
                         evaluacionActividadesPuestoTrabajo.DescripcionActividad = "";
@@ -304,6 +308,80 @@ namespace bd.swth.web.Controllers.API
             }
         }
         [HttpPost]
+        [Route("InsertarObservacion")]
+        public async Task<Response> InsertarObservacion([FromBody] ViewModelEvaluador viewModelEvaluador)
+        {
+            try
+            {
+                var eval001 = await db.Eval001.Where(x => x.IdEval001 == viewModelEvaluador.IdEval001).FirstOrDefaultAsync();
+                if (eval001 != null)
+                {
+
+                    eval001.Observaciones = viewModelEvaluador.Observaciones;
+                    db.Eval001.Update(eval001);
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                    };
+                }
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Error,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+        [HttpPost]
+        [Route("ObtenerObservacion")]
+        public async Task<Response> ObtenerObservacion([FromBody] ViewModelEvaluador viewModelEvaluador)
+        {
+            try
+            {
+                var eval = new Eval001()
+                {
+                    IdEval001 = viewModelEvaluador.IdEval001,
+                };
+                if (eval.IdEval001 != 0)
+                {
+                    var existe = Existe(eval);
+                    if (existe.IsSuccess)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Resultado = existe.Resultado,
+                            Message = Mensaje.Satisfactorio,
+                        };
+                    }
+                }
+                return new Response
+                {
+                    Resultado = null,
+                    IsSuccess = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+        [HttpPost]
         [Route("InsertarCompetenciasTecnicas")]
         public async Task<Response> InsertarCompetenciasTecnicas([FromBody] ViewModelEvaluador viewModelEvaluador)
         {
@@ -382,6 +460,214 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
             }
+        }
+        [HttpPost]
+        [Route("CalcularTotales")]
+        public async Task<ViewModelEvaluador> CalcularTotales([FromBody] ViewModelEvaluador viewModelEvaluador)
+        {
+            try
+            {
+                var totales = new ViewModelEvaluador();
+                var eval = new Eval001()
+                {
+                    IdEval001 = viewModelEvaluador.IdEval001,
+                };
+                var actividades = await db.EvaluacionActividadesPuestoTrabajo.Where(x => x.IdEval001 == eval.IdEval001).ToListAsync();
+                if (actividades != null)
+                {
+                    double valor = 0, total = 0;
+                    foreach (var item in actividades)
+                    {
+                        valor = Convert.ToDouble(item.PorcetajeCumplimiento) + Convert.ToDouble(item.Aumento);
+                        total = total + valor;
+                        totales.ActividadesTotal = total;
+                    }
+                }
+                else
+                {
+                    totales.ActividadesTotal = 0;
+                }
+                var conocimiento = await db.EvaluacionConocimiento.Where(x => x.IdEval001 == eval.IdEval001).ToListAsync();
+                if (conocimiento.Count!=0)
+                {
+                    //double valor = 0, total = 0;
+                    double valor = 0, total = 0;
+                    foreach (var item in conocimiento)
+                    {
+                        var a = await db.NivelConocimiento.Where(x => x.IdNivelConocimiento == item.IdNivelConocimiento).FirstOrDefaultAsync();
+                        var b = a.Nombre;
+                        
+                        if (b == EvaluacionDesempeño.Sobresaliente) {
+                             valor = 8;
+                        }
+                        if (b == EvaluacionDesempeño.MuyBueno)
+                        {
+                             valor = 6;
+                        }
+                        if (b == EvaluacionDesempeño.Bueno)
+                        {
+                             valor = 4;
+                        }
+                        if (b == EvaluacionDesempeño.Regular)
+                        {
+                             valor = 2;
+                        }
+                        if (b == EvaluacionDesempeño.Insuficiente)
+                        {
+                             valor = 0;
+                        }
+                        total = total + valor;
+                    }
+                    total = total / conocimiento.Count;
+                    totales.TotalConocimientos = total;
+                }
+                else
+                {
+                    totales.TotalConocimientos = 0;
+                }
+                var competenciasTecnicas = await db.EvaluacionCompetenciasTecnicasPuesto.Where(x => x.IdEval001 == eval.IdEval001).ToListAsync();
+                if (competenciasTecnicas.Count != 0)
+                {
+                    //double valor = 0, total = 0;
+                    double valor = 0, total = 0;
+                    foreach (var item in competenciasTecnicas)
+                    {
+                        var a = await db.NivelDesarrollo.Where(x => x.IdNivelDesarrollo == item.IdNivelDesarrollo).FirstOrDefaultAsync();
+                        var b = a.Nombre;
+
+                        if (b == EvaluacionDesempeño.AltamenteDesarrollada)
+                        {
+                            valor = 8;
+                        }
+                        if (b == EvaluacionDesempeño.Desarrollada)
+                        {
+                            valor = 6;
+                        }
+                        if (b == EvaluacionDesempeño.MedianamenteDesarrollada)
+                        {
+                            valor = 4;
+                        }
+                        if (b == EvaluacionDesempeño.PocoDesarrollada)
+                        {
+                            valor = 2;
+                        }
+                        if (b == EvaluacionDesempeño.NoDesarrollada)
+                        {
+                            valor = 0;
+                        }
+                        total = total + valor;
+                    }
+                    total = total / competenciasTecnicas.Count;
+                    totales.TotalCompetenciasTecnicas = total;
+                }
+                else
+                {
+                    totales.TotalCompetenciasTecnicas = 0;
+                }
+                var competenciasUniversales = await db.EvaluacionCompetenciasUniversales.Where(x => x.IdEval001 == eval.IdEval001).ToListAsync();
+                if (competenciasUniversales.Count != 0)
+                {
+                    //double valor = 0, total = 0;
+                    double valor = 0, total = 0;
+                    foreach (var item in competenciasUniversales)
+                    {
+                        var a = await db.FrecuenciaAplicacion.Where(x => x.IdFrecuenciaAplicacion == item.IdFrecuenciaAplicacion).FirstOrDefaultAsync();
+                        var b = a.Nombre;
+
+                        if (b == EvaluacionDesempeño.Siempre)
+                        {
+                            valor = 1.3;
+                        }
+                        if (b == EvaluacionDesempeño.Frecuentemente)
+                        {
+                            valor = 1;
+                        }
+                        if (b == EvaluacionDesempeño.Algunavez)
+                        {
+                            valor = 0.7;
+                        }
+                        if (b == EvaluacionDesempeño.Raravez)
+                        {
+                            valor = 0.3;
+                        }
+                        if (b == EvaluacionDesempeño.Nunca)
+                        {
+                            valor = 0;
+                        }
+                        total = total + valor;
+                    }
+                    total = total / competenciasUniversales.Count;
+                    totales.TotalCompetenciasUniversales = total;
+                }
+                else {
+                    totales.TotalCompetenciasUniversales = 0;
+                }
+                var TrabajoLiderazgo = await db.EvaluacionTrabajoEquipoIniciativaLiderazgo.Where(x => x.IdEval001 == eval.IdEval001).ToListAsync();
+                if (TrabajoLiderazgo.Count != 0)
+                {
+                    //double valor = 0, total = 0;
+                    double valor = 0, total = 0;
+                    foreach (var item in TrabajoLiderazgo)
+                    {
+                        var a = await db.FrecuenciaAplicacion.Where(x => x.IdFrecuenciaAplicacion == item.IdFrecuenciaAplicacion).FirstOrDefaultAsync();
+                        var b = a.Nombre;
+
+                        if (b == EvaluacionDesempeño.Siempre)
+                        {
+                            valor = 8;
+                        }
+                        if (b == EvaluacionDesempeño.Frecuentemente)
+                        {
+                            valor = 6;
+                        }
+                        if (b == EvaluacionDesempeño.Algunavez)
+                        {
+                            valor = 4;
+                        }
+                        if (b == EvaluacionDesempeño.Raravez)
+                        {
+                            valor = 2;
+                        }
+                        if (b == EvaluacionDesempeño.Nunca)
+                        {
+                            valor = 0;
+                        }
+                        total = total + valor;
+                    }
+                    total = total / TrabajoLiderazgo.Count;
+                    totales.TotalTrabajoLiderazgo = total;
+                }
+                else
+                {
+                    totales.TotalTrabajoLiderazgo = 0;
+                }
+                var TotalEvaluacion = totales.TotalCompetenciasTecnicas + totales.TotalCompetenciasUniversales + totales.TotalConocimientos + totales.TotalTrabajoLiderazgo + totales.ActividadesTotal;
+                totales.TotalEvaluacion = TotalEvaluacion;
+                return totales;
+            }
+            catch (Exception ex)
+            {
+                ex.ToString();
+                return new ViewModelEvaluador();
+            }
+        }
+        public Response Existe(Eval001 eval001)
+        {
+            var bdd1 = eval001.IdEval001;
+            var loglevelrespuesta = db.Eval001.Where(p => p.IdEval001 == bdd1).FirstOrDefault();
+            if (loglevelrespuesta.Observaciones != null)
+            {
+                return new Response
+                {
+                    IsSuccess = true,
+                    Resultado = loglevelrespuesta,
+                };
+
+            }
+            return new Response
+            {
+                IsSuccess = false,
+            };
         }
     }
 }

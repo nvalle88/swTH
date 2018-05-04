@@ -65,6 +65,24 @@ namespace bd.swth.web
             EstadosFAO.RealizadoEspecialistaTH = Convert.ToInt32(Configuration.GetSection("RealizadoEspecialistaTH").Value);
             EstadosFAO.RealizadoJefeTH = Convert.ToInt32(Configuration.GetSection("RealizadoJefeTH").Value);
 
+            //Constantes Evaluacion Desempeño
+            EvaluacionDesempeño.Sobresaliente = Configuration.GetSection("Sobresaliente").Value;
+            EvaluacionDesempeño.MuyBueno = Configuration.GetSection("MuyBueno").Value;
+            EvaluacionDesempeño.Bueno = Configuration.GetSection("Bueno").Value;
+            EvaluacionDesempeño.Regular = Configuration.GetSection("Regular").Value;
+            EvaluacionDesempeño.Insuficiente = Configuration.GetSection("Insuficiente").Value;
+
+            EvaluacionDesempeño.AltamenteDesarrollada = Configuration.GetSection("AltamenteDesarrollada").Value;
+            EvaluacionDesempeño.Desarrollada = Configuration.GetSection("Desarrollada").Value;
+            EvaluacionDesempeño.MedianamenteDesarrollada = Configuration.GetSection("MedianamenteDesarrollada").Value;
+            EvaluacionDesempeño.PocoDesarrollada = Configuration.GetSection("PocoDesarrollada").Value;
+            EvaluacionDesempeño.NoDesarrollada = Configuration.GetSection("NoDesarrollada").Value;
+
+            EvaluacionDesempeño.Siempre = Configuration.GetSection("Siempre").Value;
+            EvaluacionDesempeño.Frecuentemente = Configuration.GetSection("Frecuentemente").Value;
+            EvaluacionDesempeño.Algunavez = Configuration.GetSection("Alguna vez").Value;
+            EvaluacionDesempeño.Raravez = Configuration.GetSection("Rara vez").Value;
+            EvaluacionDesempeño.Nunca = Configuration.GetSection("Nunca").Value;
 
 
             // Constante de estado para Documento Activacion Personal
