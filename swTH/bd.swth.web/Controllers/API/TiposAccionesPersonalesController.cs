@@ -160,30 +160,31 @@ namespace bd.swth.web.Controllers.API
                 }
 
 
-                var TipoAccionPersonal = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
-                
-                TipoAccionPersonal.Nombre = tipoAccionPersonal.Nombre;
-                TipoAccionPersonal.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
-                TipoAccionPersonal.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
-                TipoAccionPersonal.NHorasMaximo = tipoAccionPersonal.NHorasMaximo;
-                TipoAccionPersonal.NHorasMinimo = tipoAccionPersonal.NHorasMinimo;
-                TipoAccionPersonal.DiasHabiles = tipoAccionPersonal.DiasHabiles;
-                TipoAccionPersonal.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
-                TipoAccionPersonal.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
-                TipoAccionPersonal.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
-                TipoAccionPersonal.Matriz = tipoAccionPersonal.Matriz;
-                TipoAccionPersonal.Descripcion = TipoAccionPersonal.Descripcion;
-                TipoAccionPersonal.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
-                TipoAccionPersonal.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
-                TipoAccionPersonal.IdEstadoTipoAccionPersonal = tipoAccionPersonal.IdEstadoTipoAccionPersonal;
-                db.TipoAccionPersonal.Update(TipoAccionPersonal);
+                var TipoAccionPersonalActualizar = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
+
+                TipoAccionPersonalActualizar.Nombre = tipoAccionPersonal.Nombre;
+                TipoAccionPersonalActualizar.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
+                TipoAccionPersonalActualizar.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
+                TipoAccionPersonalActualizar.NHorasMaximo = tipoAccionPersonal.NHorasMaximo;
+                TipoAccionPersonalActualizar.NHorasMinimo = tipoAccionPersonal.NHorasMinimo;
+                TipoAccionPersonalActualizar.DiasHabiles = tipoAccionPersonal.DiasHabiles;
+                TipoAccionPersonalActualizar.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
+                TipoAccionPersonalActualizar.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
+                TipoAccionPersonalActualizar.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
+                TipoAccionPersonalActualizar.Matriz = tipoAccionPersonal.Matriz;
+                TipoAccionPersonalActualizar.Descripcion = tipoAccionPersonal.Descripcion;
+                TipoAccionPersonalActualizar.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
+                TipoAccionPersonalActualizar.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
+                TipoAccionPersonalActualizar.IdEstadoTipoAccionPersonal = tipoAccionPersonal.IdEstadoTipoAccionPersonal;
+
+                db.TipoAccionPersonal.Update(TipoAccionPersonalActualizar);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.GuardadoSatisfactorio,
-                    Resultado = TipoAccionPersonal,
+                    Resultado = TipoAccionPersonalActualizar,
                 };
 
             }
