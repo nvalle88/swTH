@@ -21,6 +21,7 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<EvaluacionCompetenciasTecnicasPuesto> EvaluacionCompetenciasTecnicasPuesto { get; set; }
         public virtual ICollection<EvaluacionCompetenciasUniversales> EvaluacionCompetenciasUniversales { get; set; }
         public virtual ICollection<EvaluacionConocimiento> EvaluacionConocimiento { get; set; }
+        public virtual ICollection<Quejas> Quejas { get; set; }
         public virtual ICollection<EvaluacionTrabajoEquipoIniciativaLiderazgo> EvaluacionTrabajoEquipoIniciativaLiderazgo { get; set; }
         public virtual Empleado EmpleadoEvaluado { get; set; }
         public virtual EscalaEvaluacionTotal EscalaEvaluacionTotal{ get; set; }

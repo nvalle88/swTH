@@ -31,6 +31,7 @@ namespace bd.swth.entidades.ViewModels
         //Competencias Tecnicas Puesto
         public List<string> IdComportamientoObervable { get; set; }
         public List<string> IdNivelDesarrollos { get; set; }
+        public List<string> IdFrecuenciaAplicaciones { get; set; }
 
         //totales
         public int TotalConocimiento { get; set; }

@@ -23,5 +23,9 @@ namespace bd.swth.entidades.Constantes
         public static string Algunavez { get; set; }
         public static string Raravez { get; set; }
         public static string Nunca { get; set; }
+
+        public static string TrabajoEnEquipo { get; set; }
+        public static string Iniciativa { get; set; }
+        public static string Liderazgo { get; set; }
     }
 }

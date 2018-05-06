@@ -16,5 +16,9 @@ namespace bd.swth.entidades.ViewModels
         public int IdDependencia { get; set; }
         public string DatosJefe { get; set; }
         public string NombreUsuario { get; set; }
+        public int IdEval001{ get; set; }
+        public DateTime FechaRegistro { get; set; }
+        public DateTime FechaDesde { get; set; }
+        public DateTime FechaHasta { get; set; }
     }
 }

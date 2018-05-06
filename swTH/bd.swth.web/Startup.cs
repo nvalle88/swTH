@@ -84,6 +84,10 @@ namespace bd.swth.web
             EvaluacionDesempeño.Raravez = Configuration.GetSection("Rara vez").Value;
             EvaluacionDesempeño.Nunca = Configuration.GetSection("Nunca").Value;
 
+            EvaluacionDesempeño.TrabajoEnEquipo = Configuration.GetSection("TrabajoEnEquipo").Value;
+            EvaluacionDesempeño.Iniciativa = Configuration.GetSection("Iniciativa").Value;
+            EvaluacionDesempeño.Liderazgo = Configuration.GetSection("Liderazgo").Value;
+
 
             // Constante de estado para Documento Activacion Personal
             Constantes.ActivacionPersonalValorActivado = Configuration.GetSection("ActivacionPersonalValorActivado").Value;

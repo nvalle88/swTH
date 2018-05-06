@@ -433,11 +433,11 @@ namespace bd.swth.web.Controllers.API
                     var cont = 0;
                     foreach (var item in viewModelEvaluador.IdComportamientoObervable)
                     {
-                        var evaluacionCompetenciasTecnicasPuesto = new EvaluacionCompetenciasUniversales();
-                        evaluacionCompetenciasTecnicasPuesto.IdComportamientoObservable = Convert.ToInt32(viewModelEvaluador.IdComportamientoObervable[cont]);
-                        evaluacionCompetenciasTecnicasPuesto.IdFrecuenciaAplicacion = Convert.ToInt32(viewModelEvaluador.IdNivelDesarrollos[cont]);
-                        evaluacionCompetenciasTecnicasPuesto.IdEval001 = viewModelEvaluador.IdEval001;
-                        listaEvaluador1.Add(evaluacionCompetenciasTecnicasPuesto);
+                        var evaluacionCompetenciasUniversales = new EvaluacionCompetenciasUniversales();
+                        evaluacionCompetenciasUniversales.IdComportamientoObservable = Convert.ToInt32(viewModelEvaluador.IdComportamientoObervable[cont]);
+                        evaluacionCompetenciasUniversales.IdFrecuenciaAplicacion = Convert.ToInt32(viewModelEvaluador.IdFrecuenciaAplicaciones[cont]);
+                        evaluacionCompetenciasUniversales.IdEval001 = viewModelEvaluador.IdEval001;
+                        listaEvaluador1.Add(evaluacionCompetenciasUniversales);
                         cont++;
                     }
                     await db.EvaluacionCompetenciasUniversales.AddRangeAsync(listaEvaluador1);
@@ -461,6 +461,47 @@ namespace bd.swth.web.Controllers.API
                 }
             }
         }
+        [HttpPost]
+        [Route("InsertarEquipoLiderazgo")]
+        public async Task<Response> InsertarEquipoLiderazgo([FromBody] ViewModelEvaluador viewModelEvaluador)
+        {
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var listaEvaluador1 = new List<EvaluacionTrabajoEquipoIniciativaLiderazgo>();
+                    var cont = 0;
+                    foreach (var item in viewModelEvaluador.IdComportamientoObervable)
+                    {
+                        var evaluacionCompetenciasLiderazgo = new EvaluacionTrabajoEquipoIniciativaLiderazgo();
+                        evaluacionCompetenciasLiderazgo.IdComportamientoObservable = Convert.ToInt32(viewModelEvaluador.IdComportamientoObervable[cont]);
+                        evaluacionCompetenciasLiderazgo.IdFrecuenciaAplicacion = Convert.ToInt32(viewModelEvaluador.IdFrecuenciaAplicaciones[cont]);
+                        evaluacionCompetenciasLiderazgo.IdEval001 = viewModelEvaluador.IdEval001;
+                        listaEvaluador1.Add(evaluacionCompetenciasLiderazgo);
+                        cont++;
+                    }
+                    await db.EvaluacionTrabajoEquipoIniciativaLiderazgo.AddRangeAsync(listaEvaluador1);
+                    await db.SaveChangesAsync();
+                    transaction.Commit();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+            }
+        }
+
         [HttpPost]
         [Route("CalcularTotales")]
         public async Task<ViewModelEvaluador> CalcularTotales([FromBody] ViewModelEvaluador viewModelEvaluador)
