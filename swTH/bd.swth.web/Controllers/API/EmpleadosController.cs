@@ -603,7 +603,7 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 //var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x=>x.DatosBancarios).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).OrderBy(x => x.FechaIngreso).ToListAsync();
-                var lista = await db.Empleado.Where(x=>x.Activo==true)
+                var lista = await db.Empleado.Where(x => x.Activo == true)
                                     .Select(x => new ListaEmpleadoViewModel
                                     {
                                         IdEmpleado = x.IdEmpleado,
@@ -632,16 +632,16 @@ namespace bd.swth.web.Controllers.API
             {
                 //var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x=>x.DatosBancarios).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).OrderBy(x => x.FechaIngreso).ToListAsync();
                 var lista = await db.Empleado
-                                    .Select(x=>new ListaEmpleadoViewModel
+                                    .Select(x => new ListaEmpleadoViewModel
                                     {
                                         IdEmpleado = x.IdEmpleado,
-                                        IdPersona=x.Persona.IdPersona,
-                                        NombreApellido =string.Format("{0} {1}", x.Persona.Nombres, x.Persona.Apellidos),
-                                        TelefonoPrivado =x.Persona.TelefonoPrivado,
-                                        CorreoPrivado =x.Persona.CorreoPrivado,
-                                        Dependencia=x.Dependencia==null ? "No asignado":x.Dependencia.Nombre,
-                                        Identificacion= x.Persona.Identificacion,
-                                        
+                                        IdPersona = x.Persona.IdPersona,
+                                        NombreApellido = string.Format("{0} {1}", x.Persona.Nombres, x.Persona.Apellidos),
+                                        TelefonoPrivado = x.Persona.TelefonoPrivado,
+                                        CorreoPrivado = x.Persona.CorreoPrivado,
+                                        Dependencia = x.Dependencia == null ? "No asignado" : x.Dependencia.Nombre,
+                                        Identificacion = x.Persona.Identificacion,
+
                                     })
                                     .ToListAsync();
                 return lista;
@@ -1334,35 +1334,35 @@ namespace bd.swth.web.Controllers.API
                                        IdPaisLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
                                        IdCiudadLugarPersona = x.Persona.Parroquia.Ciudad.IdCiudad,
                                        IdProvinciaLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
-                                       AnoDesvinculacion=x.AnoDesvinculacion,
-                                       DeclaracionJurada=x.DeclaracionJurada,
-                                       Detalle=x.Detalle,
-                                       DiasImposiciones=x.DiasImposiciones,
-                                       EsJefe=x.EsJefe,
-                                       ExtencionTelefonica=x.Extension,
-                                       FechaIngresoSectorPublico=x.FechaIngresoSectorPublico,
-                                       FondosReservas=x.FondosReservas,
-                                       IdBrigadaSSORol=x.IdBrigadaSSORol,
-                                       IdBrigadaSSO=x.BrigadaSSORol.BrigadaSSO.IdBrigadaSSO,
-                                       IdPersona=x.IdPersona,
-                                       IngresosOtraActividad=x.IngresosOtraActividad,
-                                       MesesImposiciones=x.MesesImposiciones,
-                                       Nepotismo=x.Nepotismo==null ? false:x.Nepotismo,
-                                       NombreUsuario=x.NombreUsuario,
-                                       OtrosIngresos=x.OtrosIngresos==null? false:x.OtrosIngresos,
-                                       Telefono=x.Telefono,
-                                       TipoRelacion=x.TipoRelacion,
-                                       TrabajoSuperintendenciaBanco=x.TrabajoSuperintendenciaBanco,
-                                       
+                                       AnoDesvinculacion = x.AnoDesvinculacion,
+                                       DeclaracionJurada = x.DeclaracionJurada,
+                                       Detalle = x.Detalle,
+                                       DiasImposiciones = x.DiasImposiciones,
+                                       EsJefe = x.EsJefe,
+                                       ExtencionTelefonica = x.Extension,
+                                       FechaIngresoSectorPublico = x.FechaIngresoSectorPublico,
+                                       FondosReservas = x.FondosReservas,
+                                       IdBrigadaSSORol = x.IdBrigadaSSORol,
+                                       IdBrigadaSSO = x.BrigadaSSORol.BrigadaSSO.IdBrigadaSSO,
+                                       IdPersona = x.IdPersona,
+                                       IngresosOtraActividad = x.IngresosOtraActividad,
+                                       MesesImposiciones = x.MesesImposiciones,
+                                       Nepotismo = x.Nepotismo == null ? false : x.Nepotismo,
+                                       NombreUsuario = x.NombreUsuario,
+                                       OtrosIngresos = x.OtrosIngresos == null ? false : x.OtrosIngresos,
+                                       Telefono = x.Telefono,
+                                       TipoRelacion = x.TipoRelacion,
+                                       TrabajoSuperintendenciaBanco = x.TrabajoSuperintendenciaBanco,
+
 
                                    }
                                    ).FirstOrDefaultAsync();
 
-                if (Empleado!=null)
+                if (Empleado != null)
                 {
                     return new Response { IsSuccess = true, Resultado = Empleado };
                 }
-                return new Response { IsSuccess = false};
+                return new Response { IsSuccess = false };
 
             }
             catch (Exception ex)
@@ -1410,19 +1410,19 @@ namespace bd.swth.web.Controllers.API
                                        IdPaisLugarNacimiento = x.CiudadNacimiento.Provincia.Pais.IdPais,
                                        IdCiudadLugarNacimiento = x.IdCiudadLugarNacimiento,
                                        IdPaisLugarSufragio = x.ProvinciaSufragio.Pais.IdPais,
-                                       IdPaisLugarPersona=x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
-                                       IdCiudadLugarPersona=x.Persona.Parroquia.Ciudad.IdCiudad,
-                                       IdProvinciaLugarPersona=x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
+                                       IdPaisLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
+                                       IdCiudadLugarPersona = x.Persona.Parroquia.Ciudad.IdCiudad,
+                                       IdProvinciaLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
 
                                    }
                                    ).FirstOrDefaultAsync();
-               
 
-                return new Response {IsSuccess=true,Resultado=Empleado };
+
+                return new Response { IsSuccess = true, Resultado = Empleado };
             }
             catch (Exception ex)
             {
-                return new Response {IsSuccess=false};
+                return new Response { IsSuccess = false };
             }
         }
 
@@ -1492,25 +1492,25 @@ namespace bd.swth.web.Controllers.API
                     Identificacion = empleadoObtenido.Persona.Identificacion,
                     TelefonoPrivado = empleadoObtenido.Persona.TelefonoPrivado,
                     CorreoPrivado = empleadoObtenido.Persona.CorreoPrivado,
-                    Dependencia = (empleadoObtenido.Dependencia != null)?empleadoObtenido.Dependencia.Nombre:"",
-                    
-                    InstitucionBancaria = (empleadoObtenido.DatosBancarios != null && empleadoObtenido.DatosBancarios.Count > 0)?empleadoObtenido.DatosBancarios.FirstOrDefault().InstitucionFinanciera.Nombre: "",
-                    
-                    NoCuenta = (empleadoObtenido.DatosBancarios != null && empleadoObtenido.DatosBancarios.Count > 0) ? 
-                    empleadoObtenido.DatosBancarios.FirstOrDefault().NumeroCuenta:"",
-                    
-                    TipoCuenta = (empleadoObtenido.DatosBancarios != null && empleadoObtenido.DatosBancarios.Count > 0) ? empleadoObtenido.DatosBancarios.FirstOrDefault().Ahorros:false,
-                    
-                    RolPuesto = (empleadoObtenido.IndiceOcupacionalModalidadPartida != null && empleadoObtenido.IndiceOcupacionalModalidadPartida.Count > 0) ?empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.Nombre :"",
-                     
-                    FondoFinanciamiento = (empleadoObtenido.IndiceOcupacionalModalidadPartida != null && empleadoObtenido.IndiceOcupacionalModalidadPartida.Count > 0) ?empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().FondoFinanciamiento.Nombre:"",
-                    
-                    IdConfiguracionViatico = (empleadoObtenido.IndiceOcupacionalModalidadPartida != null && empleadoObtenido.IndiceOcupacionalModalidadPartida.Count > 0) ? 
+                    Dependencia = (empleadoObtenido.Dependencia != null) ? empleadoObtenido.Dependencia.Nombre : "",
+
+                    InstitucionBancaria = (empleadoObtenido.DatosBancarios != null && empleadoObtenido.DatosBancarios.Count > 0) ? empleadoObtenido.DatosBancarios.FirstOrDefault().InstitucionFinanciera.Nombre : "",
+
+                    NoCuenta = (empleadoObtenido.DatosBancarios != null && empleadoObtenido.DatosBancarios.Count > 0) ?
+                    empleadoObtenido.DatosBancarios.FirstOrDefault().NumeroCuenta : "",
+
+                    TipoCuenta = (empleadoObtenido.DatosBancarios != null && empleadoObtenido.DatosBancarios.Count > 0) ? empleadoObtenido.DatosBancarios.FirstOrDefault().Ahorros : false,
+
+                    RolPuesto = (empleadoObtenido.IndiceOcupacionalModalidadPartida != null && empleadoObtenido.IndiceOcupacionalModalidadPartida.Count > 0) ? empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.Nombre : "",
+
+                    FondoFinanciamiento = (empleadoObtenido.IndiceOcupacionalModalidadPartida != null && empleadoObtenido.IndiceOcupacionalModalidadPartida.Count > 0) ? empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().FondoFinanciamiento.Nombre : "",
+
+                    IdConfiguracionViatico = (empleadoObtenido.IndiceOcupacionalModalidadPartida != null && empleadoObtenido.IndiceOcupacionalModalidadPartida.Count > 0) ?
                         (empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional != null && empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.ConfiguracionViatico.Count > 0) ?
-                    empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.ConfiguracionViatico.FirstOrDefault().IdConfiguracionViatico:0:0,
-                    
+                    empleadoObtenido.IndiceOcupacionalModalidadPartida.FirstOrDefault().IndiceOcupacional.RolPuesto.ConfiguracionViatico.FirstOrDefault().IdConfiguracionViatico : 0 : 0,
+
                     FechaIngreso = empleadoObtenido.FechaIngreso
-                    
+
                 };
                 empleadoEnviar = empleados;
                 //listaEmpleado.Add(empleados);
@@ -1880,7 +1880,7 @@ namespace bd.swth.web.Controllers.API
                 if (EmpleadoJefe != null)
                 {
 
-                    var listaSubordinados = await db.Empleado.Where(x => x.IdDependencia == EmpleadoJefe.IdDependencia && x.EsJefe == false && x.Activo==true).Include(x => x.Persona).Include(x => x.SolicitudViatico).ToListAsync();
+                    var listaSubordinados = await db.Empleado.Where(x => x.IdDependencia == EmpleadoJefe.IdDependencia && x.EsJefe == false && x.Activo == true).Include(x => x.Persona).Include(x => x.SolicitudViatico).ToListAsync();
 
                     var listaEmpleado = new List<EmpleadoSolicitudViewModel>();
                     foreach (var item in listaSubordinados)
@@ -1936,6 +1936,71 @@ namespace bd.swth.web.Controllers.API
                 return new List<EmpleadoSolicitudViewModel>();
             }
         }
+
+        [HttpPost]
+        [Route("ListarEmpleadosTalentoHumanoconSolucitudesViaticos")]
+        public async Task<List<EmpleadoSolicitudViewModel>> ListarEmpleadosTalentoHumanoconSolucitudesViaticos([FromBody]Empleado empleado)
+        {
+            try
+            {
+
+                var listaSubordinados = await db.Empleado.Where(x => x.Activo == true).Include(x => x.Persona).Include(x => x.SolicitudViatico).ToListAsync();
+
+                var listaEmpleado = new List<EmpleadoSolicitudViewModel>();
+                foreach (var item in listaSubordinados)
+                {
+                    var haSolicitado = false;
+                    var aprobado = true;
+
+                    if (item.SolicitudViatico.Count != 0)
+                    {
+                        haSolicitado = false;
+                        aprobado = false;
+
+                        foreach (var item1 in item.SolicitudViatico)
+                        {
+
+                            if (item1.Estado == 0)
+                            {
+                                haSolicitado = true;
+                                aprobado = false;
+                                break;
+                            }
+                        }
+
+                        var empleadoSolicitud = new EmpleadoSolicitudViewModel
+                        {
+                            NombreApellido = item.Persona.Nombres + " " + item.Persona.Apellidos,
+                            Identificacion = item.Persona.Identificacion,
+                            Aprobado = aprobado,
+                            IdEmpleado = item.IdEmpleado,
+                            HaSolicitado = haSolicitado,
+                        };
+
+                        listaEmpleado.Add(empleadoSolicitud);
+                    }
+                    return listaEmpleado;
+
+                }
+
+                return new List<EmpleadoSolicitudViewModel>();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex.Message,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<EmpleadoSolicitudViewModel>();
+            }
+        }
+
 
         [HttpPost]
         [Route("ListarEmpleadosdeJefeconHorasExtra")]
@@ -2055,33 +2120,33 @@ namespace bd.swth.web.Controllers.API
                     if (!respuesta.IsSuccess)
                     {
 
-                        var empleadoActual =await db.Empleado.Where(x => x.IdEmpleado == datosBasicosEmpleado.IdEmpleado).FirstOrDefaultAsync();
-                        var personaActual =await db.Persona.Where(x => x.IdPersona == empleadoActual.IdPersona).FirstOrDefaultAsync();
+                        var empleadoActual = await db.Empleado.Where(x => x.IdEmpleado == datosBasicosEmpleado.IdEmpleado).FirstOrDefaultAsync();
+                        var personaActual = await db.Persona.Where(x => x.IdPersona == empleadoActual.IdPersona).FirstOrDefaultAsync();
 
                         personaActual.FechaNacimiento = datosBasicosEmpleado.FechaNacimiento;
-                            personaActual.IdSexo = datosBasicosEmpleado.IdSexo;
-                            personaActual.IdTipoIdentificacion = datosBasicosEmpleado.IdTipoIdentificacion;
-                            personaActual.IdEstadoCivil = datosBasicosEmpleado.IdEstadoCivil;
-                            personaActual.IdGenero = datosBasicosEmpleado.IdGenero;
-                            personaActual.IdNacionalidad = datosBasicosEmpleado.IdNacionalidad;
-                            personaActual.IdTipoSangre = datosBasicosEmpleado.IdTipoSangre;
-                            personaActual.IdEtnia = datosBasicosEmpleado.IdEtnia;
-                            personaActual.Identificacion = datosBasicosEmpleado.Identificacion;
-                            personaActual.Nombres = datosBasicosEmpleado.Nombres;
-                            personaActual.Apellidos = datosBasicosEmpleado.Apellidos;
-                            personaActual.TelefonoPrivado = datosBasicosEmpleado.TelefonoPrivado;
-                            personaActual.TelefonoCasa = datosBasicosEmpleado.TelefonoCasa;
-                            personaActual.CorreoPrivado = datosBasicosEmpleado.CorreoPrivado;
-                            personaActual.LugarTrabajo = datosBasicosEmpleado.LugarTrabajo;
-                            personaActual.IdNacionalidadIndigena = datosBasicosEmpleado.IdNacionalidadIndigena;
-                            personaActual.CallePrincipal = datosBasicosEmpleado.CallePrincipal;
-                            personaActual.CalleSecundaria = datosBasicosEmpleado.CalleSecundaria;
-                            personaActual.Referencia = datosBasicosEmpleado.Referencia;
-                            personaActual.Numero = datosBasicosEmpleado.Numero;
-                            personaActual.IdParroquia = datosBasicosEmpleado.IdParroquia;
-                            personaActual.Ocupacion = datosBasicosEmpleado.Ocupacion;
+                        personaActual.IdSexo = datosBasicosEmpleado.IdSexo;
+                        personaActual.IdTipoIdentificacion = datosBasicosEmpleado.IdTipoIdentificacion;
+                        personaActual.IdEstadoCivil = datosBasicosEmpleado.IdEstadoCivil;
+                        personaActual.IdGenero = datosBasicosEmpleado.IdGenero;
+                        personaActual.IdNacionalidad = datosBasicosEmpleado.IdNacionalidad;
+                        personaActual.IdTipoSangre = datosBasicosEmpleado.IdTipoSangre;
+                        personaActual.IdEtnia = datosBasicosEmpleado.IdEtnia;
+                        personaActual.Identificacion = datosBasicosEmpleado.Identificacion;
+                        personaActual.Nombres = datosBasicosEmpleado.Nombres;
+                        personaActual.Apellidos = datosBasicosEmpleado.Apellidos;
+                        personaActual.TelefonoPrivado = datosBasicosEmpleado.TelefonoPrivado;
+                        personaActual.TelefonoCasa = datosBasicosEmpleado.TelefonoCasa;
+                        personaActual.CorreoPrivado = datosBasicosEmpleado.CorreoPrivado;
+                        personaActual.LugarTrabajo = datosBasicosEmpleado.LugarTrabajo;
+                        personaActual.IdNacionalidadIndigena = datosBasicosEmpleado.IdNacionalidadIndigena;
+                        personaActual.CallePrincipal = datosBasicosEmpleado.CallePrincipal;
+                        personaActual.CalleSecundaria = datosBasicosEmpleado.CalleSecundaria;
+                        personaActual.Referencia = datosBasicosEmpleado.Referencia;
+                        personaActual.Numero = datosBasicosEmpleado.Numero;
+                        personaActual.IdParroquia = datosBasicosEmpleado.IdParroquia;
+                        personaActual.Ocupacion = datosBasicosEmpleado.Ocupacion;
                         //1. Actualizar Persona Persona 
-                        var personaInsertarda =  db.Persona.Update(personaActual);
+                        var personaInsertarda = db.Persona.Update(personaActual);
 
                         //2. Insertar Empleado 
                         empleadoActual.IdPersona = personaInsertarda.Entity.IdPersona;
@@ -2107,7 +2172,7 @@ namespace bd.swth.web.Controllers.API
                         empleadoActual.TipoRelacion = datosBasicosEmpleado.TipoRelacion;
                         empleadoActual.IdBrigadaSSORol = datosBasicosEmpleado.IdBrigadaSSORol;
 
-                        var empleado =  db.Empleado.Update(empleadoActual);
+                        var empleado = db.Empleado.Update(empleadoActual);
                         await db.SaveChangesAsync();
 
 
@@ -2193,8 +2258,8 @@ namespace bd.swth.web.Controllers.API
                             Numero = datosBasicosEmpleado.Numero,
                             IdParroquia = datosBasicosEmpleado.IdParroquia,
                             Ocupacion = datosBasicosEmpleado.Ocupacion,
-                            
-                            
+
+
 
                         };
                         //1. Insertar Persona 
@@ -2207,9 +2272,9 @@ namespace bd.swth.web.Controllers.API
                             IdPersona = personaInsertarda.Entity.IdPersona,
                             IdCiudadLugarNacimiento = datosBasicosEmpleado.IdCiudadLugarNacimiento,
                             IdProvinciaLugarSufragio = datosBasicosEmpleado.IdProvinciaLugarSufragio,
-                            FondosReservas=false,
-                            MesesImposiciones=0,
-                            DiasImposiciones=0,
+                            FondosReservas = false,
+                            MesesImposiciones = 0,
+                            DiasImposiciones = 0,
                         };
                         var empleado = await db.Empleado.AddAsync(empleadoinsertado);
                         await db.SaveChangesAsync();
@@ -2770,8 +2835,8 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(DatosBasicosEmpleadoViewModel datosBasicosEmpleado)
         {
             var identificacion = datosBasicosEmpleado.Identificacion.ToUpper().TrimEnd().TrimStart();
-            var Empleadorespuesta = db.Persona.Where(p => p.Identificacion == identificacion).Include(x=>x.Empleado).FirstOrDefault();
-            
+            var Empleadorespuesta = db.Persona.Where(p => p.Identificacion == identificacion).Include(x => x.Empleado).FirstOrDefault();
+
             if (Empleadorespuesta != null)
             {
                 if (datosBasicosEmpleado.IdEmpleado == Empleadorespuesta.Empleado.FirstOrDefault().IdEmpleado)
@@ -3193,7 +3258,7 @@ namespace bd.swth.web.Controllers.API
                                 }).FirstOrDefault();
                                 if (PuestoActual != null)
                                 {
-                                    var informeuth = await db.InformeUATH.Where(x=> x.IdManualPuestoOrigen == PuestoActual.IdManualPuesto).FirstOrDefaultAsync();
+                                    var informeuth = await db.InformeUATH.Where(x => x.IdManualPuestoOrigen == PuestoActual.IdManualPuesto).FirstOrDefaultAsync();
                                     var puestopropuesto = await db.ManualPuesto.Where(x => x.IdManualPuesto == informeuth.IdManualPuestoDestino).FirstOrDefaultAsync();
                                     //var puestopropuesto = await db.InformeUATH.Where(x => x.IdManualPuestoDestino == informeuth.IdManualPuestoDestino).Select(e => new ManualPuesto
                                     //{
