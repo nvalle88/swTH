@@ -59,13 +59,33 @@ namespace bd.swth.web.Controllers.API
             //Persona persona = new Persona();
             try
             {
+                var SolicitudViaticos = new List<SolicitudViatico>();
+                //var SolicitudViaticos1 = new List<SolicitudViatico>();
+                //var emple = await db.Empleado.Where(x => x.IdEmpleado == empleado.IdEmpleado && x.EsJefe == true && x.Activo == true).FirstOrDefaultAsync();
+                //if (emple != null)
+                //{
 
-                var SolicitudViaticos = await db.SolicitudViatico
-                                   .Where(e => e.IdEmpleado == empleado.IdEmpleado).ToListAsync();
-                //var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado };
+                //    var emplea = await db.Empleado.Where(x => x.IdDependencia == emple.IdDependencia && x.Activo == true).ToListAsync();
+                //    foreach (var item in emplea)
+                //    {
+                //        SolicitudViaticos1 = await db.SolicitudViatico
+                //                                       .Where(e => e.IdEmpleado == item.IdEmpleado).ToListAsync();
+                //        if (SolicitudViaticos1.Count != 0) {
 
+                //            SolicitudViaticos.AddRange(SolicitudViaticos1);
+                //        }
 
+                //    }
+                //}
+                //else
+                //{
+                    SolicitudViaticos = await db.SolicitudViatico
+                                        .Where(e => e.IdEmpleado == empleado.IdEmpleado).ToListAsync();
+                    //var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado };
+                //}
                 return SolicitudViaticos;
+
+
             }
             catch (Exception ex)
             {
@@ -234,15 +254,6 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = ""
-                    };
-                }
-
                 var respuesta = Existe(solicitudViaticoViewModel.SolicitudViatico);
                 if (!respuesta.IsSuccess)
                 {
@@ -250,12 +261,12 @@ namespace bd.swth.web.Controllers.API
                     await db.SaveChangesAsync();
 
                     //solicitudViaticoViewModel.SolicitudTipoViatico. = solicitudViatico.Entity.IdSolicitudViatico;
-                  
+
 
                     foreach (var item in solicitudViaticoViewModel.ViaticosSeleccionados)
                     {
 
-                    
+
                         var solTipoViatico = new SolicitudTipoViatico
                         {
                             IdSolicitudViatico = solicitudViatico.Entity.IdSolicitudViatico,
@@ -309,7 +320,7 @@ namespace bd.swth.web.Controllers.API
             Decimal valor = new Decimal();
             try
             {
-           
+
 
                 var solicitudViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
 
@@ -382,7 +393,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-               
+
 
                 var solicitudViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViaticoViewModel.SolicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
 
@@ -390,7 +401,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        
+
                         solicitudViaticoActualizar.Estado = solicitudViaticoViewModel.SolicitudViatico.Estado;
                         await db.SaveChangesAsync();
 
@@ -510,8 +521,8 @@ namespace bd.swth.web.Controllers.API
             var bdd13 = SolicitudViatico.HoraSalida;
             var bdd14 = SolicitudViatico.HoraLlegada;
             var solicitudviaticorespuesta = db.SolicitudViatico.Where(p => p.IdEmpleado == bdd1
-            && p.IdPais == bdd2 
-            && p.IdProvincia == bdd3 
+            && p.IdPais == bdd2
+            && p.IdProvincia == bdd3
             && p.IdCiudad == bdd4
             && p.IdConfiguracionViatico == bdd5
             && p.FechaSolicitud == bdd6

@@ -1875,12 +1875,12 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 var EmpleadoJefe = await db.Empleado
-                                   .Where(e => e.NombreUsuario == empleado.NombreUsuario && e.EsJefe == true).FirstOrDefaultAsync();
+                                   .Where(e => e.NombreUsuario == empleado.NombreUsuario && e.EsJefe == true && e.Activo == true).FirstOrDefaultAsync();
 
                 if (EmpleadoJefe != null)
                 {
 
-                    var listaSubordinados = await db.Empleado.Where(x => x.IdDependencia == EmpleadoJefe.IdDependencia && x.EsJefe == false).Include(x => x.Persona).Include(x => x.SolicitudViatico).ToListAsync();
+                    var listaSubordinados = await db.Empleado.Where(x => x.IdDependencia == EmpleadoJefe.IdDependencia && x.EsJefe == false && x.Activo==true).Include(x => x.Persona).Include(x => x.SolicitudViatico).ToListAsync();
 
                     var listaEmpleado = new List<EmpleadoSolicitudViewModel>();
                     foreach (var item in listaSubordinados)
@@ -1888,13 +1888,11 @@ namespace bd.swth.web.Controllers.API
                         var haSolicitado = false;
                         var aprobado = true;
 
-                        if (item.SolicitudViatico.Count == 0)
+                        if (item.SolicitudViatico.Count != 0)
                         {
                             haSolicitado = false;
                             aprobado = false;
-                        }
-                        else
-                        {
+
                             foreach (var item1 in item.SolicitudViatico)
                             {
 
@@ -1905,23 +1903,19 @@ namespace bd.swth.web.Controllers.API
                                     break;
                                 }
                             }
+
+                            var empleadoSolicitud = new EmpleadoSolicitudViewModel
+                            {
+                                NombreApellido = item.Persona.Nombres + " " + item.Persona.Apellidos,
+                                Identificacion = item.Persona.Identificacion,
+                                Aprobado = aprobado,
+                                IdEmpleado = item.IdEmpleado,
+                                HaSolicitado = haSolicitado,
+                            };
+
+                            listaEmpleado.Add(empleadoSolicitud);
                         }
-
-
-
-
-                        var empleadoSolicitud = new EmpleadoSolicitudViewModel
-                        {
-                            NombreApellido = item.Persona.Nombres + " " + item.Persona.Apellidos,
-                            Identificacion = item.Persona.Identificacion,
-                            Aprobado = aprobado,
-                            IdEmpleado = item.IdEmpleado,
-                            HaSolicitado = haSolicitado,
-                        };
-
-                        listaEmpleado.Add(empleadoSolicitud);
                     }
-
                     return listaEmpleado;
                 }
 
