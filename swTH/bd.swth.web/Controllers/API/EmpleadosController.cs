@@ -1937,9 +1937,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("ListarEmpleadosTalentoHumanoconSolucitudesViaticos")]
-        public async Task<List<EmpleadoSolicitudViewModel>> ListarEmpleadosTalentoHumanoconSolucitudesViaticos([FromBody]Empleado empleado)
+        public async Task<List<EmpleadoSolicitudViewModel>> ListarEmpleadosTalentoHumanoconSolucitudesViaticos()
         {
             try
             {
@@ -1979,11 +1979,10 @@ namespace bd.swth.web.Controllers.API
 
                         listaEmpleado.Add(empleadoSolicitud);
                     }
-                    return listaEmpleado;
-
+                    
                 }
-
-                return new List<EmpleadoSolicitudViewModel>();
+                return listaEmpleado;
+               // return new List<EmpleadoSolicitudViewModel>();
             }
             catch (Exception ex)
             {
