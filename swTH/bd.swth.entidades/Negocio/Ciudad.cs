@@ -11,6 +11,8 @@ namespace bd.swth.entidades.Negocio
         public int IdProvincia { get; set; }
         public string Nombre { get; set; }
 
+        public virtual ICollection<InformeViatico> InformeViaticoIdCiudadDestino{ get; set; }
+        public virtual ICollection<InformeViatico> InformeViaticoIdCiudadOrigen { get; set; }
         public virtual ICollection<Empleado> Empleado { get; set; }
         public virtual ICollection<Parroquia> Parroquia { get; set; }
         public virtual ICollection<SolicitudViatico> SolicitudViatico { get; set; }

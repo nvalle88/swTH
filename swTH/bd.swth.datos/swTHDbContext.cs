@@ -2690,19 +2690,41 @@ namespace bd.swth.datos
             modelBuilder.Entity<InformeViatico>(entity =>
             {
                 entity.HasKey(e => e.IdInformeViatico)
-                    .HasName("PK_InformeViatico");
+                    .HasName("PK257");
 
                 entity.HasIndex(e => e.IdItinerarioViatico)
-                    .HasName("IX_InformeViatico_IdItinerarioViatico");
+                    .HasName("Ref251396");
 
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasMaxLength(20);
+                entity.Property(e => e.Descripcion).HasColumnType("text");
+
+                entity.Property(e => e.FechaLlegada).HasColumnType("date");
+
+                entity.Property(e => e.FechaSalida).HasColumnType("date");
+
+                entity.Property(e => e.HoraLlegada).HasColumnName("HoraLLegada");
+
+                entity.Property(e => e.NombreTransporte).HasColumnType("varchar(250)");
+
+                entity.HasOne(d => d.CiudadDestino)
+                    .WithMany(p => p.InformeViaticoIdCiudadDestino)
+                    .HasForeignKey(d => d.IdCiudadDestino)
+                    .HasConstraintName("FK_InformeViatico_Ciudad");
+
+                entity.HasOne(d => d.CiudadOrigen)
+                    .WithMany(p => p.InformeViaticoIdCiudadOrigen)
+                    .HasForeignKey(d => d.IdCiudadOrigen)
+                    .HasConstraintName("FK_InformeViatico_Ciudad1");
 
                 entity.HasOne(d => d.ItinerarioViatico)
                     .WithMany(p => p.InformeViatico)
                     .HasForeignKey(d => d.IdItinerarioViatico)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefItinerarioViatico396");
+
+                entity.HasOne(d => d.TipoTransporte)
+                    .WithMany(p => p.InformeViatico)
+                    .HasForeignKey(d => d.IdTipoTransporte)
+                    .HasConstraintName("FK_InformeViatico_TipoTransporte");
             });
 
             modelBuilder.Entity<IngresoEgresoRMU>(entity =>
