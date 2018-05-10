@@ -51,6 +51,21 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        // [HttpPost] api/TiposAccionesPersonales
+        [HttpPost]
+        [Route("ObtenerTipoAccionPersonal")]
+        public async Task<TipoAccionPersonal> ObtenerTipoAccionPersonal([FromBody] TipoAccionPersonal tipoAccionPersonal)
+        {
+            try
+            {
+                return await db.TipoAccionPersonal.Where(x => x.IdTipoAccionPersonal == tipoAccionPersonal.IdTipoAccionPersonal).FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                return new TipoAccionPersonal();
+            }
+        }
+
 
         [HttpPost]
         [Route("ListarTiposAccionesPersonalesPorEsTalentoHumano")]
