@@ -187,6 +187,7 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.Proceso> Proceso { get; set; }
         public virtual DbSet<ProcesoDetalle> ProcesoDetalle { get; set; }
         public virtual DbSet<Provincia> Provincia { get; set; }
+        public virtual DbSet<Quejas> Quejas { get; set; }
         public virtual DbSet<Provisiones> Provisiones { get; set; }
         public virtual DbSet<RealizaExamenInduccion> RealizaExamenInduccion { get; set; }
         public virtual DbSet<RecepcionActivoFijoDetalle> RecepcionActivoFijoDetalle { get; set; }
@@ -2111,18 +2112,20 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdFrecuenciaAplicacion)
                     .HasName("Ref4574");
 
-                entity.HasIndex(e => e.IdRelevancia)
-                    .HasName("Ref4173");
+                entity.HasOne(d => d.ComportamientoObservable)
+                    .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgo)
+                    .HasForeignKey(d => d.IdComportamientoObservable)
+                    .HasConstraintName("FK_EvaluacionTrabajoEquipoIniciativaLiderazgo_ComportamientoObservable");
+
+                entity.HasOne(d => d.Eval001)
+                    .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgo)
+                    .HasForeignKey(d => d.IdEval001)
+                    .HasConstraintName("FK_EvaluacionTrabajoEquipoIniciativaLiderazgo_Eval001");
 
                 entity.HasOne(d => d.FrecuenciaAplicacion)
                     .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgo)
                     .HasForeignKey(d => d.IdFrecuenciaAplicacion)
                     .HasConstraintName("RefFrecuenciaAplicacion74");
-
-                entity.HasOne(d => d.Relevancia)
-                    .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgo)
-                    .HasForeignKey(d => d.IdRelevancia)
-                    .HasConstraintName("RefRelevancia73");
             });
             modelBuilder.Entity<Evaluador>(entity =>
             {
@@ -2693,19 +2696,41 @@ namespace bd.swth.datos
             modelBuilder.Entity<InformeViatico>(entity =>
             {
                 entity.HasKey(e => e.IdInformeViatico)
-                    .HasName("PK_InformeViatico");
+                    .HasName("PK257");
 
                 entity.HasIndex(e => e.IdItinerarioViatico)
-                    .HasName("IX_InformeViatico_IdItinerarioViatico");
+                    .HasName("Ref251396");
 
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasMaxLength(20);
+                entity.Property(e => e.Descripcion).HasColumnType("text");
+
+                entity.Property(e => e.FechaLlegada).HasColumnType("date");
+
+                entity.Property(e => e.FechaSalida).HasColumnType("date");
+
+                entity.Property(e => e.HoraLlegada).HasColumnName("HoraLLegada");
+
+                entity.Property(e => e.NombreTransporte).HasColumnType("varchar(250)");
+
+                entity.HasOne(d => d.CiudadDestino)
+                    .WithMany(p => p.InformeViaticoIdCiudadDestino)
+                    .HasForeignKey(d => d.IdCiudadDestino)
+                    .HasConstraintName("FK_InformeViatico_Ciudad");
+
+                entity.HasOne(d => d.CiudadOrigen)
+                    .WithMany(p => p.InformeViaticoIdCiudadOrigen)
+                    .HasForeignKey(d => d.IdCiudadOrigen)
+                    .HasConstraintName("FK_InformeViatico_Ciudad1");
 
                 entity.HasOne(d => d.ItinerarioViatico)
                     .WithMany(p => p.InformeViatico)
                     .HasForeignKey(d => d.IdItinerarioViatico)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefItinerarioViatico396");
+
+                entity.HasOne(d => d.TipoTransporte)
+                    .WithMany(p => p.InformeViatico)
+                    .HasForeignKey(d => d.IdTipoTransporte)
+                    .HasConstraintName("FK_InformeViatico_TipoTransporte");
             });
 
             modelBuilder.Entity<IngresoEgresoRMU>(entity =>
@@ -3418,6 +3443,31 @@ namespace bd.swth.datos
                     .WithMany(p => p.Provisiones)
                     .HasForeignKey(d => d.IdTipoProvision)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+
+            modelBuilder.Entity<Quejas>(entity =>
+            {
+                entity.HasKey(e => e.IdQueja)
+                    .HasName("PK_Quejas");
+
+                entity.Property(e => e.Apellido).HasColumnType("varchar(100)");
+
+                entity.Property(e => e.Descripcion).HasColumnType("varchar(1000)");
+
+                entity.Property(e => e.Nombre).HasColumnType("varchar(100)");
+
+                entity.Property(e => e.NumeroFormulario).HasColumnType("varchar(50)");
+
+                entity.HasOne(d => d.Empleado)
+                    .WithMany(p => p.Quejas)
+                    .HasForeignKey(d => d.IdEmpleado)
+                    .HasConstraintName("FK_Quejas_Empleado");
+
+                entity.HasOne(d => d.Eval001)
+                    .WithMany(p => p.Quejas)
+                    .HasForeignKey(d => d.IdEval001)
+                    .HasConstraintName("FK_Quejas_Eval001");
             });
 
             modelBuilder.Entity<RealizaExamenInduccion>(entity =>

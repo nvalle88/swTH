@@ -8,6 +8,7 @@ using bd.swth.entidades.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MoreLinq;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -22,14 +23,43 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/BasesDatos
-        [HttpGet]
-        [Route("ListarGastoPersonal")]
-        public async Task<List<GastoPersonal>> ListarGastoPersonal()
+        [HttpPost]
+        [Route("BuscarHistorico")]
+        public async Task<List<GastoPersonal>> BuscarHistorico([FromBody] GastoPersonal gastoPersonal)
         {
             try
             {
-                return await db.GastoPersonal.OrderBy(x => x.Valor).Include(x => x.TipoDeGastoPersonal).ToListAsync();
+                return await db.GastoPersonal.Where(x => x.IdEmpleado == gastoPersonal.IdEmpleado && x.Ano==gastoPersonal.Ano).Include(x=>x.TipoDeGastoPersonal).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return new List<GastoPersonal>();
+            }
+        }
+
+        [HttpPost]
+        [Route("ListarAnosGastoPersonal")]
+        public  List<GastoPersonal> ListarAnosGastoPersonal([FromBody] GastoPersonal gastoPersonal)
+        {
+            try
+            {
+                return  db.GastoPersonal.Where(x => x.IdEmpleado == gastoPersonal.IdEmpleado).DistinctBy(x=>x.Ano).OrderBy(x => x.Ano).ToList();
+            }
+            catch (Exception ex)
+            {
+                return new List<GastoPersonal>();
+            }
+        }
+
+        // GET: api/BasesDatos
+        [HttpPost]
+        [Route("ListarGastoPersonal")]
+        public async Task<List<GastoPersonal>> ListarGastoPersonal([FromBody] GastoPersonal gastoPersonal)
+        {
+            try
+            {
+                var a = await db.GastoPersonal.Where(x => x.Ano == gastoPersonal.Ano && x.IdEmpleado == gastoPersonal.IdEmpleado).OrderBy(x => x.TipoDeGastoPersonal.Descripcion).Include(x => x.TipoDeGastoPersonal).ToListAsync();
+                return a;
             }
             catch (Exception ex)
             {
@@ -99,7 +129,7 @@ namespace bd.swth.web.Controllers.API
                 }
 
                 GastoPersonalActualizar.Valor = GastoPersonal.Valor;
-                GastoPersonalActualizar.IdTipoGasto = GastoPersonal.IdTipoGasto;
+                GastoPersonalActualizar.IdTipoGastoPersonal = GastoPersonal.IdTipoGastoPersonal;
                 db.GastoPersonal.Update(GastoPersonalActualizar);
                 await db.SaveChangesAsync();
 
@@ -146,7 +176,7 @@ namespace bd.swth.web.Controllers.API
                 };
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new Response
                 {
@@ -195,9 +225,9 @@ namespace bd.swth.web.Controllers.API
 
         private async Task<bool> Existe(GastoPersonal GastoPersonal)
         {
-            var tipoGasto = GastoPersonal.IdTipoGasto;
+            var tipoGasto = GastoPersonal.IdTipoGastoPersonal;
             var ano = GastoPersonal.Ano;
-            var GastoPersonalrespuesta = await db.GastoPersonal.Where(p => p.IdTipoGasto== tipoGasto && p.Ano==ano).FirstOrDefaultAsync();
+            var GastoPersonalrespuesta = await db.GastoPersonal.Where(p => p.IdTipoGastoPersonal == tipoGasto && p.Ano==ano && p.IdEmpleado==GastoPersonal.IdEmpleado).FirstOrDefaultAsync();
 
             if (GastoPersonalrespuesta == null || GastoPersonalrespuesta.IdGastoPersonal == GastoPersonal.IdGastoPersonal)
             {

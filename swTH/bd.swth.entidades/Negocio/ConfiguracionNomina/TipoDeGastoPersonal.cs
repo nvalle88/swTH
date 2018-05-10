@@ -14,7 +14,7 @@ namespace bd.swth.entidades.Negocio
 
         public string NombreConstante { get; set; }
 
-        public virtual ICollection<GastoPersonal> GastoPersonal { get; set; }
+        public virtual List<GastoPersonal> GastoPersonal { get; set; }
 
     }
 }

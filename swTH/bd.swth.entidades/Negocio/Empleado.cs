@@ -66,7 +66,7 @@ namespace bd.swth.entidades.Negocio
         public virtual Dependencia Dependencia { get; set; }
 
 
-
+        public virtual ICollection<Quejas> Quejas { get; set; }
         public virtual ICollection<LavadoActivoEmpleado> LavadoActivoEmpleado { get; set; }
         
         public virtual ICollection<RolPagos> RolPagos { get; set; }

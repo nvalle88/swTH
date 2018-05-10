@@ -25,9 +25,28 @@ namespace bd.swth.entidades.ViewModels
         public List<string> ListaActividadescumplidos { get; set; }
         public List<string> ConocimientosEsenciales { get; set; }
         public List<string> IdAreaConocimiento { get; set; }
-
+        public List<string> PorcentajeCumplido { get; set; }
+        public List<string> NivelCumplimiento { get; set; }
+        public string PorcentajeAumento { get; set; }
         //Competencias Tecnicas Puesto
         public List<string> IdComportamientoObervable { get; set; }
         public List<string> IdNivelDesarrollos { get; set; }
+        public List<string> IdFrecuenciaAplicaciones { get; set; }
+
+        //totales
+        public int TotalConocimiento { get; set; }
+
+        //Observaciones
+        public string Observaciones { get; set; }
+
+
+        // totales
+        public double ActividadesTotal { get; set; }
+        public double TotalConocimientos { get; set; }
+        public double TotalCompetenciasTecnicas { get; set; }
+        public double TotalCompetenciasUniversales { get; set; }
+        public double TotalTrabajoLiderazgo { get; set; }
+        public double TotalQuejas { get; set; }
+        public double TotalEvaluacion { get; set; }
     }
 }

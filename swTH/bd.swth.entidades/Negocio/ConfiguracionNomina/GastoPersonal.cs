@@ -12,9 +12,9 @@ namespace bd.swth.entidades.Negocio
 
         public int Ano { get; set; }
 
-        public decimal Valor { get; set; }
+        public double Valor { get; set; }
 
-        public int IdTipoGasto { get; set; }
+        public int IdTipoGastoPersonal { get; set; }
         public virtual TipoDeGastoPersonal TipoDeGastoPersonal { get; set; }
 
         public int IdEmpleado { get; set; }
