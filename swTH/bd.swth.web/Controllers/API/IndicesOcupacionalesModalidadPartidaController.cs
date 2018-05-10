@@ -12,7 +12,7 @@ using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
-
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -35,22 +35,11 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                //return await db.IndiceOcupacionalModalidadPartida.Include(x => x.IndiceOcupacional).Include(x => x.Empleado).Include(x => x.FondoFinanciamiento).Include(x => x.ModalidadPartida).Include(x => x.TipoNombramiento).OrderBy(x => x.Fecha).ToListAsync();
                 return await db.IndiceOcupacionalModalidadPartida.Include(x => x.IndiceOcupacional).Include(x => x.Empleado).Include(x => x.FondoFinanciamiento).Include(x => x.TipoNombramiento).OrderBy(x => x.Fecha).ToListAsync();
 
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<IndiceOcupacionalModalidadPartida>();
             }
         }
@@ -349,6 +338,59 @@ namespace bd.swth.web.Controllers.API
                 IsSuccess = false,
                 Resultado = IndiceOcupacionalModalidadPartidarespuesta,
             };
+        }
+
+
+
+
+        // GET: api/IndicesOcupacionalesModalidadPartida
+        [HttpGet]
+        [Route("ListarIndicesOcupacionalesModalidadPartidaViewModel")]
+        public async Task<List<IndicesOcupacionalesModalidadPartidaViewModel>> ListarIndicesOcupacionalesModalidadPartidaViewModel()
+        {
+            try
+            {
+                var lista = await db.IndiceOcupacionalModalidadPartida
+                    .Select(s => new IndicesOcupacionalesModalidadPartidaViewModel {
+                        IdIndiceOcupacionalModalidadPartida = s.IdIndiceOcupacionalModalidadPartida,
+                        IdIndiceOcupacional = s.IdIndiceOcupacional,
+                        IdEmpleado = s.IdEmpleado,
+                        IdFondoFinanciamiento = s.IdFondoFinanciamiento,
+                        IdTipoNombramiento = s.IdTipoNombramiento,
+                        Fecha = s.Fecha,
+                        SalarioReal = (s.SalarioReal != null)? (Decimal) s.SalarioReal : (Decimal) 0,
+
+                        IndiceOcupacionalViewModel = db.IndiceOcupacional
+                            .Where(w=>w.IdIndiceOcupacional == s.IdIndiceOcupacional)
+                            .Select(s2 =>new IndiceOcupacionalViewModel
+                            {
+                                IdIndiceOcupacional = s.IdIndiceOcupacional,
+                                Ambito = s2.Ambito.Nombre,
+                                Dependencia = s2.Dependencia.Nombre,
+                                EscalaGrado = s2.EscalaGrados.Nombre,
+                                ManualPuesto = s2.ManualPuesto.Nombre,
+                                Grado = s2.EscalaGrados.IdEscalaGrados,
+                                Mision = s2.ManualPuesto.Mision,
+                                ModalidadPartida = s2.ModalidadPartida.Nombre,
+                                Nivel = s2.EscalaGrados.GrupoOcupacional.TipoEscala,
+                                PartidaGeneral = s2.PartidaGeneral.IdPartidaGeneral,
+                                PartidaIndividual = s2.NumeroPartidaIndividual,
+                                Remuneracion = (Decimal)s2.EscalaGrados.Remuneracion,
+                                RolPuesto = s2.RolPuesto.Nombre,
+                                Sucursal = s2.Dependencia.Sucursal.Nombre
+                            })
+                            .FirstOrDefault()
+                        
+                    })
+                    .ToListAsync();
+
+                return lista;
+
+            }
+            catch (Exception ex)
+            {
+                return new List<IndicesOcupacionalesModalidadPartidaViewModel>();
+            }
         }
 
     }

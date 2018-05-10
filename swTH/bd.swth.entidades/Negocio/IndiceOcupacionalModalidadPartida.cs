@@ -42,8 +42,9 @@ namespace bd.swth.entidades.Negocio
         public int? IdTipoNombramiento { get; set; }
         public virtual TipoNombramiento TipoNombramiento { get; set; }
 
-        public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimiento { get; set; }
-
+        
+        public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimientoIdIndiceOcupacionalModalidadPartidaDesde { get; set; }
+        public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimientoIdIndiceOcupacionalModalidadPartidaHasta { get; set; }
 
 
     }
