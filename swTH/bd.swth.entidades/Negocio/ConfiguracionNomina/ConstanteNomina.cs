@@ -10,7 +10,7 @@ namespace bd.swth.entidades.Negocio
         [Key]
         public int IdConstante { get; set; }
         public string Constante { get; set; }
-        public string Valor { get; set; }
+        public double Valor { get; set; }
         public string Descripcion { get; set; }
     }
 }

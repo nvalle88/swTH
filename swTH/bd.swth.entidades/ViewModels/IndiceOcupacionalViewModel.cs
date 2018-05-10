@@ -20,5 +20,6 @@ namespace bd.swth.entidades.ViewModels
         public string PartidaIndividual { get; set; }
         public string Ambito { get; set; }
         public string Nivel { get; set; }
+        public string Sucursal { get; set; }
     }
 }

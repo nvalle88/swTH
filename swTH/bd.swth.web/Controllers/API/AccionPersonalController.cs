@@ -33,7 +33,7 @@ namespace bd.swth.web.Controllers.API
             {
                 var DiaActual = DateTime.Now;
                 var lista= await db.AccionPersonal
-                            .Where(x => x.Fecha.Year == DiaActual.Year && x.Fecha.Month==DiaActual.Month)
+                            .Where(x => x.Fecha.Year == DiaActual.Year &&  x.Fecha.Month ==DiaActual.Month)
                             .Include(x => x.Empleado).ThenInclude(x => x.Persona)
                             .Include(x => x.TipoAccionPersonal)
                             .ToListAsync();
@@ -51,7 +51,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                accionPersonal.NoDias = Convert.ToInt32(accionPersonal.FechaRige.Subtract(accionPersonal.FechaRigeHasta));
+                accionPersonal.NoDias = Convert.ToInt32(accionPersonal.FechaRige.Subtract((DateTime)accionPersonal.FechaRigeHasta));
                 db.AccionPersonal.Add(accionPersonal);
                 await db.SaveChangesAsync();
                 return new Response { IsSuccess = true, Resultado = accionPersonal };

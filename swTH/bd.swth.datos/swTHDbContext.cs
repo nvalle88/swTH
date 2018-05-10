@@ -675,34 +675,34 @@ namespace bd.swth.datos
             modelBuilder.Entity<AccionPersonal>(entity =>
             {
                 entity.HasKey(e => e.IdAccionPersonal)
-                    .HasName("PK_AccionPersonal");
+                    .HasName("PK188");
 
                 entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("IX_AccionPersonal_IdEmpleado");
+                    .HasName("Ref15463");
 
                 entity.HasIndex(e => e.IdTipoAccionPersonal)
-                    .HasName("IX_AccionPersonal_IdTipoAccionPersonal");
+                    .HasName("Ref305462");
 
-                entity.Property(e => e.Explicacion).IsRequired();
+                entity.Property(e => e.Explicacion).HasColumnType("text");
 
-                entity.Property(e => e.Numero)
-                    .IsRequired()
-                    .HasMaxLength(20);
+                entity.Property(e => e.Numero).HasColumnType("varchar(20)");
 
-                entity.Property(e => e.Solicitud).IsRequired();
+                entity.Property(e => e.Solicitud).HasColumnType("text");
 
                 entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.AccionPersonal)
                     .HasForeignKey(d => d.IdEmpleado)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefEmpleado463");
 
                 entity.HasOne(d => d.TipoAccionPersonal)
                     .WithMany(p => p.AccionPersonal)
                     .HasForeignKey(d => d.IdTipoAccionPersonal)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefTipoAccionPersonal462");
             });
 
-
+           
 
             modelBuilder.Entity<ActividadesAnalisisOcupacional>(entity =>
             {
@@ -1748,31 +1748,39 @@ namespace bd.swth.datos
             modelBuilder.Entity<EmpleadoMovimiento>(entity =>
             {
                 entity.HasKey(e => e.IdEmpleadoMovimiento)
-                    .HasName("PK_EmpleadoMovimiento");
+                    .HasName("PK126");
 
                 entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("IX_EmpleadoMovimiento_IdEmpleado");
+                    .HasName("Ref15414");
 
-                entity.HasIndex(e => e.IdIndiceOcupacionalModalidadPartida)
-                    .HasName("IX_EmpleadoMovimiento_IdIndiceOcupacionalModalidadPartida");
+                entity.HasIndex(e => e.IdIndiceOcupacionalModalidadPartidaDesde)
+                    .HasName("Ref71195");
 
-                entity.HasIndex(e => e.IdTipoMovimientoInterno)
-                    .HasName("IX_EmpleadoMovimiento_IdTipoMovimientoInterno");
+                entity.Property(e => e.FechaDesde).HasColumnType("date");
+
+                entity.Property(e => e.FechaHasta).HasColumnType("date");
+
+                entity.HasOne(d => d.AccionPersonal)
+                    .WithMany(p => p.EmpleadoMovimiento)
+                    .HasForeignKey(d => d.IdAccionPersonal)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_EmpleadoMovimiento_AccionPersonal");
 
                 entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.EmpleadoMovimiento)
                     .HasForeignKey(d => d.IdEmpleado)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_EmpleadoMovimiento_Empleado");
 
-                entity.HasOne(d => d.IndiceOcupacionalModalidadPartida)
-                    .WithMany(p => p.EmpleadoMovimiento)
-                    .HasForeignKey(d => d.IdIndiceOcupacionalModalidadPartida)
-                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.IndiceOcupacionalModalidadPartidaDesde)
+                    .WithMany(p => p.EmpleadoMovimientoIdIndiceOcupacionalModalidadPartidaDesde)
+                    .HasForeignKey(d => d.IdIndiceOcupacionalModalidadPartidaDesde)
+                    .HasConstraintName("RefIndiceOcupacionalModalidadPartida195");
 
-                entity.HasOne(d => d.TipoMovimientoInterno)
-                    .WithMany(p => p.EmpleadoMovimiento)
-                    .HasForeignKey(d => d.IdTipoMovimientoInterno)
-                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.IndiceOcupacionalModalidadPartidaHasta)
+                    .WithMany(p => p.EmpleadoMovimientoIdIndiceOcupacionalModalidadPartidaHasta)
+                    .HasForeignKey(d => d.IdIndiceOcupacionalModalidadPartidaHasta)
+                    .HasConstraintName("FK_EmpleadoMovimiento_IndiceOcupacionalModalidadPartida");
             });
 
             modelBuilder.Entity<EmpleadoNepotismo>(entity =>
@@ -2602,41 +2610,39 @@ namespace bd.swth.datos
             modelBuilder.Entity<IndiceOcupacionalModalidadPartida>(entity =>
             {
                 entity.HasKey(e => e.IdIndiceOcupacionalModalidadPartida)
-                    .HasName("PK_IndiceOcupacionalModalidadPartida");
+                    .HasName("PK71");
 
                 entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("IX_IndiceOcupacionalModalidadPartida_IdEmpleado");
+                    .HasName("Ref15189");
 
                 entity.HasIndex(e => e.IdFondoFinanciamiento)
-                    .HasName("IX_IndiceOcupacionalModalidadPartida_IdFondoFinanciamiento");
+                    .HasName("Ref59104");
 
                 entity.HasIndex(e => e.IdIndiceOcupacional)
-                    .HasName("IX_IndiceOcupacionalModalidadPartida_IdIndiceOcupacional");
-
+                    .HasName("Ref69103");
 
                 entity.HasIndex(e => e.IdTipoNombramiento)
-                    .HasName("IX_IndiceOcupacionalModalidadPartida_IdTipoNombramiento");
+                    .HasName("Ref58106");
+
+                entity.Property(e => e.Fecha).HasColumnType("date");
 
                 entity.Property(e => e.SalarioReal).HasColumnType("decimal");
 
-                entity.HasOne(d => d.Empleado)
-                    .WithMany(p => p.IndiceOcupacionalModalidadPartida)
-                    .HasForeignKey(d => d.IdEmpleado)
-                    .OnDelete(DeleteBehavior.Restrict);
-
                 entity.HasOne(d => d.FondoFinanciamiento)
                     .WithMany(p => p.IndiceOcupacionalModalidadPartida)
-                    .HasForeignKey(d => d.IdFondoFinanciamiento);
-
+                    .HasForeignKey(d => d.IdFondoFinanciamiento)
+                    .HasConstraintName("RefFondoFinanciamiento104");
+            
                 entity.HasOne(d => d.IndiceOcupacional)
                     .WithMany(p => p.IndiceOcupacionalModalidadPartida)
                     .HasForeignKey(d => d.IdIndiceOcupacional)
-                    .OnDelete(DeleteBehavior.Restrict);
-
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefIndiceOcupacional103");
 
                 entity.HasOne(d => d.TipoNombramiento)
                     .WithMany(p => p.IndiceOcupacionalModalidadPartida)
-                    .HasForeignKey(d => d.IdTipoNombramiento);
+                    .HasForeignKey(d => d.IdTipoNombramiento)
+                    .HasConstraintName("RefTipoNombramiento106");
             });
 
             modelBuilder.Entity<Induccion>(entity =>

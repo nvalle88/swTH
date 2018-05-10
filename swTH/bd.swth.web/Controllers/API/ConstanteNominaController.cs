@@ -30,7 +30,7 @@ namespace bd.swth.web.Controllers.API
             {
                 return await db.ConstanteNomina.OrderBy(x => x.Constante).ToListAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                
                 return new List<ConstanteNomina>();

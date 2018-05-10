@@ -12,6 +12,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using MoreLinq;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -104,7 +105,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/RolPuesto
+        // POST: api/RolesPuesto
         [HttpPost]
         [Route("InsertarRolPuesto")]
         public async Task<Response> PostRolPuesto([FromBody] RolPuesto rolPuesto)
@@ -313,5 +314,34 @@ namespace bd.swth.web.Controllers.API
                 Resultado = RolPuestorespuesta,
             };
         }
+
+
+
+        // POST: api/RolesPuesto
+        [HttpPost]
+        [Route("ListarRolesPorDependencia")]
+        public async Task<List<RolPuesto>> ListarRolesPorDependencia([FromBody] Dependencia dependencia)
+        {
+            try {
+
+                var listaRoles = db.IndiceOcupacional
+                    .Where(w => w.IdDependencia == dependencia.IdDependencia)
+                    .Select(s => new RolPuesto
+                    {
+                        IdRolPuesto = (int)s.IdRolPuesto,
+                        Nombre = s.RolPuesto.Nombre
+                    }).DistinctBy(x => x.IdRolPuesto).ToList();
+                
+                
+
+                return listaRoles;
+                
+            } catch (Exception ex)
+            {
+                return new List<RolPuesto>();
+            }
+        }
+
+
     }
 }

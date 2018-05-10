@@ -12,6 +12,7 @@ using bd.log.guardar.Servicios;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
+using MoreLinq;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -324,6 +325,34 @@ namespace bd.swth.web.Controllers.API
                 IsSuccess = false,
                 Resultado = ManualPuestorespuesta,
             };
+        }
+
+
+        // POST: api/ManualPuestos
+        [HttpPost]
+        [Route("ListarManualPuestoPorDependencia")]
+        public async Task<List<ManualPuesto>> ListarManualPuestoPorDependencia([FromBody] Dependencia dependencia)
+        {
+            try
+            {
+
+                var listaRoles = db.IndiceOcupacional
+                    .Where(w => w.IdDependencia == dependencia.IdDependencia)
+                    .Select(s => new ManualPuesto
+                    {
+                        IdManualPuesto = (int)s.IdManualPuesto,
+                        Nombre = s.ManualPuesto.Nombre
+                    }).DistinctBy(x => x.IdManualPuesto).ToList();
+
+
+
+                return listaRoles;
+
+            }
+            catch (Exception ex)
+            {
+                return new List<ManualPuesto>();
+            }
         }
 
 
