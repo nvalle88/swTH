@@ -59,6 +59,7 @@ namespace bd.swth.entidades.Negocio
         [Display(Name = "Aprobado por:")]
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int AprobadoPor { get; set; }
+        public string Url { get; set; }
         public virtual Empleado Empleado { get; set; }
     }
 }
