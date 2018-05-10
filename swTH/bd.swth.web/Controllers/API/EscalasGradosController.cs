@@ -12,6 +12,8 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using MoreLinq;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -333,5 +335,40 @@ namespace bd.swth.web.Controllers.API
                 return new List<EscalaGrados>();
             }
         }
+
+
+
+        // POST: api/EscalasGrados
+        [HttpPost]
+        [Route("ListarEscalaPorManualPuesto")]
+        public async Task<List<EscalaGrados>> ListarEscalaPorManualPuesto([FromBody] IdFiltrosViewModel filtro)
+        {
+            try
+            {
+
+                var lista = db.IndiceOcupacional
+                    .Where(w => 
+                        w.IdDependencia == filtro.IdDependencia
+                        && w.IdManualPuesto == filtro.IdManualPuesto
+                    )
+                    .Select(s => new EscalaGrados
+                    {
+                        IdEscalaGrados = (int)s.IdEscalaGrados,
+                        Nombre = s.EscalaGrados.Nombre,
+                        Remuneracion = s.EscalaGrados.Remuneracion
+                    }).DistinctBy(x => x.IdEscalaGrados).ToList();
+
+
+
+                return lista;
+
+            }
+            catch (Exception ex)
+            {
+                return new List<EscalaGrados>();
+            }
+        }
+
+
     }
 }

@@ -1937,9 +1937,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("ListarEmpleadosTalentoHumanoconSolucitudesViaticos")]
-        public async Task<List<EmpleadoSolicitudViewModel>> ListarEmpleadosTalentoHumanoconSolucitudesViaticos([FromBody]Empleado empleado)
+        public async Task<List<EmpleadoSolicitudViewModel>> ListarEmpleadosTalentoHumanoconSolucitudesViaticos()
         {
             try
             {
@@ -1979,11 +1979,10 @@ namespace bd.swth.web.Controllers.API
 
                         listaEmpleado.Add(empleadoSolicitud);
                     }
-                    return listaEmpleado;
-
+                    
                 }
-
-                return new List<EmpleadoSolicitudViewModel>();
+                return listaEmpleado;
+               // return new List<EmpleadoSolicitudViewModel>();
             }
             catch (Exception ex)
             {
@@ -3314,5 +3313,67 @@ namespace bd.swth.web.Controllers.API
         }
 
         #endregion
+
+        /// <summary>
+        /// Requiere IdEmpleado
+        /// </summary>
+        /// <param name="situacionActualEmpleadoViewModel"></param>
+        /// <returns></returns>
+        [Route("ObtenerSituacionActualEmpleadoViewModel")]
+        public async Task<Response> ObtenerSituacionActualEmpleadoViewModel([FromBody] SituacionActualEmpleadoViewModel situacionActualEmpleadoViewModel)
+        {
+            try {
+                var modPar = db.IndiceOcupacionalModalidadPartida
+                    .Include(i=>i.IndiceOcupacional).ThenInclude(i=>i.RolPuesto)
+                    .Where(w=>w.IdEmpleado == situacionActualEmpleadoViewModel.IdEmpleado).FirstOrDefault();
+                
+
+                var modelo = await db.Empleado.Include(i=>i.Dependencia).ThenInclude(i=>i.Sucursal)
+                    .Where(w=>w.IdEmpleado == situacionActualEmpleadoViewModel.IdEmpleado)
+                    .Select( s=> new SituacionActualEmpleadoViewModel
+                        {
+                            IdEmpleado = s.IdEmpleado,
+                            IdDependencia = Convert.ToInt32(s.IdDependencia),
+                            NombreDependencia = s.Dependencia.Nombre,
+                            IdSucursal = s.Dependencia.Sucursal.IdSucursal,
+                            NombreSucursal = s.Dependencia.Sucursal.Nombre
+                            
+                        }
+                    )
+                    .FirstOrDefaultAsync();
+
+                if (modelo != null) {
+                    
+                    if (modPar != null)
+                    {
+                        modelo.IdCargo = modPar.IndiceOcupacional.RolPuesto.IdRolPuesto;
+                        modelo.NombreCargo = modPar.IndiceOcupacional.RolPuesto.Nombre;
+                        modelo.Remuneracion = (Decimal) modPar.SalarioReal;
+                    }
+
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Resultado = modelo
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.RegistroNoEncontrado
+                };
+
+            } catch (Exception ex)
+            {
+                return new Response {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+        }
+
+
     }
 }

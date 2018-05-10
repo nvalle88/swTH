@@ -24,6 +24,8 @@ namespace bd.swth.entidades.Utils
         public static string ErrorEditarDatos { get { return "Los datos ingresados ya existen y no pueden ser editados"; } }
         public static string ErrorActualizarArchivo { get { return "No se ha podido actualizar el archivo"; } }
 
+        public static string SeleccioneIndice { get { return "Debe seleccionar un índice en: situación propuesta."; } }
+
 
     }
 }
