@@ -14,6 +14,6 @@ namespace bd.swth.entidades.Negocio
         public string Descripcion { get; set; }
 
         public virtual ICollection<ConceptoNomina> ConceptoNomina { get; set; }
-        public virtual ICollection<PeriodoNomina> PeriodoNomina { get; set; }
+        public virtual ICollection<CalculoNomina> CalculoNomina { get; set; }
     }
 }
