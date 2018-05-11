@@ -931,6 +931,45 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("SolicitudPermisoEmpleados")]
+        public async Task<List<ListaEmpleadoViewModel>> SolicitudPermisoEmpleados([FromBody] Empleado empleado)
+        {
+            try
+            {
+                var dependenciaJefe = await db.Empleado
+                    .Where(w=>w.IdEmpleado == empleado.IdEmpleado)
+                    .Select(s=>new Dependencia {
+                        IdDependencia = (int) s.IdDependencia
+                    }
+                    )
+                    .FirstOrDefaultAsync();
+
+                var listaSalida = await db.SolicitudPermiso
+                    .Where(w=>w.Empleado.IdDependencia == dependenciaJefe.IdDependencia)
+                    .Select(s => new ListaEmpleadoViewModel
+                    {
+                        IdEmpleado = s.IdEmpleado,
+                        Identificacion = s.Empleado.Persona.Identificacion,
+                        NombreApellido = String.Format("{0} {1}",s.Empleado.Persona.Nombres,s.Empleado.Persona.Apellidos)
+
+                    }
+                    )
+                    
+                    .ToListAsync();
+
+
+                return listaSalida;
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+
         [HttpPost]
         [Route("ObtenerDatosEmpleadoActualizar")]
         public async Task<EmpleadoViewModel> ObtenerEmpleadoActualizar([FromBody] int idEmpleado)
@@ -3371,6 +3410,114 @@ namespace bd.swth.web.Controllers.API
                     IsSuccess = false,
                     Message = Mensaje.Excepcion
                 };
+            }
+        }
+
+
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("ListarEmpleadosPorSucursal")]
+        public async Task<List<DatosBasicosEmpleadoViewModel>> ListarEmpleadosPorSucursal([FromBody] EmpleadosPorSucursalViewModel empleadosPorSucursalViewModel)
+        {
+
+
+            try
+            {
+
+                var lista = new List<DatosBasicosEmpleadoViewModel>();
+
+                if (empleadosPorSucursalViewModel.EmpleadosActivos == true)
+                {
+                    lista = await db.Empleado
+                        .Where(w => 
+                            w.Activo == true
+                            && w.Dependencia.IdSucursal == empleadosPorSucursalViewModel.IdSucursal
+                        )
+                        .Select(x => new DatosBasicosEmpleadoViewModel
+                        {
+                            FechaNacimiento = x.Persona.FechaNacimiento.Value.Date,
+                            IdSexo = Convert.ToInt32(x.Persona.IdSexo),
+                            IdTipoIdentificacion = Convert.ToInt32(x.Persona.IdTipoIdentificacion),
+                            IdEstadoCivil = Convert.ToInt32(x.Persona.IdEstadoCivil),
+                            IdGenero = Convert.ToInt32(x.Persona.IdGenero),
+                            IdNacionalidad = Convert.ToInt32(x.Persona.IdNacionalidad),
+                            IdTipoSangre = Convert.ToInt32(x.Persona.IdTipoSangre),
+                            IdEtnia = Convert.ToInt32(x.Persona.IdEtnia),
+                            Identificacion = x.Persona.Identificacion,
+                            Nombres = x.Persona.Nombres,
+                            Apellidos = x.Persona.Apellidos,
+                            TelefonoPrivado = x.Persona.TelefonoPrivado,
+                            TelefonoCasa = x.Persona.TelefonoCasa,
+                            CorreoPrivado = x.Persona.CorreoPrivado,
+                            LugarTrabajo = x.Persona.LugarTrabajo,
+                            IdNacionalidadIndigena = x.Persona.IdNacionalidadIndigena,
+                            CallePrincipal = x.Persona.CallePrincipal,
+                            CalleSecundaria = x.Persona.CalleSecundaria,
+                            Referencia = x.Persona.Referencia,
+                            Numero = x.Persona.Numero,
+                            IdParroquia = Convert.ToInt32(x.Persona.IdParroquia),
+                            Ocupacion = x.Persona.Ocupacion,
+                            IdEmpleado = x.IdEmpleado,
+                            IdProvinciaLugarSufragio = Convert.ToInt32(x.IdProvinciaLugarSufragio),
+                            IdPaisLugarNacimiento = x.CiudadNacimiento.Provincia.Pais.IdPais,
+                            IdCiudadLugarNacimiento = x.IdCiudadLugarNacimiento,
+                            IdPaisLugarSufragio = x.ProvinciaSufragio.Pais.IdPais,
+                            IdPaisLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
+                            IdCiudadLugarPersona = x.Persona.Parroquia.Ciudad.IdCiudad,
+                            IdProvinciaLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
+                        }).ToListAsync();
+                        
+                }
+                else {
+
+                    lista = await db.Empleado
+                        .Where(x =>
+                            x.Dependencia.IdSucursal == empleadosPorSucursalViewModel.IdSucursal
+                        )
+                        .Select(x => new DatosBasicosEmpleadoViewModel
+                        {
+                            FechaNacimiento = x.Persona.FechaNacimiento.Value.Date,
+                            IdSexo = Convert.ToInt32(x.Persona.IdSexo),
+                            IdTipoIdentificacion = Convert.ToInt32(x.Persona.IdTipoIdentificacion),
+                            IdEstadoCivil = Convert.ToInt32(x.Persona.IdEstadoCivil),
+                            IdGenero = Convert.ToInt32(x.Persona.IdGenero),
+                            IdNacionalidad = Convert.ToInt32(x.Persona.IdNacionalidad),
+                            IdTipoSangre = Convert.ToInt32(x.Persona.IdTipoSangre),
+                            IdEtnia = Convert.ToInt32(x.Persona.IdEtnia),
+                            Identificacion = x.Persona.Identificacion,
+                            Nombres = x.Persona.Nombres,
+                            Apellidos = x.Persona.Apellidos,
+                            TelefonoPrivado = x.Persona.TelefonoPrivado,
+                            TelefonoCasa = x.Persona.TelefonoCasa,
+                            CorreoPrivado = x.Persona.CorreoPrivado,
+                            LugarTrabajo = x.Persona.LugarTrabajo,
+                            IdNacionalidadIndigena = x.Persona.IdNacionalidadIndigena,
+                            CallePrincipal = x.Persona.CallePrincipal,
+                            CalleSecundaria = x.Persona.CalleSecundaria,
+                            Referencia = x.Persona.Referencia,
+                            Numero = x.Persona.Numero,
+                            IdParroquia = Convert.ToInt32(x.Persona.IdParroquia),
+                            Ocupacion = x.Persona.Ocupacion,
+                            IdEmpleado = x.IdEmpleado,
+                            IdProvinciaLugarSufragio = Convert.ToInt32(x.IdProvinciaLugarSufragio),
+                            IdPaisLugarNacimiento = x.CiudadNacimiento.Provincia.Pais.IdPais,
+                            IdCiudadLugarNacimiento = x.IdCiudadLugarNacimiento,
+                            IdPaisLugarSufragio = x.ProvinciaSufragio.Pais.IdPais,
+                            IdPaisLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
+                            IdCiudadLugarPersona = x.Persona.Parroquia.Ciudad.IdCiudad,
+                            IdProvinciaLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
+                        }).ToListAsync();
+                }
+                
+                
+
+            return lista;
+                
+            }
+            catch (Exception ex)
+            {
+
+                return new List<DatosBasicosEmpleadoViewModel>();
             }
         }
 
