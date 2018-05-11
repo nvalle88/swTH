@@ -144,8 +144,7 @@ namespace bd.swth.web.Controllers.API
                         itinerarioViaticoActualizar.Valor = itinerarioViatico.Valor;
                         itinerarioViaticoActualizar.HoraSalida = itinerarioViatico.HoraSalida;
                         itinerarioViaticoActualizar.HoraLlegada = itinerarioViatico.HoraLlegada;
-
-
+                        db.ItinerarioViatico.Update(itinerarioViaticoActualizar);
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -174,9 +173,6 @@ namespace bd.swth.web.Controllers.API
                         };
                     }
                 }
-
-
-
 
                 return new Response
                 {

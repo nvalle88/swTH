@@ -23,6 +23,7 @@ namespace bd.swth.web.Controllers.API
 
         public ItemViaticosController(SwTHDbContext db)
         {
+
             this.db = db;
         }
 
