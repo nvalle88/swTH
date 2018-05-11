@@ -5,47 +5,49 @@ using System.Threading.Tasks;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.swth.entidades.Utils;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/PeriodoNomina")]
-    public class PeriodoNominaController : Controller
+    [Route("api/CalculoNomina")]
+    public class CalculoNominaController : Controller
     {
+
         private readonly SwTHDbContext db;
 
-        public PeriodoNominaController(SwTHDbContext db)
+        public CalculoNominaController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/BasesDatos
         [HttpGet]
-        [Route("ListarPeriodoNomina")]
-        public async Task<List<PeriodoNomina>> ListarPeriodoNomina()
+        [Route("ListarCalculoNomina")]
+        public async Task<List<CalculoNomina>> ListarCalculoNomina()
         {
             try
             {
-                return await db.PeriodoNomina.ToListAsync();
+                return await db.CalculoNomina.Include(x => x.PeriodoNomina).Include(x => x.ProcesoNomina).ToListAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return new List<PeriodoNomina>();
+                return new List<CalculoNomina>();
             }
         }
 
         // GET: api/BasesDatos/5
         [HttpGet]
-        [HttpPost("ObtenerPeriodoNomina")]
-        public async Task<Response> ObtenerPeriodoNomina([FromBody] PeriodoNomina PeriodoNomina)
+        [HttpPost("ObtenerCalculoNomina")]
+        public async Task<Response> ObtenerCalculoNomina([FromBody] CalculoNomina CalculoNomina)
         {
             try
             {
-                var periodoNomina = await db.PeriodoNomina.SingleOrDefaultAsync(m => m.IdPeriodo == PeriodoNomina.IdPeriodo);
+                var calculoNomina = await db.CalculoNomina.SingleOrDefaultAsync(m => m.IdCalculoNomina == CalculoNomina.IdCalculoNomina);
 
-                if (periodoNomina == null)
+                if (calculoNomina == null)
                 {
                     return new Response
                     {
@@ -58,7 +60,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = periodoNomina,
+                    Resultado = calculoNomina,
                 };
             }
             catch (Exception)
@@ -71,15 +73,14 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-      
         // PUT: api/BasesDatos/5
         [HttpPost]
-        [Route("EditarPeriodoNomina")]
-        public async Task<Response> EditarPeriodoNomina([FromBody] PeriodoNomina PeriodoNomina)
+        [Route("EditarCalculoNomina")]
+        public async Task<Response> EditarCalculoNomina([FromBody] CalculoNomina CalculoNomina)
         {
             try
             {
-                if (await Existe(PeriodoNomina))
+                if (await Existe(CalculoNomina))
                 {
                     return new Response
                     {
@@ -88,8 +89,8 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var PeriodoNominaActualizar = await db.PeriodoNomina.Where(x => x.IdPeriodo == PeriodoNomina.IdPeriodo).FirstOrDefaultAsync();
-                if (PeriodoNominaActualizar == null)
+                var CalculoNominaActualizar = await db.CalculoNomina.Where(x => x.IdCalculoNomina == CalculoNomina.IdCalculoNomina).FirstOrDefaultAsync();
+                if (CalculoNominaActualizar == null)
                 {
                     return new Response
                     {
@@ -98,20 +99,19 @@ namespace bd.swth.web.Controllers.API
 
                 }
 
-                PeriodoNominaActualizar.Estado = PeriodoNomina.Estado;
-                PeriodoNominaActualizar.Mes = PeriodoNomina.Mes;
-                PeriodoNominaActualizar.Ano = PeriodoNomina.Ano;
-                PeriodoNominaActualizar.FechaInicio = PeriodoNomina.FechaInicio;
-                PeriodoNominaActualizar.FechaFin = PeriodoNomina.FechaFin;
-                PeriodoNominaActualizar.Descripcion = PeriodoNomina.Descripcion;
-                PeriodoNominaActualizar.Abierto = PeriodoNomina.Abierto;
-                db.PeriodoNomina.Update(PeriodoNominaActualizar);
+                CalculoNominaActualizar.IdPeriodo = CalculoNomina.IdPeriodo;
+                CalculoNominaActualizar.IdProceso = CalculoNomina.IdProceso;
+                CalculoNominaActualizar.Automatico = CalculoNomina.Automatico;
+                CalculoNominaActualizar.Reportado = CalculoNomina.Reportado;
+                CalculoNominaActualizar.EmpleadoActivo = CalculoNomina.EmpleadoActivo;
+                CalculoNominaActualizar.EmpleadoPasivo = CalculoNomina.EmpleadoPasivo;
+                db.CalculoNomina.Update(CalculoNominaActualizar);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Resultado = PeriodoNominaActualizar
+                    Resultado = CalculoNominaActualizar
                 };
             }
             catch (Exception)
@@ -126,21 +126,21 @@ namespace bd.swth.web.Controllers.API
 
         // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarPeriodoNomina")]
-        public async Task<Response> PostPeriodoNomina([FromBody] PeriodoNomina PeriodoNomina)
+        [Route("InsertarCalculoNomina")]
+        public async Task<Response> PostCalculoNomina([FromBody] CalculoNomina CalculoNomina)
         {
             try
             {
 
-                if (!await Existe(PeriodoNomina))
+                if (!await Existe(CalculoNomina))
                 {
-                    db.PeriodoNomina.Add(PeriodoNomina);
+                    db.CalculoNomina.Add(CalculoNomina);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
                         Message = Mensaje.Satisfactorio,
-                        Resultado = PeriodoNomina,
+                        Resultado = CalculoNomina,
                     };
                 }
 
@@ -163,12 +163,12 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpPost]
-        [Route("EliminarPeriodoNomina")]
-        public async Task<Response> EliminarPeriodoNomina([FromBody]PeriodoNomina PeriodoNomina)
+        [Route("EliminarCalculoNomina")]
+        public async Task<Response> EliminarCalculoNomina([FromBody]CalculoNomina CalculoNomina)
         {
             try
             {
-                var respuesta = await db.PeriodoNomina.Where(m => m.IdPeriodo == PeriodoNomina.IdPeriodo).FirstOrDefaultAsync();
+                var respuesta = await db.CalculoNomina.Where(m => m.IdCalculoNomina == CalculoNomina.IdCalculoNomina).FirstOrDefaultAsync();
                 if (respuesta == null)
                 {
                     return new Response
@@ -177,7 +177,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.PeriodoNomina.Remove(respuesta);
+                db.CalculoNomina.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -188,32 +188,22 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                if (ex.InnerException.InnerException.Message.Contains("FK"))
+                return new Response
                 {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.BorradoNoSatisfactorio,
-                    };
-                }
-                else
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = ex.InnerException.InnerException.Message,
-                    };
-                }
+                    IsSuccess = false,
+                    Message = Mensaje.BorradoNoSatisfactorio,
+                };
 
             }
         }
 
-        private async Task<bool> Existe(PeriodoNomina PeriodoNomina)
+        private async Task<bool> Existe(CalculoNomina CalculoNomina)
         {
-            var descripcion = PeriodoNomina.Descripcion;
-            var PeriodoNominarespuesta = await db.PeriodoNomina.Where(p => p.Descripcion == descripcion).FirstOrDefaultAsync();
+            var periodo = CalculoNomina.IdPeriodo;
+            var proceso = CalculoNomina.IdProceso;
+            var CalculoNominarespuesta = await db.CalculoNomina.Where(p => p.IdProceso == proceso && p.IdPeriodo == periodo).FirstOrDefaultAsync();
 
-            if (PeriodoNominarespuesta == null || PeriodoNominarespuesta.IdPeriodo == PeriodoNomina.IdPeriodo)
+            if (CalculoNominarespuesta == null || CalculoNominarespuesta.IdCalculoNomina == CalculoNomina.IdCalculoNomina)
             {
                 return false;
             }

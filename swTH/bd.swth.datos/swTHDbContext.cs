@@ -29,6 +29,9 @@ namespace bd.swth.datos
         public virtual DbSet<SriDetalle> SriDetalle { get; set; }
         public virtual DbSet<TipoDeGastoPersonal> TipoDeGastoPersonal { get; set; }
         public virtual DbSet<GastoPersonal> GastoPersonal { get; set; }
+        public virtual DbSet<CalculoNomina> CalculoNomina { get; set; }
+        public virtual DbSet<ReportadoNomina> ReportadoNomina { get; set; }
+        
 
 
 

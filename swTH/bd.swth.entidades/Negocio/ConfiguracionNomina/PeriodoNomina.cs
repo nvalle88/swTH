@@ -13,8 +13,12 @@ namespace bd.swth.entidades.Negocio
         public DateTime FechaFin { get; set; }
         public string Descripcion { get; set; }
         public bool Abierto { get; set; }
+        public string Estado { get; set; }
+        public int Mes { get; set; }
+        public int Ano { get; set; }
 
-        public int IdProceso { get; set; }
-        public virtual ProcesoNomina ProcesoNomina { get; set; }
+        public virtual ICollection<CalculoNomina> CalculoNomina { get; set; }
+
+
     }
 }
