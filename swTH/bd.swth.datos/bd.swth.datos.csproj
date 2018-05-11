@@ -5,12 +5,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\**" />
     <Compile Remove="Migrations\**" />
     <Compile Remove="NuevoModels\**" />
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="bin\**" />
     <EmbeddedResource Remove="Migrations\**" />
     <EmbeddedResource Remove="NuevoModels\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="bin\**" />
     <None Remove="Migrations\**" />
     <None Remove="NuevoModels\**" />
+    <None Remove="obj\**" />
   </ItemGroup>
 
   <ItemGroup>
