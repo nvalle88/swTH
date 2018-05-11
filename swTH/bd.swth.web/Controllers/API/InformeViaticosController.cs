@@ -36,6 +36,61 @@ namespace bd.swth.web.Controllers.API
             }
         }
         [HttpPost]
+        [Route("Actividades")]
+        public async Task<Response> Actividades([FromBody] InformeViatico informeViatico)
+        {
+
+            var informeViaticoActualizar = await db.InformeViatico.Where(x => x.IdItinerarioViatico == informeViatico.IdItinerarioViatico).FirstOrDefaultAsync();
+
+            if (informeViaticoActualizar != null)
+            {
+                try
+                {
+                    informeViaticoActualizar.Descripcion = informeViatico.Descripcion;
+                    db.InformeViatico.Update(informeViaticoActualizar);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                    };
+                }
+
+                catch (Exception ex)
+                {
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+
+            }
+
+            return new Response
+            {
+                IsSuccess = true,
+            };
+            
+        }
+        [HttpPost]
+        [Route("ObtenerActividades")]
+        public async Task<InformeViatico> ObtenerActividades([FromBody] InformeViatico informeViatico)
+        {
+
+            var informeViaticoActualizar = await db.InformeViatico.Where(x => x.IdItinerarioViatico == informeViatico.IdItinerarioViatico).FirstOrDefaultAsync();
+
+            if (informeViaticoActualizar != null)
+            {
+
+                return informeViaticoActualizar;
+            }
+
+            return informeViaticoActualizar;
+
+        }
+        [HttpPost]
         [Route("InsertarInformeViatico")]
         public async Task<Response> InsertarInformeViatico([FromBody] InformeViatico informeViatico)
         {
@@ -174,7 +229,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-              
+
                 var respuesta = await db.InformeViatico.SingleOrDefaultAsync(m => m.IdInformeViatico == id);
                 if (respuesta == null)
                 {
