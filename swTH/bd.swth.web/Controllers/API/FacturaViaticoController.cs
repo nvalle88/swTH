@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
+using bd.swth.servicios.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +17,12 @@ namespace bd.swth.web.Controllers.API
     [Route("api/FacturaViatico")]
     public class FacturaViaticoController : Controller
     {
+        private readonly IUploadFileService uploadFileService;
         private readonly SwTHDbContext db;
 
-        public FacturaViaticoController(SwTHDbContext db)
+        public FacturaViaticoController(SwTHDbContext db, IUploadFileService uploadFileService)
         {
+            this.uploadFileService = uploadFileService;
             this.db = db;
         }
 
@@ -55,9 +59,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var ItinerarioViatico = await db.ItinerarioViatico.SingleOrDefaultAsync(m => m.IdItinerarioViatico == id);
+                var facturavia = await db.FacturaViatico.SingleOrDefaultAsync(m => m.IdFacturaViatico == id);
 
-                if (ItinerarioViatico == null)
+                if (facturavia == null)
                 {
                     return new Response
                     {
@@ -70,7 +74,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
-                    Resultado = ItinerarioViatico,
+                    Resultado = facturavia,
                 };
             }
             catch (Exception ex)
@@ -84,7 +88,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // PUT: api/BasesDatos/5
+        //PUT: api/BasesDatos/5
         [HttpPut("{id}")]
         public async Task<Response> PutFacturaViatico([FromRoute] int id, [FromBody] FacturaViatico facturaViatico)
         {
@@ -106,17 +110,14 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        facturaViaticoActualizar.IdFacturaViatico = facturaViatico.IdFacturaViatico;
                         facturaViaticoActualizar.NumeroFactura = facturaViatico.NumeroFactura;
                         facturaViaticoActualizar.FechaFactura = facturaViatico.FechaFactura;
-                        facturaViaticoActualizar.ValorTotalAprobacion = facturaViatico.ValorTotalAprobacion;
-                        facturaViaticoActualizar.FechaAprobacion = facturaViatico.FechaAprobacion;
-                        facturaViaticoActualizar.ValorTotalAprobacion = facturaViatico.ValorTotalAprobacion;
+                        facturaViaticoActualizar.ValorTotalFactura = facturaViatico.ValorTotalFactura;
+                        facturaViaticoActualizar.FechaFactura = facturaViatico.FechaFactura;
                         facturaViaticoActualizar.Observaciones = facturaViatico.Observaciones;
                         facturaViaticoActualizar.IdItemViatico = facturaViatico.IdItemViatico;
                         facturaViaticoActualizar.IdItinerarioViatico = facturaViatico.IdItinerarioViatico;
-
-
+                        db.FacturaViatico.Update(facturaViaticoActualizar);
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -128,7 +129,7 @@ namespace bd.swth.web.Controllers.API
                     }
                     catch (Exception ex)
                     {
-                        
+
                         return new Response
                         {
                             IsSuccess = false,
@@ -152,19 +153,41 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
-
-        // POST: api/BasesDatos
         [HttpPost]
-        [Route("InsertarItinerarioViatico")]
-        public async Task<Response> PostFacturaViatico([FromBody] FacturaViatico facturaViatico)
+        [Route("InsertarFacturas")]
+        public async Task<Response> InsertarFacturas([FromBody] ViewModelFacturaViatico viewModelFacturaViatico)
         {
+
             try
             {
-                var respuesta = Existe(facturaViatico);
+                var documenttransfer = new FacturaViatico
+                {
+                    NumeroFactura = viewModelFacturaViatico.NumeroFactura,
+                    IdItinerarioViatico = viewModelFacturaViatico.IdItinerarioViatico,
+                    IdItemViatico = viewModelFacturaViatico.IdItemViatico,
+                    FechaFactura = viewModelFacturaViatico.FechaFactura,
+                    ValorTotalFactura = viewModelFacturaViatico.ValorTotalFactura,
+                    Observaciones = viewModelFacturaViatico.Observaciones,
+                    Url = viewModelFacturaViatico.Url,
+                    
+
+                };
+
+                var respuesta = Existe(documenttransfer);
                 if (!respuesta.IsSuccess)
                 {
-                    db.FacturaViatico.Add(facturaViatico);
+                    db.FacturaViatico.Add(documenttransfer);
                     await db.SaveChangesAsync();
+
+                    var id = documenttransfer.IdFacturaViatico;
+
+                    await uploadFileService.UploadFile(viewModelFacturaViatico.Fichero, "FacturaViaticos", Convert.ToString(id), ".pdf");
+
+
+                    var seleccionado = db.FacturaViatico.Find(documenttransfer.IdFacturaViatico);
+                    seleccionado.Url = string.Format("{0}/{1}.{2}", "FacturaViaticos", Convert.ToString(id), "pdf");
+                    db.FacturaViatico.Update(seleccionado);
+                    db.SaveChanges();
                     return new Response
                     {
                         IsSuccess = true,
@@ -177,18 +200,21 @@ namespace bd.swth.web.Controllers.API
                     IsSuccess = false,
                     Message = Mensaje.ExisteRegistro
                 };
-
             }
             catch (Exception ex)
             {
-               
+
                 return new Response
                 {
                     IsSuccess = false,
                     Message = Mensaje.Error,
                 };
             }
+
+
         }
+        // POST: api/BasesDatos
+        
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
@@ -205,7 +231,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.ItinerarioViatico.SingleOrDefaultAsync(m => m.IdItinerarioViatico == id);
+                var respuesta = await db.FacturaViatico.SingleOrDefaultAsync(m => m.IdFacturaViatico == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -214,7 +240,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.ItinerarioViatico.Remove(respuesta);
+                db.FacturaViatico.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -237,17 +263,13 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(FacturaViatico facturaViatico)
         {
             var bdd1 = facturaViatico.IdFacturaViatico;
-            //var bdd2 = ItinerarioViatico.IdTipoTransporte;
-            //var bdd3 = ItinerarioViatico.Descripcion;
-            //var bdd4 = ItinerarioViatico.FechaDesde;
-            //var bdd5 = ItinerarioViatico.FechaHasta;
-            //var bdd6 = ItinerarioViatico.Valor;
-            //var bdd7 = ItinerarioViatico.HoraSalida;
-            //var bdd8 = ItinerarioViatico.HoraLlegada;
+            var bdd2 = facturaViatico.NumeroFactura;
+            var bdd3 = facturaViatico.ValorTotalFactura;
+            var bdd4 = facturaViatico.FechaFactura;
             var facturaViaticorespuesta = db.FacturaViatico.Where(p => p.IdFacturaViatico == bdd1
-            //&& p.IdTipoTransporte == bdd2
-            //&& p.Descripcion == bdd3
-            //&& p.FechaHasta == bdd4
+            && p.NumeroFactura == bdd2
+            && p.ValorTotalFactura == bdd3
+            && p.FechaFactura == bdd4
             //&& p.FechaHasta == bdd5
             //&& p.Valor == bdd6
             //&& p.HoraSalida == bdd7
@@ -269,6 +291,33 @@ namespace bd.swth.web.Controllers.API
                 IsSuccess = false,
                 Resultado = facturaViaticorespuesta,
             };
+        }
+        [HttpPost]
+        [Route("GetFile")]
+        public async Task<Response> GetFile([FromBody] ViewModelFacturaViatico viewModelFacturaViatico)
+        {
+
+            try
+            {
+                var respuestaFile = uploadFileService.GetFile("FacturaViaticos", Convert.ToString(viewModelFacturaViatico.IdFacturaViatico), ".pdf");
+
+                var dato = await db.FacturaViatico.Where(x => x.IdFacturaViatico == viewModelFacturaViatico.IdFacturaViatico).FirstOrDefaultAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Factura #" + dato.IdFacturaViatico + ", archivo adjunto",
+                    Resultado = respuestaFile,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
         }
     } 
 }
