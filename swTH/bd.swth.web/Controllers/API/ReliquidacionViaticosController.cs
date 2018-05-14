@@ -12,27 +12,27 @@ using Microsoft.EntityFrameworkCore;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/InformeViaticos")]
-    public class InformeViaticosController : Controller
+    [Route("api/ReliquidacionViaticos")]
+    public class ReliquidacionViaticosController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public InformeViaticosController(SwTHDbContext db)
+        public ReliquidacionViaticosController(SwTHDbContext db)
         {
             this.db = db;
         }
         [HttpPost]
-        [Route("ListarInformeViaticos")]
-        public async Task<List<InformeViatico>> ListarInformeViaticos([FromBody] InformeViatico informeViatico)
+        [Route("ListarReliquidaciones")]
+        public async Task<List<ReliquidacionViatico>> ListarReliquidaciones([FromBody] InformeViatico informeViatico)
         {
 
             try
             {
-                return await db.InformeViatico.Where(x => x.IdItinerarioViatico == informeViatico.IdItinerarioViatico).Include(x => x.TipoTransporte).Include(x => x.CiudadOrigen).Include(x => x.CiudadDestino).ToListAsync();
+                return await db.ReliquidacionViatico.Where(x => x.IdItinerarioViatico == informeViatico.IdItinerarioViatico).Include(x => x.TipoTransporte).Include(x => x.CiudadOrigen).Include(x => x.CiudadDestino).ToListAsync();
             }
             catch (Exception ex)
             {
-                return new List<InformeViatico>();
+                return new List<ReliquidacionViatico>();
             }
         }
         [HttpPost]
@@ -46,7 +46,7 @@ namespace bd.swth.web.Controllers.API
             {
                 try
                 {
-                    
+
                     informeViaticoActualizar.Descripcion = informeViatico.Descripcion;
                     db.InformeActividadViatico.Update(informeViaticoActualizar);
                     await db.SaveChangesAsync();
@@ -155,13 +155,12 @@ namespace bd.swth.web.Controllers.API
 
         }
         [HttpPost]
-        [Route("InsertarInformeViatico")]
-        public async Task<Response> InsertarInformeViatico([FromBody] InformeViatico informeViatico)
+        [Route("InsertarReliquidacionViatico")]
+        public async Task<Response> InsertarReliquidacionViatico([FromBody] ReliquidacionViatico reliquidacionViatico)
         {
             try
             {
-
-                db.InformeViatico.Add(informeViatico);
+                db.ReliquidacionViatico.Add(reliquidacionViatico);
                 await db.SaveChangesAsync();
                 return new Response
                 {

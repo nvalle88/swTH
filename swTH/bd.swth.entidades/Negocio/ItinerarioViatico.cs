@@ -22,7 +22,8 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<InformeViatico> InformeViatico { get; set; }
         public virtual SolicitudViatico SolicitudViatico { get; set; }
         public virtual TipoTransporte TipoTransporte { get; set; }
-
+        public virtual ICollection<InformeActividadViatico> InformeActividadViatico { get; set; }
+        public virtual ICollection<ReliquidacionViatico> ReliquidacionViatico { get; set; }
 
 
     }
