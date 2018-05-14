@@ -10,6 +10,11 @@ namespace bd.swth.entidades.ViewModels
         public string NombresApellidosEmpleado { get; set; }
         public string NombreDependencia { get; set; }
         public SolicitudPermiso SolicitudPermiso { get; set; }
-        public int IdTipoPermiso { get; set; }
+
+        public string NombreTipoPermiso { get; set; }
+
+        public string NombreEstadoAprobacion { get; set; }
+        //public List<AprobacionMovimientoInternoViewModel> EstadoLista { get; set; }
+        
     }
 }

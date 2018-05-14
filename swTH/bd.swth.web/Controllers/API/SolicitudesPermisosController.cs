@@ -13,6 +13,7 @@ using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 using System;
 using bd.swth.entidades.ViewModels;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -30,30 +31,22 @@ namespace bd.swth.web.Controllers.API
         
         // GET: api/SolicitudesPermisos
         [HttpGet]
-        [Route("ListarSolicitudesPermisosEmpleado")]
-        public async Task<List<SolicitudPermiso>> GetListarSolicitudesPermisos()
+        [Route("ListarSolicitudesPermisos")]
+        public async Task<List<SolicitudPermiso>> ListarSolicitudesPermisos()
         {
             try
             {
-                return await db.SolicitudPermiso
+                var lista = await db.SolicitudPermiso
                             .Include(x => x.Empleado)
                             .ThenInclude(x=>x.Persona)
                             .Include(x => x.TipoPermiso)
                             .OrderBy(x => x.TipoPermiso)
                             .ToListAsync();
+
+                return lista;
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<SolicitudPermiso>();
             }
         }
@@ -127,31 +120,50 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("ListarSolicitudesPermisosEmpleado")]
-        public async Task<List<SolicitudPermiso>> ListarSolicitudesPermisosEmpleado([FromBody] Empleado empleado)
+        public async Task<List<SolicitudPermisoViewModel>> ListarSolicitudesPermisosEmpleado([FromBody] Empleado empleado)
         {
             try
             {
 
-                return await db.SolicitudPermiso
-                                  .Include(x => x.Empleado)
-                                  .ThenInclude(x => x.Persona)
-                                  .Include(x => x.TipoPermiso)
+                var lista =  await db.SolicitudPermiso
                                   .Where(x => x.IdEmpleado == empleado.IdEmpleado)
+                                  .Select(s=>new SolicitudPermisoViewModel
+                                    {
+                                      NombreDependencia = s.Empleado.Dependencia.Nombre,
+                                      NombresApellidosEmpleado = String.Format("{0} {1}",s.Empleado.Persona.Nombres,s.Empleado.Persona.Apellidos),
+
+                                      SolicitudPermiso = new SolicitudPermiso {
+                                        FechaAprobado = s.FechaAprobado,
+                                        FechaDesde = s.FechaDesde,
+                                        FechaHasta = s.FechaHasta,
+                                        FechaSolicitud =s.FechaSolicitud,
+                                        HoraDesde = s.HoraDesde,
+                                        HoraHasta = s.HoraHasta,
+                                        IdEmpleado = s.IdEmpleado,
+                                        IdSolicitudPermiso = s.IdSolicitudPermiso,
+                                        IdTipoPermiso = s.IdTipoPermiso,
+                                        Estado = s.Estado,
+                                        Motivo = s.Motivo,
+                                        Observacion = s.Observacion,
+                                      },
+
+                                      NombreTipoPermiso = s.TipoPermiso.Nombre,
+
+                                      NombreEstadoAprobacion = !String.IsNullOrEmpty(ConstantesEstadosAprobacionMovimientoInterno
+                                      .ListaEstadosAprobacionMovimientoInterno.Where(cw=>cw.ValorEstado == s.Estado)
+                                      .FirstOrDefault().NombreEstado)? ConstantesEstadosAprobacionMovimientoInterno
+                                      .ListaEstadosAprobacionMovimientoInterno.Where(cw => cw.ValorEstado == s.Estado)
+                                      .FirstOrDefault().NombreEstado:Mensaje.ErrorValorEstadoMovimientoInterno 
+
+                                  }
+                                  )
                                   .ToListAsync();
+
+                return lista;
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<SolicitudPermiso>();
+                return new List<SolicitudPermisoViewModel>();
             }
         }
 
@@ -284,17 +296,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
                 return new Response
                 {
                     IsSuccess = true,
@@ -341,16 +342,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -437,6 +428,32 @@ namespace bd.swth.web.Controllers.API
                 IsSuccess = false,
                 Resultado = SolicitudPermisorespuesta,
             };
+        }
+        /*
+        var ListaEstados = ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno;
+        ListaEstados.Where(wle=>
+                                    wle.GrupoAprobacion == 0
+                                    && wle.ValorEstado == s.Estado
+                                ).FirstOrDefault().NombreEstado
+        */
+
+        // GET: api/SolicitudesPermisos
+        [HttpGet]
+        [Route("ListarEstadosAprobacionEmpleado")]
+        public async Task<List<AprobacionMovimientoInternoViewModel>> ListarEstadosAprobacionEmpleado()
+        {
+
+            try
+            {
+                var lista = ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno.Where(w => w.GrupoAprobacion == 2).ToList();
+
+                return lista;
+
+            }
+            catch (Exception)
+            {
+                return new List<AprobacionMovimientoInternoViewModel>();
+            }
         }
 
     }

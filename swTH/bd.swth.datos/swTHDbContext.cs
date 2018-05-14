@@ -3938,8 +3938,7 @@ namespace bd.swth.datos
                 entity.Property(e => e.FechaHasta).HasColumnType("datetime");
 
                 entity.Property(e => e.FechaSolicitud).HasColumnType("date");
-
-                entity.Property(e => e.Motivo).HasColumnType("text");
+                
 
                 entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.SolicitudPermiso)
