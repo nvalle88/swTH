@@ -25,6 +25,7 @@ namespace bd.swth.entidades.Utils
         public static string ErrorActualizarArchivo { get { return "No se ha podido actualizar el archivo"; } }
 
         public static string SeleccioneIndice { get { return "Debe seleccionar un índice en: situación propuesta."; } }
+        public static string ErrorValorEstadoMovimientoInterno { get { return "Valor de estado sin nombre"; } }
 
 
     }
