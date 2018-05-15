@@ -35,72 +35,10 @@ namespace bd.swth.web.Controllers.API
                 return new List<ReliquidacionViatico>();
             }
         }
-        [HttpPost]
-        [Route("Actividades")]
-        public async Task<Response> Actividades([FromBody] InformeViatico informeViatico)
-        {
-
-            var informeViaticoActualizar = await db.InformeActividadViatico.Where(x => x.IdItinerarioViatico == informeViatico.IdItinerarioViatico).FirstOrDefaultAsync();
-
-            if (informeViaticoActualizar != null)
-            {
-                try
-                {
-
-                    informeViaticoActualizar.Descripcion = informeViatico.Descripcion;
-                    db.InformeActividadViatico.Update(informeViaticoActualizar);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                    };
-                }
-
-                catch (Exception ex)
-                {
-
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.Error,
-                    };
-                }
-
-            }
-            else
-            {
-                try
-                {
-                    var actividad = new InformeActividadViatico
-                    {
-                        IdItinerarioViatico = informeViatico.IdItinerarioViatico,
-                        Descripcion = informeViatico.Descripcion,
-                    };
-                    db.InformeActividadViatico.Add(actividad);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                    };
-                }
-
-                catch (Exception ex)
-                {
-
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.Error,
-                    };
-                }
-            }
-        }
 
         [HttpPost]
-        [Route("ActualizarEstadoInforme")]
-        public async Task<Response> ActualizarEstadoInforme([FromBody] SolicitudViatico solicitudViatico)
+        [Route("ActualizarEstadoReliquidacion")]
+        public async Task<Response> ActualizarEstadoReliquidacion([FromBody] SolicitudViatico solicitudViatico)
         {
 
             var informeViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
@@ -110,7 +48,7 @@ namespace bd.swth.web.Controllers.API
                 try
                 {
 
-                    informeViaticoActualizar.Estado = 3;
+                    informeViaticoActualizar.Estado = 4;
                     db.SolicitudViatico.Update(informeViaticoActualizar);
                     await db.SaveChangesAsync();
                     return new Response
@@ -138,22 +76,7 @@ namespace bd.swth.web.Controllers.API
             };
 
         }
-        [HttpPost]
-        [Route("ObtenerActividades")]
-        public async Task<InformeActividadViatico> ObtenerActividades([FromBody] InformeViatico informeViatico)
-        {
 
-            var informeViaticoActualizar = await db.InformeActividadViatico.Where(x => x.IdItinerarioViatico == informeViatico.IdItinerarioViatico).FirstOrDefaultAsync();
-
-            if (informeViaticoActualizar != null)
-            {
-
-                return informeViaticoActualizar;
-            }
-
-            return informeViaticoActualizar;
-
-        }
         [HttpPost]
         [Route("InsertarReliquidacionViatico")]
         public async Task<Response> InsertarReliquidacionViatico([FromBody] ReliquidacionViatico reliquidacionViatico)
@@ -185,7 +108,7 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                var ItinerarioViatico = await db.InformeViatico.SingleOrDefaultAsync(m => m.IdInformeViatico == id);
+                var ItinerarioViatico = await db.ReliquidacionViatico.SingleOrDefaultAsync(m => m.IdReliquidacionViatico == id);
 
                 if (ItinerarioViatico == null)
                 {
@@ -213,30 +136,30 @@ namespace bd.swth.web.Controllers.API
             }
         }
         [HttpPut("{id}")]
-        public async Task<Response> ActualizarInformeViatico([FromRoute] int id, [FromBody] InformeViatico informeViatico)
+        public async Task<Response> ActualizarReliquidacion([FromRoute] int id, [FromBody] ReliquidacionViatico reliquidacionViatico)
         {
 
-            var informeViaticoActualizar = await db.InformeViatico.Where(x => x.IdInformeViatico == id).FirstOrDefaultAsync();
+            var informeViaticoActualizar = await db.ReliquidacionViatico.Where(x => x.IdReliquidacionViatico == id).FirstOrDefaultAsync();
 
             if (informeViaticoActualizar != null)
             {
                 try
                 {
-                    var existe = Existe(informeViatico);
+                    var existe = Existe(reliquidacionViatico);
                     if (!existe.IsSuccess)
                     {
-                        informeViaticoActualizar.IdItinerarioViatico = informeViatico.IdItinerarioViatico;
-                        informeViaticoActualizar.IdTipoTransporte = informeViatico.IdTipoTransporte;
-                        informeViaticoActualizar.NombreTransporte = informeViatico.NombreTransporte;
-                        informeViaticoActualizar.IdCiudadDestino = informeViatico.IdCiudadDestino;
-                        informeViaticoActualizar.IdCiudadOrigen = informeViatico.IdCiudadOrigen;
-                        informeViaticoActualizar.FechaSalida = informeViatico.FechaSalida;
-                        informeViaticoActualizar.FechaLlegada = informeViatico.FechaLlegada;
-                        informeViaticoActualizar.HoraSalida = informeViatico.HoraSalida;
-                        informeViaticoActualizar.HoraLlegada = informeViatico.HoraLlegada;
-                        informeViaticoActualizar.Descripcion = informeViatico.Descripcion;
-                        informeViaticoActualizar.ValorEstimado = informeViatico.ValorEstimado;
-                        db.InformeViatico.Update(informeViaticoActualizar);
+                        informeViaticoActualizar.IdItinerarioViatico = reliquidacionViatico.IdItinerarioViatico;
+                        informeViaticoActualizar.IdTipoTransporte = reliquidacionViatico.IdTipoTransporte;
+                        informeViaticoActualizar.NombreTransporte = reliquidacionViatico.NombreTransporte;
+                        informeViaticoActualizar.IdCiudadDestino = reliquidacionViatico.IdCiudadDestino;
+                        informeViaticoActualizar.IdCiudadOrigen = reliquidacionViatico.IdCiudadOrigen;
+                        informeViaticoActualizar.FechaSalida = reliquidacionViatico.FechaSalida;
+                        informeViaticoActualizar.FechaLlegada = reliquidacionViatico.FechaLlegada;
+                        informeViaticoActualizar.HoraSalida = reliquidacionViatico.HoraSalida;
+                        informeViaticoActualizar.HoraLlegada = reliquidacionViatico.HoraLlegada;
+                        informeViaticoActualizar.Descripcion = reliquidacionViatico.Descripcion;
+                        informeViaticoActualizar.ValorEstimado = reliquidacionViatico.ValorEstimado;
+                        db.ReliquidacionViatico.Update(reliquidacionViatico);
                         await db.SaveChangesAsync();
                         return new Response
                         {
@@ -265,18 +188,18 @@ namespace bd.swth.web.Controllers.API
             }
             else
             {
-                informeViaticoActualizar.IdItinerarioViatico = informeViatico.IdItinerarioViatico;
-                informeViaticoActualizar.IdTipoTransporte = informeViatico.IdTipoTransporte;
-                informeViaticoActualizar.NombreTransporte = informeViatico.NombreTransporte;
-                informeViaticoActualizar.IdCiudadDestino = informeViatico.IdCiudadDestino;
-                informeViaticoActualizar.IdCiudadOrigen = informeViatico.IdCiudadOrigen;
-                informeViaticoActualizar.FechaSalida = informeViatico.FechaSalida;
-                informeViaticoActualizar.FechaLlegada = informeViatico.FechaLlegada;
-                informeViaticoActualizar.HoraSalida = informeViatico.HoraSalida;
-                informeViaticoActualizar.HoraLlegada = informeViatico.HoraLlegada;
-                informeViaticoActualizar.Descripcion = informeViatico.Descripcion;
-                informeViaticoActualizar.ValorEstimado = informeViatico.ValorEstimado;
-                db.InformeViatico.Add(informeViaticoActualizar);
+                informeViaticoActualizar.IdItinerarioViatico = reliquidacionViatico.IdItinerarioViatico;
+                informeViaticoActualizar.IdTipoTransporte = reliquidacionViatico.IdTipoTransporte;
+                informeViaticoActualizar.NombreTransporte = reliquidacionViatico.NombreTransporte;
+                informeViaticoActualizar.IdCiudadDestino = reliquidacionViatico.IdCiudadDestino;
+                informeViaticoActualizar.IdCiudadOrigen = reliquidacionViatico.IdCiudadOrigen;
+                informeViaticoActualizar.FechaSalida = reliquidacionViatico.FechaSalida;
+                informeViaticoActualizar.FechaLlegada = reliquidacionViatico.FechaLlegada;
+                informeViaticoActualizar.HoraSalida = reliquidacionViatico.HoraSalida;
+                informeViaticoActualizar.HoraLlegada = reliquidacionViatico.HoraLlegada;
+                informeViaticoActualizar.Descripcion = reliquidacionViatico.Descripcion;
+                informeViaticoActualizar.ValorEstimado = reliquidacionViatico.ValorEstimado;
+                db.ReliquidacionViatico.Add(reliquidacionViatico);
                 await db.SaveChangesAsync();
                 return new Response
                 {
@@ -288,12 +211,12 @@ namespace bd.swth.web.Controllers.API
 
         }
         [HttpDelete("{id}")]
-        public async Task<Response> DeleteInformeViaticos([FromRoute] int id)
+        public async Task<Response> DeleteReliquidacion([FromRoute] int id)
         {
             try
             {
 
-                var respuesta = await db.InformeViatico.SingleOrDefaultAsync(m => m.IdInformeViatico == id);
+                var respuesta = await db.ReliquidacionViatico.SingleOrDefaultAsync(m => m.IdReliquidacionViatico == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -302,7 +225,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.InformeViatico.Remove(respuesta);
+                db.ReliquidacionViatico.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -322,20 +245,20 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private Response Existe(InformeViatico informeViatico)
+        private Response Existe(ReliquidacionViatico reliquidacionViatico)
         {
-            var bdd1 = informeViatico.IdInformeViatico;
-            var bdd2 = informeViatico.IdTipoTransporte;
-            var bdd3 = informeViatico.NombreTransporte;
-            var bdd4 = informeViatico.IdCiudadOrigen;
-            var bdd5 = informeViatico.IdCiudadDestino;
-            var bdd6 = informeViatico.FechaSalida;
-            var bdd7 = informeViatico.HoraSalida;
-            var bdd8 = informeViatico.FechaLlegada;
-            var bdd9 = informeViatico.HoraLlegada;
-            var bdd10 = informeViatico.IdItinerarioViatico;
-            var bdd11 = informeViatico.ValorEstimado;
-            var informeViaticos = db.InformeViatico.Where(p => p.IdInformeViatico == bdd1
+            var bdd1 = reliquidacionViatico.IdReliquidacionViatico;
+            var bdd2 = reliquidacionViatico.IdTipoTransporte;
+            var bdd3 = reliquidacionViatico.NombreTransporte;
+            var bdd4 = reliquidacionViatico.IdCiudadOrigen;
+            var bdd5 = reliquidacionViatico.IdCiudadDestino;
+            var bdd6 = reliquidacionViatico.FechaSalida;
+            var bdd7 = reliquidacionViatico.HoraSalida;
+            var bdd8 = reliquidacionViatico.FechaLlegada;
+            var bdd9 = reliquidacionViatico.HoraLlegada;
+            var bdd10 = reliquidacionViatico.IdItinerarioViatico;
+            var bdd11 = reliquidacionViatico.ValorEstimado;
+            var informeViaticos = db.ReliquidacionViatico.Where(p => p.IdReliquidacionViatico == bdd1
             && p.IdTipoTransporte == bdd2
             && p.NombreTransporte == bdd3
             && p.IdCiudadOrigen == bdd4

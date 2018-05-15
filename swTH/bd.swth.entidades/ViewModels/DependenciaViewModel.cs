@@ -15,5 +15,6 @@ namespace bd.swth.entidades.ViewModels
         public string NombreSucursal { get; set; }
         public string NombreDependenciaPadre { get; set; }
         public string NombreProceso { get; set; }
+        public string Codigo { get; set; }
     }
 }
