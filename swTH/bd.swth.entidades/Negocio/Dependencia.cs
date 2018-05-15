@@ -18,6 +18,7 @@ namespace bd.swth.entidades.Negocio
         [Display(Name = "Dependencia padre:")]
         [Range(0, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int? IdDependenciaPadre { get; set; }
+        public string Codigo { get; set; }
         public virtual Dependencia DependenciaPadre { get; set; }
 
         [Display(Name = "Sucursal:")]
@@ -28,7 +29,7 @@ namespace bd.swth.entidades.Negocio
         public int IdProceso { get; set; }
         public virtual Proceso Proceso { get; set; }
 
-
+        
 
         public virtual ICollection<ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
 

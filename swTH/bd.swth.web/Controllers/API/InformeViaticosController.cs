@@ -36,6 +36,125 @@ namespace bd.swth.web.Controllers.API
             }
         }
         [HttpPost]
+        [Route("Actividades")]
+        public async Task<Response> Actividades([FromBody] InformeViatico informeViatico)
+        {
+
+            var informeViaticoActualizar = await db.InformeActividadViatico.Where(x => x.IdItinerarioViatico == informeViatico.IdItinerarioViatico).FirstOrDefaultAsync();
+
+            if (informeViaticoActualizar != null)
+            {
+                try
+                {
+                    
+                    informeViaticoActualizar.Descripcion = informeViatico.Descripcion;
+                    db.InformeActividadViatico.Update(informeViaticoActualizar);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                    };
+                }
+
+                catch (Exception ex)
+                {
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+
+            }
+            else
+            {
+                try
+                {
+                    var actividad = new InformeActividadViatico
+                    {
+                        IdItinerarioViatico = informeViatico.IdItinerarioViatico,
+                        Descripcion = informeViatico.Descripcion,
+                    };
+                    db.InformeActividadViatico.Add(actividad);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                    };
+                }
+
+                catch (Exception ex)
+                {
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+            }
+        }
+
+        [HttpPost]
+        [Route("ActualizarEstadoInforme")]
+        public async Task<Response> ActualizarEstadoInforme([FromBody] SolicitudViatico solicitudViatico)
+        {
+
+            var informeViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
+
+            if (informeViaticoActualizar != null)
+            {
+                try
+                {
+
+                    informeViaticoActualizar.Estado = 3;
+                    db.SolicitudViatico.Update(informeViaticoActualizar);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                    };
+                }
+
+                catch (Exception ex)
+                {
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+
+            }
+            return new Response
+            {
+                IsSuccess = false,
+                Message = Mensaje.RegistroNoEncontrado,
+            };
+
+        }
+        [HttpPost]
+        [Route("ObtenerActividades")]
+        public async Task<InformeActividadViatico> ObtenerActividades([FromBody] InformeViatico informeViatico)
+        {
+
+            var informeViaticoActualizar = await db.InformeActividadViatico.Where(x => x.IdItinerarioViatico == informeViatico.IdItinerarioViatico).FirstOrDefaultAsync();
+
+            if (informeViaticoActualizar != null)
+            {
+
+                return informeViaticoActualizar;
+            }
+
+            return informeViaticoActualizar;
+
+        }
+        [HttpPost]
         [Route("InsertarInformeViatico")]
         public async Task<Response> InsertarInformeViatico([FromBody] InformeViatico informeViatico)
         {
@@ -174,7 +293,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-              
+
                 var respuesta = await db.InformeViatico.SingleOrDefaultAsync(m => m.IdInformeViatico == id);
                 if (respuesta == null)
                 {

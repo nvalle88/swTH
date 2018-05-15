@@ -523,7 +523,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
+        /// <summary>
+        ///  Lista los estados de aprobación de TTHH
+        /// </summary>
+        /// <returns></returns>
         // GET: api/AccionesPersonal
         [HttpGet]
         [Route("ListarEstadosAprobacionTTHH")]
@@ -539,7 +542,10 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
+        /// <summary>
+        ///  Lista los estados de aprobación del jefe de una dependencia
+        /// </summary>
+        /// <returns></returns>
         // GET: api/AccionesPersonal
         [HttpGet]
         [Route("ListarEstadosAprobacion")]

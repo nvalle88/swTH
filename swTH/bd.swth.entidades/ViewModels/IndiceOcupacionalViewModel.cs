@@ -21,5 +21,6 @@ namespace bd.swth.entidades.ViewModels
         public string Ambito { get; set; }
         public string Nivel { get; set; }
         public string Sucursal { get; set; }
+        public string CodigoDepencia { get; set; }
     }
 }

@@ -78,6 +78,7 @@ namespace bd.swth.datos
         public virtual DbSet<CapacitacionRecibida> CapacitacionRecibida { get; set; }
         public virtual DbSet<CapacitacionRespuesta> CapacitacionRespuesta { get; set; }
         public virtual DbSet<CandidatoEstudio> CandidatoEstudio { get; set; }
+        public virtual DbSet<ReliquidacionViatico> ReliquidacionViatico { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionTemario> CapacitacionTemario { get; set; }
         public virtual DbSet<CapacitacionTemarioProveedor> CapacitacionTemarioProveedor { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.CapacitacionTipoPregunta> CapacitacionTipoPregunta { get; set; }
@@ -208,6 +209,7 @@ namespace bd.swth.datos
         public virtual DbSet<RolPagos> RolPagos { get; set; }
         public virtual DbSet<RolPuesto> RolPuesto { get; set; }
         public virtual DbSet<Rubro> Rubro { get; set; }
+        public virtual DbSet<InformeActividadViatico> InformeActividadViatico { get; set; }
         public virtual DbSet<RubroLiquidacion> RubroLiquidacion { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Sexo> Sexo { get; set; }
         public virtual DbSet<SituacionPropuesta> SituacionPropuesta { get; set; }
@@ -2663,6 +2665,18 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_Induccion_Empleado");
             });
+            modelBuilder.Entity<InformeActividadViatico>(entity =>
+            {
+                entity.HasKey(e => e.IdInformeActividad)
+                    .HasName("PK_InformeActividadViatico");
+
+                entity.Property(e => e.Descripcion).HasColumnType("text");
+
+                entity.HasOne(d => d.ItinerarioViatico)
+                    .WithMany(p => p.InformeActividadViatico)
+                    .HasForeignKey(d => d.IdItinerarioViatico)
+                    .HasConstraintName("FK_InformeActividadViatico_ItinerarioViatico");
+            });
 
             modelBuilder.Entity<InformeUATH>(entity =>
             {
@@ -3609,6 +3623,45 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            modelBuilder.Entity<ReliquidacionViatico>(entity =>
+            {
+                entity.HasKey(e => e.IdReliquidacionViatico)
+                    .HasName("PK_RequlidacionViatico");
+
+                entity.Property(e => e.Descripcion).HasColumnType("text");
+
+                entity.Property(e => e.FechaLlegada).HasColumnType("date");
+
+                entity.Property(e => e.FechaSalida).HasColumnType("date");
+
+                entity.Property(e => e.HoraLlegada).HasColumnName("HoraLLegada");
+
+                entity.Property(e => e.NombreTransporte).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.ValorEstimado).HasColumnType("decimal");
+
+                entity.HasOne(d => d.CiudadDestino)
+                    .WithMany(p => p.ReliquidacionViaticoIdCiudadDestino)
+                    .HasForeignKey(d => d.IdCiudadDestino)
+                    .HasConstraintName("FK_RequlidacionViatico_Ciudad");
+
+                entity.HasOne(d => d.CiudadOrigen)
+                    .WithMany(p => p.ReliquidacionViaticoIdCiudadOrigen)
+                    .HasForeignKey(d => d.IdCiudadOrigen)
+                    .HasConstraintName("FK_RequlidacionViatico_Ciudad1");
+
+                entity.HasOne(d => d.ItinerarioViatico)
+                    .WithMany(p => p.ReliquidacionViatico)
+                    .HasForeignKey(d => d.IdItinerarioViatico)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefRequlidacionViatico396");
+
+                entity.HasOne(d => d.TipoTransporte)
+                    .WithMany(p => p.ReliquidacionViatico)
+                    .HasForeignKey(d => d.IdTipoTransporte)
+                    .HasConstraintName("FK_RequlidacionViatico_TipoTransporte");
+            });
+
             modelBuilder.Entity<Respuesta>(entity =>
             {
                 entity.HasKey(e => e.IdRespuesta)
@@ -3940,8 +3993,7 @@ namespace bd.swth.datos
                 entity.Property(e => e.FechaHasta).HasColumnType("datetime");
 
                 entity.Property(e => e.FechaSolicitud).HasColumnType("date");
-
-                entity.Property(e => e.Motivo).HasColumnType("text");
+                
 
                 entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.SolicitudPermiso)
