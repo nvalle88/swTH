@@ -27,5 +27,10 @@ namespace bd.swth.entidades.Utils
         public static string SeleccioneIndice { get { return "Debe seleccionar un índice en: situación propuesta."; } }
 
 
+        ////
+        public static string ConceptoNoExiste { get { return "El concepto no existe en el proceso al cual pertenece el presente cálculo de nómina."; } }
+        public static string EmpleadoNoExiste { get { return "Identificación del empleado no existe."; } }
+
+
     }
 }

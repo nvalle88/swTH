@@ -31,7 +31,9 @@ namespace bd.swth.datos
         public virtual DbSet<GastoPersonal> GastoPersonal { get; set; }
         public virtual DbSet<CalculoNomina> CalculoNomina { get; set; }
         public virtual DbSet<ReportadoNomina> ReportadoNomina { get; set; }
-        
+        public virtual DbSet<bd.swth.entidades.Negocio.ConstanteNomina> ConstanteNomina { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.FuncionNomina> FuncionNomina { get; set; }
+
 
 
 
@@ -134,7 +136,7 @@ namespace bd.swth.datos
         public virtual DbSet<FormulasRMU> FormulasRMU { get; set; }
         public virtual DbSet<FrecuenciaAplicacion> FrecuenciaAplicacion { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.FlujoAprobacion> FlujoAprobacion { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.ConstanteNomina> ConstanteNomina { get; set; }
+
         public virtual DbSet<GastoRubro> GastoRubro { get; set; }
         public virtual DbSet<Genero> Genero { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.GrupoOcupacional> GrupoOcupacional { get; set; }

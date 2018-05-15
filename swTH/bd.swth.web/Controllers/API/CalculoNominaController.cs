@@ -98,7 +98,7 @@ namespace bd.swth.web.Controllers.API
                     };
 
                 }
-
+                CalculoNominaActualizar.Descripcion = CalculoNomina.Descripcion;
                 CalculoNominaActualizar.IdPeriodo = CalculoNomina.IdPeriodo;
                 CalculoNominaActualizar.IdProceso = CalculoNomina.IdProceso;
                 CalculoNominaActualizar.Automatico = CalculoNomina.Automatico;
