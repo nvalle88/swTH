@@ -67,7 +67,8 @@ namespace bd.swth.web.Controllers.API
                         IdDependencia =item.IdDependencia,
                         NombreDependencia =item.Nombre,
                         NombreSucursal = item.Sucursal.Nombre,
-                        NombreDependenciaPadre=padre
+                        NombreDependenciaPadre=padre,
+                        Codigo = item.Codigo
                         
                     };
 
@@ -231,11 +232,12 @@ namespace bd.swth.web.Controllers.API
 
                 var dependencia = new Dependencia
                 {
-                    IdDependencia= dependenciaViewModel.IdDependencia,
+                    IdDependencia = dependenciaViewModel.IdDependencia,
                     Nombre = dependenciaViewModel.NombreDependencia,
-                    IdSucursal= dependenciaViewModel.IdSucursal,
+                    IdSucursal = dependenciaViewModel.IdSucursal,
                     IdDependenciaPadre = dependenciaViewModel.IdDependenciaPadre,
-                    IdProceso = dependenciaViewModel.IdProceso
+                    IdProceso = dependenciaViewModel.IdProceso,
+                    Codigo = dependenciaViewModel.Codigo
                 };
 
                 var existe = Existe(dependencia);
@@ -257,12 +259,14 @@ namespace bd.swth.web.Controllers.API
                         if (dependencia.Nombre != dependenciaActualizar.Nombre
                             || dependencia.IdSucursal != dependenciaActualizar.IdSucursal
                             || dependencia.IdDependenciaPadre != dependenciaActualizar.IdDependenciaPadre
-                            || dependencia.IdProceso != dependenciaActualizar.IdProceso)
+                            || dependencia.IdProceso != dependenciaActualizar.IdProceso
+                            || dependencia.Codigo != dependenciaActualizar.Codigo)
                         {
                             dependenciaActualizar.Nombre = dependencia.Nombre;
                             dependenciaActualizar.IdSucursal = dependencia.IdSucursal;
                             dependenciaActualizar.IdDependenciaPadre = dependencia.IdDependenciaPadre;
                             dependenciaActualizar.IdProceso = dependencia.IdProceso;
+                            dependenciaActualizar.Codigo = dependencia.Codigo;
                             await db.SaveChangesAsync();
 
                             return new Response
@@ -361,7 +365,8 @@ namespace bd.swth.web.Controllers.API
                     Nombre = dependenciaViewModel.NombreDependencia,
                     IdSucursal = dependenciaViewModel.IdSucursal,
                     IdDependenciaPadre= dependenciaViewModel.IdDependenciaPadre,
-                    IdProceso = dependenciaViewModel.IdProceso
+                    IdProceso = dependenciaViewModel.IdProceso,
+                    Codigo = dependenciaViewModel.Codigo
 
                 };
 
@@ -464,7 +469,8 @@ namespace bd.swth.web.Controllers.API
             var dependenciarespuesta = db.Dependencia.Where(p => p.Nombre.ToUpper().TrimEnd().TrimStart()==nombre
                                                              && p.IdDependenciaPadre==dependencia.IdDependenciaPadre
                                                              && p.IdSucursal==dependencia.IdSucursal
-                                                             && p.IdProceso == dependencia.IdProceso).FirstOrDefault();
+                                                             && p.IdProceso == dependencia.IdProceso
+                                                             && p.Codigo == dependencia.Codigo).FirstOrDefault();
             if (dependenciarespuesta != null)
             {
                 return new Response

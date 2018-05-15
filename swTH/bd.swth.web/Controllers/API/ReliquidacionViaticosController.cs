@@ -36,7 +36,6 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
         [HttpPost]
         [Route("ActualizarEstadoReliquidacion")]
         public async Task<Response> ActualizarEstadoReliquidacion([FromBody] SolicitudViatico solicitudViatico)
