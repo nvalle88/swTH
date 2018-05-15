@@ -36,6 +36,7 @@ namespace bd.swth.web.Controllers.API
             {
                 var lista=await db.IndiceOcupacional.Select(x=> new IndiceOcupacionalViewModel
                    {
+                    CodigoDepencia = x.Dependencia.Codigo,
                     Dependencia = x.Dependencia.Nombre,
                     EscalaGrado = x.EscalaGrados.Nombre,
                     IdIndiceOcupacional = x.IdIndiceOcupacional,
