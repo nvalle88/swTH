@@ -35,49 +35,49 @@ namespace bd.swth.web.Controllers.API
                 return new List<ReliquidacionViatico>();
             }
         }
-        
 
-        //[HttpPost]
-        //[Route("ActualizarEstadoInforme")]
-        //public async Task<Response> ActualizarEstadoInforme([FromBody] SolicitudViatico solicitudViatico)
-        //{
 
-        //    var informeViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
+        [HttpPost]
+        [Route("ActualizarEstadoReliquidacion")]
+        public async Task<Response> ActualizarEstadoReliquidacion([FromBody] SolicitudViatico solicitudViatico)
+        {
 
-        //    if (informeViaticoActualizar != null)
-        //    {
-        //        try
-        //        {
+            var informeViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
 
-        //            informeViaticoActualizar.Estado = 3;
-        //            db.SolicitudViatico.Update(informeViaticoActualizar);
-        //            await db.SaveChangesAsync();
-        //            return new Response
-        //            {
-        //                IsSuccess = true,
-        //                Message = Mensaje.Satisfactorio,
-        //            };
-        //        }
+            if (informeViaticoActualizar != null)
+            {
+                try
+                {
 
-        //        catch (Exception ex)
-        //        {
+                    informeViaticoActualizar.Estado = 4;
+                    db.SolicitudViatico.Update(informeViaticoActualizar);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                    };
+                }
 
-        //            return new Response
-        //            {
-        //                IsSuccess = false,
-        //                Message = Mensaje.Error,
-        //            };
-        //        }
+                catch (Exception ex)
+                {
 
-        //    }
-        //    return new Response
-        //    {
-        //        IsSuccess = false,
-        //        Message = Mensaje.RegistroNoEncontrado,
-        //    };
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
 
-        //}
-        
+            }
+            return new Response
+            {
+                IsSuccess = false,
+                Message = Mensaje.RegistroNoEncontrado,
+            };
+
+        }
+
         [HttpPost]
         [Route("InsertarReliquidacionViatico")]
         public async Task<Response> InsertarReliquidacionViatico([FromBody] ReliquidacionViatico reliquidacionViatico)
