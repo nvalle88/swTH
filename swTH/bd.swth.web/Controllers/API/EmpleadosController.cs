@@ -31,6 +31,27 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+
+        [HttpPost]
+        [Route("ExisteEmpleadoPorIdentificacion")]
+        public async Task<Response> ExisteEmpleadoPorIdentificacion([FromBody] Persona Persona)
+        {
+            try
+            {
+                var empleado = await db.Empleado.Where(x=>x.Persona.Identificacion==Persona.Identificacion && x.Activo==true).FirstOrDefaultAsync();
+                if (empleado != null)
+                {
+                    return new Response { IsSuccess = true};
+                }
+                return new Response { IsSuccess = false };
+
+            }
+            catch (Exception)
+            {
+
+                return new Response { IsSuccess = false, Message = Mensaje.Error }; ;
+            }
+        }
         [HttpPost]
         [Route("ObtenerEncabezadoEmpleadosFao")]
         public async Task<Response> ObtenerEncabezadoEmpleadosFao([FromBody] DocumentoFAOViewModel documentoFAOViewModel)

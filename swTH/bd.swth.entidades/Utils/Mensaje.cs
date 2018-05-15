@@ -28,5 +28,10 @@ namespace bd.swth.entidades.Utils
         public static string ErrorValorEstadoMovimientoInterno { get { return "Valor de estado sin nombre"; } }
 
 
+        ////
+        public static string ConceptoNoExiste { get { return "El concepto no existe en el proceso al cual pertenece el presente cálculo de nómina."; } }
+        public static string EmpleadoNoExiste { get { return "Identificación del empleado no existe."; } }
+
+
     }
 }

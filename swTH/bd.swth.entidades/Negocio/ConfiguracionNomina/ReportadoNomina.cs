@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace bd.swth.entidades.Negocio
@@ -14,6 +15,11 @@ namespace bd.swth.entidades.Negocio
         public string NombreEmpleado { get; set; }
         public double Cantidad { get; set; }
         public double Importe { get; set; }
+
+        [NotMapped]
+        public bool Valido { get; set; }
+        [NotMapped]
+        public string MensajeError { get; set; }
 
         public int IdCalculoNomina { get; set; }
         public virtual CalculoNomina CalculoNomina { get; set; }
