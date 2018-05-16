@@ -31,7 +31,9 @@ namespace bd.swth.datos
         public virtual DbSet<GastoPersonal> GastoPersonal { get; set; }
         public virtual DbSet<CalculoNomina> CalculoNomina { get; set; }
         public virtual DbSet<ReportadoNomina> ReportadoNomina { get; set; }
-        
+        public virtual DbSet<bd.swth.entidades.Negocio.ConstanteNomina> ConstanteNomina { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.FuncionNomina> FuncionNomina { get; set; }
+
 
 
 
@@ -61,7 +63,7 @@ namespace bd.swth.datos
         public virtual DbSet<AprobacionViatico> AprobacionViatico { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Ambito> Ambito { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.AreaConocimiento> AreaConocimiento { get; set; }
-        
+
         public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSO> BrigadaSSO { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.BrigadaSSORol> BrigadaSsorol { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Calificacion> Calificacion { get; set; }
@@ -93,6 +95,7 @@ namespace bd.swth.datos
         public virtual DbSet<DependenciaDocumento> DependenciaDocumento { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Destreza> Destreza { get; set; }
         public virtual DbSet<DetalleExamenInduccion> DetalleExamenInduccion { get; set; }
+        public virtual DbSet<DetallePresupuesto> DetallePresupuesto { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DiscapacidadSustituto> DiscapacidadSustituto { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngreso> DocumentosIngreso { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngresoEmpleado> DocumentosIngresoEmpleado { get; set; }
@@ -103,7 +106,7 @@ namespace bd.swth.datos
         public virtual DbSet<EmpleadoIE> EmpleadoIE { get; set; }
         public virtual DbSet<CandidatoTrayectoriaLaboral> CandidatoTrayectoriaLaboral { get; set; }
         public virtual DbSet<EmpleadoImpuestoRenta> EmpleadoImpuestoRenta { get; set; }
-       public virtual DbSet<bd.swth.entidades.Negocio.ImpuestoRentaParametros> ImpuestoRentaParametros { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ImpuestoRentaParametros> ImpuestoRentaParametros { get; set; }
         public virtual DbSet<EmpleadoMovimiento> EmpleadoMovimiento { get; set; }
         public virtual DbSet<EmpleadoNepotismo> EmpleadoNepotismo { get; set; }
         public virtual DbSet<EmpleadoSaldoVacaciones> EmpleadoSaldoVacaciones { get; set; }
@@ -135,7 +138,7 @@ namespace bd.swth.datos
         public virtual DbSet<FormulasRMU> FormulasRMU { get; set; }
         public virtual DbSet<FrecuenciaAplicacion> FrecuenciaAplicacion { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.FlujoAprobacion> FlujoAprobacion { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.ConstanteNomina> ConstanteNomina { get; set; }
+
         public virtual DbSet<GastoRubro> GastoRubro { get; set; }
         public virtual DbSet<Genero> Genero { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.GrupoOcupacional> GrupoOcupacional { get; set; }
@@ -190,6 +193,7 @@ namespace bd.swth.datos
         public virtual DbSet<PreguntaRespuesta> PreguntaRespuesta { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.Proceso> Proceso { get; set; }
         public virtual DbSet<ProcesoDetalle> ProcesoDetalle { get; set; }
+        public virtual DbSet<Presupuesto> Presupuesto { get; set; }
         public virtual DbSet<Provincia> Provincia { get; set; }
         public virtual DbSet<Quejas> Quejas { get; set; }
         public virtual DbSet<Provisiones> Provisiones { get; set; }
@@ -707,7 +711,7 @@ namespace bd.swth.datos
                     .HasConstraintName("RefTipoAccionPersonal462");
             });
 
-           
+
 
             modelBuilder.Entity<ActividadesAnalisisOcupacional>(entity =>
             {
@@ -756,9 +760,9 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdEmpleado)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_ActividadesGestionCambio_Empleado");
-                
+
             });
-            
+
 
             modelBuilder.Entity<AdministracionTalentoHumano>(entity =>
             {
@@ -793,7 +797,7 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            
+
 
             modelBuilder.Entity<AprobacionViatico>(entity =>
             {
@@ -1212,27 +1216,27 @@ namespace bd.swth.datos
                     .HasColumnType("varchar(100)");
             });
 
-                  modelBuilder.Entity<CeseFuncion>(entity =>
-            {
-                entity.HasKey(e => e.IdCeseFuncion)
-                    .HasName("PK_CeseFuncion");
+            modelBuilder.Entity<CeseFuncion>(entity =>
+      {
+          entity.HasKey(e => e.IdCeseFuncion)
+              .HasName("PK_CeseFuncion");
 
-                entity.Property(e => e.Fecha).HasColumnType("date");
+          entity.Property(e => e.Fecha).HasColumnType("date");
 
-                entity.Property(e => e.Observacion).HasMaxLength(250);
+          entity.Property(e => e.Observacion).HasMaxLength(250);
 
-                entity.HasOne(d => d.IdEmpleadoNavigation)
-                    .WithMany(p => p.CeseFuncion)
-                    .HasForeignKey(d => d.IdEmpleado)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_CeseFuncion_Empleado");
+          entity.HasOne(d => d.IdEmpleadoNavigation)
+              .WithMany(p => p.CeseFuncion)
+              .HasForeignKey(d => d.IdEmpleado)
+              .OnDelete(DeleteBehavior.Restrict)
+              .HasConstraintName("FK_CeseFuncion_Empleado");
 
-                entity.HasOne(d => d.IdTipoCesacionFuncionNavigation)
-                    .WithMany(p => p.CeseFuncion)
-                    .HasForeignKey(d => d.IdTipoCesacionFuncion)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_CeseFuncion_CeseFuncion");
-            });
+          entity.HasOne(d => d.IdTipoCesacionFuncionNavigation)
+              .WithMany(p => p.CeseFuncion)
+              .HasForeignKey(d => d.IdTipoCesacionFuncion)
+              .OnDelete(DeleteBehavior.Restrict)
+              .HasConstraintName("FK_CeseFuncion_CeseFuncion");
+      });
 
             modelBuilder.Entity<Ciudad>(entity =>
             {
@@ -1550,7 +1554,7 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            
+
 
 
             modelBuilder.Entity<EmpleadoContactoEmergencia>(entity =>
@@ -1689,7 +1693,7 @@ namespace bd.swth.datos
                 //    .OnDelete(DeleteBehavior.Restrict)
                 //    .HasConstraintName("FK_PersonaSustituto_Persona");
 
-               
+
             });
 
             modelBuilder.Entity<EnfermedadSustituto>(entity =>
@@ -1708,6 +1712,25 @@ namespace bd.swth.datos
                     .WithMany(p => p.EnfermedadSustituto)
                     .HasForeignKey(d => d.IdTipoEnfermedad)
                     .HasConstraintName("FK_EnfermedadSustituto_TipoEnfermedad");
+            });
+            modelBuilder.Entity<DetallePresupuesto>(entity =>
+            {
+                entity.HasKey(e => e.IdDetallePresupuesto)
+                    .HasName("PK_DetallePresupuesto");
+
+                entity.Property(e => e.IdDetallePresupuesto);
+
+                entity.Property(e => e.Fecha).HasColumnType("date");
+
+                entity.HasOne(d => d.Presupuesto)
+                    .WithMany(p => p.DetallePresupuesto)
+                    .HasForeignKey(d => d.IdPresupuesto)
+                    .HasConstraintName("FK_DetallePresupuesto_Presupuesto");
+
+                entity.HasOne(d => d.SolicitudViatico)
+                    .WithMany(p => p.DetallePresupuesto)
+                    .HasForeignKey(d => d.IdSolicitudViatico)
+                    .HasConstraintName("FK_DetallePresupuesto_SolicitudViatico");
             });
 
             modelBuilder.Entity<DiscapacidadSustituto>(entity =>
@@ -2171,12 +2194,12 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdValidacionJefe);
             });
 
-            
+
             modelBuilder.Entity<ExperienciaLaboralRequerida>(entity =>
             {
                 entity.HasKey(e => e.IdExperienciaLaboralRequerida)
                     .HasName("PK230");
-                
+
                 entity.HasIndex(e => e.IdEspecificidadExperiencia)
                     .HasName("Ref229350");
 
@@ -2637,7 +2660,7 @@ namespace bd.swth.datos
                     .WithMany(p => p.IndiceOcupacionalModalidadPartida)
                     .HasForeignKey(d => d.IdFondoFinanciamiento)
                     .HasConstraintName("RefFondoFinanciamiento104");
-            
+
                 entity.HasOne(d => d.IndiceOcupacional)
                     .WithMany(p => p.IndiceOcupacionalModalidadPartida)
                     .HasForeignKey(d => d.IdIndiceOcupacional)
@@ -3029,7 +3052,17 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasMaxLength(50);
             });
+            modelBuilder.Entity<Presupuesto>(entity =>
+            {
+                entity.HasKey(e => e.IdPresupuesto)
+                    .HasName("PK_Presupuesto");
 
+                entity.Property(e => e.IdPresupuesto);
+
+                entity.Property(e => e.Fecha).HasColumnType("date");
+
+                entity.Property(e => e.NumeroPartidaPresupuestaria).HasColumnType("varchar(50)");
+            });
             modelBuilder.Entity<PaquetesInformaticos>(entity =>
             {
                 entity.HasKey(e => e.IdPaquetesInformaticos)
@@ -3111,7 +3144,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdPersona)
                     .HasName("PK_Persona");
 
-             
+
 
                 entity.HasIndex(e => e.IdEstadoCivil)
                     .HasName("IX_Persona_IdEstadoCivil");
@@ -3166,7 +3199,7 @@ namespace bd.swth.datos
                 entity.Property(e => e.TelefonoPrivado)
                     .IsRequired()
                     .HasMaxLength(20);
-                
+
 
                 entity.HasOne(d => d.EstadoCivil)
                     .WithMany(p => p.Persona)
@@ -3991,7 +4024,7 @@ namespace bd.swth.datos
                 entity.Property(e => e.FechaHasta).HasColumnType("datetime");
 
                 entity.Property(e => e.FechaSolicitud).HasColumnType("date");
-                
+
 
                 entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.SolicitudPermiso)

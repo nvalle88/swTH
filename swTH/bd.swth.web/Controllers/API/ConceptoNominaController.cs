@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
+using bd.swth.entidades.ObjectTransfer;
 using bd.swth.entidades.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -69,6 +70,84 @@ namespace bd.swth.web.Controllers.API
                     IsSuccess = false,
                     Message = Mensaje.Error,
                 };
+            }
+        }
+
+
+        [HttpPost]
+        [Route("InsertarReportadoNomina")]
+        public async Task<Response> InsertarReportadoNomina([FromBody] List<ReportadoNomina> listaSalvar)
+        {
+            try
+            {
+                var listadoBorrar = await db.ReportadoNomina.Where(x => x.IdCalculoNomina == listaSalvar.FirstOrDefault().IdCalculoNomina).ToListAsync();
+
+                db.ReportadoNomina.RemoveRange(listadoBorrar);
+                await db.SaveChangesAsync();
+
+
+                //foreach (var item in listaSalvar)
+                //{
+                //    var reportado = new ReportadoNomina
+                //    {
+                //        Cantidad = item.Cantidad,
+                //        CodigoConcepto=item.CodigoConcepto,
+                //        IdCalculoNomina=item.IdCalculoNomina,
+                //        IdentificacionEmpleado=item.IdentificacionEmpleado,
+                //        Importe=item.Importe,
+                //        NombreEmpleado=item.NombreEmpleado,
+                //    };
+                    await db.ReportadoNomina.AddRangeAsync(listaSalvar);
+                    await db.SaveChangesAsync();
+                //}
+                
+               
+
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
+        [HttpPost]
+        [Route("VerificarExcel")]
+        public async Task<List<ReportadoNomina>> ExisteConceptoPorCodigo([FromBody] List<ReportadoNomina> lista)
+        {
+            try
+            {
+                var proceso =  db.CalculoNomina.Where(x => x.IdCalculoNomina == lista.FirstOrDefault().IdCalculoNomina).FirstOrDefaultAsync().Result.IdProceso;
+
+                foreach (var item in lista)
+                {
+                    var empleado = await db.Empleado.Where(x => x.Activo == true && x.Persona.Identificacion == item.IdentificacionEmpleado).FirstOrDefaultAsync();
+
+                    if (empleado==null)
+                    {
+                        item.Valido = false;
+                        item.MensajeError = Mensaje.EmpleadoNoExiste;
+                    }
+
+                    var concepto =await db.ConceptoNomina.Where(x => x.IdProceso == proceso && x.Codigo == item.CodigoConcepto).FirstOrDefaultAsync();
+                    if (concepto==null)
+                    {
+                        item.Valido = false;
+                        item.MensajeError = string.Format("{0} {1}", item.MensajeError, Mensaje.ConceptoNoExiste);
+                    }
+                }
+                return lista;
+                     
+            }
+            catch (Exception ex)
+            {
+              throw;
             }
         }
 

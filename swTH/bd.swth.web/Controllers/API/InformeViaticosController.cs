@@ -110,7 +110,7 @@ namespace bd.swth.web.Controllers.API
                 try
                 {
 
-                    informeViaticoActualizar.Estado = 3;
+                    informeViaticoActualizar.Estado = 4;
                     db.SolicitudViatico.Update(informeViaticoActualizar);
                     await db.SaveChangesAsync();
                     return new Response
