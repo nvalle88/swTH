@@ -389,20 +389,20 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("ActualizarEstadoSolicitudViatico")]
-        public async Task<Response> ActualizarEstadoSolicitudViatico([FromBody] SolicitudViaticoViewModel solicitudViaticoViewModel)
+        public async Task<Response> ActualizarEstadoSolicitudViatico([FromBody] SolicitudViatico solicitudViatico)
         {
             try
             {
 
 
-                var solicitudViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViaticoViewModel.SolicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
+                var solicitudViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
 
                 if (solicitudViaticoActualizar != null)
                 {
                     try
                     {
 
-                        solicitudViaticoActualizar.Estado = solicitudViaticoViewModel.SolicitudViatico.Estado;
+                        solicitudViaticoActualizar.Estado = solicitudViatico.Estado;
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -450,6 +450,7 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+
 
         // DELETE: api/BasesDatos/5
         [HttpDelete("{id}")]
