@@ -26,6 +26,7 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<AprobacionViatico> AprobacionViatico { get; set; }
         public virtual ICollection<ItinerarioViatico> ItinerarioViatico { get; set; }
         public virtual ICollection<SolicitudTipoViatico> SolicitudTipoViatico { get; set; }
+        public virtual ICollection<DetallePresupuesto> DetallePresupuesto { get; set; }
         public virtual Ciudad Ciudad { get; set; }
         public virtual Pais Pais { get; set; }
         public virtual Provincia Provincia { get; set; }

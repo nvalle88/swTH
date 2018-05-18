@@ -48,7 +48,7 @@ namespace bd.swth.web.Controllers.API
                 try
                 {
 
-                    informeViaticoActualizar.Estado = 4;
+                    informeViaticoActualizar.Estado = 6;
                     db.SolicitudViatico.Update(informeViaticoActualizar);
                     await db.SaveChangesAsync();
                     return new Response
