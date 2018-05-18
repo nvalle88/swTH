@@ -22,5 +22,6 @@ namespace bd.swth.entidades.Negocio
         public virtual ProcesoNomina ProcesoNomina { get; set; }
 
         public virtual ICollection<ReportadoNomina> ReportadoNomina { get; set; }
+        public virtual ICollection<CabeceraNomina> CabeceraNomina { get; set; }
     }
 }
