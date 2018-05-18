@@ -38,6 +38,29 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("LimpiarReportados")]
+        public async Task<Response> LimpiarReportados([FromBody] CalculoNomina calculoNomina)
+        {
+            try
+            {
+                var listadoBorrar = await db.ReportadoNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).ToListAsync();
+                db.ReportadoNomina.RemoveRange(listadoBorrar);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
         // GET: api/BasesDatos/5
         [HttpGet]
         [HttpPost("ObtenerCalculoNomina")]
