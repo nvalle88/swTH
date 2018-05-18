@@ -124,6 +124,20 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("ListarReportados")]
+        public async Task<List<ReportadoNomina>> ListarReportados([FromBody] CalculoNomina CalculoNomina)
+        {
+            try
+            {
+                return await db.ReportadoNomina.Where(x => x.IdCalculoNomina == CalculoNomina.IdCalculoNomina).ToListAsync();
+            }
+            catch (Exception)
+            {
+                return new List<ReportadoNomina>();
+            }
+        }
+
         // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarCalculoNomina")]
