@@ -26,6 +26,7 @@ namespace bd.swth.web
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
+
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -107,6 +108,50 @@ namespace bd.swth.web
 
             // Configuración Estados Aprobación Movimiento Interno
             ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno = JsonConvert.DeserializeObject<List<AprobacionMovimientoInternoViewModel>>(Configuration.GetSection("ListaEstadosAprobacionMovimientoInterno").Value);
+
+
+
+            /// <summary>
+            /// Se lee el fichero appsetting.json según las etiquetas expuestas en este.
+            /// Ejemplo:IntervaloTemporizadorHoras Horas que tendra de vida la token.
+            /// IntervaloTemporizadorMinutos Minutos que tendra de vida la token
+            ///  IntervaloTemporizadorSegundos Segundos que tendra de vida la token.
+            ///  Con estas tres variables mencionadas se conforma cada que tiempo se realizará 
+            ///  el ciclo para invalidar los Token externos que serán consumidos por terceros
+            /// </summary>
+            var IntervaloCicloHoras = Configuration.GetSection("IntervaloTemporizadorHoras").Value;
+            var IntervaloCicloMinutos = Configuration.GetSection("IntervaloTemporizadorMinutos").Value;
+            var IntervaloCicloSegundos = Configuration.GetSection("IntervaloTemporizadorSegundos").Value;
+
+            /// <summary>
+            /// Se lee el fichero appsetting.json según las etiquetas expuestas en este.
+            /// Ejemplo:inicioCicloHoras Horas que comensará a ejecutarse una vez iniciada la aplicación.
+            /// inicioCicloMinutos Minutos que comensará a ejecutarse una vez iniciada la aplicación.
+            ///  inicioCicloSegundos Segundos que comensará a ejecutarse una vez iniciada la aplicación.
+            ///  Con estas tres variables mencionadas se conforma el tiempo que se comenzará a ejecutar 
+            ///  el ciclo para  invalidar los Token externos que serán consumidos por terceros
+            /// </summary>
+            var inicioCicloHoras = Configuration.GetSection("inicioCicloHoras").Value;
+            var inicioCicloMinutos = Configuration.GetSection("inicioCicloMinutos").Value;
+            var inicioCicloSegundos = Configuration.GetSection("inicioCicloSegundos").Value;
+
+
+            /// <summary>
+            /// Se inicializa el temporizador: RelojR0, el método para inicializarlo se llama InicializarRelojR0
+            /// </summary>
+            Temporizador.Temporizador.InicializarRelojR0
+                (
+                  new TimeSpan(
+                        Convert.ToInt32(inicioCicloHoras), 
+                        Convert.ToInt32(inicioCicloMinutos),
+                        Convert.ToInt32(inicioCicloSegundos)
+                        )
+                , new TimeSpan(
+                        Convert.ToInt32(IntervaloCicloHoras), 
+                        Convert.ToInt32(IntervaloCicloMinutos), 
+                        Convert.ToInt32(IntervaloCicloSegundos)
+                        )
+                );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

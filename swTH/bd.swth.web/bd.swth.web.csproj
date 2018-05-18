@@ -43,6 +43,7 @@
   <ItemGroup>
     <Folder Include="Controllers\MVC\" />
     <Folder Include="Properties\PublishProfiles\" />
+    <Folder Include="Temporizador\" />
     <Folder Include="wwwroot\Documentos\" />
     <Folder Include="wwwroot\ExamenesComplementariosDocumentos\" />
     <Folder Include="wwwroot\FacturaViaticos\" />

@@ -73,7 +73,6 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
         [HttpPost]
         [Route("InsertarReportadoNomina")]
         public async Task<Response> InsertarReportadoNomina([FromBody] List<ReportadoNomina> listaSalvar)
@@ -84,25 +83,8 @@ namespace bd.swth.web.Controllers.API
 
                 db.ReportadoNomina.RemoveRange(listadoBorrar);
                 await db.SaveChangesAsync();
-
-
-                //foreach (var item in listaSalvar)
-                //{
-                //    var reportado = new ReportadoNomina
-                //    {
-                //        Cantidad = item.Cantidad,
-                //        CodigoConcepto=item.CodigoConcepto,
-                //        IdCalculoNomina=item.IdCalculoNomina,
-                //        IdentificacionEmpleado=item.IdentificacionEmpleado,
-                //        Importe=item.Importe,
-                //        NombreEmpleado=item.NombreEmpleado,
-                //    };
                     await db.ReportadoNomina.AddRangeAsync(listaSalvar);
                     await db.SaveChangesAsync();
-                //}
-                
-               
-
                 return new Response
                 {
                     IsSuccess = true,

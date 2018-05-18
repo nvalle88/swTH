@@ -1105,6 +1105,39 @@ namespace bd.swth.web.Controllers.API
         //    }
         //}
 
+        public async Task ActualizarDiasRestantesAccionPersonal() {
+
+            try {
+
+                var hoy = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+
+                var lista = await db.AccionPersonal.Where(w => w.Fecha.Year == hoy.Year).ToListAsync();
+
+                foreach (var item in lista) {
+
+                    if (item.FechaRige < hoy) {
+
+                        TimeSpan tiempo = (TimeSpan) (item.FechaRigeHasta - hoy);
+                        var diasRestantes = (int) tiempo.TotalDays;
+
+                        if ( Convert.ToInt32(item.Numero) > diasRestantes ) {
+
+                            var registro = db.AccionPersonal.Find(item.IdAccionPersonal);
+                            registro.Numero = diasRestantes + "";
+                            db.AccionPersonal.Update(registro);
+                            await db.SaveChangesAsync();
+
+                        }
+
+                    }
+                }
+
+
+            } catch (Exception ex)
+            {
+            }
+
+        }
 
     }
 }
