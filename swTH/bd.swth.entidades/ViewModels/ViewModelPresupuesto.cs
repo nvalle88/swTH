@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.Text;
 
-namespace bd.swth.entidades.Negocio
+namespace bd.swth.entidades.ViewModels
 {
-    public partial class Presupuesto
+    public class ViewModelPresupuesto
     {
-        [Key]
         public int IdPresupuesto { get; set; }
         public string NumeroPartidaPresupuestaria { get; set; }
         public double? Valor { get; set; }
         public DateTime? Fecha { get; set; }
         public int? IdSucursal { get; set; }
+        public string NombreSucursal { get; set; }
 
-        public virtual ICollection<DetallePresupuesto> DetallePresupuesto { get; set; }
-        public virtual Sucursal Sucursal { get; set; }
     }
 }

@@ -3057,11 +3057,14 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdPresupuesto)
                     .HasName("PK_Presupuesto");
 
-                entity.Property(e => e.IdPresupuesto);
-
                 entity.Property(e => e.Fecha).HasColumnType("date");
 
                 entity.Property(e => e.NumeroPartidaPresupuestaria).HasColumnType("varchar(50)");
+
+                entity.HasOne(d => d.Sucursal)
+                    .WithMany(p => p.Presupuesto)
+                    .HasForeignKey(d => d.IdSucursal)
+                    .HasConstraintName("FK_Presupuesto_Sucursal");
             });
             modelBuilder.Entity<PaquetesInformaticos>(entity =>
             {

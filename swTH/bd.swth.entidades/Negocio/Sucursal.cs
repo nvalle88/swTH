@@ -22,7 +22,8 @@ namespace bd.swth.entidades.Negocio
         public virtual Ciudad Ciudad { get; set; }
 
         public virtual ICollection<Dependencia> Dependencia { get; set; }
+        public virtual ICollection<Presupuesto> Presupuesto { get; set; }
 
-       
+
     }
 }
