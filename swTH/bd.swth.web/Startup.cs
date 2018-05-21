@@ -110,7 +110,7 @@ namespace bd.swth.web
             ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno = JsonConvert.DeserializeObject<List<AprobacionMovimientoInternoViewModel>>(Configuration.GetSection("ListaEstadosAprobacionMovimientoInterno").Value);
 
 
-
+            
             /// <summary>
             /// Se lee el fichero appsetting.json según las etiquetas expuestas en este.
             /// Ejemplo:IntervaloTemporizadorHoras Horas que tendra de vida la token.

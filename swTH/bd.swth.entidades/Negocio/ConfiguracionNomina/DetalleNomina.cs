@@ -10,7 +10,7 @@ namespace bd.swth.entidades.Negocio
         [Key]
         public int IdDetalleNomina { get; set; }
         public int IdConceptoNomina { get; set; }
-        public float Valor { get; set; }
+        public double Valor { get; set; }
 
         public int IdCabeceraNomina { get; set; }
         public virtual CabeceraNomina CabeceraNomina { get; set; }
