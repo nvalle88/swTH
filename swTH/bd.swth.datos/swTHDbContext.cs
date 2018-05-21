@@ -246,10 +246,37 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.Titulo> Titulo { get; set; }
         public virtual DbSet<TrabajoEquipoIniciativaLiderazgo> TrabajoEquipoIniciativaLiderazgo { get; set; }
         public virtual DbSet<TrayectoriaLaboral> TrayectoriaLaboral { get; set; }
+        public virtual DbSet<VacacionesEmpleado> VacacionesEmpleado { get; set; }
+        public virtual DbSet<VacacionRelacionLaboral> VacacionRelacionLaboral { get; set; }
         public virtual DbSet<ValidacionInmediatoSuperior> ValidacionInmediatoSuperior { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<VacacionRelacionLaboral>(entity =>
+            {
+                entity.HasKey(e => e.IdVacacionRelacionLaboral)
+                    .HasName("PK_VacacionRelacionLaboral");
+
+                entity.Property(e => e.IncrementoApartirPeriodoFiscal).HasColumnName("IncrementoAPartirPeriodoFiscal");
+
+                entity.HasOne(d => d.RelacionLaboral)
+                    .WithMany(p => p.VacacionRelacionLaboral)
+                    .HasForeignKey(d => d.IdRelacionLaboral)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_VacacionRelacionLaboral_RelacionLaboral");
+            });
+
+            modelBuilder.Entity<VacacionesEmpleado>(entity =>
+            {
+                entity.HasKey(e => e.IdVacaciones)
+                    .HasName("PK_VacacionesEmpleado");
+
+                entity.HasOne(d => d.Empleado)
+                    .WithMany(p => p.VacacionesEmpleado)
+                    .HasForeignKey(d => d.IdEmpleado)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_VacacionesEmpleado_Empleado");
+            });
 
             modelBuilder.Entity<Empleado>(entity =>
             {

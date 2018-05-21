@@ -109,6 +109,9 @@ namespace bd.swth.web
             // Configuración Estados Aprobación Movimiento Interno
             ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno = JsonConvert.DeserializeObject<List<AprobacionMovimientoInternoViewModel>>(Configuration.GetSection("ListaEstadosAprobacionMovimientoInterno").Value);
 
+            // Configuración Estados Vacaciones
+            ConstantesEstadosVacaciones.ListaEstadosVacaciones = JsonConvert.DeserializeObject<List<EstadoVacacionesViewModel>>(Configuration.GetSection("ListaEstadosVacaciones").Value);
+
 
 
             /// <summary>
@@ -116,8 +119,6 @@ namespace bd.swth.web
             /// Ejemplo:IntervaloTemporizadorHoras Horas que tendra de vida la token.
             /// IntervaloTemporizadorMinutos Minutos que tendra de vida la token
             ///  IntervaloTemporizadorSegundos Segundos que tendra de vida la token.
-            ///  Con estas tres variables mencionadas se conforma cada que tiempo se realizará 
-            ///  el ciclo para invalidar los Token externos que serán consumidos por terceros
             /// </summary>
             var IntervaloCicloHoras = Configuration.GetSection("IntervaloTemporizadorHoras").Value;
             var IntervaloCicloMinutos = Configuration.GetSection("IntervaloTemporizadorMinutos").Value;
@@ -128,8 +129,6 @@ namespace bd.swth.web
             /// Ejemplo:inicioCicloHoras Horas que comensará a ejecutarse una vez iniciada la aplicación.
             /// inicioCicloMinutos Minutos que comensará a ejecutarse una vez iniciada la aplicación.
             ///  inicioCicloSegundos Segundos que comensará a ejecutarse una vez iniciada la aplicación.
-            ///  Con estas tres variables mencionadas se conforma el tiempo que se comenzará a ejecutar 
-            ///  el ciclo para  invalidar los Token externos que serán consumidos por terceros
             /// </summary>
             var inicioCicloHoras = Configuration.GetSection("inicioCicloHoras").Value;
             var inicioCicloMinutos = Configuration.GetSection("inicioCicloMinutos").Value;
