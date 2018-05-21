@@ -57,12 +57,7 @@ namespace bd.swth.web.Controllers.API
                             && w.IdEmpleado == item.IdEmpleado
                         )
                         .FirstOrDefaultAsync();
-
-                    if (item.IdEmpleado == 2101)
-                    {
-                        var aadsd = 0;
-                    }
-
+                    
                     var totalDiasVacaciones = await CalcularVacacionesPorPeriodoFiscal(item);
 
                     
@@ -285,7 +280,7 @@ namespace bd.swth.web.Controllers.API
                 var vacacionesAcumuladas = 0;
 
                 foreach (var item in vacaciones) {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas - item.VacacionesGozadas;
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
                 }
 
 
@@ -341,7 +336,7 @@ namespace bd.swth.web.Controllers.API
 
             try
             {
-                var usuario = await db.Empleado
+                var usuario = await db.Empleado.Include(i=>i.Persona)
                     .Where(w => w.NombreUsuario == idFiltrosViewModel.NombreUsuario).FirstOrDefaultAsync();
 
                 var IOMPEmpleado = await db.IndiceOcupacionalModalidadPartida
@@ -368,12 +363,7 @@ namespace bd.swth.web.Controllers.API
 
                 var estado = ConstantesEstadosVacaciones.ListaEstadosVacaciones.Where(w=>w.GrupoAprobacion == 2).FirstOrDefault();
 
-
-                foreach (var item in vacaciones)
-                {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas - item.VacacionesGozadas;
-                }
-
+                var hoy = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
 
                 var modelo = new SolicitudPlanificacionVacacionesViewModel
                     {
@@ -388,9 +378,9 @@ namespace bd.swth.web.Controllers.API
 
                         IdSolicitudPlanificacionVacaciones = 0,
 
-                        FechaDesde = DateTime.Now,
-                        FechaHasta = DateTime.Now,
-                        FechaSolicitud = DateTime.Now,
+                        FechaDesde = hoy,
+                        FechaHasta = hoy,
+                        FechaSolicitud = hoy,
 
                         Observaciones = "",
 
@@ -541,7 +531,7 @@ namespace bd.swth.web.Controllers.API
         // POST: api/SolicitudPlanificacionVacaciones
         [HttpPost]
         [Route("InsertarSolicitudPlanificacionVacaciones")]
-        public async Task<Response> PostSolicitudPlanificacionVacaciones([FromBody] SolicitudPlanificacionVacaciones SolicitudPlanificacionVacaciones)
+        public async Task<Response> InsertarSolicitudPlanificacionVacaciones([FromBody] SolicitudPlanificacionVacacionesViewModel solicitudPlanificacionVacacionesViewModel)
         {
             try
             {
@@ -554,38 +544,28 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                //var respuesta = Existe(SolicitudPlanificacionVacaciones);
-                //if (!respuesta.IsSuccess)
-                //{
-                    db.SolicitudPlanificacionVacaciones.Add(SolicitudPlanificacionVacaciones);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                        Resultado = SolicitudPlanificacionVacaciones
-                    };
-                //}
+                var modelo = new SolicitudPlanificacionVacaciones {
+                    Estado = solicitudPlanificacionVacacionesViewModel.Estado,
+                    FechaDesde = solicitudPlanificacionVacacionesViewModel.FechaDesde,
+                    FechaHasta = solicitudPlanificacionVacacionesViewModel.FechaHasta,
+                    FechaSolicitud = DateTime.Now,
+                    IdEmpleado = solicitudPlanificacionVacacionesViewModel.DatosBasicosEmpleadoViewModel.IdEmpleado,
+                    Observaciones = ""
+                };
 
-                //return new Response
-                //{
-                //    IsSuccess = false,
-                //    Message = Mensaje.Satisfactorio
-                //};
+                db.SolicitudPlanificacionVacaciones.Add(modelo);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio
+                };
+
 
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -647,7 +627,200 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-      
+
+        // POST: api/SolicitudPlanificacionVacaciones
+        [HttpPost]
+        [Route("ObtenerSolicitudPlanificacionVacacionesViewModel")]
+        public async Task<Response> ObtenerSolicitudPlanificacionVacacionesViewModel([FromBody] string id) {
+
+            try {
+                var idSolicitud = Convert.ToInt32(id);
+
+                var estado = ConstantesEstadosVacaciones.ListaEstadosVacaciones;
+
+                var vacacionesAcumuladas = 0;
+                
+                var modelo = await db.SolicitudPlanificacionVacaciones
+                    .Where(w => w.IdSolicitudPlanificacionVacaciones == idSolicitud)
+                    .Select(s =>  new SolicitudPlanificacionVacacionesViewModel
+                        {
+                            DatosBasicosEmpleadoViewModel = new DatosBasicosEmpleadoViewModel
+                                {
+                                    Nombres = s.Empleado.Persona.Nombres,
+                                    Apellidos = s.Empleado.Persona.Apellidos,
+                                    IdEmpleado = s.IdEmpleado,
+                                    IdPersona = s.Empleado.Persona.IdPersona,
+                                    Identificacion = s.Empleado.Persona.Identificacion
+                                },
+
+                            IdSolicitudPlanificacionVacaciones = s.IdSolicitudPlanificacionVacaciones,
+
+                            FechaDesde = s.FechaDesde,
+                            FechaHasta = s.FechaHasta,
+                            FechaSolicitud = s.FechaSolicitud,
+
+                            Observaciones = s.Observaciones,
+
+                            Estado = s.Estado,
+
+                            NombreEstado = estado.Where(est=>est.ValorEstado == s.Estado).FirstOrDefault().NombreEstado,
+
+                            VacacionesAcumuladas = vacacionesAcumuladas
+
+                        }
+                    )
+                    .FirstOrDefaultAsync();
+
+                var numeroEstado = estado.Where(w => w.ValorEstado == modelo.Estado).FirstOrDefault();
+
+                if (numeroEstado == null) {
+                    modelo.Estado = estado.Where(w => w.GrupoAprobacion == 2).FirstOrDefault().ValorEstado;
+                    modelo.NombreEstado = estado.Where(w => w.GrupoAprobacion == 2).FirstOrDefault().NombreEstado;
+                }
+
+                var vacaciones = await db.VacacionesEmpleado
+                    .Where(w => w.IdEmpleado == modelo.DatosBasicosEmpleadoViewModel.IdEmpleado)
+                    .ToListAsync();
+
+                // Suma de vacaciones no gozadas
+                foreach (var item in vacaciones)
+                {
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                }
+
+                // Se añaden las vacaciones acumuladas al modelo
+                modelo.VacacionesAcumuladas = vacacionesAcumuladas;
+
+
+                if (modelo != null) {
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Resultado = modelo
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.RegistroNoEncontrado
+                };
+
+
+                } catch (Exception ex) {
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+        }
+
+
+        /// <summary>
+        /// Permite editar los datos de ingreso del empleado para planificación de vacaciones,
+        /// Necesario: IdSolicitudPlanificacionVacaciones
+        /// </summary>
+        /// <param name="solicitudPlanificacionVacacionesViewModel"></param>
+        /// <returns></returns>
+        // POST: api/SolicitudPlanificacionVacaciones
+        [HttpPost]
+        [Route("EditarSolicitudPlanificacionVacaciones")]
+        public async Task<Response> EditarSolicitudPlanificacionVacaciones([FromBody] SolicitudPlanificacionVacacionesViewModel solicitudPlanificacionVacacionesViewModel)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                var modelo = await db.SolicitudPlanificacionVacaciones
+                    .Where(w => w.IdSolicitudPlanificacionVacaciones == solicitudPlanificacionVacacionesViewModel.IdSolicitudPlanificacionVacaciones)
+                    .FirstOrDefaultAsync();
+
+                modelo.Estado = solicitudPlanificacionVacacionesViewModel.Estado;
+                modelo.FechaDesde = solicitudPlanificacionVacacionesViewModel.FechaDesde;
+                modelo.FechaHasta = solicitudPlanificacionVacacionesViewModel.FechaHasta;
+                modelo.FechaSolicitud = DateTime.Now;
+                modelo.IdEmpleado = solicitudPlanificacionVacacionesViewModel.DatosBasicosEmpleadoViewModel.IdEmpleado;
+                
+                db.SolicitudPlanificacionVacaciones.Update(modelo);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+        /// <summary>
+        /// Permite editar el estado y las observaciones de la planificación del empleado,
+        /// Necesario: IdSolicitudPlanificacionVacaciones
+        /// </summary>
+        /// <param name="solicitudPlanificacionVacacionesViewModel"></param>
+        /// <returns></returns>
+        // POST: api/SolicitudPlanificacionVacaciones
+        [HttpPost]
+        [Route("AprobarSolicitudPlanificacionVacaciones")]
+        public async Task<Response> AprobarSolicitudPlanificacionVacaciones([FromBody] SolicitudPlanificacionVacacionesViewModel solicitudPlanificacionVacacionesViewModel)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                var modelo = await db.SolicitudPlanificacionVacaciones
+                    .Where(w => w.IdSolicitudPlanificacionVacaciones == solicitudPlanificacionVacacionesViewModel.IdSolicitudPlanificacionVacaciones)
+                    .FirstOrDefaultAsync();
+
+                modelo.Estado = solicitudPlanificacionVacacionesViewModel.Estado;
+                modelo.Observaciones = solicitudPlanificacionVacacionesViewModel.Observaciones;
+
+                db.SolicitudPlanificacionVacaciones.Update(modelo);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
 
     }
 }
