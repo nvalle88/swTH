@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using bd.swth.datos;
+using bd.swth.entidades.Constantes;
 using bd.swth.entidades.Negocio;
 using bd.swth.entidades.Utils;
 using Microsoft.AspNetCore.Http;
@@ -17,10 +20,12 @@ namespace bd.swth.web.Controllers.API
     {
 
         private readonly SwTHDbContext db;
+        private readonly SwTHDbContext db_1;
 
-        public CalculoNominaController(SwTHDbContext db)
+        public CalculoNominaController(SwTHDbContext db, SwTHDbContext db_1)
         {
             this.db = db;
+            this.db_1 = db_1;
         }
 
         // GET: api/BasesDatos
@@ -35,6 +40,139 @@ namespace bd.swth.web.Controllers.API
             catch (Exception)
             {
                 return new List<CalculoNomina>();
+            }
+        }
+
+
+        private async Task<List<EmpleadoMovimiento>> ListarMovimientosAprobadosPorPeriodo(DateTime fechaInicio)
+        {
+            var lista =await db.EmpleadoMovimiento.Where(x => x.FechaDesde >= fechaInicio && x.AccionPersonal.Estado==ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno[3].ValorEstado).ToListAsync();
+            return lista;
+        }
+
+        private async Task<CalculoNomina> ObtenerCalculoNominaDetalle(CalculoNomina calculoNomina)
+        {
+            var calculoNominaRequest = await db.CalculoNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).Include(x => x.PeriodoNomina).Include(y => y.ProcesoNomina).ThenInclude(y => y.ConceptoNomina).FirstOrDefaultAsync();
+            return calculoNominaRequest;
+        }
+
+        private async Task<List<ReportadoNomina>> ListarReportadoNomina(CalculoNomina calculoNomina)
+        {
+                var listaReportado = await db.ReportadoNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).ToListAsync();
+
+            return listaReportado;
+        }
+
+        private async Task<List<Empleado>> ListarEmpleadosNomina(bool activo)
+        {
+            var listaEmpleados = await db.Empleado.Where(x => x.Activo == activo).Include(x=>x.Persona).Include(y=>y.IndiceOcupacionalModalidadPartida).ThenInclude(y=>y.IndiceOcupacional.EscalaGrados).ToListAsync();
+            return listaEmpleados;
+        }
+
+        [HttpPost]
+        [Route("CalcularDetalleNomina")]
+        public async Task<Response> CalcularDetalleNomina([FromBody] CalculoNomina calculoNomina)
+        {
+            try
+            {
+                ///Variables necesarias para el calculo de la nómina
+                var ListaReportados = await ListarReportadoNomina(calculoNomina);
+                var CalculoNomina = await ObtenerCalculoNominaDetalle(calculoNomina);
+                var ListaMovimietosEmpleado = await ListarMovimientosAprobadosPorPeriodo(CalculoNomina.PeriodoNomina.FechaInicio);
+                var listaEmpleados = await ListarEmpleadosNomina(true);
+                string scapeConst = "#";
+                string scapeFunct = "@";
+
+
+                var conn = db.Database.GetDbConnection();
+
+                 conn.Open();
+                using (var command = conn.CreateCommand())
+                {
+                    string query = "Select Empleado.IdEmpleado from Empleado";
+                    command.CommandText = query;
+                    DbDataReader reader =  command.ExecuteReader();
+
+                    if (reader.HasRows)
+                    {
+                        while ( reader.Read())
+                        {
+                            var row = new Empleado { IdEmpleado = reader.GetInt32(0)};
+                           
+                        }
+                    }
+                    reader.Dispose();
+                }
+
+                using (var transaction = db.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        foreach (var empleado in listaEmpleados)
+                        {
+                            ///Insertar Cabecera del Calculo de la nómina
+                            var cabeceraNomina = new CabeceraNomina { IdEmpleado = empleado.IdEmpleado, IdCalculoNomina = calculoNomina.IdCalculoNomina };
+
+                            await db.CabeceraNomina.AddAsync(cabeceraNomina);
+                            await db.SaveChangesAsync();
+
+                            //var SalarioMensual = empleado.IndiceOcupacionalModalidadPartida.OrderByDescending(x => x.Fecha).FirstOrDefault().SalarioReal == null  
+                            //                     ? empleado.IndiceOcupacionalModalidadPartida.OrderByDescending(x => x.Fecha).FirstOrDefault().IndiceOcupacional.EscalaGrados.Remuneracion 
+                            //                     : empleado.IndiceOcupacionalModalidadPartida.OrderByDescending(x => x.Fecha).FirstOrDefault().SalarioReal;
+
+                            //var detalleNomi = db.DetalleNomina.AddAsync(new DetalleNomina { IdCabeceraNomina = cabeceraNomina.IdCabeceraNomina, IdConceptoNomina = 10, Valor = Convert.ToDouble(SalarioMensual) });
+
+
+                            List<Empleado> modelList = new List<Empleado>();
+
+                            modelList = db.Empleado.FromSql("Select * from Empleado").ToList();
+
+                           
+
+
+                        }
+
+                        transaction.Commit();
+                        return new Response { IsSuccess = true };
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+               
+            }
+            catch (Exception ex)
+            {
+                
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
+        [HttpPost]
+        [Route("LimpiarReportados")]
+        public async Task<Response> LimpiarReportados([FromBody] CalculoNomina calculoNomina)
+        {
+            try
+            {
+                var listadoBorrar = await db.ReportadoNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).ToListAsync();
+                db.ReportadoNomina.RemoveRange(listadoBorrar);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
             }
         }
 
@@ -121,6 +259,20 @@ namespace bd.swth.web.Controllers.API
                     IsSuccess = false,
                     Message = Mensaje.Excepcion
                 };
+            }
+        }
+
+        [HttpPost]
+        [Route("ListarReportados")]
+        public async Task<List<ReportadoNomina>> ListarReportados([FromBody] CalculoNomina CalculoNomina)
+        {
+            try
+            {
+                return await db.ReportadoNomina.Where(x => x.IdCalculoNomina == CalculoNomina.IdCalculoNomina).ToListAsync();
+            }
+            catch (Exception)
+            {
+                return new List<ReportadoNomina>();
             }
         }
 

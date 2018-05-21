@@ -113,7 +113,7 @@ namespace bd.swth.web
             ConstantesEstadosVacaciones.ListaEstadosVacaciones = JsonConvert.DeserializeObject<List<EstadoVacacionesViewModel>>(Configuration.GetSection("ListaEstadosVacaciones").Value);
 
 
-
+            
             /// <summary>
             /// Se lee el fichero appsetting.json según las etiquetas expuestas en este.
             /// Ejemplo:IntervaloTemporizadorHoras Horas que tendra de vida la token.

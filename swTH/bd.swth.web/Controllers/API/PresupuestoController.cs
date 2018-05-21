@@ -2,16 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swth.datos;
 using bd.swth.entidades.Negocio;
-using bd.log.guardar.Servicios;
-using bd.log.guardar.ObjectTranfer;
-using bd.swth.entidades.Enumeradores;
-using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -38,6 +34,58 @@ namespace bd.swth.web.Controllers.API
             catch (Exception ex)
             {
                 return new List<Presupuesto>();
+            }
+        }
+
+        [HttpPost]
+        [Route("ObtenerPresupuesto")]
+        public async Task<Response> ObtenerPresupuesto([FromBody] SolicitudViaticoViewModel solicitudViaticoViewModel)
+        {
+            try
+            {
+                var a = await db.Presupuesto.Where(x => x.IdPresupuesto == solicitudViaticoViewModel.Presupuesto.IdPresupuesto).OrderBy(x => x.Fecha).FirstOrDefaultAsync();
+                if (a != null)
+                {
+                    var b = db.DetallePresupuesto.Where(x => x.IdPresupuesto == solicitudViaticoViewModel.Presupuesto.IdPresupuesto).ToListAsync().Result.Sum(x => x.Valor);
+                    var valor = b + Convert.ToDouble(solicitudViaticoViewModel.Valor);
+                    if (valor <= a.Valor)
+                    {
+
+                        var detalle = new DetallePresupuesto
+                        {
+                            IdPresupuesto = a.IdPresupuesto,
+                            IdSolicitudViatico = solicitudViaticoViewModel.SolicitudViatico.IdSolicitudViatico,
+                            Valor = Convert.ToDouble(solicitudViaticoViewModel.Valor),
+                            Fecha = DateTime.Now
+
+                        };
+                        db.DetallePresupuesto.Add(detalle);
+                        await db.SaveChangesAsync();
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio
+                        };
+                    }
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No Contiene Fondos"
+                    };
+
+                }
+                return new Response
+                {
+                    IsSuccess = false
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false
+                };
             }
         }
 
@@ -76,7 +124,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                
+
                 return new Response
                 {
                     IsSuccess = false,
@@ -130,7 +178,7 @@ namespace bd.swth.web.Controllers.API
                     }
                     catch (Exception ex)
                     {
-                        
+
                         return new Response
                         {
                             IsSuccess = false,
@@ -150,7 +198,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                     Message = Mensaje.Excepcion
+                    Message = Mensaje.Excepcion
                 };
             }
         }
@@ -257,7 +305,7 @@ namespace bd.swth.web.Controllers.API
             var bdd = presupuesto.NumeroPartidaPresupuestaria;
             var bdd1 = presupuesto.Valor;
             var bdd2 = presupuesto.Fecha;
-            var Etniarespuesta = db.Presupuesto.Where(p => p.NumeroPartidaPresupuestaria == bdd 
+            var Etniarespuesta = db.Presupuesto.Where(p => p.NumeroPartidaPresupuestaria == bdd
             && p.Valor == bdd1
             && p.Fecha == bdd2).FirstOrDefault();
             if (Etniarespuesta != null)
