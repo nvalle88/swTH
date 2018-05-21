@@ -11,6 +11,7 @@ namespace bd.swth.entidades.ViewModels
         public int IdManualPuesto { get; set; }
 
         public int IdEmpleado { get; set; }
+        public string NombreUsuario { get; set; }
 
     }
 }

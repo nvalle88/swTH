@@ -190,6 +190,8 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<Induccion> Induccion { get; set; }
 
+        public virtual ICollection<VacacionesEmpleado> VacacionesEmpleado { get; set; }
+
         public virtual ICollection<DocumentosIngresoEmpleado> DocumentosIngresoEmpleado { get; set; }
         public virtual ICollection<PersonaSustituto> PersonaSustituto { get; set; }
         public virtual ICollection<ActividadesGestionCambio> ActividadesGestionCambio { get; set; }

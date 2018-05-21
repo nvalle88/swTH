@@ -54,9 +54,21 @@ namespace bd.swth.web.Temporizador
         {
             try
             {
-                var ctl = new AccionesPersonalController(db);
-                await ctl.ActualizarDiasRestantesAccionPersonal();
+                var horaActual = DateTime.Now.Hour;
 
+                var horaControlDiarioMin = 0;
+                var horaControlDiarioMax = 3;
+
+                //if (horaActual>horaControlDiarioMin && horaActual<horaControlDiarioMax) {
+
+                    var ctl = new AccionesPersonalController(db);
+                    await ctl.ActualizarDiasRestantesAccionPersonal();
+
+                    var ctl1 = new SolicitudPlanificacionVacacionesController(db);
+                    await ctl1.CrearRegistroVacacionesEmpleados();
+                //}
+
+                
 
             }
             catch (Exception)

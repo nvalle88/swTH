@@ -56,4 +56,10 @@ namespace bd.swth.entidades.Constantes
 
     }
 
+    public static class ConstantesEstadosVacaciones
+    {
+        public static List<EstadoVacacionesViewModel> ListaEstadosVacaciones { get; set; }
+
+    }
+
 }

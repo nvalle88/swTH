@@ -22,5 +22,6 @@ namespace bd.swth.entidades.Negocio
         public virtual RegimenLaboral RegimenLaboral { get; set; }
 
         public virtual ICollection<TipoNombramiento> TipoNombramiento { get; set; }
+        public virtual ICollection<VacacionRelacionLaboral> VacacionRelacionLaboral { get; set; }
     }
 }
