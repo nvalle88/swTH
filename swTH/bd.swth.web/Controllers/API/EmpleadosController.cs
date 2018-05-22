@@ -645,6 +645,7 @@ namespace bd.swth.web.Controllers.API
                 return new List<ListaEmpleadoViewModel>();
             }
         }
+
         [HttpGet]
         [Route("ListarEmpleados")]
         public async Task<List<ListaEmpleadoViewModel>> GetEmpleados()
@@ -3435,7 +3436,7 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        // POST: api/AccionesPersonal
+        // POST: api/Empleados
         [HttpPost]
         [Route("ListarEmpleadosPorSucursal")]
         public async Task<List<DatosBasicosEmpleadoViewModel>> ListarEmpleadosPorSucursal([FromBody] EmpleadosPorSucursalViewModel empleadosPorSucursalViewModel)
@@ -3542,6 +3543,6 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
+        
     }
 }
