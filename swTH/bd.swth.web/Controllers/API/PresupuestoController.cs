@@ -29,11 +29,36 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.Presupuesto.OrderBy(x => x.Fecha).ToListAsync();
+                return await db.Presupuesto.Where(x => x.IdSucursal == null).OrderBy(x => x.Fecha).ToListAsync();
             }
             catch (Exception ex)
             {
                 return new List<Presupuesto>();
+            }
+        }
+        [HttpGet]
+        [Route("ListarPresupuestoCapacitaciones")]
+        public async Task<List<ViewModelPresupuesto>> ListarPresupuestoCapacitaciones()
+        {
+            try
+            {
+                var ListaPresupuestoCapacitaciones =  await db.Presupuesto.Select(
+                    x => new ViewModelPresupuesto
+                    {
+                        IdSucursal = x.IdSucursal,
+                        NombreSucursal = x.Sucursal.Nombre,
+                        NumeroPartidaPresupuestaria = x.NumeroPartidaPresupuestaria,
+                        IdPresupuesto = x.IdPresupuesto,
+                        Fecha = x.Fecha,
+                        Valor = x.Valor
+                                      
+                    }).Where(x => x.IdSucursal != null).ToListAsync();
+
+                return ListaPresupuestoCapacitaciones;
+            }
+            catch (Exception ex)
+            {
+                return new List<ViewModelPresupuesto>();
             }
         }
 
@@ -43,7 +68,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var a = await db.Presupuesto.Where(x => x.IdPresupuesto == solicitudViaticoViewModel.Presupuesto.IdPresupuesto).OrderBy(x => x.Fecha).FirstOrDefaultAsync();
+                var a = await db.Presupuesto.Where(x => x.IdPresupuesto == solicitudViaticoViewModel.Presupuesto.IdPresupuesto && x.IdSucursal == null).OrderBy(x => x.Fecha).FirstOrDefaultAsync();
                 if (a != null)
                 {
                     var b = db.DetallePresupuesto.Where(x => x.IdPresupuesto == solicitudViaticoViewModel.Presupuesto.IdPresupuesto).ToListAsync().Result.Sum(x => x.Valor);
@@ -158,15 +183,16 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var EtniaActualizar = await db.Presupuesto.Where(x => x.IdPresupuesto == id).FirstOrDefaultAsync();
-                if (EtniaActualizar != null)
+                var PresupuestoActualizar = await db.Presupuesto.Where(x => x.IdPresupuesto == id).FirstOrDefaultAsync();
+                if (PresupuestoActualizar != null)
                 {
                     try
                     {
-                        EtniaActualizar.NumeroPartidaPresupuestaria = presupuesto.NumeroPartidaPresupuestaria;
-                        EtniaActualizar.NumeroPartidaPresupuestaria = presupuesto.NumeroPartidaPresupuestaria;
-                        EtniaActualizar.Fecha = presupuesto.Fecha;
-                        db.Presupuesto.Update(EtniaActualizar);
+                        PresupuestoActualizar.NumeroPartidaPresupuestaria = presupuesto.NumeroPartidaPresupuestaria;
+                        PresupuestoActualizar.NumeroPartidaPresupuestaria = presupuesto.NumeroPartidaPresupuestaria;
+                        PresupuestoActualizar.Fecha = presupuesto.Fecha;
+                        PresupuestoActualizar.IdSucursal = presupuesto.IdSucursal;
+                        db.Presupuesto.Update(PresupuestoActualizar);
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -302,12 +328,16 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(Presupuesto presupuesto)
         {
-            var bdd = presupuesto.NumeroPartidaPresupuestaria;
-            var bdd1 = presupuesto.Valor;
-            var bdd2 = presupuesto.Fecha;
-            var Etniarespuesta = db.Presupuesto.Where(p => p.NumeroPartidaPresupuestaria == bdd
-            && p.Valor == bdd1
-            && p.Fecha == bdd2).FirstOrDefault();
+            var bdd = presupuesto.IdPresupuesto;
+            var bdd1 = presupuesto.NumeroPartidaPresupuestaria;
+            var bdd2 = presupuesto.Valor;
+            var bdd3 = presupuesto.Fecha;
+            var bdd4 = presupuesto.IdSucursal;
+            var Etniarespuesta = db.Presupuesto.Where(p => p.IdPresupuesto==bdd 
+            && p.NumeroPartidaPresupuestaria == bdd1
+            && p.Valor == bdd2
+            && p.Fecha == bdd3
+            && p.IdSucursal == bdd4).FirstOrDefault();
             if (Etniarespuesta != null)
             {
                 return new Response
