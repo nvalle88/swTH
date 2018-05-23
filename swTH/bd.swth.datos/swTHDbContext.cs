@@ -143,6 +143,7 @@ namespace bd.swth.datos
 
         public virtual DbSet<GastoRubro> GastoRubro { get; set; }
         public virtual DbSet<Genero> Genero { get; set; }
+        public virtual DbSet<GestionPlanCapacitacion> GestionPlanCapacitacion { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.GrupoOcupacional> GrupoOcupacional { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.InstruccionFormal> InstruccionFormal { get; set; }
         public virtual DbSet<Indicador> Indicador { get; set; }
@@ -2452,7 +2453,15 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasMaxLength(20);
             });
+            modelBuilder.Entity<GestionPlanCapacitacion>(entity =>
+            {
+                entity.HasKey(e => e.IdGestionPlanCapacitacion)
+                    .HasName("PK_GestionPlanCapacitacion");
 
+                entity.Property(e => e.Descripcion).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.Nombre).HasColumnType("varchar(250)");
+            });
             modelBuilder.Entity<GrupoOcupacional>(entity =>
             {
                 entity.HasKey(e => e.IdGrupoOcupacional)
@@ -3397,19 +3406,25 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdPlanCapacitacion)
                     .HasName("PK_PlanCapacitacion");
 
-                entity.Property(e => e.IdPlanCapacitacion).ValueGeneratedNever();
+                entity.Property(e => e.AmbitoCapacitacion).HasColumnType("varchar(250)");
 
                 entity.Property(e => e.ApellidoNombre).HasColumnType("varchar(250)");
 
                 entity.Property(e => e.Cedula).HasColumnType("varchar(10)");
 
-                entity.Property(e => e.Ciudad).HasColumnType("varchar(50)");
+                entity.Property(e => e.NombreCiudad).HasColumnType("varchar(50)");
 
                 entity.Property(e => e.ClasificacionTema).HasColumnType("varchar(250)");
 
                 entity.Property(e => e.DenominacionPuesto).HasColumnType("varchar(50)");
 
-                entity.Property(e => e.Fecha).HasColumnType("date");
+                entity.Property(e => e.EstadoEvento).HasColumnType("varchar(254)");
+
+                entity.Property(e => e.FechaCapacitacionPlanificada).HasColumnType("date");
+
+                entity.Property(e => e.FechaFin).HasColumnType("date");
+
+                entity.Property(e => e.FechaInicio).HasColumnType("date");
 
                 entity.Property(e => e.GrupoOcupacional).HasColumnType("varchar(50)");
 
@@ -3421,7 +3436,11 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.NivelDesconcentracion).HasColumnType("varchar(50)");
 
+                entity.Property(e => e.NombreEvento).HasColumnType("varchar(1000)");
+
                 entity.Property(e => e.NumeroPartidaPresupuestaria).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.Observacion).HasColumnType("text");
 
                 entity.Property(e => e.Pais).HasColumnType("varchar(50)");
 
@@ -3437,7 +3456,32 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.TemaCapacitacion).HasColumnType("text");
 
+                entity.Property(e => e.TipoCapacitacion).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.TipoEvaluacion).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.TipoEvento).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.Ubicacion).HasColumnType("varchar(100)");
+
                 entity.Property(e => e.UnidadAdministrativa).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.ValorReal).HasColumnType("decimal");
+
+                entity.HasOne(d => d.Ciudad)
+                    .WithMany(p => p.PlanCapacitacion)
+                    .HasForeignKey(d => d.IdCiudad)
+                    .HasConstraintName("FK_PlanCapacitacion_Ciudad");
+
+                entity.HasOne(d => d.GestionPlanCapacitacion)
+                    .WithMany(p => p.PlanCapacitacion)
+                    .HasForeignKey(d => d.IdGestionPlanCapacitacion)
+                    .HasConstraintName("FK_PlanCapacitacion_PlanCapacitacion1");
+
+                entity.HasOne(d => d.ProveedorCapacitaciones)
+                    .WithMany(p => p.PlanCapacitacion)
+                    .HasForeignKey(d => d.IdProveedorCapacitaciones)
+                    .HasConstraintName("FK_PlanCapacitacion_CapacitacionProveedor");
             });
 
             modelBuilder.Entity<PlanificacionHE>(entity =>
