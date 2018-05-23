@@ -822,5 +822,111 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        /// <summary>
+        ///  Devuelve la lista de solicitudes de planificación de vacaciones hechas por el idEmpleado,
+        ///  validando que el nombreUsuario sea jefe y esté activado
+        ///  Nota: No valida que el usuario sea jefe de la unidad Administrativa a la que pertenece el empleado
+        ///  Necesario: IdEmpleado(del que se desea ver las solicitudes), NombreUsuario (logueado)
+        /// </summary>
+        /// <param name="idFiltrosViewModel"></param>
+        /// <returns></returns>
+        // POST: api/SolicitudPlanificacionVacaciones
+        [HttpPost]
+        [Route("ObtenerListaSolicitudPlanificacionVacacionesViewModelPorEmpleado")]
+        public async Task<Response> ObtenerListaSolicitudPlanificacionVacacionesViewModelPorEmpleado([FromBody] IdFiltrosViewModel idFiltrosViewModel)
+        {
+
+            try
+            {
+                var usuario = await db.Empleado.Where(w => w.NombreUsuario == idFiltrosViewModel.NombreUsuario && w.Activo == true).FirstOrDefaultAsync();
+
+                if (usuario.EsJefe == true)
+                {
+
+                    var listaEstados = ConstantesEstadosVacaciones.ListaEstadosVacaciones;
+
+                    var vacaciones = await db.VacacionesEmpleado
+                        .Where(w => w.IdEmpleado == idFiltrosViewModel.IdEmpleado)
+                        .ToListAsync();
+
+                    var vacacionesAcumuladas = 0;
+
+                    foreach (var item in vacaciones)
+                    {
+                        vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                    }
+
+
+                    var lista = await db.SolicitudPlanificacionVacaciones
+                        .Where(w => w.IdEmpleado == idFiltrosViewModel.IdEmpleado)
+                        .Select(s=> new SolicitudPlanificacionVacacionesViewModel
+                            {
+                            DatosBasicosEmpleadoViewModel = new DatosBasicosEmpleadoViewModel
+                            {
+                                Nombres = s.Empleado.Persona.Nombres,
+                                Apellidos = s.Empleado.Persona.Apellidos,
+                                Identificacion = s.Empleado.Persona.Identificacion,
+                                IdEmpleado = s.IdEmpleado,
+                                IdPersona = s.Empleado.Persona.IdPersona
+                            },
+
+                            IdSolicitudPlanificacionVacaciones = s.IdSolicitudPlanificacionVacaciones,
+
+                            FechaDesde = s.FechaDesde,
+                            FechaHasta = s.FechaHasta,
+                            FechaSolicitud = s.FechaSolicitud,
+
+                            Observaciones = s.Observaciones,
+
+                            Estado = s.Estado,
+                            NombreEstado = listaEstados.Where(w1 => w1.ValorEstado == s.Estado).FirstOrDefault().NombreEstado,
+
+                            VacacionesAcumuladas = vacacionesAcumuladas
+                        }
+                        )
+                        .ToListAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Resultado = lista
+                    };
+                }
+                else {
+                    
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.AccesoNoAutorizado
+                    };
+                }
+                
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+        }
+
+        // Get: api/SolicitudPlanificacionVacaciones
+        [HttpGet]
+        [Route("ListarEstadosAprobador")]
+        public async Task<List<EstadoVacacionesViewModel>> ListarEstadosAprobador()
+        {
+            var listaEstados = ConstantesEstadosVacaciones.ListaEstadosVacaciones
+                .Where(w=>w.GrupoAprobacion == 1)
+                .ToList();
+
+            return listaEstados;
+        }
+
+
     }
 }
