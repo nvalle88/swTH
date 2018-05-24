@@ -20,6 +20,7 @@ namespace bd.swth.entidades.Negocio
         public string Direccion { get; set; }
 
         public virtual ICollection<CapacitacionTemarioProveedor> CapacitacionTemarioProveedor { get; set; }
+        public virtual ICollection<PlanCapacitacion> PlanCapacitacion { get; set; }
         public virtual Pais Pais { get; set; }
 
     }
