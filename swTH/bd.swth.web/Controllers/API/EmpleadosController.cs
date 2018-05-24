@@ -1866,7 +1866,12 @@ namespace bd.swth.web.Controllers.API
                 if (EmpleadoJefe != null)
                 {
 
-                    var listaSubordinados = await db.Empleado.Where(x => x.IdDependencia == EmpleadoJefe.IdDependencia && x.EsJefe == false).Include(x => x.Persona).Include(x => x.SolicitudVacaciones).ToListAsync();
+                    var listaSubordinados = await db.Empleado
+                        .Where(x => 
+                            x.IdDependencia == EmpleadoJefe.IdDependencia 
+                            && x.EsJefe == false
+                            && x.Activo == true
+                            ).Include(x => x.Persona).Include(x => x.SolicitudVacaciones).ToListAsync();
 
                     var listaEmpleado = new List<EmpleadoSolicitudViewModel>();
                     foreach (var item in listaSubordinados)
@@ -1884,7 +1889,7 @@ namespace bd.swth.web.Controllers.API
                             foreach (var item1 in item.SolicitudVacaciones)
                             {
 
-                                if (item1.Estado == 0)
+                                if (item1.Estado == 3)
                                 {
                                     haSolicitado = true;
                                     aprobado = false;

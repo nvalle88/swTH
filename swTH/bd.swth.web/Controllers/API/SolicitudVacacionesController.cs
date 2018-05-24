@@ -50,37 +50,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        [HttpPost]
-        [Route("ListarSolicitudesVacaciones")]
-        public async Task<List<SolicitudVacaciones>> ObtenerEmpleadoLogueado([FromBody]Empleado empleado)
-        {
-            //Persona persona = new Persona();
-            try
-            {
-
-                var SolicitudVacaciones = await db.SolicitudVacaciones
-                                   .Where(e => e.IdEmpleado == empleado.IdEmpleado).ToListAsync();
-                //var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado };
-
-
-                return SolicitudVacaciones;
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<SolicitudVacaciones>();
-            }
-        }
-
+        
         // GET: api/SolicitudVacaciones/5
         [HttpGet("{id}")]
         public async Task<Response> GetSolicitudVacaciones([FromRoute] int id)
@@ -154,13 +124,8 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        SolicitudVacacionesActualizar.IdEmpleado = SolicitudVacaciones.IdEmpleado;
-                        SolicitudVacacionesActualizar.FechaSolicitud = SolicitudVacaciones.FechaSolicitud;
-                        SolicitudVacacionesActualizar.FechaDesde = SolicitudVacaciones.FechaDesde;
-                        SolicitudVacacionesActualizar.FechaHasta = SolicitudVacaciones.FechaHasta;
                         SolicitudVacacionesActualizar.Observaciones = SolicitudVacaciones.Observaciones;
-                        SolicitudVacacionesActualizar.PlanAnual = SolicitudVacaciones.PlanAnual;
-                        SolicitudVacacionesActualizar.Estado = 0;
+                        SolicitudVacacionesActualizar.Estado = SolicitudVacaciones.Estado;
                         SolicitudVacacionesActualizar.FechaRespuesta = SolicitudVacaciones.FechaRespuesta;
 
                         db.SolicitudVacaciones.Update(SolicitudVacacionesActualizar);
@@ -208,75 +173,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
-        // POST: api/SolicitudVacaciones
-        [HttpPost]
-        [Route("InsertarSolicitudVacaciones")]
-        public async Task<Response> InsertarSolicitudVacaciones([FromBody] SolicitudVacacionesViewModel SolicitudVacacionesViewModel)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
-
-                DateTime fechaHasta;
-                DateTime fechaDesde;
-
-                if ( SolicitudVacacionesViewModel.PlanAnual == false ) {
-
-                    fechaDesde = SolicitudVacacionesViewModel.FechaDesde;
-                    fechaHasta = SolicitudVacacionesViewModel.FechaHasta;
-                } else {
-
-                    var plan = await db.SolicitudPlanificacionVacaciones
-                        .Where(w=>w.IdSolicitudPlanificacionVacaciones == SolicitudVacacionesViewModel.IdSolicitudPlanificacionVacaciones)
-                        .FirstOrDefaultAsync();
-
-                    fechaDesde = plan.FechaDesde;
-                    fechaHasta = plan.FechaHasta;
-                    
-                }
-
-                var modelo = new SolicitudVacaciones
-                {
-                    FechaDesde = fechaDesde,
-                    FechaHasta = fechaHasta,
-                    FechaSolicitud = DateTime.Now,
-                    IdEmpleado = SolicitudVacacionesViewModel.DatosBasicosEmpleadoViewModel.IdEmpleado,
-                    Estado = SolicitudVacacionesViewModel.Estado,
-                    Observaciones = "",
-                    PlanAnual = SolicitudVacacionesViewModel.PlanAnual
-
-                };
-
-                db.SolicitudVacaciones.Add(modelo);
-                await db.SaveChangesAsync();
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.GuardadoSatisfactorio
-                };
-
-
-            }
-            catch (Exception ex)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
-
+        
         // DELETE: api/SolicitudVacaciones/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteSolicitudVacaciones([FromRoute] int id)
@@ -331,6 +228,88 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+
+        /// <summary>
+        /// Este método guarda datos, creando un nuevo registro de Solicitud Vacaciones
+        /// </summary>
+        /// <param name="SolicitudVacacionesViewModel"></param>
+        /// <returns></returns>
+        // POST: api/SolicitudVacaciones
+        [HttpPost]
+        [Route("InsertarSolicitudVacaciones")]
+        public async Task<Response> InsertarSolicitudVacaciones([FromBody] SolicitudVacacionesViewModel SolicitudVacacionesViewModel)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido
+                    };
+                }
+
+                DateTime fechaHasta;
+                DateTime fechaDesde;
+
+                if (SolicitudVacacionesViewModel.PlanAnual == false)
+                {
+
+                    fechaDesde = SolicitudVacacionesViewModel.FechaDesde;
+                    fechaHasta = SolicitudVacacionesViewModel.FechaHasta;
+                }
+                else
+                {
+
+                    var plan = await db.SolicitudPlanificacionVacaciones
+                        .Where(w => w.IdSolicitudPlanificacionVacaciones == SolicitudVacacionesViewModel.IdSolicitudPlanificacionVacaciones)
+                        .FirstOrDefaultAsync();
+
+                    fechaDesde = plan.FechaDesde;
+                    fechaHasta = plan.FechaHasta;
+
+                }
+
+                var modelo = new SolicitudVacaciones
+                {
+                    FechaDesde = fechaDesde,
+                    FechaHasta = fechaHasta,
+                    FechaSolicitud = DateTime.Now,
+                    IdEmpleado = SolicitudVacacionesViewModel.DatosBasicosEmpleadoViewModel.IdEmpleado,
+                    Estado = SolicitudVacacionesViewModel.Estado,
+                    Observaciones = "",
+                    PlanAnual = SolicitudVacacionesViewModel.PlanAnual
+
+                };
+
+                db.SolicitudVacaciones.Add(modelo);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+
+        /// <summary>
+        /// Obtiene el formato y datos que se mostrarán en la vista, (Este método no guarda datos)
+        /// </summary>
+        /// <param name="idFiltrosViewModel"></param>
+        /// <returns></returns>
         // Post: api/SolicitudVacaciones
         [HttpPost]
         [Route("CrearSolicitudesVacaciones")]
@@ -490,7 +469,11 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-
+        /// <summary>
+        /// Obtiene un solicitudVacacionesViewModel a partir del id (id de solicitudVacaciones)
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         // POST: api/SolicitudVacaciones
         [HttpPost]
         [Route("ObtenerSolicitudVacacionesViewModel")]
@@ -610,6 +593,11 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+        /// <summary>
+        ///  Edita el registro a partir del SolicitudVacacionesViewModel ingresado
+        /// </summary>
+        /// <param name="solicitudVacacionesViewModel"></param>
+        /// <returns></returns>
         // POST: api/SolicitudVacaciones
         [HttpPost]
         [Route("EditarSolicitudVacaciones")]
@@ -673,6 +661,31 @@ namespace bd.swth.web.Controllers.API
                     IsSuccess = false,
                     Message = Mensaje.Error,
                 };
+            }
+        }
+
+
+        /// <summary>
+        /// Devuelve la lista de SolicitudesVacaciones por IdEmpleado
+        /// </summary>
+        /// <param name="empleado"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("ListarSolicitudesVacaciones")]
+        public async Task<List<SolicitudVacaciones>> ObtenerEmpleadoLogueado([FromBody]Empleado empleado)
+        {
+            try
+            {
+
+                var SolicitudVacaciones = await db.SolicitudVacaciones
+                                   .Where(e => e.IdEmpleado == empleado.IdEmpleado).ToListAsync();
+
+
+                return SolicitudVacaciones;
+            }
+            catch (Exception ex)
+            {
+                return new List<SolicitudVacaciones>();
             }
         }
 
