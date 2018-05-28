@@ -68,6 +68,23 @@ namespace bd.swth.web.Controllers.API
 
                 var SolicitudVacaciones = await db.SolicitudVacaciones.SingleOrDefaultAsync(m => m.IdSolicitudVacaciones == id);
 
+
+                var vacacionesAcumuladas = 0;
+
+                var vacaciones = await db.VacacionesEmpleado
+                    .Where(w => w.IdEmpleado == SolicitudVacaciones.IdEmpleado)
+                    .ToListAsync();
+
+                // Suma de vacaciones no gozadas
+                foreach (var item in vacaciones)
+                {
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                }
+
+                SolicitudVacaciones.DiasVacaciones = vacacionesAcumuladas;
+
+
+
                 if (SolicitudVacaciones == null)
                 {
                     return new Response
@@ -86,16 +103,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -124,32 +131,57 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        SolicitudVacacionesActualizar.Observaciones = SolicitudVacaciones.Observaciones;
-                        SolicitudVacacionesActualizar.Estado = SolicitudVacaciones.Estado;
-                        SolicitudVacacionesActualizar.FechaRespuesta = SolicitudVacaciones.FechaRespuesta;
+                        
 
-                        db.SolicitudVacaciones.Update(SolicitudVacacionesActualizar);
-                        await db.SaveChangesAsync();
-
-                        return new Response
+                        using (var transaction = await db.Database.BeginTransactionAsync())
                         {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
+                            var estadoAnterior = SolicitudVacacionesActualizar.Estado;
+
+                            SolicitudVacacionesActualizar.Observaciones = SolicitudVacaciones.Observaciones;
+                            SolicitudVacacionesActualizar.Estado = SolicitudVacaciones.Estado;
+                            SolicitudVacacionesActualizar.FechaRespuesta = SolicitudVacaciones.FechaRespuesta;
+
+                            db.SolicitudVacaciones.Update(SolicitudVacacionesActualizar);
+                            await db.SaveChangesAsync();
+
+                            
+                            // 6 = Aprobado en lista constantesVacaciones
+                            if (SolicitudVacaciones.Estado == 6 && estadoAnterior != 6) {
+
+                                var vacacionEmpleado = await db.VacacionesEmpleado
+                                .Where(w =>
+                                    w.IdEmpleado == SolicitudVacaciones.IdEmpleado
+                                    && w.PeriodoFiscal == DateTime.Now.Year
+                                    )
+                                .FirstOrDefaultAsync();
+
+                                var vacacionesAprobadas = (SolicitudVacaciones.FechaHasta - SolicitudVacaciones.FechaDesde).Days;
+
+                                vacacionEmpleado.VacacionesNoGozadas = vacacionEmpleado.VacacionesNoGozadas - vacacionesAprobadas;
+
+                                vacacionEmpleado.VacacionesGozadas = vacacionEmpleado.VacacionesGozadas + vacacionesAprobadas;
+
+                                db.VacacionesEmpleado.Update(vacacionEmpleado);
+                                await db.SaveChangesAsync();
+                            }
+
+                            transaction.Commit();
+
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Message = Mensaje.Satisfactorio,
+                            };
+
+
+                        }
+
+                        
 
                     }
                     catch (Exception ex)
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
+                        
                         return new Response
                         {
                             IsSuccess = false,
