@@ -196,15 +196,8 @@ namespace bd.swth.web.Controllers.API
 
         private async Task<bool> Existe(GestionPlanCapacitacion gestionPlanCapacitacion)
         {
-            var id = gestionPlanCapacitacion.IdGestionPlanCapacitacion;
-            var nombre = gestionPlanCapacitacion.Nombre;
-            var descripcion = gestionPlanCapacitacion.Descripcion;
             var anio = gestionPlanCapacitacion.Anio;
-            var Estado = gestionPlanCapacitacion.Estado;
-            var respuesta = await db.GestionPlanCapacitacion.Where(p => p.IdGestionPlanCapacitacion == id
-            && p.Nombre == nombre
-            && p.Anio == anio
-            && p.Estado == Estado).FirstOrDefaultAsync();
+            var respuesta = await db.GestionPlanCapacitacion.Where(p => p.Anio == anio).FirstOrDefaultAsync();
 
             if (respuesta == null )
             {

@@ -1,6 +1,7 @@
 ﻿namespace bd.swth.entidades.Negocio
 {
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations.Schema;
 
     public partial class PlanCapacitacion
@@ -44,7 +45,9 @@
         public string TipoEvaluacion { get; set; }
         public string Ubicacion { get; set; }
         public string Observacion { get; set; }
+        public int? Estado { get; set; }
 
+        public virtual ICollection<EvaluacionEvento> EvaluacionEvento { get; set; }
         public virtual Ciudad Ciudad { get; set; }
         public virtual GestionPlanCapacitacion GestionPlanCapacitacion { get; set; }
         public virtual CapacitacionProveedor ProveedorCapacitaciones { get; set; }
