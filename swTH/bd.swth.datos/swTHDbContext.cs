@@ -208,7 +208,7 @@ namespace bd.swth.datos
         public virtual DbSet<RecepcionActivoFijoDetalle> RecepcionActivoFijoDetalle { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.RegimenLaboral> RegimenLaboral { get; set; }
         public virtual DbSet<RegistroEntradaSalida> RegistroEntradaSalida { get; set; }
-        public virtual DbSet<RelacionLaboral> RelacionLaboral { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.RelacionLaboral> RelacionLaboral { get; set; }
         public virtual DbSet<RelacionesInternasExternas> RelacionesInternasExternas { get; set; }
         public virtual DbSet<Relevancia> Relevancia { get; set; }
         public virtual DbSet<RequisitosNoCumple> RequisitosNoCumple { get; set; }
@@ -254,7 +254,7 @@ namespace bd.swth.datos
         public virtual DbSet<TrabajoEquipoIniciativaLiderazgo> TrabajoEquipoIniciativaLiderazgo { get; set; }
         public virtual DbSet<TrayectoriaLaboral> TrayectoriaLaboral { get; set; }
         public virtual DbSet<VacacionesEmpleado> VacacionesEmpleado { get; set; }
-        public virtual DbSet<VacacionRelacionLaboral> VacacionRelacionLaboral { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.VacacionRelacionLaboral> VacacionRelacionLaboral { get; set; }
         public virtual DbSet<ValidacionInmediatoSuperior> ValidacionInmediatoSuperior { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

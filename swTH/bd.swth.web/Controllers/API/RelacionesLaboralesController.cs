@@ -50,7 +50,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // GET: api/BasesDatos
+        // GET: api/RelacionesLaborales
         [HttpGet]
         [Route("ListarRelacionesLaborales")]
         public async Task<List<RelacionLaboral>> GetCapacitacionesTemarios()
@@ -61,16 +61,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<RelacionLaboral>();
             }
         }

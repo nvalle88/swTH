@@ -3,8 +3,7 @@ namespace bd.swth.entidades.Negocio
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
-
-
+    using System.ComponentModel.DataAnnotations.Schema;
 
     public partial class SolicitudVacaciones
     {
@@ -31,7 +30,9 @@ namespace bd.swth.entidades.Negocio
       
         public bool PlanAnual { get; set; }
 
-  
+        [NotMapped]
+        public int DiasVacaciones { get; set; }
+
         public int IdEmpleado { get; set; }
         public virtual Empleado Empleado { get; set; }
 
