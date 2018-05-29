@@ -13,11 +13,16 @@ namespace bd.swth.entidades.ViewModels
         public string NombreEvento { get; set; }
         public string Institucion { get; set; }
         public string LugarFecha { get; set; }
-       //LIstas
-        public List<PreguntaEvaluacionEvento> ListaPreguntaEvaluacionEvento { get; set; }
+        public string ComentarioSugerencia { get; set; }
+        //LIstas
         public List<PlanCapacitacion> ListaPlanCapacitacion { get; set; }
         public List<string> PreguntaEvaluacionEvento { get; set; }
-        
+
+        public List<PreguntaEvaluacionEvento> ListaPreguntaEvaluacionEvento { get; set; }
+        public List<PreguntaEvaluacionEvento> ListaPreguntaEvaluacionFacilitador { get; set; }
+        public List<PreguntaEvaluacionEvento> ListaPreguntaOrganizador { get; set; }
+        public List<PreguntaEvaluacionEvento> ListaPreguntaEvaluacionConocimiento { get; set; }
+
 
     }
 }

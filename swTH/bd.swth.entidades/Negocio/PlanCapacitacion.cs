@@ -45,6 +45,8 @@
         public string TipoEvaluacion { get; set; }
         public string Ubicacion { get; set; }
         public string Observacion { get; set; }
+        [NotMapped]
+        public string Correo { get; set; }
         public int? Estado { get; set; }
 
         public virtual ICollection<EvaluacionEvento> EvaluacionEvento { get; set; }

@@ -2,6 +2,8 @@
 namespace bd.swth.entidades.Negocio
 {
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations.Schema;
+
     public partial class PreguntaEvaluacionEvento
     {
         
@@ -11,6 +13,10 @@ namespace bd.swth.entidades.Negocio
         public bool? Facilitador { get; set; }
         public bool? Organizador { get; set; }
         public bool? ConocimientoObtenidos { get; set; }
+        [NotMapped]
+        public int? Calificacion { get; set; }
+        [NotMapped]
+        public bool Conocimiento { get; set; }
 
         public virtual ICollection<DetalleEvaluacionEvento> DetalleEvaluacionEvento { get; set; }
     }

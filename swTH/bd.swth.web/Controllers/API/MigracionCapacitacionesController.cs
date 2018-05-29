@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using bd.swth.datos;
+using bd.swth.entidades.Constantes;
 using bd.swth.entidades.Negocio;
 using bd.swth.entidades.Utils;
+using EnviarCorreo;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SendMails.methods;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -274,6 +277,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
+                List<Response> correoResponse = new List<Response>();
                 //if (await Existe(planCapacitacion))
                 //{
                 //    return new Response
@@ -285,25 +289,42 @@ namespace bd.swth.web.Controllers.API
 
                 var presupuesto = await db.Presupuesto.Where(x => x.IdPresupuesto == planCapacitacion.IdPresupuesto).FirstOrDefaultAsync();
 
+                var datos2 = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdEmpleado == planCapacitacion.IdEmpleado).OrderByDescending(x => x.Fecha).Select(y => new PlanCapacitacion
+                {
+                    Institucion = "BANCO DE DESARROLLO DEL ECUADOR B.P.",
+                    Pais = y.IndiceOcupacional.Dependencia.Sucursal.Ciudad.Provincia.Pais.Nombre,
+                    Provincia = y.IndiceOcupacional.Dependencia.Sucursal.Ciudad.Provincia.Nombre,
+                    NombreCiudad = y.IndiceOcupacional.Dependencia.Sucursal.Ciudad.Nombre,
+                    Cedula = y.Empleado.Persona.Identificacion,
+                    Correo = y.Empleado.Persona.CorreoPrivado,
+                    ApellidoNombre = y.Empleado.Persona.Nombres + " " + y.Empleado.Persona.Apellidos,
+                    Sexo = y.Empleado.Persona.Sexo.Nombre,
+                    GrupoOcupacional = y.IndiceOcupacional.EscalaGrados.GrupoOcupacional.TipoEscala,
+                    ModalidadLaboral = y.TipoNombramiento.Nombre,
+                    RegimenLaboral = y.TipoNombramiento.RelacionLaboral.Nombre,
+                    DenominacionPuesto = y.IndiceOcupacional.ManualPuesto.Nombre,
+                    UnidadAdministrativa = y.IndiceOcupacional.Dependencia.Nombre,
+
+                }).FirstOrDefaultAsync();
                 var plan = new PlanCapacitacion
                 {
                     IdGestionPlanCapacitacion = planCapacitacion.IdGestionPlanCapacitacion,
                     NumeroPartidaPresupuestaria = presupuesto.NumeroPartidaPresupuestaria,
-                    Institucion = planCapacitacion.Institucion,
-                    Pais = planCapacitacion.Pais,
-                    Provincia = planCapacitacion.Provincia,
-                    NombreCiudad = planCapacitacion.NombreCiudad,
+                    Institucion = datos2.Institucion,
+                    Pais = datos2.Pais,
+                    Provincia = datos2.Provincia,
+                    NombreCiudad = datos2.NombreCiudad,
                     NivelDesconcentracion = planCapacitacion.NivelDesconcentracion,
 
-                    UnidadAdministrativa = planCapacitacion.UnidadAdministrativa,
-                    Cedula = planCapacitacion.Cedula,
-                    ApellidoNombre = planCapacitacion.ApellidoNombre,
-                    Sexo = planCapacitacion.Sexo,
-                    GrupoOcupacional = planCapacitacion.GrupoOcupacional,
-                    DenominacionPuesto = planCapacitacion.DenominacionPuesto,
+                    UnidadAdministrativa = datos2.UnidadAdministrativa,
+                    Cedula = datos2.Cedula,
+                    ApellidoNombre = datos2.ApellidoNombre,
+                    Sexo = datos2.Sexo,
+                    GrupoOcupacional = datos2.GrupoOcupacional,
+                    DenominacionPuesto = datos2.DenominacionPuesto,
 
-                    RegimenLaboral = planCapacitacion.RegimenLaboral,
-                    ModalidadLaboral = planCapacitacion.ModalidadLaboral,
+                    RegimenLaboral = datos2.RegimenLaboral,
+                    ModalidadLaboral = datos2.ModalidadLaboral,
                     TemaCapacitacion = planCapacitacion.TemaCapacitacion,
                     ClasificacionTema = planCapacitacion.ClasificacionTema,
                     ProductoFinal = planCapacitacion.ProductoFinal,
@@ -329,10 +350,13 @@ namespace bd.swth.web.Controllers.API
                     TipoEvaluacion = planCapacitacion.TipoEvaluacion,
                     Ubicacion = planCapacitacion.Ubicacion,
                     Observacion = planCapacitacion.Observacion,
-                };
+                    Estado = ConstantesCapacitacion.EstadoTerminado
+            };
 
                 db.PlanCapacitacion.Add(plan);
                 await db.SaveChangesAsync();
+                var correo = datos2.Correo;
+                correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo));
 
                 return new Response
                 {
@@ -356,6 +380,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
+                List<Response> correoResponse = new List<Response>();
                 var planCapacitacionActualizar = await db.PlanCapacitacion.Where(x => x.IdPlanCapacitacion == planCapacitacion.IdPlanCapacitacion).FirstOrDefaultAsync();
                 var presupuesto = await db.Presupuesto.Where(x => x.NumeroPartidaPresupuestaria == planCapacitacionActualizar.NumeroPartidaPresupuestaria).FirstOrDefaultAsync();
 
@@ -368,6 +393,7 @@ namespace bd.swth.web.Controllers.API
                         Provincia = y.IndiceOcupacional.Dependencia.Sucursal.Ciudad.Provincia.Nombre,
                         NombreCiudad = y.IndiceOcupacional.Dependencia.Sucursal.Ciudad.Nombre,
                         Cedula = y.Empleado.Persona.Identificacion,
+                        Correo= y.Empleado.Persona.CorreoPrivado,
                         ApellidoNombre = y.Empleado.Persona.Nombres + " " + y.Empleado.Persona.Apellidos,
                         Sexo = y.Empleado.Persona.Sexo.Nombre,
                         GrupoOcupacional = y.IndiceOcupacional.EscalaGrados.GrupoOcupacional.TipoEscala,
@@ -375,6 +401,7 @@ namespace bd.swth.web.Controllers.API
                         RegimenLaboral = y.TipoNombramiento.RelacionLaboral.Nombre,
                         DenominacionPuesto = y.IndiceOcupacional.ManualPuesto.Nombre,
                         UnidadAdministrativa = y.IndiceOcupacional.Dependencia.Nombre,
+                        
                     }).FirstOrDefaultAsync();
 
                     planCapacitacionActualizar.IdGestionPlanCapacitacion = planCapacitacion.IdGestionPlanCapacitacion;
@@ -419,9 +446,11 @@ namespace bd.swth.web.Controllers.API
                     planCapacitacionActualizar.TipoEvaluacion = planCapacitacion.TipoEvaluacion;
                     planCapacitacionActualizar.Ubicacion = planCapacitacion.Ubicacion;
                     planCapacitacionActualizar.Observacion = planCapacitacion.Observacion;
-                    planCapacitacionActualizar.Estado = 2;
+                    planCapacitacionActualizar.Estado = ConstantesCapacitacion.EstadoTerminado;
                     db.PlanCapacitacion.Update(planCapacitacionActualizar);
                     await db.SaveChangesAsync();
+                    var correo = datos2.Correo;
+                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo));                                     
 
                     return new Response
                     {
@@ -460,42 +489,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/BasesDatos
-        [HttpPost]
-        [Route("InsertarCalculoNomina")]
-        public async Task<Response> PostCalculoNomina([FromBody] CalculoNomina CalculoNomina)
-        {
-            try
-            {
-
-                if (!await Existe(CalculoNomina))
-                {
-                    db.CalculoNomina.Add(CalculoNomina);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                        Resultado = CalculoNomina,
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
-                };
-
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
+        
 
         // DELETE: api/BasesDatos/5
         [HttpPost]
@@ -514,7 +508,7 @@ namespace bd.swth.web.Controllers.API
                     };
 
                 }
-                planCapacitacionActualizar.Estado = 0;
+                planCapacitacionActualizar.Estado = ConstantesCapacitacion.Desactivado;
                 db.PlanCapacitacion.Update(planCapacitacionActualizar);
                 await db.SaveChangesAsync();
                 return new Response
@@ -533,23 +527,7 @@ namespace bd.swth.web.Controllers.API
 
             }
         }
-
-        private async Task<bool> Existe(CalculoNomina CalculoNomina)
-        {
-            var periodo = CalculoNomina.IdPeriodo;
-            var proceso = CalculoNomina.IdProceso;
-            var CalculoNominarespuesta = await db.CalculoNomina.Where(p => p.IdProceso == proceso && p.IdPeriodo == periodo).FirstOrDefaultAsync();
-
-            if (CalculoNominarespuesta == null || CalculoNominarespuesta.IdCalculoNomina == CalculoNomina.IdCalculoNomina)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-
-        }
+        
         private async Task<bool> ExitePresupuesto(string ciudadresive, decimal? valorresive)
         {
             var datosenvia = new Presupuesto();
@@ -573,6 +551,72 @@ namespace bd.swth.web.Controllers.API
 
             }
             return false;
+        }
+        public Response EnviarMailDesdeCorreoTalentohumano(string correo)
+        {
+            try
+            {
+
+                //Static class MailConf 
+                MailConfig.HostUri = ConstantesCorreo.Smtp;
+                MailConfig.PrimaryPort = Convert.ToInt32(ConstantesCorreo.PrimaryPort);
+                MailConfig.SecureSocketOptions = Convert.ToInt32(ConstantesCorreo.SecureSocketOptions);
+
+
+                string mensaje = ConstantesCorreo.MensajeCorreoSuperior;
+
+                if (ConstantesCorreo.MensajeCorreoDependencia == "true")
+                {
+                    mensaje = mensaje + "Talento Humano" + "\n \n";
+                }                
+                mensaje = mensaje +
+                ConstantesCorreo.CorreoCabecera +
+                ConstantesCorreo.CorreoEnlace +
+                ConstantesCorreo.CorreoPie;
+
+                //Class for submit the email 
+                Mail mail = new Mail
+                {
+                    Password = ConstantesCorreo.PasswordCorreo
+                                     ,
+                    Body = mensaje
+                                     ,
+                    EmailFrom = ConstantesCorreo.CorreoTTHH
+                                     ,
+                    EmailTo = correo
+                                     ,
+                    NameFrom = ConstantesCorreo.NameFrom
+                                     ,
+                    NameTo = "Name To"
+                                     ,
+                    Subject = ConstantesCorreo.SubjectCapacitaciones
+                };
+
+                //execute the method Send Mail or SendMailAsync
+                var a = Emails.SendEmailAsync(mail);               
+                if (a.Result == Convert.ToString(true)) {
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Resultado = Mensaje.CorreoSatisfactorio,
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Resultado = Mensaje.Error,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Resultado = Mensaje.ErrorCorreo + " a: " + correo,
+                };
+            }
         }
     }
 }
