@@ -872,6 +872,34 @@ namespace bd.swth.web.Controllers.API
             }
 
         }
+        //api/EvaluacionDesempeno
+        [HttpPost]
+        [Route("ListarEvaluacionCompetenciasTecnicasPuestoPorEval001")]
+        public async Task<List<EvaluacionCompetenciasTecnicasPuesto>> ListarEvaluacionCompetenciasTecnicasPuestoPorEval001([FromBody] IdFiltrosViewModel filtros)
+        {
+
+            var lista = new List<EvaluacionCompetenciasTecnicasPuesto>();
+
+            try
+            {
+
+                lista = await db.EvaluacionCompetenciasTecnicasPuesto
+                    .Include(i => i.NivelDesarrollo)
+                    .Include(i => i.ComportamientoObservable.Nivel)
+                    .Include(i => i.ComportamientoObservable)
+                    .Include(i => i.ComportamientoObservable.DenominacionCompetencia)
+                    .Where(w => w.IdEval001 == filtros.IdEval001)
+                    .ToListAsync();
+
+                return lista;
+
+            }
+            catch (Exception ex)
+            {
+                return lista;
+            }
+
+        }
 
     }
 }

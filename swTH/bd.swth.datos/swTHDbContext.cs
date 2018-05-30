@@ -2202,8 +2202,11 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdEvaluacionTrabajoEquipoIniciativaLiderazgo)
                     .HasName("PK47");
 
+                entity.HasIndex(e => e.IdComportamientoObservable)
+                    .HasName("Ref4173");
+
                 entity.HasIndex(e => e.IdFrecuenciaAplicacion)
-                    .HasName("Ref4574");
+                    .HasName("Ref4574");                
 
                 entity.HasOne(d => d.ComportamientoObservable)
                     .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgo)
@@ -2219,7 +2222,9 @@ namespace bd.swth.datos
                     .WithMany(p => p.EvaluacionTrabajoEquipoIniciativaLiderazgo)
                     .HasForeignKey(d => d.IdFrecuenciaAplicacion)
                     .HasConstraintName("RefFrecuenciaAplicacion74");
+
             });
+
             modelBuilder.Entity<Evaluador>(entity =>
             {
                 entity.HasKey(e => e.IdEvaluador)

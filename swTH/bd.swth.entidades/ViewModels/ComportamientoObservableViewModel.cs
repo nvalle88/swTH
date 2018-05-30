@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿
 
 namespace bd.swth.entidades.ViewModels
 {
-   public class ComportamientoObservableViewModel
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
+    using System.Text;
+    using Negocio;
+    public class ComportamientoObservableViewModel
     {
         public int IdComportamientoObservable { get; set; }
 
@@ -24,5 +26,6 @@ namespace bd.swth.entidades.ViewModels
         public string DefinicionDenominacionCompetencia { get; set; }
 
         public bool CompetenciaTecnicaDenominacionCompetencia { get; set; }
+        public List<TrabajoEquipoIniciativaLiderazgo> LIstaTrabajoEquipoIniciativaLiderazgo { get; set; }
     }
 }
