@@ -873,5 +873,59 @@ namespace bd.swth.web.Controllers.API
 
         }
 
+
+        //api/EvaluacionDesempeno
+        [HttpPost]
+        [Route("ListarCompetenciasUniversalesPorEval001")]
+        public async Task<List<EvaluacionCompetenciasUniversales>> ListarCompetenciasUniversalesPorEval001([FromBody] IdFiltrosViewModel filtros)
+        {
+
+            var lista = new List<EvaluacionCompetenciasUniversales>();
+
+            try
+            {
+                lista = await db.EvaluacionCompetenciasUniversales
+                    .Include(i=>i.FrecuenciaAplicacion)
+                    .Include(i=>i.ComportamientoObservable).ThenInclude(t=>t.DenominacionCompetencia)
+                    .Include(i=>i.ComportamientoObservable).ThenInclude(t=>t.Nivel)
+                    .Where(w => w.IdEval001 == filtros.IdEval001)
+                    .ToListAsync();
+                
+
+                return lista;
+
+            }
+            catch (Exception)
+            {
+                return lista;
+            }
+
+        }
+
+        //api/EvaluacionDesempeno
+        [HttpPost]
+        [Route("ObtenerEval001")]
+        public async Task<Eval001> ObtenerEval001([FromBody] IdFiltrosViewModel filtros)
+        {
+
+            var modelo = new Eval001();
+
+            try
+            {
+                modelo = await db.Eval001
+                    .Where(w => w.IdEval001 == filtros.IdEval001)
+                    .FirstOrDefaultAsync();
+
+
+                return modelo;
+
+            }
+            catch (Exception)
+            {
+                return modelo;
+            }
+
+        }
+
     }
 }
