@@ -929,6 +929,34 @@ namespace bd.swth.web.Controllers.API
             }
 
         }
+        [HttpPost]
+        [Route("ListarTrabajoEquipoIniciativaLiderazgoPorEval001")]
+        public async Task<List<EvaluacionCompetenciasUniversales>> ListarTrabajoEquipoIniciativaLiderazgoPorEval001([FromBody] IdFiltrosViewModel filtros)
+        {
+
+            var lista = new List<EvaluacionCompetenciasUniversales>();
+
+            try
+            {
+                lista = await db.EvaluacionCompetenciasUniversales
+                    .Include(i => i.FrecuenciaAplicacion)
+                    .Include(i => i.ComportamientoObservable)
+                    .Include(i => i.ComportamientoObservable.DenominacionCompetencia)
+                    .Include(i => i.ComportamientoObservable.Nivel)
+                    .Where(w => w.IdEval001 == filtros.IdEval001 && (w.ComportamientoObservable.DenominacionCompetencia.Nombre==EvaluacionDesempeño.TrabajoEnEquipo || w.ComportamientoObservable.DenominacionCompetencia.Nombre == EvaluacionDesempeño.Iniciativa ||
+                    w.ComportamientoObservable.DenominacionCompetencia.Nombre == EvaluacionDesempeño.Liderazgo))
+                    .ToListAsync();
+
+
+                return lista;
+
+            }
+            catch (Exception)
+            {
+                return lista;
+            }
+
+        }
 
         //api/EvaluacionDesempeno
         [HttpPost]
