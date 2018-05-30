@@ -86,8 +86,8 @@ namespace bd.swth.web
 
             EvaluacionDesempeño.Siempre = Configuration.GetSection("Siempre").Value;
             EvaluacionDesempeño.Frecuentemente = Configuration.GetSection("Frecuentemente").Value;
-            EvaluacionDesempeño.Algunavez = Configuration.GetSection("Alguna vez").Value;
-            EvaluacionDesempeño.Raravez = Configuration.GetSection("Rara vez").Value;
+            EvaluacionDesempeño.Algunavez = Configuration.GetSection("Algunavez").Value;
+            EvaluacionDesempeño.Raravez = Configuration.GetSection("Raravez").Value;
             EvaluacionDesempeño.Nunca = Configuration.GetSection("Nunca").Value;
             
             EvaluacionDesempeño.TrabajoEnEquipo = Configuration.GetSection("TrabajoEnEquipo").Value;
