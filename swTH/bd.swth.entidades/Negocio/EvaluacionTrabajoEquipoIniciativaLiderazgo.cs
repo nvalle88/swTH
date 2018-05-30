@@ -7,7 +7,6 @@ namespace bd.swth.entidades.Negocio
     {
         [Key]
         public int IdEvaluacionTrabajoEquipoIniciativaLiderazgo { get; set; }
-        public int? IdTrabajoEquipoIniciativaLiderazgo { get; set; }
         public int? IdComportamientoObservable { get; set; }
         public int? IdFrecuenciaAplicacion { get; set; }
         public int? IdEval001 { get; set; }
