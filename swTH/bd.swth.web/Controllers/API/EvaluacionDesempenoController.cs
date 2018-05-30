@@ -931,14 +931,14 @@ namespace bd.swth.web.Controllers.API
         }
         [HttpPost]
         [Route("ListarTrabajoEquipoIniciativaLiderazgoPorEval001")]
-        public async Task<List<EvaluacionCompetenciasUniversales>> ListarTrabajoEquipoIniciativaLiderazgoPorEval001([FromBody] IdFiltrosViewModel filtros)
+        public async Task<List<EvaluacionTrabajoEquipoIniciativaLiderazgo>> ListarTrabajoEquipoIniciativaLiderazgoPorEval001([FromBody] IdFiltrosViewModel filtros)
         {
 
-            var lista = new List<EvaluacionCompetenciasUniversales>();
+            var lista = new List<EvaluacionTrabajoEquipoIniciativaLiderazgo>();
 
             try
             {
-                lista = await db.EvaluacionCompetenciasUniversales
+                lista = await db.EvaluacionTrabajoEquipoIniciativaLiderazgo
                     .Include(i => i.FrecuenciaAplicacion)
                     .Include(i => i.ComportamientoObservable)
                     .Include(i => i.ComportamientoObservable.DenominacionCompetencia)
