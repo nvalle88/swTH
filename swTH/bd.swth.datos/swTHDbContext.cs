@@ -98,6 +98,7 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.Destreza> Destreza { get; set; }
         public virtual DbSet<DetalleExamenInduccion> DetalleExamenInduccion { get; set; }
         public virtual DbSet<DetallePresupuesto> DetallePresupuesto { get; set; }
+        public virtual DbSet<DetalleEvaluacionEvento> DetalleEvaluacionEvento { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DiscapacidadSustituto> DiscapacidadSustituto { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngreso> DocumentosIngreso { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.DocumentosIngresoEmpleado> DocumentosIngresoEmpleado { get; set; }
@@ -130,6 +131,7 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.EvaluacionInducion> EvaluacionInducion { get; set; }
         public virtual DbSet<EvaluacionTrabajoEquipoIniciativaLiderazgo> EvaluacionTrabajoEquipoIniciativaLiderazgo { get; set; }
         public virtual DbSet<Evaluador> Evaluador { get; set; }
+        public virtual DbSet<EvaluacionEvento> EvaluacionEvento { get; set; }
         public virtual DbSet<Exepciones> Exepciones { get; set; }
         public virtual DbSet<Factor> Factor { get; set; }
         public virtual DbSet<FacturaViatico> FacturaViatico { get; set; }
@@ -198,6 +200,7 @@ namespace bd.swth.datos
         public virtual DbSet<bd.swth.entidades.Negocio.Proceso> Proceso { get; set; }
         public virtual DbSet<ProcesoDetalle> ProcesoDetalle { get; set; }
         public virtual DbSet<Presupuesto> Presupuesto { get; set; }
+        public virtual DbSet<PreguntaEvaluacionEvento> PreguntaEvaluacionEvento { get; set; }
         public virtual DbSet<Provincia> Provincia { get; set; }
         public virtual DbSet<Quejas> Quejas { get; set; }
         public virtual DbSet<Provisiones> Provisiones { get; set; }
@@ -1526,6 +1529,24 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasMaxLength(20);
             });
+            modelBuilder.Entity<DetalleEvaluacionEvento>(entity =>
+            {
+                entity.HasKey(e => e.IdDetalleEvaluacionEvento)
+                    .HasName("PK_DetalleEvaluacionEvento");
+
+                entity.Property(e => e.IdDetalleEvaluacionEvento);
+
+                entity.HasOne(d => d.EvaluacionEvento)
+                    .WithMany(p => p.DetalleEvaluacionEvento)
+                    .HasForeignKey(d => d.IdEvaluacionEvento)
+                    .HasConstraintName("FK_DetalleEvaluacionEvento_EvaluacionEvento");
+
+                entity.HasOne(d => d.PreguntasEvaluacionEvento)
+                    .WithMany(p => p.DetalleEvaluacionEvento)
+                    .HasForeignKey(d => d.IdPreguntasEvaluacionEvento)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_DetalleEvaluacionEvento_PreguntaEvaluacionEvento");
+            });
 
             modelBuilder.Entity<DetalleExamenInduccion>(entity =>
             {
@@ -2137,7 +2158,20 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdNivelConocimiento)
                     .HasConstraintName("RefNivelConocimiento59");
             });
+            modelBuilder.Entity<EvaluacionEvento>(entity =>
+            {
+                entity.HasKey(e => e.IdEvaluacionEvento)
+                    .HasName("PK_EvaluacionEvento");
 
+                entity.Property(e => e.IdEvaluacionEvento);
+
+                entity.Property(e => e.Sugerencias).HasColumnType("text");
+
+                entity.HasOne(d => d.PlanCapacitacion)
+                    .WithMany(p => p.EvaluacionEvento)
+                    .HasForeignKey(d => d.IdPlanCapacitacion)
+                    .HasConstraintName("FK_EvaluacionEvento_PlanCapacitacion");
+            });
 
             modelBuilder.Entity<EvaluacionInducion>(entity =>
             {
@@ -3520,6 +3554,13 @@ namespace bd.swth.datos
                     .WithMany(p => p.Pregunta)
                     .HasForeignKey(d => d.IdEvaluacionInduccion)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+            modelBuilder.Entity<PreguntaEvaluacionEvento>(entity =>
+            {
+                entity.HasKey(e => e.IdPreguntaEvaluacionEvento)
+                    .HasName("PK_PreguntaEvaluacionEvento");
+
+                entity.Property(e => e.Descripcion).HasColumnType("varchar(500)");
             });
 
             modelBuilder.Entity<PreguntaRespuesta>(entity =>

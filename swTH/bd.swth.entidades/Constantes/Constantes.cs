@@ -35,18 +35,33 @@ namespace bd.swth.entidades.Constantes
         public static string CorreoTTHH;
         public static string PasswordCorreo;
         public static string NameFrom;
+        public static string SubjectCapacitaciones;
         public static string Subject;
         public static string MensajeCorreoSuperior;
         public static string MensajeCorreoDependencia;
         public static string MensajeCorreoMedio;
         public static string MensajeCorreoEnlace;
         public static string MensajeCorreoInferior;
-        
+
+        //correo planificacion 
+        public static string CorreoCabecera;
+        public static string CorreoEnlace;
+        public static string CorreoPie;
+
     }
+    
 
     public static class ConstantesEstadoInduccion {
         public static string InduccionFinalizada;
         public static string InduccionNoFinalizada;
+    }
+    //Estados Capacitacion
+    public static class ConstantesCapacitacion
+    {
+        public static int EstadoTerminado;
+        public static int EstadoEvaluado;
+        public static int Desactivado;
+        public static int EstadoIngresado;
     }
 
 
