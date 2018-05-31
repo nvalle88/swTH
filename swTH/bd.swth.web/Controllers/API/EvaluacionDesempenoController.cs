@@ -946,10 +946,7 @@ namespace bd.swth.web.Controllers.API
                     .Where(w => w.IdEval001 == filtros.IdEval001 && (w.ComportamientoObservable.DenominacionCompetencia.Nombre==EvaluacionDesempeño.TrabajoEnEquipo || w.ComportamientoObservable.DenominacionCompetencia.Nombre == EvaluacionDesempeño.Iniciativa ||
                     w.ComportamientoObservable.DenominacionCompetencia.Nombre == EvaluacionDesempeño.Liderazgo))
                     .ToListAsync();
-
-
                 return lista;
-
             }
             catch (Exception)
             {
