@@ -397,15 +397,22 @@ namespace bd.swth.web.Controllers.API
 
                     PlanAnual = true,
 
-                    ListaPLanificacionVacaciones = await db.SolicitudPlanificacionVacaciones
-                    .Where(w=>
-                        w.Estado == 6
-                        && w.FechaDesde.Year == DateTime.Now.Year
-                    )
-                    .ToListAsync()
+                    ListaPLanificacionVacaciones = new List<SolicitudPlanificacionVacaciones>()
 
                 };
 
+
+                var listaPlanificacion = await db.SolicitudPlanificacionVacaciones
+                    .Where(w =>
+                        w.Estado == 6
+                        && w.FechaDesde.Year == DateTime.Now.Year
+                        && w.IdEmpleado == usuario.IdEmpleado
+                    )
+                    .ToListAsync();
+
+                if (listaPlanificacion.Count > 0) {
+                    modelo.ListaPLanificacionVacaciones = listaPlanificacion;
+                }
 
                 return modelo;
             }
