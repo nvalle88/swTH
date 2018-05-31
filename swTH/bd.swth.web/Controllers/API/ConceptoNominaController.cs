@@ -213,7 +213,7 @@ namespace bd.swth.web.Controllers.API
                 ConceptoNominaActualizar.RegistroEn = ConceptoNomina.RegistroEn;
                 ConceptoNominaActualizar.Estatus = ConceptoNomina.Estatus;
                 ConceptoNominaActualizar.Abreviatura = ConceptoNomina.Abreviatura;
-                ConceptoNominaActualizar.FormulaCalculo = ConceptoNomina.FormulaCalculo;
+                ConceptoNominaActualizar.Prioridad = ConceptoNomina.Prioridad;
 
                 db.ConceptoNomina.Update(ConceptoNominaActualizar);
                 await db.SaveChangesAsync();
