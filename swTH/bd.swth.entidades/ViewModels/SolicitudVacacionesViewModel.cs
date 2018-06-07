@@ -25,11 +25,17 @@ namespace bd.swth.entidades.ViewModels
 
         public string Observaciones { get; set; }
 
+        public string RazonNoPlanificado { get; set; }
+        public bool RequiereReemplazo { get; set; }
+
         public int VacacionesAcumuladas { get; set; }
 
         public List<SolicitudPlanificacionVacaciones> ListaPLanificacionVacaciones { get; set; }
 
         public int IdSolicitudPlanificacionVacaciones { get; set; }
+        
+        
+        
 
     }
 }

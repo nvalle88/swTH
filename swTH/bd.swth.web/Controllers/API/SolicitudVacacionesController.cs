@@ -27,7 +27,7 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
-
+        
         [HttpPost]
         [Route("ListarSolicitudVacaciones")]
         public async Task<List<SolicitudVacaciones>> ListarSolicitudVacaciones([FromBody]Empleado empleado)
@@ -140,6 +140,17 @@ namespace bd.swth.web.Controllers.API
                             SolicitudVacacionesActualizar.Observaciones = SolicitudVacaciones.Observaciones;
                             SolicitudVacacionesActualizar.Estado = SolicitudVacaciones.Estado;
                             SolicitudVacacionesActualizar.FechaRespuesta = SolicitudVacaciones.FechaRespuesta;
+                            SolicitudVacacionesActualizar.RequiereReemplazo = SolicitudVacaciones.RequiereReemplazo;
+
+                            if (SolicitudVacacionesActualizar.RequiereReemplazo == true)
+                            {
+                                SolicitudVacacionesActualizar.IdEmpleadoReemplazo = SolicitudVacaciones.IdEmpleadoReemplazo;
+                            }
+                            else {
+                                SolicitudVacacionesActualizar.IdEmpleadoReemplazo = 0;
+                            }
+
+
 
                             db.SolicitudVacaciones.Update(SolicitudVacacionesActualizar);
                             await db.SaveChangesAsync();
@@ -302,7 +313,10 @@ namespace bd.swth.web.Controllers.API
                     IdEmpleado = SolicitudVacacionesViewModel.DatosBasicosEmpleadoViewModel.IdEmpleado,
                     Estado = SolicitudVacacionesViewModel.Estado,
                     Observaciones = "",
-                    PlanAnual = SolicitudVacacionesViewModel.PlanAnual
+                    PlanAnual = SolicitudVacacionesViewModel.PlanAnual,
+                    RequiereReemplazo = false,
+                    RazonNoPlanificado = SolicitudVacacionesViewModel.RazonNoPlanificado
+                     
 
                 };
 
@@ -550,27 +564,34 @@ namespace bd.swth.web.Controllers.API
                         VacacionesAcumuladas = vacacionesAcumuladas,
 
                         PlanAnual = s.PlanAnual,
+                        RazonNoPlanificado = String.IsNullOrEmpty(s.RazonNoPlanificado) ? "":s.RazonNoPlanificado,
 
-                        IdSolicitudPlanificacionVacaciones = (s.PlanAnual == false) ? 0 
+                        IdSolicitudPlanificacionVacaciones = (s.PlanAnual == false) ? 0
                         : db.SolicitudPlanificacionVacaciones
-                            .Where(wp=>
+                            .Where(wp =>
                             wp.FechaDesde == s.FechaDesde
                             && wp.FechaHasta == s.FechaHasta
-                            ).OrderByDescending(op=>op.FechaSolicitud)
+                            ).OrderByDescending(op => op.FechaSolicitud)
                             .FirstOrDefault().IdSolicitudPlanificacionVacaciones
                         ,
 
-                        ListaPLanificacionVacaciones = db.SolicitudPlanificacionVacaciones
-                    .Where(w =>
-                        w.Estado == 6
-                        && w.FechaDesde.Year == DateTime.Now.Year
-                    )
-                    .ToList()
-                    
+                        ListaPLanificacionVacaciones = new List<SolicitudPlanificacionVacaciones>()
 
                     }
                     )
                     .FirstOrDefaultAsync();
+
+                var planVacaciones = await db.SolicitudPlanificacionVacaciones
+                    .Where(w =>
+                        w.Estado == 6
+                        && w.FechaDesde.Year == DateTime.Now.Year
+                        && w.IdEmpleado == modelo.DatosBasicosEmpleadoViewModel.IdEmpleado
+                    )
+                    .ToListAsync();
+
+                if (planVacaciones.Count > 0) {
+                    modelo.ListaPLanificacionVacaciones = planVacaciones;
+                }
 
                 var numeroEstado = estado.Where(w => w.ValorEstado == modelo.Estado).FirstOrDefault();
 
@@ -672,7 +693,8 @@ namespace bd.swth.web.Controllers.API
                 modelo.FechaSolicitud = DateTime.Now;
                 modelo.IdEmpleado = solicitudVacacionesViewModel.DatosBasicosEmpleadoViewModel.IdEmpleado;
                 modelo.PlanAnual = solicitudVacacionesViewModel.PlanAnual;
-                
+                modelo.RazonNoPlanificado = solicitudVacacionesViewModel.RazonNoPlanificado;
+
                 db.SolicitudVacaciones.Update(modelo);
                 await db.SaveChangesAsync();
 
@@ -718,6 +740,6 @@ namespace bd.swth.web.Controllers.API
                 return new List<SolicitudVacaciones>();
             }
         }
-
+        
     }
 }

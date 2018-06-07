@@ -259,6 +259,31 @@ namespace bd.swth.datos
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<FlujoAprobacion>(entity =>
+            {
+                entity.HasKey(e => e.IdFlujoAprobacion)
+                    .HasName("PK_FlujoAprobacion");
+
+                entity.HasOne(d => d.ManualPuesto)
+                    .WithMany(p => p.FlujoAprobacion)
+                    .HasForeignKey(d => d.IdManualPuesto)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_FlujoAprobacion_ManualPuesto");
+
+                entity.HasOne(d => d.Sucursal)
+                    .WithMany(p => p.FlujoAprobacion)
+                    .HasForeignKey(d => d.IdSucursal)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_FlujoAprobacion_Sucursal");
+
+                entity.HasOne(d => d.TipoAccionPersonal)
+                    .WithMany(p => p.FlujoAprobacion)
+                    .HasForeignKey(d => d.IdTipoAccionPersonal)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_FlujoAprobacion_TipoAccionPersonal");
+            });
+
             modelBuilder.Entity<VacacionRelacionLaboral>(entity =>
             {
                 entity.HasKey(e => e.IdVacacionRelacionLaboral)
@@ -4244,16 +4269,22 @@ namespace bd.swth.datos
             modelBuilder.Entity<SolicitudVacaciones>(entity =>
             {
                 entity.HasKey(e => e.IdSolicitudVacaciones)
-                    .HasName("PK_SolicitudVacaciones");
+                    .HasName("PK75");
 
                 entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("IX_SolicitudVacaciones_IdEmpleado");
+                    .HasName("Ref15111");
 
+                entity.Property(e => e.FechaDesde).HasColumnType("date");
+
+                entity.Property(e => e.FechaHasta).HasColumnType("date");
+
+                entity.Property(e => e.FechaRespuesta).HasColumnType("date");
 
                 entity.Property(e => e.FechaSolicitud).HasColumnType("date");
 
+                entity.Property(e => e.Observaciones).HasMaxLength(150);
 
-
+                entity.Property(e => e.RazonNoPlanificado).HasMaxLength(700);
             });
 
 
