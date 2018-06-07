@@ -49,7 +49,15 @@ namespace bd.swth.entidades.Constantes
         public static string CorreoPie;
 
     }
-    
+
+    //Valores viaticos
+    public static class ConstantesViaticos
+    {
+        public static string Operativo;
+        public static string Jefe;
+    }
+
+
 
     public static class ConstantesEstadoInduccion {
         public static string InduccionFinalizada;

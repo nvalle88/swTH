@@ -13,6 +13,7 @@ using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.ViewModels;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -79,9 +80,9 @@ namespace bd.swth.web.Controllers.API
                 //}
                 //else
                 //{
-                    SolicitudViaticos = await db.SolicitudViatico
-                                        .Where(e => e.IdEmpleado == empleado.IdEmpleado).ToListAsync();
-                    //var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado };
+                SolicitudViaticos = await db.SolicitudViatico
+                                    .Where(e => e.IdEmpleado == empleado.IdEmpleado).ToListAsync();
+                //var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado };
                 //}
                 return SolicitudViaticos;
 
@@ -102,7 +103,51 @@ namespace bd.swth.web.Controllers.API
                 return new List<SolicitudViatico>();
             }
         }
+        [HttpPost]
+        [Route("ListarSolicitudesViaticosPorId")]
+        public async Task<SolicitudViatico> ListarSolicitudesViaticosPorId([FromBody] SolicitudViatico solicitudViatico)
+        {
+            try
+            {
+                var SolicitudViatico = new SolicitudViatico();
 
+                SolicitudViatico = await db.SolicitudViatico.SingleOrDefaultAsync(m => m.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico);
+
+                if (SolicitudViatico != null)
+                {
+                    var empleado = await db.Empleado.Where(x => x.IdEmpleado == SolicitudViatico.IdEmpleado).FirstOrDefaultAsync();
+                    var valor = SolicitudViatico.FechaLlegada.Day - SolicitudViatico.FechaSalida.Day;
+
+                    if (empleado.EsJefe == true)
+                    {
+                        if (valor == 0)
+                        {
+                            valor = 1;
+                            SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Jefe) * valor;
+                        }
+                        SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Jefe) * valor;
+                    }
+                    else
+                    {
+                        if (valor == 0)
+                        {
+                            valor = 1;
+                            SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Operativo) * valor;
+                        }
+                        SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Operativo) * valor;
+                    }
+
+                    return SolicitudViatico;
+                }
+                return SolicitudViatico;
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToString();
+            }
+            return new SolicitudViatico();
+        }
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
         public async Task<Response> GetSolicitudViatico([FromRoute] int id)
@@ -403,6 +448,8 @@ namespace bd.swth.web.Controllers.API
                     {
 
                         solicitudViaticoActualizar.Estado = solicitudViatico.Estado;
+                        solicitudViaticoActualizar.IdEmpleadoAprobador = solicitudViatico.IdEmpleadoAprobador;
+
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -466,19 +513,36 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ModeloInvalido,
                     };
                 }
-
-                var respuesta = await db.SolicitudViatico.SingleOrDefaultAsync(m => m.IdSolicitudViatico == id);
-                if (respuesta == null)
+                var respuesta1 = await db.SolicitudTipoViatico.SingleOrDefaultAsync(m => m.IdSolicitudViatico == id);
+                if (respuesta1 == null)
                 {
-                    return new Response
+                    var respuesta2 = await db.SolicitudViatico.SingleOrDefaultAsync(m => m.IdSolicitudViatico == id);
+                    if (respuesta2 == null)
                     {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.RegistroNoEncontrado,
+                        };
+                    }
+                    db.SolicitudViatico.Remove(respuesta2);
+                    await db.SaveChangesAsync();
+                }                
+                else
+                {
+                    db.SolicitudTipoViatico.Remove(respuesta1);
+                    var respuesta = await db.SolicitudViatico.SingleOrDefaultAsync(m => m.IdSolicitudViatico == id);
+                    if (respuesta == null)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.RegistroNoEncontrado,
+                        };
+                    }
+                    db.SolicitudViatico.Remove(respuesta);
+                    await db.SaveChangesAsync();
                 }
-                db.SolicitudViatico.Remove(respuesta);
-                await db.SaveChangesAsync();
-
                 return new Response
                 {
                     IsSuccess = true,

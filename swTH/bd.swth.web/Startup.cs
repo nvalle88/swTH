@@ -125,6 +125,10 @@ namespace bd.swth.web
             ConstantesCapacitacion.Desactivado = Convert.ToInt32(Configuration.GetSection("Desactivado").Value);
 
 
+            //Valores viaticos
+            ConstantesViaticos.Operativo = Configuration.GetSection("Operativo").Value;
+            ConstantesViaticos.Jefe = Configuration.GetSection("Jefe").Value;
+
 
             /// <summary>
             /// Se lee el fichero appsetting.json según las etiquetas expuestas en este.
