@@ -26,7 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-
+        /*
 
         // GET: api/FlujoAprobacion
         [HttpGet]
@@ -303,5 +303,6 @@ namespace bd.swth.web.Controllers.API
             };
         }
 
+    */
     }
 }

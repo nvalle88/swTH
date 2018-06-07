@@ -22,6 +22,7 @@ namespace bd.swth.entidades.Negocio
         public string Estatus { get; set; }
         public string Abreviatura { get; set; }
         public string FormulaCalculo { get; set; }
+        public int Prioridad { get; set; }
 
         public virtual ICollection<ConceptoConjuntoNomina> ConceptoConjuntoNomina { get; set; }
         public virtual ICollection<TeconceptoNomina> TeconceptoNomina { get; set; }

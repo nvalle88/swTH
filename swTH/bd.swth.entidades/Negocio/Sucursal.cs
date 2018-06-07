@@ -23,6 +23,7 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<Dependencia> Dependencia { get; set; }
         public virtual ICollection<Presupuesto> Presupuesto { get; set; }
+        public virtual ICollection<FlujoAprobacion> FlujoAprobacion { get; set; }
 
 
     }

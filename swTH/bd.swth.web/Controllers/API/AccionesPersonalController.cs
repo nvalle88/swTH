@@ -936,7 +936,13 @@ namespace bd.swth.web.Controllers.API
                         accionPersonalActualizar != null
                     )
                 {
-                    
+                    /*
+                    if () {
+                        asdfasdfasdf
+                    }
+                    */
+
+
                     accionPersonalActualizar.Estado = accionPersonal.Estado;
                     await db.SaveChangesAsync();
 
@@ -975,15 +981,26 @@ namespace bd.swth.web.Controllers.API
 
             try {
 
-                var empleadoActual = db.Empleado.Include(d => d.Dependencia)
+                var listaDevolver = new List<AccionPersonalViewModel>();
+
+                var empleadoActual = await db.Empleado.Include(d => d.Dependencia)
                     .Where(x => x.NombreUsuario == accionesPersonalPorEmpleadoViewModel.NombreUsuarioActual)
-                    .FirstOrDefault()
+                    .FirstOrDefaultAsync()
                 ;
 
+                var IOMP = await db.IndiceOcupacionalModalidadPartida.Include(i=>i.IndiceOcupacional.ManualPuesto)
+                    .Where(w=>w.IdEmpleado == empleadoActual.IdEmpleado)
+                    .OrderByDescending(o=>o.IdIndiceOcupacionalModalidadPartida)
+                    .FirstOrDefaultAsync()
+                    ;
+                
+                
                 var ListaEstados = ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno;
 
                 var lista = await db.AccionPersonal
-                    .Where(w => w.Empleado.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal)
+                    .Where(
+                        w => w.Empleado.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal
+                    )
                     .Select(s=> new AccionPersonalViewModel
                         {
                             DatosBasicosEmpleadoViewModel = new DatosBasicosEmpleadoViewModel {
@@ -1047,7 +1064,24 @@ namespace bd.swth.web.Controllers.API
                     )
                     .ToListAsync();
 
-                return lista;
+                foreach (var item in lista) {
+
+                    var flujoAprobacion = await db.FlujoAprobacion.Where(w=>
+                        w.IdTipoAccionPersonal == item.TipoAccionPersonalViewModel.IdTipoAccionPersonal
+                        && w.IdManualPuesto == IOMP.IndiceOcupacional.IdManualPuesto
+                    ).FirstOrDefaultAsync();
+
+                    if (flujoAprobacion != null)
+                    {
+                        listaDevolver.Add(item);
+                    }
+
+
+                }
+
+                
+
+                return listaDevolver;
 
             }
             catch (Exception ex)

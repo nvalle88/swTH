@@ -3548,6 +3548,77 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        
+
+        /// <summary>
+        /// Necesario: NombreUsuario
+        /// Devuelve la lista de los empleados que pertenecen a la dependencia del usuario logueado
+        /// que estén activos exceptuando al usuario actual
+        /// </summary>
+        /// <param name="idFiltrosViewModel"></param>
+        /// <returns></returns>
+        // POST: api/Empleados
+        [HttpPost]
+        [Route("ListarMisEmpleados")]
+        public async Task<List<DatosBasicosEmpleadoViewModel>> ListarMisEmpleados([FromBody] IdFiltrosViewModel idFiltrosViewModel)
+        {
+
+            var lista = new List<DatosBasicosEmpleadoViewModel>();
+
+            try
+            {
+
+                var empleado = await db.Empleado
+                    .Where(w => w.NombreUsuario == idFiltrosViewModel.NombreUsuario)
+                    .FirstOrDefaultAsync();
+                
+                
+                lista = await db.Empleado
+                        .Where(w =>
+                            w.Activo == true
+                            && w.IdDependencia == empleado.IdDependencia
+                            && w.IdEmpleado  != empleado.IdEmpleado
+                        )
+                        .Select(x => new DatosBasicosEmpleadoViewModel
+                        {
+                            FechaNacimiento = x.Persona.FechaNacimiento.Value.Date,
+                            IdSexo = Convert.ToInt32(x.Persona.IdSexo),
+                            IdTipoIdentificacion = Convert.ToInt32(x.Persona.IdTipoIdentificacion),
+                            IdEstadoCivil = Convert.ToInt32(x.Persona.IdEstadoCivil),
+                            IdGenero = Convert.ToInt32(x.Persona.IdGenero),
+                            IdNacionalidad = Convert.ToInt32(x.Persona.IdNacionalidad),
+                            IdTipoSangre = Convert.ToInt32(x.Persona.IdTipoSangre),
+                            IdEtnia = Convert.ToInt32(x.Persona.IdEtnia),
+                            Identificacion = x.Persona.Identificacion,
+                            Nombres = x.Persona.Nombres,
+                            Apellidos = x.Persona.Apellidos,
+                            TelefonoPrivado = x.Persona.TelefonoPrivado,
+                            TelefonoCasa = x.Persona.TelefonoCasa,
+                            CorreoPrivado = x.Persona.CorreoPrivado,
+                            LugarTrabajo = x.Persona.LugarTrabajo,
+                            IdNacionalidadIndigena = x.Persona.IdNacionalidadIndigena,
+                            CallePrincipal = x.Persona.CallePrincipal,
+                            CalleSecundaria = x.Persona.CalleSecundaria,
+                            Referencia = x.Persona.Referencia,
+                            Numero = x.Persona.Numero,
+                            IdParroquia = Convert.ToInt32(x.Persona.IdParroquia),
+                            Ocupacion = x.Persona.Ocupacion,
+                            IdEmpleado = x.IdEmpleado,
+                            IdProvinciaLugarSufragio = Convert.ToInt32(x.IdProvinciaLugarSufragio),
+                            IdPaisLugarNacimiento = x.CiudadNacimiento.Provincia.Pais.IdPais,
+                            IdCiudadLugarNacimiento = x.IdCiudadLugarNacimiento,
+                            IdPaisLugarSufragio = x.ProvinciaSufragio.Pais.IdPais,
+                            IdPaisLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
+                            IdCiudadLugarPersona = x.Persona.Parroquia.Ciudad.IdCiudad,
+                            IdProvinciaLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
+                        }).ToListAsync();
+
+                return lista;
+            }
+            catch (Exception ex)
+            {
+                return lista;
+            }
+        }
+
     }
 }

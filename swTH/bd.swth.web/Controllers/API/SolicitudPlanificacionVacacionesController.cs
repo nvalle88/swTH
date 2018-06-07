@@ -551,6 +551,7 @@ namespace bd.swth.web.Controllers.API
                     FechaSolicitud = DateTime.Now,
                     IdEmpleado = solicitudPlanificacionVacacionesViewModel.DatosBasicosEmpleadoViewModel.IdEmpleado,
                     Observaciones = ""
+                    
                 };
 
                 db.SolicitudPlanificacionVacaciones.Add(modelo);
