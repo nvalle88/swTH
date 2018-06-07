@@ -27,5 +27,6 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<InformeUATH> InformeUATH1 { get; set; }
 
         public virtual RelacionesInternasExternas RelacionesInternasExternas { get; set; }
+        public virtual ICollection<FlujoAprobacion> FlujoAprobacion { get; set; }
     }
 }

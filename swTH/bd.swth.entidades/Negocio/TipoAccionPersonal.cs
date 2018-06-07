@@ -40,5 +40,6 @@ namespace bd.swth.entidades.Negocio
         //Propiedades Virtuales Referencias a otras clases
 
         public virtual ICollection<AccionPersonal> AccionPersonal { get; set; }
+        public virtual ICollection<FlujoAprobacion> FlujoAprobacion { get; set; }
     }
 }

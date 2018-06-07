@@ -58,6 +58,11 @@ namespace bd.swth.web
             ConstantesCorreo.MensajeCorreoMedio = Configuration.GetSection("MensajeCorreoMedio").Value;
             ConstantesCorreo.MensajeCorreoEnlace = Configuration.GetSection("MensajeCorreoEnlace").Value;
             ConstantesCorreo.MensajeCorreoInferior = Configuration.GetSection("MensajeCorreoInferior").Value;
+            //Correo planificacion evaluacion evento
+            ConstantesCorreo.SubjectCapacitaciones= Configuration.GetSection("SubjectCapacitaciones").Value;
+            ConstantesCorreo.CorreoCabecera = Configuration.GetSection("CorreoCabecera").Value;
+            ConstantesCorreo.CorreoEnlace = Configuration.GetSection("CorreoEnlace").Value;
+            ConstantesCorreo.CorreoPie = Configuration.GetSection("CorreoPie").Value;
 
             //Constantes Estados del FAO
             EstadosFAO.Asignado = Convert.ToInt32(Configuration.GetSection("Asignado").Value);
@@ -81,10 +86,10 @@ namespace bd.swth.web
 
             EvaluacionDesempeño.Siempre = Configuration.GetSection("Siempre").Value;
             EvaluacionDesempeño.Frecuentemente = Configuration.GetSection("Frecuentemente").Value;
-            EvaluacionDesempeño.Algunavez = Configuration.GetSection("Alguna vez").Value;
-            EvaluacionDesempeño.Raravez = Configuration.GetSection("Rara vez").Value;
+            EvaluacionDesempeño.Algunavez = Configuration.GetSection("Algunavez").Value;
+            EvaluacionDesempeño.Raravez = Configuration.GetSection("Raravez").Value;
             EvaluacionDesempeño.Nunca = Configuration.GetSection("Nunca").Value;
-
+            
             EvaluacionDesempeño.TrabajoEnEquipo = Configuration.GetSection("TrabajoEnEquipo").Value;
             EvaluacionDesempeño.Iniciativa = Configuration.GetSection("Iniciativa").Value;
             EvaluacionDesempeño.Liderazgo = Configuration.GetSection("Liderazgo").Value;
@@ -109,15 +114,23 @@ namespace bd.swth.web
             // Configuración Estados Aprobación Movimiento Interno
             ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno = JsonConvert.DeserializeObject<List<AprobacionMovimientoInternoViewModel>>(Configuration.GetSection("ListaEstadosAprobacionMovimientoInterno").Value);
 
+            // Configuración Estados Vacaciones
+            ConstantesEstadosVacaciones.ListaEstadosVacaciones = JsonConvert.DeserializeObject<List<EstadoVacacionesViewModel>>(Configuration.GetSection("ListaEstadosVacaciones").Value);
 
-            
+
+            // Configuración Estados Capacitaciones Ingresado
+            ConstantesCapacitacion.EstadoIngresado = Convert.ToInt32(Configuration.GetSection("Ingresado").Value);
+            ConstantesCapacitacion.EstadoTerminado = Convert.ToInt32(Configuration.GetSection("Finalizado").Value);
+            ConstantesCapacitacion.EstadoEvaluado = Convert.ToInt32(Configuration.GetSection("Calificado").Value);
+            ConstantesCapacitacion.Desactivado = Convert.ToInt32(Configuration.GetSection("Desactivado").Value);
+
+
+
             /// <summary>
             /// Se lee el fichero appsetting.json según las etiquetas expuestas en este.
             /// Ejemplo:IntervaloTemporizadorHoras Horas que tendra de vida la token.
             /// IntervaloTemporizadorMinutos Minutos que tendra de vida la token
             ///  IntervaloTemporizadorSegundos Segundos que tendra de vida la token.
-            ///  Con estas tres variables mencionadas se conforma cada que tiempo se realizará 
-            ///  el ciclo para invalidar los Token externos que serán consumidos por terceros
             /// </summary>
             var IntervaloCicloHoras = Configuration.GetSection("IntervaloTemporizadorHoras").Value;
             var IntervaloCicloMinutos = Configuration.GetSection("IntervaloTemporizadorMinutos").Value;
@@ -128,8 +141,6 @@ namespace bd.swth.web
             /// Ejemplo:inicioCicloHoras Horas que comensará a ejecutarse una vez iniciada la aplicación.
             /// inicioCicloMinutos Minutos que comensará a ejecutarse una vez iniciada la aplicación.
             ///  inicioCicloSegundos Segundos que comensará a ejecutarse una vez iniciada la aplicación.
-            ///  Con estas tres variables mencionadas se conforma el tiempo que se comenzará a ejecutar 
-            ///  el ciclo para  invalidar los Token externos que serán consumidos por terceros
             /// </summary>
             var inicioCicloHoras = Configuration.GetSection("inicioCicloHoras").Value;
             var inicioCicloMinutos = Configuration.GetSection("inicioCicloMinutos").Value;

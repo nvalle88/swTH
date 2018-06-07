@@ -488,5 +488,207 @@ namespace bd.swth.web.Controllers.API
                 Resultado = dependenciarespuesta,
             };
         }
+
+
+        /// <summary>
+        ///  Obtiene la dependencia actual, y las dependencias hijas (DependenciaDatosViewModel)
+        ///  a partir del NombreUsuario
+        /// </summary>
+        /// <param name="idFiltrosViewModel"></param>
+        /// <returns></returns>
+        // Post: api/Dependencias
+        [HttpPost]
+        [Route("ObtenerDependenciaDatosViewModelPorUsuarioActual")]
+        public async Task<DependenciaDatosViewModel> ObtenerDependenciaDatosViewModelPorUsuarioActual([FromBody]IdFiltrosViewModel idFiltrosViewModel)
+        {
+            try {
+
+                var empleado = await db.Empleado
+                    .Where(w => w.NombreUsuario == idFiltrosViewModel.NombreUsuario).FirstOrDefaultAsync();
+
+                var dependencia = await db.Dependencia
+                    .Include(i=>i.Sucursal)
+                    .Where(w => w.IdDependencia == empleado.IdDependencia).FirstOrDefaultAsync();
+
+                var modelo = new DependenciaDatosViewModel {
+
+                    IdDependencia = dependencia.IdDependencia,
+                    IdSucursal = dependencia.IdSucursal,
+                    NombreDependencia = dependencia.Nombre,
+                    NombreSucursal = dependencia.Sucursal.Nombre,
+
+                    DatosBasicosEmpleadoJefeViewModel = db.Empleado
+                        .Where(we =>
+                            we.IdDependencia == dependencia.IdDependencia
+                            && we.EsJefe == true
+                            && we.Activo == true
+                        )
+                        .Select(se => new DatosBasicosEmpleadoViewModel
+                        {
+                            IdEmpleado = se.IdEmpleado,
+                            IdPersona = se.IdPersona,
+                            Nombres = se.Persona.Nombres,
+                            Apellidos = se.Persona.Apellidos
+
+                        }
+
+                        ).FirstOrDefault()
+                    ,
+
+
+                    ListaDependenciasHijas = await ObtenerDependenciasHijas(dependencia.IdDependencia),
+
+                    ListaEmpleadosDependencia = await db.Empleado
+                    .Where(wl=>
+                    wl.Activo == true 
+                    && wl.IdDependencia == dependencia.IdDependencia
+                    && wl.EsJefe == false                    
+                    )
+                    .Select(s1=>new DatosBasicosEmpleadoViewModel
+                    {
+
+                        IdEmpleado = s1.IdEmpleado,
+                        IdPersona = s1.IdPersona,
+                        Nombres = s1.Persona.Nombres,
+                        Apellidos = s1.Persona.Apellidos,
+                        Identificacion = s1.Persona.Identificacion
+                    }
+                    )
+                    .ToListAsync()
+                    
+                };
+                
+                
+                return modelo;
+
+            } catch (Exception ex) {
+
+                return new DependenciaDatosViewModel();
+            }
+        }
+
+
+        /// <summary>
+        ///  Obtiene el DependenciaDatosViewModel a partir del idDependencia
+        ///  Necesario: idDependencia
+        /// </summary>
+        /// <param name="idFiltrosViewModel"></param>
+        /// <returns></returns>
+        // Post: api/Dependencias
+        [HttpPost]
+        [Route("ObtenerDependenciaDatosViewModelPorIdDependencia")]
+        public async Task<DependenciaDatosViewModel> ObtenerDependenciaDatosViewModelPorIdDependencia([FromBody]IdFiltrosViewModel idFiltrosViewModel)
+        {
+            try
+            {
+                
+                var dependencia = await db.Dependencia
+                    .Include(i => i.Sucursal)
+                    .Where(w => w.IdDependencia == idFiltrosViewModel.IdDependencia).FirstOrDefaultAsync();
+
+                var modelo = new DependenciaDatosViewModel
+                {
+
+                    IdDependencia = dependencia.IdDependencia,
+                    IdSucursal = dependencia.IdSucursal,
+                    NombreDependencia = dependencia.Nombre,
+                    NombreSucursal = dependencia.Sucursal.Nombre,
+
+                    DatosBasicosEmpleadoJefeViewModel = db.Empleado
+                        .Where(we =>
+                            we.IdDependencia == dependencia.IdDependencia
+                            && we.EsJefe == true
+                            && we.Activo == true
+                        )
+                        .Select(se => new DatosBasicosEmpleadoViewModel
+                        {
+                            IdEmpleado = se.IdEmpleado,
+                            IdPersona = se.IdPersona,
+                            Nombres = se.Persona.Nombres,
+                            Apellidos = se.Persona.Apellidos
+
+                        }
+
+                        ).FirstOrDefault()
+                    ,
+
+
+                    ListaDependenciasHijas = await ObtenerDependenciasHijas(dependencia.IdDependencia),
+
+                    ListaEmpleadosDependencia = await db.Empleado
+                    .Where(wl =>
+                    wl.Activo == true
+                    && wl.IdDependencia == dependencia.IdDependencia
+                    && wl.EsJefe == false
+                    )
+                    .Select(s1 => new DatosBasicosEmpleadoViewModel
+                    {
+
+                        IdEmpleado = s1.IdEmpleado,
+                        IdPersona = s1.IdPersona,
+                        Nombres = s1.Persona.Nombres,
+                        Apellidos = s1.Persona.Apellidos,
+                        Identificacion = s1.Persona.Identificacion
+                    }
+                    )
+                    .ToListAsync()
+
+                };
+
+
+                return modelo;
+
+            }
+            catch (Exception ex)
+            {
+
+                return new DependenciaDatosViewModel();
+            }
+        }
+
+
+        public async Task<List<DependenciaDatosViewModel>> ObtenerDependenciasHijas( int idDependencia) {
+
+            try
+            {
+                var lista = await db.Dependencia.Where(w => w.IdDependenciaPadre == idDependencia)
+                    .Select(s => new DependenciaDatosViewModel
+                    {
+                        IdDependencia = s.IdDependencia,
+                        IdSucursal = s.IdSucursal,
+                        NombreDependencia = s.Nombre,
+                        NombreSucursal = s.Sucursal.Nombre,
+
+                        DatosBasicosEmpleadoJefeViewModel = db.Empleado
+                        .Where(we =>
+                            we.IdDependencia == s.IdDependencia
+                            && we.EsJefe == true 
+                            && we.Activo == true
+                        )
+                        .Select(se => new DatosBasicosEmpleadoViewModel
+                            {
+                                IdEmpleado = se.IdEmpleado,
+                                IdPersona = se.IdPersona,
+                                Nombres = se.Persona.Nombres,
+                                Apellidos = se.Persona.Apellidos
+                                
+                            }
+
+                        ).FirstOrDefault()
+                           
+                    }
+                    )
+                    .ToListAsync();
+
+                return lista;
+            }
+            catch (Exception)
+            {
+
+                return new List<DependenciaDatosViewModel>();
+            }
+
+        }
+
     }
 }
