@@ -3903,6 +3903,11 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdCiudadOrigen)
                     .HasConstraintName("FK_RequlidacionViatico_Ciudad1");
 
+                entity.HasOne(d => d.ItemViatico)
+                   .WithMany(p => p.ReliquidacionViatico)
+                   .HasForeignKey(d => d.IdItemViatico)
+                   .HasConstraintName("FK_ReliquidacionViatico_ItemViatico");
+
                 entity.HasOne(d => d.ItinerarioViatico)
                     .WithMany(p => p.ReliquidacionViatico)
                     .HasForeignKey(d => d.IdItinerarioViatico)

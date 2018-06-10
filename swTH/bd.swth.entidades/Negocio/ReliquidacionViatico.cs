@@ -6,6 +6,7 @@ namespace bd.swth.entidades.Negocio
     {
         public int IdReliquidacionViatico { get; set; }
         public int IdItinerarioViatico { get; set; }
+        public int? IdItemViatico { get; set; }
         public int? IdTipoTransporte { get; set; }
         public string NombreTransporte { get; set; }
         public int? IdCiudadOrigen { get; set; }
@@ -19,6 +20,7 @@ namespace bd.swth.entidades.Negocio
 
         public virtual Ciudad CiudadDestino { get; set; }
         public virtual Ciudad CiudadOrigen { get; set; }
+        public virtual ItemViatico ItemViatico { get; set; }
         public virtual ItinerarioViatico ItinerarioViatico { get; set; }
         public virtual TipoTransporte TipoTransporte { get; set; }
     }

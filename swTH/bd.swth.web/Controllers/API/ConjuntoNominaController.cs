@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using bd.swth.datos;
+using bd.swth.entidades.Constantes;
 using bd.swth.entidades.Negocio;
 using bd.swth.entidades.Utils;
 using Microsoft.AspNetCore.Http;
@@ -102,6 +103,7 @@ namespace bd.swth.web.Controllers.API
                 ConjuntoNominaActualizar.Codigo = ConjuntoNomina.Codigo;
                 ConjuntoNominaActualizar.Descripcion = ConjuntoNomina.Descripcion;
                 ConjuntoNominaActualizar.IdTipoConjunto = ConjuntoNomina.IdTipoConjunto;
+                ConjuntoNominaActualizar.AliasConcepto = string.Format("{0}{1}", Constantes.EscapeConjuntos, ConjuntoNomina.AliasConcepto);
                 db.ConjuntoNomina.Update(ConjuntoNominaActualizar);
                 await db.SaveChangesAsync();
 
@@ -124,13 +126,14 @@ namespace bd.swth.web.Controllers.API
         // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarConjuntoNomina")]
-        public async Task<Response> PostConjuntoNomina([FromBody] ConjuntoNomina ConjuntoNomina)
+        public async Task<Response> InsertarConjuntoNomina([FromBody] ConjuntoNomina ConjuntoNomina)
         {
             try
             {
 
                 if (!await Existe(ConjuntoNomina))
                 {
+                    ConjuntoNomina.AliasConcepto = string.Format("{0}{1}", Constantes.EscapeConjuntos, ConjuntoNomina.AliasConcepto);
                     db.ConjuntoNomina.Add(ConjuntoNomina);
                     await db.SaveChangesAsync();
                     return new Response
@@ -198,16 +201,28 @@ namespace bd.swth.web.Controllers.API
         private async Task<bool> Existe(ConjuntoNomina ConjuntoNomina)
         {
             var bdd = ConjuntoNomina.Codigo.ToUpper().TrimEnd().TrimStart();
-            var ConjuntoNominarespuesta = await db.ConjuntoNomina.Where(p => p.Codigo.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefaultAsync();
+            var alias= string.Format("{0}{1}", Constantes.EscapeConjuntos, ConjuntoNomina.AliasConcepto);
+            var ConjuntoNominarespuestaAlias = await db.ConjuntoNomina.Where(p => p.AliasConcepto == alias).FirstOrDefaultAsync();
 
-            if (ConjuntoNominarespuesta == null || ConjuntoNominarespuesta.IdConjunto == ConjuntoNomina.IdConjunto)
+            if (ConjuntoNominarespuestaAlias==null || ConjuntoNominarespuestaAlias.IdConjunto == ConjuntoNomina.IdConjunto)
             {
-                return false;
+                var ConjuntoNominarespuesta = await db.ConjuntoNomina.Where(p => p.Codigo.ToUpper().TrimStart().TrimEnd() == bdd || p.AliasConcepto == alias).FirstOrDefaultAsync();
+
+                if (ConjuntoNominarespuesta == null || ConjuntoNominarespuesta.IdConjunto == ConjuntoNomina.IdConjunto)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
             else
             {
                 return true;
             }
+
+
 
         }
     }

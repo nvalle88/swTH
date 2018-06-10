@@ -7,8 +7,10 @@ namespace bd.swth.entidades.Negocio
     public partial class SolicitudViatico
     {
         [Key]
+
         public int IdSolicitudViatico { get; set; }
         public int IdEmpleado { get; set; }
+        public int? IdEmpleadoAprobador { get; set; }
         public int IdPais { get; set; }
         public int IdProvincia { get; set; }
         public int IdCiudad { get; set; }

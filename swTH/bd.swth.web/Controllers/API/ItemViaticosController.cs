@@ -51,6 +51,29 @@ namespace bd.swth.web.Controllers.API
                 return new List<ItemViatico>();
             }
         }
+        [HttpGet]
+        [Route("ListarItemViaticosConReliquidacion")]
+        public async Task<List<ItemViatico>> ListarItemViaticosConReliquidacion()
+        {
+            try
+            {
+                return await db.ItemViatico.Where(x=>x.Reliquidacion==true).OrderBy(x => x.Descripcion).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex.Message,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<ItemViatico>();
+            }
+        }
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]
@@ -165,9 +188,6 @@ namespace bd.swth.web.Controllers.API
                         };
                     }
                 }
-
-
-
 
                 return new Response
                 {
@@ -296,7 +316,8 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(ItemViatico ItemViatico)
         {
             var bdd = ItemViatico.Descripcion;
-            var ItemViaticorespuesta = db.ItemViatico.Where(p => p.Descripcion == bdd).FirstOrDefault();
+            var bdd1 = ItemViatico.Reliquidacion;
+            var ItemViaticorespuesta = db.ItemViatico.Where(p => p.Descripcion == bdd && p.Reliquidacion == bdd1).FirstOrDefault();
             if (ItemViaticorespuesta != null)
             {
                 return new Response

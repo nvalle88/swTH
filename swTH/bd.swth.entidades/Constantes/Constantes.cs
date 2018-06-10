@@ -17,6 +17,11 @@ namespace bd.swth.entidades.Constantes
 
         public static string PartidaVacante { get; set; }
         public static string PartidaOcupada { get; set; }
+
+
+        public static string EscapeConstantes { get { return "#"; } }
+        public static string EscapeFunciones { get { return "@"; } }
+        public static string EscapeConjuntos { get { return "&"; } }
     }
 
     public static class ConstantesGrupoOcupacional
@@ -49,7 +54,15 @@ namespace bd.swth.entidades.Constantes
         public static string CorreoPie;
 
     }
-    
+
+    //Valores viaticos
+    public static class ConstantesViaticos
+    {
+        public static string Operativo;
+        public static string Jefe;
+    }
+
+
 
     public static class ConstantesEstadoInduccion {
         public static string InduccionFinalizada;
