@@ -33,5 +33,10 @@ namespace bd.swth.entidades.Utils
         public static string EmpleadoNoExiste { get { return "Identificación del empleado no existe."; } }
 
         public static string ExisteVacacionRelacionLaboral { get { return "Solo se permite 1 registro por relación laboral."; } }
+
+        public static string AccionPersonalBloqueada { get { return "Esta acción ya se ha aprobado por todos los responsables de aprobación, no puede editarse"; } }
+
+        public static string ErrorPorComparacionFechasTipoAccionPersonal { get { return "La hora mínimo debe ser menor a la hora máximo y el día mínimo debe ser menor al día máximo"; } }
+        
     }
 }

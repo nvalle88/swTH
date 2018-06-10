@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace bd.swth.entidades.Negocio
 {
@@ -13,7 +14,7 @@ namespace bd.swth.entidades.Negocio
         public virtual ManualPuesto ManualPuesto{ get; set; }
         public virtual Sucursal Sucursal { get; set; }
         public virtual TipoAccionPersonal TipoAccionPersonal { get; set; }
-
+        public virtual ICollection<AprobacionAccionPersonal> AprobacionAccionPersonal { get; set; }
 
 
     }

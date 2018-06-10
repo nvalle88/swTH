@@ -38,16 +38,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<AccionPersonal>();
             }
         }
@@ -146,6 +137,8 @@ namespace bd.swth.web.Controllers.API
                         accionPersonalActualizar.FechaRigeHasta = accionPersonal.FechaRigeHasta;
                         accionPersonalActualizar.NoDias = accionPersonal.NoDias;
                         accionPersonalActualizar.Estado = accionPersonal.Estado;
+
+                        db.AccionPersonal.Update(accionPersonalActualizar);
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -157,16 +150,7 @@ namespace bd.swth.web.Controllers.API
                     }
                     catch (Exception ex)
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
+                        
                         return new Response
                         {
                             IsSuccess = false,
@@ -207,6 +191,17 @@ namespace bd.swth.web.Controllers.API
                     .FirstOrDefault()
                 ;
 
+                var tipoAccion = await db.TipoAccionPersonal
+                    .Where(w => w.IdTipoAccionPersonal == accionPersonalViewModel.TipoAccionPersonalViewModel.IdTipoAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+
+                if (tipoAccion.Definitivo == true) {
+                    accionPersonalViewModel.FechaRigeHasta = accionPersonalViewModel.FechaRige;
+                    accionPersonalViewModel.NoDias = 0;
+                    accionPersonalViewModel.Numero = "0";
+                }
+
 
                 var modelo = new AccionPersonal
                 {
@@ -219,7 +214,9 @@ namespace bd.swth.web.Controllers.API
                     NoDias = accionPersonalViewModel.NoDias,
                     Numero = accionPersonalViewModel.Numero,
                     Solicitud = accionPersonalViewModel.Solicitud,
-                    IdTipoAccionPersonal = accionPersonalViewModel.TipoAccionPersonalViewModel.IdTipoAccionPersonal
+                    IdTipoAccionPersonal = accionPersonalViewModel.TipoAccionPersonalViewModel.IdTipoAccionPersonal,
+                    Bloquear = false,
+                    Ejecutado = false
 
                 };
 
@@ -273,7 +270,7 @@ namespace bd.swth.web.Controllers.API
 
 
                             var modalidadPartidaActual = ObtenerIndice(accionPersonalViewModel.DatosBasicosEmpleadoViewModel.IdEmpleado);
-
+                            
                             // Modelo del movimiento de personal
                             var modeloEmpleadoMovimiento = new EmpleadoMovimiento
                             {
@@ -502,8 +499,7 @@ namespace bd.swth.web.Controllers.API
                                     Matriz = st.Matriz,
                                     Descripcion = st.Descripcion,
                                     GeneraAccionPersonal = st.GeneraAccionPersonal,
-                                    ModificaDistributivo = st.ModificaDistributivo,
-                                    IdEstadoTipoAccionPersonal = st.IdEstadoTipoAccionPersonal
+                                    ModificaDistributivo = st.ModificaDistributivo
 
                                 }
                             )
@@ -578,7 +574,11 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                var empleadoMovimientoRegistro = db.EmpleadoMovimiento.Where(sw => sw.IdAccionPersonal == accionPersonalViewModel.IdAccionPersonal).FirstOrDefault();
+                var empleadoMovimientoRegistro = await db.EmpleadoMovimiento.Where(sw => sw.IdAccionPersonal == accionPersonalViewModel.IdAccionPersonal).FirstOrDefaultAsync();
+
+                var empleadoAprobador = await db.Empleado
+                    .Where(w => w.NombreUsuario == accionPersonalViewModel.NombreUsuarioAprobador)
+                    .FirstOrDefaultAsync();
 
                 var indicePropuesto = 0;
 
@@ -586,7 +586,7 @@ namespace bd.swth.web.Controllers.API
                     indicePropuesto = (int) empleadoMovimientoRegistro.IdIndiceOcupacionalModalidadPartidaHasta;
                 }
 
-                var modelo = db.AccionPersonal
+                var modelo = await db.AccionPersonal
                     .Where(w => w.IdAccionPersonal == accionPersonalViewModel.IdAccionPersonal)
                     .Select( s=> new AccionPersonalViewModel
                         {
@@ -621,8 +621,7 @@ namespace bd.swth.web.Controllers.API
                                 Matriz = st.Matriz,
                                 Descripcion = st.Descripcion,
                                 GeneraAccionPersonal = st.GeneraAccionPersonal,
-                                ModificaDistributivo = st.ModificaDistributivo,
-                                IdEstadoTipoAccionPersonal = st.IdEstadoTipoAccionPersonal
+                                ModificaDistributivo = st.ModificaDistributivo
 
                             }
                             )
@@ -669,8 +668,21 @@ namespace bd.swth.web.Controllers.API
 
                             }
                     )
-                    .FirstOrDefault();
+                    .FirstOrDefaultAsync();
 
+                // Poner el estado de aprobación para cada persona encargada de aprobar
+                var miFirma = await db.AprobacionAccionPersonal
+                    .Where(w =>
+                        w.IdAccionPersonal == accionPersonalViewModel.IdAccionPersonal
+                        && w.IdEmpleadoAprobador == empleadoAprobador.IdEmpleado
+                    )
+                    .FirstOrDefaultAsync();
+
+                if (miFirma != null)
+                {
+                    modelo.Estado = miFirma.Estado;
+
+                }
 
 
                 return new Response {
@@ -700,7 +712,24 @@ namespace bd.swth.web.Controllers.API
                 var empleado = await db.Empleado.Include(ie=>ie.Persona)
                     .Where(w=>w.IdEmpleado == accionPersonalViewModel.DatosBasicosEmpleadoViewModel.IdEmpleado)
                     .FirstOrDefaultAsync()
-                    ;
+                ;
+
+
+
+                var tipoAccion = await db.TipoAccionPersonal
+                    .Where(w => w.IdTipoAccionPersonal == accionPersonalViewModel.TipoAccionPersonalViewModel.IdTipoAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+
+                if (tipoAccion.Definitivo == true)
+                {
+                    accionPersonalViewModel.FechaRigeHasta = accionPersonalViewModel.FechaRige;
+                    accionPersonalViewModel.NoDias = 0;
+                    accionPersonalViewModel.Numero = "0";
+                }
+
+
+
 
                 var accionPersonalActualizar = await db.AccionPersonal
                     .Where(w => w.IdAccionPersonal == accionPersonalViewModel.IdAccionPersonal).FirstOrDefaultAsync();
@@ -744,7 +773,7 @@ namespace bd.swth.web.Controllers.API
                                 accionPersonalActualizar.NoDias = accionPersonalViewModel.NoDias;
                                 accionPersonalActualizar.Estado = accionPersonalViewModel.Estado;
 
-
+                                db.AccionPersonal.Update(accionPersonalActualizar);
                                 await db.SaveChangesAsync();
 
                             }
@@ -816,7 +845,7 @@ namespace bd.swth.web.Controllers.API
                                 accionPersonalActualizar.NoDias = accionPersonalViewModel.NoDias;
                                 accionPersonalActualizar.Estado = accionPersonalViewModel.Estado;
 
-
+                                db.AccionPersonal.Update(accionPersonalActualizar);
                                 await db.SaveChangesAsync();
 
                             }
@@ -838,7 +867,9 @@ namespace bd.swth.web.Controllers.API
                             modificarMovimiento.FechaDesde = accionPersonalViewModel.FechaRige;
                             modificarMovimiento.FechaHasta = accionPersonalViewModel.FechaRigeHasta;
 
+                            
                             await db.SaveChangesAsync();
+
                             transaction.Commit();
 
                             return new Response
@@ -874,7 +905,7 @@ namespace bd.swth.web.Controllers.API
                         accionPersonalActualizar.NoDias = accionPersonalViewModel.NoDias;
                         accionPersonalActualizar.Estado = accionPersonalViewModel.Estado;
 
-
+                        db.AccionPersonal.Update(accionPersonalActualizar);
                         await db.SaveChangesAsync();
 
                         if (modificarMovimiento != null) {
@@ -925,26 +956,115 @@ namespace bd.swth.web.Controllers.API
                 var empleado = await db.Empleado.Include(ie => ie.Persona)
                     .Where(w => w.IdEmpleado == accionPersonal.IdEmpleado)
                     .FirstOrDefaultAsync()
-                    ;
+                ;
+
+                var empleadoAprobador = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i=>i.IndiceOcupacional).ThenInclude(t=>t.ManualPuesto)
+                    .Where(w => w.Empleado.NombreUsuario == accionPersonal.NombreUsuario)
+                    .OrderByDescending(o=>o.IdIndiceOcupacionalModalidadPartida)
+                    .FirstOrDefaultAsync();
+
+                
 
                 var accionPersonalActualizar = await db.AccionPersonal
                     .Where(w => w.IdAccionPersonal == accionPersonal.IdAccionPersonal).FirstOrDefaultAsync();
 
-                
+
 
                 if (
                         accionPersonalActualizar != null
+                        && accionPersonalActualizar.Bloquear == false
                     )
                 {
-                    /*
-                    if () {
-                        asdfasdfasdf
-                    }
-                    */
+
+                    using (var transaction = await db.Database.BeginTransactionAsync())
+                    {
+
+                        var flujoAprobacion = await db.FlujoAprobacion
+                            .Where(w =>
+                                w.IdTipoAccionPersonal == accionPersonalActualizar.IdTipoAccionPersonal
+                                && w.IdManualPuesto == empleadoAprobador.IndiceOcupacional.IdManualPuesto
+                            )
+                            .FirstOrDefaultAsync();
 
 
-                    accionPersonalActualizar.Estado = accionPersonal.Estado;
-                    await db.SaveChangesAsync();
+
+                        var aprobacion = new AprobacionAccionPersonal {
+                            IdAccionPersonal = accionPersonalActualizar.IdAccionPersonal,
+                            IdEmpleadoAprobador = empleadoAprobador.IdEmpleado,
+                            IdFlujoAprobacion = flujoAprobacion.IdFlujoAprobacion,
+                            Estado = accionPersonal.Estado,
+                            FechaAprobacion = DateTime.Now
+                        };
+
+                        var firmado = await db.AprobacionAccionPersonal
+                            .Where(w =>
+                                w.IdAccionPersonal == accionPersonal.IdAccionPersonal
+                                && w.IdEmpleadoAprobador == empleadoAprobador.IdEmpleado
+                            ).FirstOrDefaultAsync();
+
+                        // agregar registro si no existe
+                        if (firmado == null)
+                        {
+                            db.AprobacionAccionPersonal.Add(aprobacion);
+                            await db.SaveChangesAsync();
+                        }
+                        else {
+                            // Si ya existe el registro, el único campo que se actualiza es el estado
+                            firmado.Estado = accionPersonal.Estado;
+
+                            db.AprobacionAccionPersonal.Update(firmado);
+                            await db.SaveChangesAsync();
+                        }
+
+
+                        // obtener las firmas necesarias para realizar la comparación
+                        var firmasTotales = await db.FlujoAprobacion
+                            .Where(w =>
+                                w.IdTipoAccionPersonal == accionPersonalActualizar.IdTipoAccionPersonal
+                            ).ToListAsync();
+
+                        // obtener las firmas que están realizadas
+                        var firmasRealizadas = await db.AprobacionAccionPersonal
+                            .Where(w =>
+                                w.IdAccionPersonal == accionPersonal.IdAccionPersonal
+                            ).ToListAsync();
+
+                        // Obtener las firmas que están aprobadas
+                        var firmasAprobadas = firmasRealizadas.Where(w => w.Estado == 5).ToList();
+
+
+                        // si todas las firmas necesarias están aprobadas, el estado va a aprobado
+                        // si todas las firmas se han hecho pero almenos una está negada el estado va negado
+                        if (firmasRealizadas.Count == firmasTotales.Count())
+                        {
+                            if (firmasAprobadas.Count == firmasTotales.Count())
+                            {
+                                accionPersonalActualizar.Estado = 5;
+                                accionPersonalActualizar.Bloquear = true;
+                            }
+                            else {
+                                accionPersonalActualizar.Estado = 4;
+                            }
+
+                        }
+
+
+
+                        await db.SaveChangesAsync();
+                        
+
+                        // Cuando todo se ha realizado correctamente y todas las firmas están aprobadas
+                        // se ejecuta la acción de personal
+                        if (accionPersonalActualizar.Estado == 5) {
+
+                            await EjecutarAccionesPersonal(accionPersonalActualizar.IdAccionPersonal);
+                        }
+
+
+                        transaction.Commit();
+
+                    } // end transaction
 
                     return new Response
                     {
@@ -952,14 +1072,30 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.Satisfactorio,
                         Resultado = empleado.Persona.Identificacion
                     };
+
+                    
+                }
+
+                else if (
+                        accionPersonalActualizar != null
+                        && accionPersonalActualizar.Bloquear == true
+                        )
+                {
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.AccionPersonalBloqueada,
+                        Resultado = empleado.Persona.Identificacion
+                    };
                 }
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro,
-                    Resultado = empleado.Persona.Identificacion
+                    Message = Mensaje.Error,
+                    Resultado = new AccionesPersonalPorEmpleadoViewModel()
                 };
+
 
             }
             catch (Exception ex)
@@ -1026,8 +1162,7 @@ namespace bd.swth.web.Controllers.API
                                     Matriz = st.Matriz,
                                     Descripcion = st.Descripcion,
                                     GeneraAccionPersonal = st.GeneraAccionPersonal,
-                                    ModificaDistributivo = st.ModificaDistributivo,
-                                    IdEstadoTipoAccionPersonal = st.IdEstadoTipoAccionPersonal
+                                    ModificaDistributivo = st.ModificaDistributivo
 
                                 }
                                 )
@@ -1046,8 +1181,8 @@ namespace bd.swth.web.Controllers.API
                         EstadoDirector = (ListaEstados.Count > 0)
                             ?
                                 ListaEstados.Where(wle =>
-                                    wle.GrupoAprobacion == 0
-                                    && wle.ValorEstado == s.Estado
+                                    //wle.GrupoAprobacion == 0 &&
+                                    wle.ValorEstado == s.Estado
                                 ).FirstOrDefault().NombreEstado
                             : "",
 
@@ -1073,6 +1208,28 @@ namespace bd.swth.web.Controllers.API
 
                     if (flujoAprobacion != null)
                     {
+                        
+                        // Poner el estado de aprobación para cada persona encargada de aprobar
+                        var miFirma = await db.AprobacionAccionPersonal
+                            .Where(w =>
+                                w.IdAccionPersonal == item.IdAccionPersonal
+                                && w.IdEmpleadoAprobador == empleadoActual.IdEmpleado
+                            )
+                            .FirstOrDefaultAsync();
+
+                        if (miFirma != null) {
+                            item.Estado = miFirma.Estado;
+
+                        }
+
+                        item.EstadoDirector = (ListaEstados.Count > 0)
+                            ?
+                                ListaEstados.Where(wle =>
+                                    wle.ValorEstado == item.Estado
+                                ).FirstOrDefault().NombreEstado
+                            : ""
+                        ;
+
                         listaDevolver.Add(item);
                     }
 
@@ -1170,6 +1327,211 @@ namespace bd.swth.web.Controllers.API
             } catch (Exception ex)
             {
             }
+
+        }
+
+
+        /// <summary>
+        /// Este método se encarga de ejecutar todas las acciones de personal de acuerdo a lo 
+        /// que diga la tabla tipoAccionPersonal
+        /// </summary>
+        /// <param name="idAccionPersonal"></param>
+        /// <returns></returns>
+        private async Task EjecutarAccionesPersonal(int idAccionPersonal)
+        {
+            try
+            {
+                // Estados de cambio del empleado
+                /*  
+                    0 = n/a                                    desactivarEmpleado = false, modalidadContratación = false
+                    1 = Modalidad contratación                 desactivarEmpleado = false, modalidadContratación = true
+                    2 = desactivar empleado                    desactivarEmpleado = true, modalidadContratación = false
+                */
+
+
+                var accion = await db.AccionPersonal
+                    .Include(i => i.TipoAccionPersonal)
+                    .Where(w => w.IdAccionPersonal == idAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+
+                // ModificaDistributivo = Cambios en IndiceOcupacionalModalidadPartida
+                if (accion.TipoAccionPersonal.ModificaDistributivo == true)
+                {
+                    bool registrar = true;
+
+                    var movimiento = await db.EmpleadoMovimiento
+                        .Include(i => i.IndiceOcupacionalModalidadPartidaDesde).ThenInclude(t => t.IndiceOcupacional)
+                        .Include(i => i.IndiceOcupacionalModalidadPartidaHasta).ThenInclude(t => t.IndiceOcupacional)
+                        .Where(w => w.IdAccionPersonal == accion.IdAccionPersonal)
+                        .FirstOrDefaultAsync();
+
+
+                    var modelo = new IndiceOcupacionalModalidadPartida
+                    {
+                        IdIndiceOcupacional = (int)movimiento.IndiceOcupacionalModalidadPartidaHasta.IdIndiceOcupacional,
+                        IdEmpleado = accion.IdEmpleado,
+                        Fecha = accion.FechaRige,
+
+                        IdTipoNombramiento = movimiento.IndiceOcupacionalModalidadPartidaDesde.IdTipoNombramiento,
+                        SalarioReal = movimiento.IndiceOcupacionalModalidadPartidaDesde.SalarioReal,
+                        IdFondoFinanciamiento = movimiento.IndiceOcupacionalModalidadPartidaDesde.IdFondoFinanciamiento
+                    };
+
+
+
+                    // El empleado cambia de un puesto a otro permanentemente
+                    if (
+                        accion.TipoAccionPersonal.ModalidadContratacion == true
+                        && accion.TipoAccionPersonal.Definitivo == true
+                        && accion.TipoAccionPersonal.DesactivarEmpleado == false
+                    )
+                    {
+                        modelo.IdTipoNombramiento = movimiento.IndiceOcupacionalModalidadPartidaHasta.IdTipoNombramiento;
+                        modelo.SalarioReal = movimiento.IndiceOcupacionalModalidadPartidaHasta.SalarioReal;
+                        modelo.IdFondoFinanciamiento = movimiento.IndiceOcupacionalModalidadPartidaHasta.IdFondoFinanciamiento;
+
+                    }
+
+
+                    // El empleado cambia de un puesto a otro temporalmente con el salario del puesto
+                    else if (
+                        accion.TipoAccionPersonal.ModalidadContratacion == true
+                        && accion.TipoAccionPersonal.Definitivo == false
+                        && accion.TipoAccionPersonal.DesactivarEmpleado == false
+                    )
+                    {
+                        modelo.IdTipoNombramiento = movimiento.IndiceOcupacionalModalidadPartidaHasta.IdTipoNombramiento;
+                        modelo.SalarioReal = movimiento.IndiceOcupacionalModalidadPartidaHasta.SalarioReal;
+                        modelo.IdFondoFinanciamiento = movimiento.IndiceOcupacionalModalidadPartidaHasta.IdFondoFinanciamiento;
+
+                    }
+                    else
+                    {
+
+                        registrar = false;
+                    }
+
+
+                    if (registrar == true)
+                    {
+
+                        db.IndiceOcupacionalModalidadPartida.Add(modelo);
+                        await db.SaveChangesAsync();
+
+                    }
+
+                    // Se produce una desvinculación
+                    else if (
+                        accion.TipoAccionPersonal.DesactivarEmpleado == true
+                        && accion.TipoAccionPersonal.Definitivo == true
+                        && registrar == false
+                        )
+                    {
+
+                        var empleado = await db.Empleado
+                            .Where(w =>
+                                w.IdEmpleado == accion.IdEmpleado
+                                && w.Activo == true
+                            )
+                            .FirstOrDefaultAsync();
+
+
+                        if (empleado != null)
+                        {
+
+                            empleado.Activo = false;
+                            await db.SaveChangesAsync();
+                        }
+
+
+                    }
+
+                    // El empleado queda desactivado temporalmente (NO ES PARTE DE LA INSTITUCIÓN DURANTE UN TIEMPO)
+                    else if (
+                        accion.TipoAccionPersonal.DesactivarEmpleado == true
+                        && accion.TipoAccionPersonal.Definitivo == true
+                        && registrar == false
+                        )
+                    {
+
+                        var empleado = await db.Empleado
+                            .Where(w =>
+                                w.IdEmpleado == accion.IdEmpleado
+                                && w.Activo == true
+                            )
+                            .FirstOrDefaultAsync();
+
+
+                        if (empleado != null)
+                        {
+
+                            empleado.Activo = false;
+                            await db.SaveChangesAsync();
+                        }
+
+                    }
+
+
+                    // Se desactiva el cargo
+                    if (accion.TipoAccionPersonal.DesactivarCargo == true)
+                    {
+
+                        var modalidadPartida = await db.ModalidadPartida
+                            .Where(w =>
+                            w.Nombre == "desactivado"
+                            )
+                            .FirstOrDefaultAsync();
+
+
+                        // Se crea un registro "desactivado" si no existe 
+                        if (modalidadPartida == null)
+                        {
+
+                            var crearModalidadPartida = new ModalidadPartida
+                            {
+
+                                Nombre = "desactivado"
+
+                            };
+
+                            db.ModalidadPartida.Add(crearModalidadPartida);
+                            await db.SaveChangesAsync();
+
+                        }
+
+                        // Obtener el registro de la modalidadPartida
+                        modalidadPartida = await db.ModalidadPartida
+                            .Where(w =>
+                            w.Nombre == "desactivado"
+                            )
+                            .FirstOrDefaultAsync();
+
+
+
+                        var indice = await db.IndiceOcupacional
+                            .Where(w =>
+                                w.IdIndiceOcupacional == movimiento.IndiceOcupacionalModalidadPartidaDesde.IdIndiceOcupacional)
+                            .FirstOrDefaultAsync();
+
+                        // Le damos el estado de modalidad partida "desactivado" al IndiceOcupacional
+                        indice.IdModalidadPartida = modalidadPartida.IdModalidadPartida;
+                        await db.SaveChangesAsync();
+
+                    }
+
+                    
+                }
+
+                accion.Ejecutado = true;
+                await db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
 
         }
 

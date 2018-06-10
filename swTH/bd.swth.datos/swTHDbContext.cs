@@ -119,7 +119,7 @@ namespace bd.swth.datos
         public virtual DbSet<EscalaGrados> EscalaGrados { get; set; }
         public virtual DbSet<EspecificidadExperiencia> EspecificidadExperiencia { get; set; }
         public virtual DbSet<Estado> Estado { get; set; }
-        public virtual DbSet<bd.swth.entidades.Negocio.EstadoTipoAccionPersonal> EstadoTipoAccionPersonal { get; set; }
+        
         public virtual DbSet<bd.swth.entidades.Negocio.EstadoCivil> EstadoCivil { get; set; }
         public virtual DbSet<Estudio> Estudio { get; set; }
         public virtual DbSet<Etnia> Etnia { get; set; }
@@ -256,9 +256,37 @@ namespace bd.swth.datos
         public virtual DbSet<VacacionesEmpleado> VacacionesEmpleado { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.VacacionRelacionLaboral> VacacionRelacionLaboral { get; set; }
         public virtual DbSet<ValidacionInmediatoSuperior> ValidacionInmediatoSuperior { get; set; }
+        public virtual DbSet<AprobacionAccionPersonal> AprobacionAccionPersonal { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<AprobacionAccionPersonal>(entity =>
+            {
+                entity.HasKey(e => e.IdAprobacionAccionPersonal)
+                    .HasName("PK_AprobacionAccionPersonal");
+
+                entity.Property(e => e.FechaAprobacion).HasColumnType("datetime");
+
+                entity.HasOne(d => d.AccionPersonal)
+                    .WithMany(p => p.AprobacionAccionPersonal)
+                    .HasForeignKey(d => d.IdAccionPersonal)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_AprobacionAccionPersonal_AccionPersonal");
+
+                entity.HasOne(d => d.EmpleadoAprobador)
+                    .WithMany(p => p.AprobacionAccionPersonal)
+                    .HasForeignKey(d => d.IdEmpleadoAprobador)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_AprobacionAccionPersonal_Empleado");
+
+                entity.HasOne(d => d.FlujoAprobacion)
+                    .WithMany(p => p.AprobacionAccionPersonal)
+                    .HasForeignKey(d => d.IdFlujoAprobacion)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_AprobacionAccionPersonal_FlujoAprobacion");
+            });
 
             modelBuilder.Entity<FlujoAprobacion>(entity =>
             {
@@ -4352,9 +4380,23 @@ namespace bd.swth.datos
             modelBuilder.Entity<TipoAccionPersonal>(entity =>
             {
                 entity.HasKey(e => e.IdTipoAccionPersonal)
-                    .HasName("PK_TipoAccionPersonal");
+                    .HasName("PK247_1");
 
-                entity.Property(e => e.Descripcion)
+                entity.Property(e => e.Descripcion).HasMaxLength(300);
+
+                entity.Property(e => e.EsResponsableTH).HasColumnName("EsResponsableTH");
+
+                entity.Property(e => e.Matriz).HasMaxLength(100);
+
+                entity.Property(e => e.NDiasMaximo).HasColumnName("NDiasMaximo");
+
+                entity.Property(e => e.NDiasMinimo).HasColumnName("NDiasMinimo");
+
+                entity.Property(e => e.NHorasMaximo).HasColumnName("NHorasMaximo");
+
+                entity.Property(e => e.NHorasMinimo).HasColumnName("NHorasMinimo");
+
+                entity.Property(e => e.Nombre)
                     .IsRequired()
                     .HasMaxLength(100);
             });

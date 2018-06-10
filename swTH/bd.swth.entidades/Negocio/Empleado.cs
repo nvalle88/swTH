@@ -195,6 +195,7 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<DocumentosIngresoEmpleado> DocumentosIngresoEmpleado { get; set; }
         public virtual ICollection<PersonaSustituto> PersonaSustituto { get; set; }
         public virtual ICollection<ActividadesGestionCambio> ActividadesGestionCambio { get; set; }
+        public virtual ICollection<AprobacionAccionPersonal> AprobacionAccionPersonal { get; set; }
 
         /////Empleado gastos personales por año
         public virtual ICollection<GastoPersonal> GastoPersonal { get; set; }

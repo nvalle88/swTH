@@ -43,5 +43,7 @@ namespace bd.swth.entidades.ViewModels
         public int IdIndiceOcupacionalModalidadPartidaPropuesta { get; set; }
 
         public List<IndicesOcupacionalesModalidadPartidaViewModel> ListaIndicesOcupacionalesModalidadPartida { get; set; }
+
+        public string NombreUsuarioAprobador { get; set; }
     }
 }

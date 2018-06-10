@@ -26,7 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-
+        /*
         [HttpPost]
         [Route("ListarTiposAccionesPersonalesPorEstado")]
         public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEstado([FromBody] EstadoTipoAccionPersonal estadoTipoAccionPersonal)
@@ -50,6 +50,8 @@ namespace bd.swth.web.Controllers.API
                 return new List<TipoAccionPersonal>();
             }
         }
+
+    */
 
         // [HttpPost] api/TiposAccionesPersonales
         [HttpPost]
@@ -81,6 +83,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        
         // GET: api/TipoAccionPersonal
         [HttpGet]
         [Route("ListarTiposAccionesPersonales")]
@@ -88,13 +91,14 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.TipoAccionPersonal.Include(x => x.EstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoAccionPersonal.OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
                 return new List<TipoAccionPersonal>();
             }
         }
+          
 
         // GET: api/TipoAccionPersonal/5
         [HttpGet("{id}")]
@@ -131,16 +135,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+               
                 return new Response
                 {
                     IsSuccess = false,
@@ -170,27 +165,56 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "La hora mínimo debe ser menor a la hora máximo y el día mínimo debe ser menor al día máximo"
+                        Message = Mensaje.ErrorPorComparacionFechasTipoAccionPersonal
                     };
                 }
 
 
+
+
                 var TipoAccionPersonalActualizar = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
 
+                var TipoAccionPersonalPorNombre = await db.TipoAccionPersonal
+                    .Where(w => w.Nombre == tipoAccionPersonal.Nombre && w.IdTipoAccionPersonal != tipoAccionPersonal.IdTipoAccionPersonal)
+                    .FirstOrDefaultAsync();
+                ;
+
+                if (TipoAccionPersonalPorNombre != null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ExisteRegistro
+                    };
+                }
+
                 TipoAccionPersonalActualizar.Nombre = tipoAccionPersonal.Nombre;
+
                 TipoAccionPersonalActualizar.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
                 TipoAccionPersonalActualizar.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
                 TipoAccionPersonalActualizar.NHorasMaximo = tipoAccionPersonal.NHorasMaximo;
                 TipoAccionPersonalActualizar.NHorasMinimo = tipoAccionPersonal.NHorasMinimo;
+
                 TipoAccionPersonalActualizar.DiasHabiles = tipoAccionPersonal.DiasHabiles;
                 TipoAccionPersonalActualizar.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
                 TipoAccionPersonalActualizar.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
                 TipoAccionPersonalActualizar.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
+
                 TipoAccionPersonalActualizar.Matriz = tipoAccionPersonal.Matriz;
                 TipoAccionPersonalActualizar.Descripcion = tipoAccionPersonal.Descripcion;
+
                 TipoAccionPersonalActualizar.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
                 TipoAccionPersonalActualizar.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
-                TipoAccionPersonalActualizar.IdEstadoTipoAccionPersonal = tipoAccionPersonal.IdEstadoTipoAccionPersonal;
+
+                TipoAccionPersonalActualizar.MesesMaximo = tipoAccionPersonal.MesesMaximo;
+                TipoAccionPersonalActualizar.YearsMaximo = tipoAccionPersonal.YearsMaximo;
+
+                TipoAccionPersonalActualizar.DesactivarCargo = tipoAccionPersonal.DesactivarCargo;
+                TipoAccionPersonalActualizar.Definitivo = tipoAccionPersonal.Definitivo;
+
+                TipoAccionPersonalActualizar.DesactivarEmpleado = tipoAccionPersonal.DesactivarEmpleado;
+                TipoAccionPersonalActualizar.ModalidadContratacion = tipoAccionPersonal.ModalidadContratacion;
+
 
                 db.TipoAccionPersonal.Update(TipoAccionPersonalActualizar);
                 await db.SaveChangesAsync();
@@ -327,7 +351,7 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(TipoAccionPersonal TipoAccionPersonal)
         {
             var nombre = TipoAccionPersonal.Nombre.ToUpper().TrimEnd().TrimStart();
-            var TipoAccionPersonalrespuesta = db.TipoAccionPersonal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombre && p.IdEstadoTipoAccionPersonal == TipoAccionPersonal.IdEstadoTipoAccionPersonal).FirstOrDefault();
+            var TipoAccionPersonalrespuesta = db.TipoAccionPersonal.Where(p => p.Nombre.ToUpper().TrimStart().TrimEnd() == nombre).FirstOrDefault();
 
             if (TipoAccionPersonalrespuesta != null)
             {

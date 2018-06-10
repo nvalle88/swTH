@@ -3,6 +3,7 @@ namespace bd.swth.entidades.Negocio
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
 
     public partial class AccionPersonal
     {
@@ -19,9 +20,18 @@ namespace bd.swth.entidades.Negocio
         public DateTime? FechaRigeHasta { get; set; }
         public int? NoDias { get; set; }
         public int Estado { get; set; }
+        public bool Bloquear { get; set; }
+        public bool Ejecutado { get; set; }
+
+        [NotMapped]
+        public string NombreUsuario { get; set; }
 
         public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimiento { get; set; }
         public virtual Empleado Empleado { get; set; }
         public virtual TipoAccionPersonal TipoAccionPersonal{ get; set; }
+        public virtual ICollection<AprobacionAccionPersonal> AprobacionAccionPersonal { get; set; }
+
+        
+        
     }
 }
