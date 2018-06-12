@@ -19,5 +19,7 @@ namespace bd.swth.entidades.ViewModels
 
         public decimal Remuneracion { get; set; }
 
+        public int IdIndiceOcupacionalModalidadPartida { get; set; }
+
     }
 }

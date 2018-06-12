@@ -3391,7 +3391,9 @@ namespace bd.swth.web.Controllers.API
             try {
                 var modPar = db.IndiceOcupacionalModalidadPartida
                     .Include(i=>i.IndiceOcupacional).ThenInclude(i=>i.RolPuesto)
-                    .Where(w=>w.IdEmpleado == situacionActualEmpleadoViewModel.IdEmpleado).FirstOrDefault();
+                    .Where(w=>w.IdEmpleado == situacionActualEmpleadoViewModel.IdEmpleado)
+                    .OrderByDescending(o=>o.Fecha)
+                    .FirstOrDefault();
                 
 
                 var modelo = await db.Empleado.Include(i=>i.Dependencia).ThenInclude(i=>i.Sucursal)
@@ -3402,7 +3404,8 @@ namespace bd.swth.web.Controllers.API
                             IdDependencia = Convert.ToInt32(s.IdDependencia),
                             NombreDependencia = s.Dependencia.Nombre,
                             IdSucursal = s.Dependencia.Sucursal.IdSucursal,
-                            NombreSucursal = s.Dependencia.Sucursal.Nombre
+                            NombreSucursal = s.Dependencia.Sucursal.Nombre,
+                            IdIndiceOcupacionalModalidadPartida = modPar.IdIndiceOcupacionalModalidadPartida
                             
                         }
                     )
