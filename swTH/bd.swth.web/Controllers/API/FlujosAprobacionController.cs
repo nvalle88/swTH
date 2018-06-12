@@ -26,7 +26,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        /*
+        
 
         // GET: api/FlujoAprobacion
         [HttpGet]
@@ -35,20 +35,15 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.FlujoAprobacion.Include(x => x.TipoAccionPersonal).Include(x => x.Empleado.Persona).OrderBy(x => x.IdFlujoAprobacion).ToListAsync();
+                return await db.FlujoAprobacion
+                    .Include(i=>i.Sucursal)
+                    .Include(i=>i.TipoAccionPersonal)
+                    .Include(i=>i.ManualPuesto)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<FlujoAprobacion>();
             }
         }
@@ -68,7 +63,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var FlujoAprobacion = await db.FlujoAprobacion.SingleOrDefaultAsync(m => m.IdFlujoAprobacion == id);
+                var FlujoAprobacion = await db.FlujoAprobacion
+                    .Include(i=>i.TipoAccionPersonal)
+                    .SingleOrDefaultAsync(m => m.IdFlujoAprobacion == id);
 
                 if (FlujoAprobacion == null)
                 {
@@ -88,16 +85,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -106,6 +93,8 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        /*
         // PUT: api/FlujoAprobacion/5
         [HttpPut("{id}")]
         public async Task<Response> PutFlujoAprobacion([FromRoute] int id, [FromBody] FlujoAprobacion flujoAprobacion)
@@ -139,7 +128,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
                 var FlujoAprobacion = db.FlujoAprobacion.Find(flujoAprobacion.IdFlujoAprobacion);
-                
+
                 FlujoAprobacion.IdTipoAccionPersonal = flujoAprobacion.IdTipoAccionPersonal;
                 FlujoAprobacion.IdEmpleado = flujoAprobacion.IdEmpleado;
                 db.FlujoAprobacion.Update(FlujoAprobacion);
@@ -154,16 +143,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
 
                 return new Response
                 {
@@ -173,6 +152,12 @@ namespace bd.swth.web.Controllers.API
             }
 
         }
+
+
+        /*
+        
+
+        
 
         // POST: api/FlujoAprobacion
         [HttpPost]
