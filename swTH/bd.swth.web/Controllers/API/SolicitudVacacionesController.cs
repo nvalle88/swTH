@@ -78,7 +78,7 @@ namespace bd.swth.web.Controllers.API
                 // Suma de vacaciones no gozadas
                 foreach (var item in vacaciones)
                 {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas - item.VacacionesGozadas;
                 }
 
                 SolicitudVacaciones.DiasVacaciones = vacacionesAcumuladas;
@@ -155,28 +155,14 @@ namespace bd.swth.web.Controllers.API
                             db.SolicitudVacaciones.Update(SolicitudVacacionesActualizar);
                             await db.SaveChangesAsync();
 
+
+                            // Actualización del registro de vacaciones
+                            var ctrl = new SolicitudPlanificacionVacacionesController(db);
+                            await ctrl.CalcularYRegistrarVacacionesPorEmpleado(SolicitudVacaciones.IdEmpleado);
                             
-                            // 6 = Aprobado en lista constantesVacaciones
-                            if (SolicitudVacaciones.Estado == 6 && estadoAnterior != 6) {
-
-                                var vacacionEmpleado = await db.VacacionesEmpleado
-                                .Where(w =>
-                                    w.IdEmpleado == SolicitudVacaciones.IdEmpleado
-                                    && w.PeriodoFiscal == DateTime.Now.Year
-                                    )
-                                .FirstOrDefaultAsync();
-
-                                var vacacionesAprobadas = (SolicitudVacaciones.FechaHasta - SolicitudVacaciones.FechaDesde).Days;
-
-                                vacacionEmpleado.VacacionesNoGozadas = vacacionEmpleado.VacacionesNoGozadas - vacacionesAprobadas;
-
-                                vacacionEmpleado.VacacionesGozadas = vacacionEmpleado.VacacionesGozadas + vacacionesAprobadas;
-
-                                db.VacacionesEmpleado.Update(vacacionEmpleado);
-                                await db.SaveChangesAsync();
-                            }
-
                             transaction.Commit();
+
+
 
                             return new Response
                             {
@@ -373,7 +359,7 @@ namespace bd.swth.web.Controllers.API
 
                 foreach (var item in vacaciones)
                 {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas - item.VacacionesGozadas;
                 }
 
                 //var WorkingTimeInYears = IOMPEmpleado.Fecha.Month.
@@ -464,7 +450,7 @@ namespace bd.swth.web.Controllers.API
 
                 foreach (var item in vacaciones)
                 {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas - item.VacacionesGozadas;
                 }
 
 
@@ -608,7 +594,7 @@ namespace bd.swth.web.Controllers.API
                 // Suma de vacaciones no gozadas
                 foreach (var item in vacaciones)
                 {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas - item.VacacionesGozadas;
                 }
 
                 // Se añaden las vacaciones acumuladas al modelo

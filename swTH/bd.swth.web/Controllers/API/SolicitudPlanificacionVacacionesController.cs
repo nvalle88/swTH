@@ -498,7 +498,7 @@ namespace bd.swth.web.Controllers.API
                 var vacacionesAcumuladas = 0;
 
                 foreach (var item in vacaciones) {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas-item.VacacionesGozadas;
                 }
 
 
@@ -572,7 +572,7 @@ namespace bd.swth.web.Controllers.API
                 
                 foreach (var item in vacaciones)
                 {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas-item.VacacionesGozadas;
                 }
 
                 //var WorkingTimeInYears = IOMPEmpleado.Fecha.Month.
@@ -904,7 +904,7 @@ namespace bd.swth.web.Controllers.API
                 // Suma de vacaciones no gozadas
                 foreach (var item in vacaciones)
                 {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas - item.VacacionesGozadas;
                 }
 
                 // Se añaden las vacaciones acumuladas al modelo
@@ -1073,7 +1073,7 @@ namespace bd.swth.web.Controllers.API
 
                     foreach (var item in vacaciones)
                     {
-                        vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                        vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas + item.VacacionesGozadas;
                     }
 
 
