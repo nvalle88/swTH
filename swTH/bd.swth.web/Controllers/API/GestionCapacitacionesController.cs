@@ -144,7 +144,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = "Solo se puede crear un plan anual",
                 };
 
             }

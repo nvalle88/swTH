@@ -90,14 +90,30 @@ namespace bd.swth.web.Controllers.API
                 var Plan = await db.PlanCapacitacion.Where(x => x.IdPlanCapacitacion == viewModelEvaluacionDesempeno.IdPlanCapacitacion && x.Estado == ConstantesCapacitacion.EstadoEvaluado).FirstOrDefaultAsync();
                 var evaluacion = await db.EvaluacionEvento.Where(x => x.IdPlanCapacitacion == Plan.IdPlanCapacitacion).FirstOrDefaultAsync();
 
-                var FacilitadoryOrganizador = await db.DetalleEvaluacionEvento.Where(x => x.IdEvaluacionEvento == evaluacion.IdEvaluacionEvento && x.Conocimiento ==null).ToListAsync();
-                var Conocimientos = await db.DetalleEvaluacionEvento.Where(x => x.IdEvaluacionEvento == evaluacion.IdEvaluacionEvento && x.Calificacion ==null).ToListAsync();
+                var Facilitador = await db.DetalleEvaluacionEvento.Where(x => x.IdEvaluacionEvento == evaluacion.IdEvaluacionEvento && x.Conocimiento == null && x.PreguntasEvaluacionEvento.Facilitador == true)
+                    .Select(x => new ViewModelEvaluacionEventoDetalle
+                    {
+                        Pregunta = x.PreguntasEvaluacionEvento.Descripcion,
+                        Calificacion = x.Calificacion
+                    }).ToListAsync();
+                var Organizador = await db.DetalleEvaluacionEvento.Where(x => x.IdEvaluacionEvento == evaluacion.IdEvaluacionEvento && x.Conocimiento == null && x.PreguntasEvaluacionEvento.Organizador == true)
+                    .Select(x => new ViewModelEvaluacionEventoDetalle
+                    {
+                        Pregunta = x.PreguntasEvaluacionEvento.Descripcion,
+                        Calificacion = x.Calificacion
+                    }).ToListAsync();
+                var Conocimientos = await db.DetalleEvaluacionEvento.Where(x => x.IdEvaluacionEvento == evaluacion.IdEvaluacionEvento && x.Calificacion == null && x.PreguntasEvaluacionEvento.Conocimiento != null)
+                    .Select(x => new ViewModelEvaluacionEventoDetalle
+                    {
+                        Pregunta = x.PreguntasEvaluacionEvento.Descripcion,
+                        Calificacion = x.Calificacion
+                    }).ToListAsync();
+
                 if (Plan != null)
                 {
-                    ///var FacilitadoryOrganizador = await db.DetalleEvaluacionEvento.Where(x => x.IdEvaluacionEvento == evaluacion.IdEvaluacionEvento && x.Conocimiento == null).ToListAsync();
-                   // var Conocimientos = await db.DetalleEvaluacionEvento.Where(x => x.IdEvaluacionEvento == evaluacion.IdEvaluacionEvento && x.Calificacion == null).ToListAsync();
-                   
-                    //DatosBasicos.ListaPreguntaEvaluacionConocimiento = Conocimientos;
+                    DatosBasicos.ListaPreguntaEvaluacionFacilitadorDetalle = Facilitador;
+                    DatosBasicos.ListaPreguntaOrganizadorDetalle = Organizador;
+                    DatosBasicos.ListaPreguntaEvaluacionConocimientoDetalle = Conocimientos;
                     DatosBasicos.NombreEvento = Plan.NombreEvento;
                     DatosBasicos.Institucion = Plan.Institucion;
                     DatosBasicos.LugarFecha = Plan.Ubicacion + " del " + Plan.FechaInicio + " al " + Plan.FechaFin;
@@ -125,23 +141,26 @@ namespace bd.swth.web.Controllers.API
 
                     };
                     var EvaluacionInsertarda = await db.EvaluacionEvento.AddAsync(Evaluacion);
-                    
+
 
                     var lista = new List<DetalleEvaluacionEvento>();
 
-                    foreach (var item in viewModelEvaluacionCapacitaciones.ListaPreguntaEvaluacionFacilitador) {
-                        lista.Add(new DetalleEvaluacionEvento{
+                    foreach (var item in viewModelEvaluacionCapacitaciones.ListaPreguntaEvaluacionFacilitador)
+                    {
+                        lista.Add(new DetalleEvaluacionEvento
+                        {
                             IdPreguntasEvaluacionEvento = item.IdPreguntaEvaluacionEvento,
-                            IdEvaluacionEvento= EvaluacionInsertarda.Entity.IdEvaluacionEvento,
+                            IdEvaluacionEvento = EvaluacionInsertarda.Entity.IdEvaluacionEvento,
                             Calificacion = item.Calificacion,
-                            Conocimiento =null,
+                            Conocimiento = null,
 
                         });
                     }
 
                     foreach (var item in viewModelEvaluacionCapacitaciones.ListaPreguntaOrganizador)
                     {
-                        lista.Add(new DetalleEvaluacionEvento{
+                        lista.Add(new DetalleEvaluacionEvento
+                        {
                             IdPreguntasEvaluacionEvento = item.IdPreguntaEvaluacionEvento,
                             IdEvaluacionEvento = EvaluacionInsertarda.Entity.IdEvaluacionEvento,
                             Calificacion = item.Calificacion,
@@ -165,7 +184,7 @@ namespace bd.swth.web.Controllers.API
                     var planCapacitacionActualizar = await db.PlanCapacitacion.Where(x => x.IdPlanCapacitacion == viewModelEvaluacionCapacitaciones.IdPlanCapacitacion).FirstOrDefaultAsync();
                     planCapacitacionActualizar.Estado = ConstantesCapacitacion.EstadoEvaluado;
                     db.PlanCapacitacion.Update(planCapacitacionActualizar);
-                                      
+
                     await db.DetalleEvaluacionEvento.AddRangeAsync(lista);
                     await db.SaveChangesAsync();
                     transaction.Commit();
@@ -186,6 +205,6 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
             }
-        }        
+        }
     }
 }

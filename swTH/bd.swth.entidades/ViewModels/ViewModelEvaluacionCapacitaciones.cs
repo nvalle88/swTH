@@ -23,6 +23,11 @@ namespace bd.swth.entidades.ViewModels
         public List<PreguntaEvaluacionEvento> ListaPreguntaOrganizador { get; set; }
         public List<PreguntaEvaluacionEvento> ListaPreguntaEvaluacionConocimiento { get; set; }
 
+        //CARGAR EL DETALLE
+        public List<ViewModelEvaluacionEventoDetalle> ListaPreguntaEvaluacionFacilitadorDetalle { get; set; }
+        public List<ViewModelEvaluacionEventoDetalle> ListaPreguntaOrganizadorDetalle { get; set; }
+        public List<ViewModelEvaluacionEventoDetalle> ListaPreguntaEvaluacionConocimientoDetalle { get; set; }
+
 
     }
 }

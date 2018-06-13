@@ -14,6 +14,7 @@ namespace bd.swth.entidades.ViewModels
 
         public int IdModalidadPartida { get; set; }
         public string NombreModalidadPartida { get; set; }
-        
+        public string GrupoOcupacional { get; set; }
+
     }
 }
