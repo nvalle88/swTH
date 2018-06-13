@@ -2004,6 +2004,61 @@ namespace bd.swth.web.Controllers.API
         }
 
         [HttpGet]
+        [Route("ListarEmpleadosdeJefeconSolucitudesViaticosMDT")]
+        public async Task<List<EmpleadoSolicitudViewModel>> ListarEmpleadosdeJefeconSolucitudesViaticosMDT()
+        {
+            try
+            {
+                var listaSubordinados = await db.Empleado.Where(x => x.EsJefe == false && x.Activo == true).Include(x => x.Persona).Include(x => x.SolicitudViatico).ToListAsync();
+
+                var listaEmpleado = new List<EmpleadoSolicitudViewModel>();
+                foreach (var item in listaSubordinados)
+                {
+                    var haSolicitado = false;
+                    var aprobado = true;
+                    var idSolicitud = 0;
+
+                    if (item.SolicitudViatico.Count != 0)
+                    {
+                        
+                        
+                        foreach (var item1 in item.SolicitudViatico)
+                        {
+                               idSolicitud=item1.IdSolicitudViatico;
+                        }
+
+                        var empleadoSolicitud = new EmpleadoSolicitudViewModel
+                        {
+                            NombreApellido = item.Persona.Nombres + " " + item.Persona.Apellidos,
+                            Identificacion = item.Persona.Identificacion,
+                            Aprobado = aprobado,
+                            IdEmpleado = item.IdEmpleado,
+                            HaSolicitado = haSolicitado,
+                            IdSolicitud = idSolicitud
+                        };
+
+                        listaEmpleado.Add(empleadoSolicitud);
+                    }
+                }
+                return listaEmpleado;
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+                    ExceptionTrace = ex.Message,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<EmpleadoSolicitudViewModel>();
+            }
+        }
+
+        [HttpGet]
         [Route("ListarEmpleadosTalentoHumanoconSolucitudesViaticos")]
         public async Task<List<EmpleadoSolicitudViewModel>> ListarEmpleadosTalentoHumanoconSolucitudesViaticos()
         {

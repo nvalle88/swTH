@@ -15,6 +15,7 @@ namespace bd.swth.entidades.ViewModels
         public bool Aprobado { get; set; }
         public bool HaSolicitado { get; set; }
         public int IdEmpleado { get; set; }
+        public int IdSolicitud { get; set; }
         public List<SolicitudViatico> ListaSolicitudViatico { get; set; }
     }
 }
