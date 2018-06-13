@@ -373,7 +373,7 @@ namespace bd.swth.web.Controllers.API
                         Nombre = s.IndiceOcupacional.ManualPuesto.Nombre
                     }).DistinctBy(x => x.IdManualPuesto).ToList();
 
-
+                
 
                 return lista;
 

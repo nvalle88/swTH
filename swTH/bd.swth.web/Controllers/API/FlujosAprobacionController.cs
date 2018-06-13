@@ -48,6 +48,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        
         // GET: api/FlujoAprobacion/5
         [HttpGet("{id}")]
         public async Task<Response> GetFlujoAprobacion([FromRoute] int id)
@@ -94,7 +95,7 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        /*
+
         // PUT: api/FlujoAprobacion/5
         [HttpPut("{id}")]
         public async Task<Response> PutFlujoAprobacion([FromRoute] int id, [FromBody] FlujoAprobacion flujoAprobacion)
@@ -110,36 +111,45 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(flujoAprobacion);
-                var FlujoAprobacionActualizar = (FlujoAprobacion)existe.Resultado;
-                if (existe.IsSuccess)
+                var existe = await db.FlujoAprobacion
+                    .Where(w => 
+                        w.IdSucursal == flujoAprobacion.IdSucursal
+                        && w.IdManualPuesto == flujoAprobacion.IdManualPuesto
+                        && w.IdTipoAccionPersonal == flujoAprobacion.IdTipoAccionPersonal
+                ).FirstOrDefaultAsync();
+
+
+                if (existe == null || existe != null && existe.IdFlujoAprobacion == flujoAprobacion.IdFlujoAprobacion)
                 {
-                    //if (FlujoAprobacionActualizar.IdFlujoAprobacion == flujoAprobacion.IdFlujoAprobacion)
-                    //{
-                    //    return new Response
-                    //    {
-                    //        IsSuccess = true,
-                    //    };
-                    //}
+
+                    var modelo = await db.FlujoAprobacion
+                        .Where(w => w.IdFlujoAprobacion == flujoAprobacion.IdFlujoAprobacion)
+                        .FirstOrDefaultAsync();
+
+                    modelo.IdTipoAccionPersonal = flujoAprobacion.IdTipoAccionPersonal;
+                    modelo.IdSucursal = flujoAprobacion.IdSucursal;
+                    modelo.IdManualPuesto = flujoAprobacion.IdManualPuesto;
+
+
+                    db.FlujoAprobacion.Update(modelo);
+                    await db.SaveChangesAsync();
+
                     return new Response
                     {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
                     };
-                }
-                var FlujoAprobacion = db.FlujoAprobacion.Find(flujoAprobacion.IdFlujoAprobacion);
 
-                FlujoAprobacion.IdTipoAccionPersonal = flujoAprobacion.IdTipoAccionPersonal;
-                FlujoAprobacion.IdEmpleado = flujoAprobacion.IdEmpleado;
-                db.FlujoAprobacion.Update(FlujoAprobacion);
-                await db.SaveChangesAsync();
+
+                }
 
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro,
                 };
 
+                
             }
             catch (Exception ex)
             {
@@ -153,12 +163,7 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-
-        /*
         
-
-        
-
         // POST: api/FlujoAprobacion
         [HttpPost]
         [Route("InsertarFlujoAprobacion")]
@@ -171,12 +176,20 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = ""
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var respuesta = Existe(FlujoAprobacion);
-                if (!respuesta.IsSuccess)
+
+                var existe = await db.FlujoAprobacion
+                    .Where(w =>
+                        w.IdTipoAccionPersonal == FlujoAprobacion.IdTipoAccionPersonal
+                        && w.IdSucursal == FlujoAprobacion.IdSucursal
+                        && w.IdManualPuesto == FlujoAprobacion.IdManualPuesto
+                     )
+                     .FirstOrDefaultAsync();
+
+                if (existe == null)
                 {
                     db.FlujoAprobacion.Add(FlujoAprobacion);
                     await db.SaveChangesAsync();
@@ -196,16 +209,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -214,20 +218,14 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        
         // DELETE: api/FlujoAprobacion/5
         [HttpDelete("{id}")]
         public async Task<Response> DeleteFlujoAprobacion([FromRoute] int id)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
 
                 var respuesta = await db.FlujoAprobacion.SingleOrDefaultAsync(m => m.IdFlujoAprobacion == id);
                 if (respuesta == null)
@@ -238,6 +236,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
+
                 db.FlujoAprobacion.Remove(respuesta);
                 await db.SaveChangesAsync();
 
@@ -249,16 +248,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -266,28 +255,7 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+        
 
-        private Response Existe(FlujoAprobacion FlujoAprobacion)
-        {
-            var FlujoAprobacionrespuesta = db.FlujoAprobacion.Where(p =>p.IdTipoAccionPersonal == FlujoAprobacion.IdTipoAccionPersonal&& p.IdEmpleado == FlujoAprobacion.IdEmpleado).FirstOrDefault();
-            if (FlujoAprobacionrespuesta != null)
-            {
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.ExisteRegistro,
-                    Resultado = FlujoAprobacionrespuesta,
-                };
-
-            }
-
-            return new Response
-            {
-                IsSuccess = false,
-                Resultado = FlujoAprobacionrespuesta,
-            };
-        }
-
-    */
     }
 }
