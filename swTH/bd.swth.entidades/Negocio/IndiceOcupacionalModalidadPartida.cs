@@ -3,6 +3,7 @@ namespace bd.swth.entidades.Negocio
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
 
     public partial class IndiceOcupacionalModalidadPartida
     {
@@ -46,6 +47,7 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimientoIdIndiceOcupacionalModalidadPartidaDesde { get; set; }
         public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimientoIdIndiceOcupacionalModalidadPartidaHasta { get; set; }
 
-
+        [NotMapped]
+        public int IdDependecia { get; set; }
     }
 }

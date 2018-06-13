@@ -213,53 +213,56 @@ namespace bd.swth.web.Controllers.API
         [Route("InsertarIndiceOcupacionalModalidadPartida")]
         public async Task<Response> PostIndiceOcupacionalModalidadPartida([FromBody] IndiceOcupacionalModalidadPartida IndiceOcupacionalModalidadPartida)
         {
-            try
+            using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                if (!ModelState.IsValid)
+                try
                 {
+                    if (!ModelState.IsValid)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = ""
+                        };
+                    }
+
+                    var respuesta = Existe(IndiceOcupacionalModalidadPartida);
+                    if (!respuesta.IsSuccess)
+                    {
+                        db.IndiceOcupacionalModalidadPartida.Add(IndiceOcupacionalModalidadPartida);
+                        await db.SaveChangesAsync();
+                        //Agrega la dependencia y el estado del empleado
+                        var empleado = await db.Empleado.Where(x => x.IdEmpleado == IndiceOcupacionalModalidadPartida.IdEmpleado).FirstOrDefaultAsync();
+                        empleado.IdDependencia = IndiceOcupacionalModalidadPartida.IdDependecia;
+                        empleado.Activo = true;
+                        db.Empleado.Update(empleado);
+                        await db.SaveChangesAsync();
+
+                        transaction.Commit();
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio
+                        };
+                    }
+                    
+
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = ""
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
 
-                var respuesta = Existe(IndiceOcupacionalModalidadPartida);
-                if (!respuesta.IsSuccess)
+                catch (Exception ex)
                 {
-                    db.IndiceOcupacionalModalidadPartida.Add(IndiceOcupacionalModalidadPartida);
-                    await db.SaveChangesAsync();
+                    transaction.Rollback();
                     return new Response
                     {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
                     };
                 }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro,
-                };
-
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
             }
         }
 
@@ -351,18 +354,19 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 var lista = await db.IndiceOcupacionalModalidadPartida
-                    .Select(s => new IndicesOcupacionalesModalidadPartidaViewModel {
+                    .Select(s => new IndicesOcupacionalesModalidadPartidaViewModel
+                    {
                         IdIndiceOcupacionalModalidadPartida = s.IdIndiceOcupacionalModalidadPartida,
                         IdIndiceOcupacional = s.IdIndiceOcupacional,
                         IdEmpleado = s.IdEmpleado,
                         IdFondoFinanciamiento = s.IdFondoFinanciamiento,
                         IdTipoNombramiento = s.IdTipoNombramiento,
                         Fecha = s.Fecha,
-                        SalarioReal = (s.SalarioReal != null)? (Decimal) s.SalarioReal : (Decimal) 0,
+                        SalarioReal = (s.SalarioReal != null) ? (Decimal)s.SalarioReal : (Decimal)0,
 
                         IndiceOcupacionalViewModel = db.IndiceOcupacional
-                            .Where(w=>w.IdIndiceOcupacional == s.IdIndiceOcupacional)
-                            .Select(s2 =>new IndiceOcupacionalViewModel
+                            .Where(w => w.IdIndiceOcupacional == s.IdIndiceOcupacional)
+                            .Select(s2 => new IndiceOcupacionalViewModel
                             {
                                 IdIndiceOcupacional = s.IdIndiceOcupacional,
                                 Ambito = s2.Ambito.Nombre,
@@ -380,7 +384,7 @@ namespace bd.swth.web.Controllers.API
                                 Sucursal = s2.Dependencia.Sucursal.Nombre
                             })
                             .FirstOrDefault()
-                        
+
                     })
                     .ToListAsync();
 
