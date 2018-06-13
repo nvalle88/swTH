@@ -1421,31 +1421,7 @@ namespace bd.swth.web.Controllers.API
 
                     }
 
-                    // Se produce una desvinculación
-                    else if (
-                        accion.TipoAccionPersonal.DesactivarEmpleado == true
-                        && accion.TipoAccionPersonal.Definitivo == true
-                        && registrar == false
-                        )
-                    {
-
-                        var empleado = await db.Empleado
-                            .Where(w =>
-                                w.IdEmpleado == accion.IdEmpleado
-                                && w.Activo == true
-                            )
-                            .FirstOrDefaultAsync();
-
-
-                        if (empleado != null)
-                        {
-
-                            empleado.Activo = false;
-                            await db.SaveChangesAsync();
-                        }
-
-
-                    }
+                    
 
                     // El empleado queda desactivado temporalmente (NO ES PARTE DE LA INSTITUCIÓN DURANTE UN TIEMPO)
                     else if (
@@ -1520,8 +1496,35 @@ namespace bd.swth.web.Controllers.API
 
                     }
 
-                    
+
+                } // fin movimiento de personal
+                
+                // Se produce una desvinculación
+                else if (
+                    accion.TipoAccionPersonal.DesactivarEmpleado == true
+                    && accion.TipoAccionPersonal.Definitivo == true
+                    )
+                {
+
+                    var empleado = await db.Empleado
+                        .Where(w =>
+                            w.IdEmpleado == accion.IdEmpleado
+                            && w.Activo == true
+                        )
+                        .FirstOrDefaultAsync();
+
+
+                    if (empleado != null)
+                    {
+
+                        empleado.Activo = false;
+                        await db.SaveChangesAsync();
+                    }
+
+
                 }
+
+
 
                 accion.Ejecutado = true;
                 await db.SaveChangesAsync();

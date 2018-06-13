@@ -29,6 +29,8 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+
+
         /// <summary>
         /// Este método crea automáticamente registros de vacaciones para los empleados por período fiscal
         /// usando el temporizador
@@ -37,7 +39,9 @@ namespace bd.swth.web.Controllers.API
         public async Task CrearRegistroVacacionesEmpleados() {
             try {
 
-                // Obtiene la lista de empleados registrados en el indiceOcupacionalModalidadPartida
+                // índice ocupacional modalidad partida: IOMP
+
+                // Obtiene la lista de empleados registrados en el IOMP
                 // filtrando: los repetidos, por la ultima fecha de registro, y activos
                 var empleados = await db.IndiceOcupacionalModalidadPartida
                     .Include(i=>i.TipoNombramiento).ThenInclude(t=>t.RelacionLaboral)
@@ -48,49 +52,14 @@ namespace bd.swth.web.Controllers.API
                     .Distinct(d => d.IdEmpleado)
                     .ToList();
 
+                
 
-                foreach (var item in empleados) {
 
-                    var registro = await db.VacacionesEmpleado
-                        .Where(w =>
-                            w.PeriodoFiscal == DateTime.Now.Year
-                            && w.IdEmpleado == item.IdEmpleado
-                        )
-                        .FirstOrDefaultAsync();
-                    
-                    var totalDiasVacaciones = await CalcularVacacionesPorPeriodoFiscal(item);
+                //**** Realizar las acciones por cada empleado ****
+                foreach (var item2 in empleados) {
 
-                    
-                    // Si no existe registro para este período fiscal, debe agregar uno nuevo
-                    if (registro == null)
-                    {
-                        var modelo = new VacacionesEmpleado()
-                        {
-                            IdEmpleado = item.IdEmpleado,
-                            PeriodoFiscal = DateTime.Now.Year,
-                            VacacionesGozadas = 0,
-                            VacacionesNoGozadas = totalDiasVacaciones
-                        };
+                    await CalcularYRegistrarVacacionesPorEmpleado(item2.IdEmpleado);
 
-                        db.VacacionesEmpleado.Add(modelo);
-                        await db.SaveChangesAsync();
-                    }
-                    else {
-
-                        var sumaVacacionesRegistro = registro.VacacionesNoGozadas + registro.VacacionesGozadas;
-
-                        if (totalDiasVacaciones > sumaVacacionesRegistro) {
-
-                            registro.VacacionesNoGozadas = (totalDiasVacaciones - sumaVacacionesRegistro) + registro.VacacionesNoGozadas;
-
-                            db.VacacionesEmpleado.Update(registro);
-                            await db.SaveChangesAsync();
-
-                            
-                        }
-                        
-                    }
-                    
                 }// end forEach
                 
 
@@ -99,29 +68,272 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        
 
         /// <summary>
-        /// Obtiene la cantidad de dias de vacaciones de este período fiscal, hasta la fecha actual,
-        /// tomando en cuenta las reglas para vacaciones
+        /// Calcula y [crea o edita(en caso de ya existir registro) en VacacionesEmpleado] las vacaciones del IdEmpleado ingresado
+        /// </summary>
+        /// <param name="idEmpleado"></param>
+        /// <returns></returns>
+        public async Task CalcularYRegistrarVacacionesPorEmpleado(int idEmpleado) {
+
+            // ********* Creación de varibles para usar en los posteriores cálculos ************************
+            //----------------------------------------------------------------------------------------------
+
+            // ** obtiene el registro de vacaciones o null si no existe
+            var registroVacaciones = await db.VacacionesEmpleado
+                .Where(w =>
+                    w.PeriodoFiscal == DateTime.Now.Year
+                    && w.IdEmpleado == idEmpleado
+                )
+                .FirstOrDefaultAsync();
+
+
+            // ** Variable para guardar el total de vacaciones
+            int totalDiasVacacionesEstePeriodoFiscal = 0;
+
+
+            // ** Historial de registros en IOMP por empleado
+            var listaRegistrosIOMP = await db.IndiceOcupacionalModalidadPartida
+                .Include(i => i.TipoNombramiento)
+                .Where(w => w.IdEmpleado == idEmpleado)
+                .OrderBy(o => o.Fecha)
+                .ToListAsync();
+
+            // obtener registros IOMP de este año
+            var listaRegistrosIOMPPeriodoFiscalActual = listaRegistrosIOMP
+                .Where(w => w.Fecha.Year == DateTime.Now.Year)
+                .ToList();
+
+
+            // ** Lista de acciones generadas para el empleado
+            var listaAccionesEmpleado = await db.AccionPersonal
+                .Include(i => i.TipoAccionPersonal)
+                .Where(w =>
+                    w.IdEmpleado == idEmpleado
+                )
+                .ToListAsync();
+
+
+
+            // ** Obtiene una lista de desvinculaciones del empleado
+            var listaDesvinculacionesEmpleado = listaAccionesEmpleado
+                .Where(w =>
+                    w.TipoAccionPersonal.Definitivo == true
+                    && w.TipoAccionPersonal.DesactivarEmpleado == true
+                )
+                .OrderByDescending(o => o.FechaRige);
+
+
+
+            // ** Obtiene la lista de solicitudes de vacaciones aprobadas para el empleado este Período fiscal
+            var listaVacacionesAprobadasEmpleado = await db.SolicitudVacaciones
+                .Where(w =>
+                    w.IdEmpleado == idEmpleado
+                    && w.Estado == 6
+                    && w.FechaDesde.Year == DateTime.Now.Year
+                ).ToListAsync();
+
+            //------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+            // *********** Obtener la última fecha de ingreso del empleado a la institución ******************
+            // Variable: FechaInicio
+            //------------------------------------------------------------------------------------------------
+            DateTime FechaInicioFunciones = listaRegistrosIOMP
+                .OrderBy(o => o.Fecha)
+                .FirstOrDefault()
+                .Fecha;
+
+            if (listaDesvinculacionesEmpleado.Count() > 0)
+            {
+                var UltimaDesvinculacion = listaDesvinculacionesEmpleado
+                    .OrderByDescending(o => o.FechaRige)
+                    .FirstOrDefault()
+                    .Fecha;
+
+                FechaInicioFunciones = listaRegistrosIOMP
+                    .Where(w =>
+                        w.Fecha > UltimaDesvinculacion
+                     )
+                     .OrderBy(o => o.Fecha)
+                     .FirstOrDefault().Fecha;
+            }
+
+            //-----------------------------------------------------------------------------------------------
+
+
+
+
+            // **************** Cálculo de los días totales de vacaciones por Período fiscal *****************
+            //Variable: totalDiasVacacionesEstePeriodoFiscal
+            //------------------------------------------------------------------------------------------------
+            //// Si no hay movimientos este año se debe calcular normalmente las vacaciones dependiendo de la 
+            //// relación laboral actual del empleado
+            if (listaRegistrosIOMPPeriodoFiscalActual.Count() == 0)
+            {
+
+                var IOMPActual = listaRegistrosIOMP
+                    .OrderByDescending(o => o.Fecha)
+                    .FirstOrDefault();
+
+                // Obtiene el total de vacaciones desde la fecha de ingreso hasta la fecha actual según
+                // el tipo de relacion laboral actual
+                totalDiasVacacionesEstePeriodoFiscal = (int)await CalcularVacacionesPorFechas(
+                    IOMPActual.TipoNombramiento.IdRelacionLaboral,
+                    FechaInicioFunciones,
+                    DateTime.Now
+                 );
+            }
+            else
+            {
+
+                Double diasPorPeriodo = 0;
+                var Fecha1 = FechaInicioFunciones;
+                var Fecha2 = DateTime.Now;
+
+                // Obtención de los días de vacaciones de este período, hasta la fecha actual,
+                // tomando en cuenta los diferentes registros de IOMP
+                for (int i = 0; i < listaRegistrosIOMPPeriodoFiscalActual.Count(); i++)
+                {
+
+
+
+                    if ((i + 1) < listaRegistrosIOMPPeriodoFiscalActual.Count())
+                    {
+                        Fecha2 = listaRegistrosIOMPPeriodoFiscalActual.ElementAt(i + 1).Fecha;
+                        Fecha2 = Fecha2.AddDays(-1);
+
+                    }
+                    else
+                    {
+                        Fecha2 = DateTime.Now;
+                    }
+
+                    diasPorPeriodo = diasPorPeriodo + await CalcularVacacionesPorFechas(
+                            listaRegistrosIOMPPeriodoFiscalActual.ElementAt(i).TipoNombramiento.IdRelacionLaboral,
+                            Fecha1,
+                            Fecha2
+                        );
+
+                    if ((i + 1) < listaRegistrosIOMPPeriodoFiscalActual.Count())
+                    {
+                        Fecha1 = listaRegistrosIOMPPeriodoFiscalActual.ElementAt(i + 1).Fecha;
+
+                    }
+                }
+
+                totalDiasVacacionesEstePeriodoFiscal = (int)diasPorPeriodo;
+
+            }
+
+            //-------------------------------------------------------------------------------------------------
+
+
+
+
+            // **** Restar los días de vacaciones solicitados aprobados y los movimientos imputables de vacaciones ******
+            // Variable: totalDiasVacacionesEstePeriodoFiscal
+            // NOTA: Si algún proceso resta o aumenta vacaciones se debe agregar en esta sección
+            //------------------------------------------------------------------------------------------------------------
+
+
+
+            var diasVacacionesAprobadasPeriodoFiscalActual = 0;
+            var diasImputablesVacaciones = 0;
+            var sumatoriaDiasVacacionesUsados = 0;
+
+            // Obtención de los días de vacaciones aprobados
+            // Variable: diasVacacionesAprobadasPeriodoFiscalActual
+            foreach (var itemSolicitudes in listaVacacionesAprobadasEmpleado)
+            {
+                diasVacacionesAprobadasPeriodoFiscalActual =
+                    diasVacacionesAprobadasPeriodoFiscalActual
+                    + (itemSolicitudes.FechaHasta - itemSolicitudes.FechaDesde).Days;
+            }
+            //-----------------------------------------------------
+
+
+
+            // ** Obtención de los días imputables a vacaciones
+            var listaImputableVacaciones = listaAccionesEmpleado
+                .Where(w => w.TipoAccionPersonal.ImputableVacaciones == true)
+                .ToList();
+
+            foreach (var itemImputablesVacaciones in listaImputableVacaciones)
+            {
+                diasImputablesVacaciones = diasImputablesVacaciones + (int)itemImputablesVacaciones.NoDias;
+
+            }
+            //----------------------------------------------------
+
+
+
+            // ** Sumatoria de días de vacaciones usados
+            sumatoriaDiasVacacionesUsados =
+                diasVacacionesAprobadasPeriodoFiscalActual
+                + diasImputablesVacaciones
+            ;
+
+
+
+            // ** Si no existe registro para este período fiscal, debe agregar uno nuevo
+            if (registroVacaciones == null)
+            {
+
+                var modelo = new VacacionesEmpleado()
+                {
+                    IdEmpleado = idEmpleado,
+                    PeriodoFiscal = DateTime.Now.Year,
+                    VacacionesGozadas = sumatoriaDiasVacacionesUsados,
+                    VacacionesNoGozadas = totalDiasVacacionesEstePeriodoFiscal
+                };
+
+                db.VacacionesEmpleado.Add(modelo);
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+
+                // ** Si existe el registro, se actualiza
+
+                registroVacaciones.VacacionesNoGozadas = totalDiasVacacionesEstePeriodoFiscal;
+                registroVacaciones.VacacionesGozadas = sumatoriaDiasVacacionesUsados;
+
+                db.VacacionesEmpleado.Update(registroVacaciones);
+                await db.SaveChangesAsync();
+            }
+
+        }
+
+
+        
+        /// <summary>
+        /// Obtiene la cantidad de dias de vacaciones desde una fecha de este período fiscal, hasta la fecha fin,
+        /// de este mismo período fiscal
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        private async Task<int> CalcularVacacionesPorPeriodoFiscal(IndiceOcupacionalModalidadPartida item) {
-            
+        private async Task<Double> CalcularVacacionesPorFechas(int IdRelacionLaboral,DateTime FechaInicio,DateTime FechaFin)
+        {
+
+
             // Obtención del tiempo trabajado en años
-            var WorkingTimeInYears = DateTime.Now.Year - item.Fecha.Year;
+            var WorkingTimeInYears = FechaFin.Year - FechaInicio.Year;
 
             // Obtención de las reglas por tipo de contrato
             var reglas = await db.VacacionRelacionLaboral
-                .Where(w => w.IdRelacionLaboral == item.TipoNombramiento.RelacionLaboral.IdRelacionLaboral)
+                .Where(w => w.IdRelacionLaboral == IdRelacionLaboral)
                 .FirstOrDefaultAsync();
 
             // Variable de almacenamiento del total de vacaciones
-            var totalDiasVacaciones = 0;
-            
+            Double totalDiasVacaciones = 0;
 
-            Double diasVacacionesPorMes = (Double) 0;
+
+            Double diasVacacionesPorMes = (Double)0;
 
             // Si hay reglas para calcular las vacaciones empieza el proceso, caso contrario el resultado será 0
             if (reglas != null)
@@ -143,22 +355,22 @@ namespace bd.swth.web.Controllers.API
                     diasVacacionesPorMes = (Double)maxDiasEmpleado / (Double)12;
 
                     Double diasVacacionesHastaHoy = 0;
-                    int mesActual = 1;//DateTime.Now.Month;
+                    int mesActual = FechaFin.Month;//DateTime.Now.Month;
 
                     // Obtención de los dias del mes actual
-                    var totalDiasMes = DateTime.DaysInMonth(DateTime.Now.Year, mesActual);
+                    var totalDiasMes = DateTime.DaysInMonth(FechaFin.Year, FechaFin.Month);
 
                     if (mesActual == 1)
                     {
-                        diasVacacionesHastaHoy = ((double)DateTime.Now.Day * (Double)diasVacacionesPorMes) / (Double)totalDiasMes;
-                        totalDiasVacaciones = (int)diasVacacionesHastaHoy;
+                        diasVacacionesHastaHoy = ((double)FechaFin.Day * (Double)diasVacacionesPorMes) / (Double)totalDiasMes;
+                        totalDiasVacaciones = diasVacacionesHastaHoy;
                     }
                     else
                     {
-                        diasVacacionesHastaHoy = (DateTime.Now.Day * diasVacacionesPorMes) / totalDiasMes;
+                        diasVacacionesHastaHoy = (FechaFin.Day * diasVacacionesPorMes) / totalDiasMes;
                         diasVacacionesHastaHoy = diasVacacionesHastaHoy + ((mesActual - 1) * diasVacacionesPorMes);
 
-                        totalDiasVacaciones = (int)diasVacacionesHastaHoy;
+                        totalDiasVacaciones = diasVacacionesHastaHoy;
                     }
 
 
@@ -167,13 +379,13 @@ namespace bd.swth.web.Controllers.API
                 {
 
                     diasVacacionesPorMes = (Double)reglas.MinAcumulacionDias / (Double)12;
-                    var mesActual = DateTime.Now.Month;
+                    var mesActual = FechaFin.Month;
 
                     // Obtención del tiempo trabajado en Meses, +1 porque cuenta el més de ingreso
-                    var workingTimeInMonths = mesActual - item.Fecha.Month + 1;
+                    var workingTimeInMonths = mesActual - FechaInicio.Month + 1;
 
                     // Obtención de los dias que tiene el mes de ingreso
-                    var totalDiasMesIngreso = DateTime.DaysInMonth(item.Fecha.Year, item.Fecha.Month);
+                    var totalDiasMesIngreso = DateTime.DaysInMonth(FechaInicio.Year, FechaInicio.Month);
 
                     // Obtención del tiempo trabajado en días
                     var workingTimeInDays = 0;
@@ -183,12 +395,12 @@ namespace bd.swth.web.Controllers.API
                     if (workingTimeInMonths > 1)
                     {
                         // +1 porque cuenta el día de ingreso como día trabajado
-                        workingTimeInDays = totalDiasMesIngreso - (item.Fecha.Day) + 1;
+                        workingTimeInDays = totalDiasMesIngreso - (FechaInicio.Day) + 1;
                     }
                     else
                     {
                         // +1 porque cuenta el día de ingreso como día trabajado
-                        workingTimeInDays = DateTime.Now.Day - item.Fecha.Day + 1;
+                        workingTimeInDays = FechaFin.Day - FechaInicio.Day + 1;
 
                         // Validación si hay números negativos por errores de fecha:
                         //Ejemplo: alguien ingresa una fecha de ingreso mayor a la fecha actual
@@ -217,42 +429,48 @@ namespace bd.swth.web.Controllers.API
                     var diasVacacionesAcumulados = ((Double)diasVacacionesMesIngreso + (Double)(workingTimeInMonths * diasVacacionesPorMes));
 
                     // El total de días de vacaciones es igual a la parte entera del acumulado total
-                    totalDiasVacaciones = (int)diasVacacionesAcumulados;
+                    totalDiasVacaciones = diasVacacionesAcumulados;
 
 
                     return totalDiasVacaciones;
 
                 }
-                else {
+                else
+                {
 
                     diasVacacionesPorMes = (Double)reglas.MinAcumulacionDias / (Double)12;
 
                     Double diasVacacionesHastaHoy = 0;
-                    int mesActual = DateTime.Now.Month;
+                    int mesActual = FechaFin.Month;
 
                     // Obtención de los dias del mes actual
-                    var totalDiasMes = DateTime.DaysInMonth(DateTime.Now.Year, mesActual);
+                    var totalDiasMes = DateTime.DaysInMonth(FechaFin.Year, mesActual);
 
                     if (mesActual == 1)
                     {
-                        diasVacacionesHastaHoy = ((double)DateTime.Now.Day * (Double)diasVacacionesPorMes) / (Double)totalDiasMes;
-                        totalDiasVacaciones = (int)diasVacacionesHastaHoy;
+                        diasVacacionesHastaHoy = ((double)FechaFin.Day * (Double)diasVacacionesPorMes) / (Double)totalDiasMes;
+                        totalDiasVacaciones = diasVacacionesHastaHoy;
                     }
                     else
                     {
-                        diasVacacionesHastaHoy = (DateTime.Now.Day * diasVacacionesPorMes) / totalDiasMes;
+                        diasVacacionesHastaHoy = (FechaFin.Day * diasVacacionesPorMes) / totalDiasMes;
                         diasVacacionesHastaHoy = diasVacacionesHastaHoy + ((mesActual - 1) * diasVacacionesPorMes);
 
-                        totalDiasVacaciones = (int)diasVacacionesHastaHoy;
+                        totalDiasVacaciones = diasVacacionesHastaHoy;
                     }
 
                 }
 
             } // end if
-            
+
 
             return totalDiasVacaciones;
         }
+
+
+
+
+
 
 
         /// <summary>
@@ -280,7 +498,7 @@ namespace bd.swth.web.Controllers.API
                 var vacacionesAcumuladas = 0;
 
                 foreach (var item in vacaciones) {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas-item.VacacionesGozadas;
                 }
 
 
@@ -354,7 +572,7 @@ namespace bd.swth.web.Controllers.API
                 
                 foreach (var item in vacaciones)
                 {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas-item.VacacionesGozadas;
                 }
 
                 //var WorkingTimeInYears = IOMPEmpleado.Fecha.Month.
@@ -686,7 +904,7 @@ namespace bd.swth.web.Controllers.API
                 // Suma de vacaciones no gozadas
                 foreach (var item in vacaciones)
                 {
-                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                    vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas - item.VacacionesGozadas;
                 }
 
                 // Se añaden las vacaciones acumuladas al modelo
@@ -855,7 +1073,7 @@ namespace bd.swth.web.Controllers.API
 
                     foreach (var item in vacaciones)
                     {
-                        vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas;
+                        vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas + item.VacacionesGozadas;
                     }
 
 

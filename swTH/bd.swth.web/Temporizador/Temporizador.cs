@@ -56,8 +56,8 @@ namespace bd.swth.web.Temporizador
             {
                 var horaActual = DateTime.Now.Hour;
 
-                var horaControlDiarioMin = 0;
-                var horaControlDiarioMax = 3;
+                var horaControlDiarioMin = 0;//0
+                var horaControlDiarioMax = 3;//3
 
                 if (horaActual>horaControlDiarioMin && horaActual<horaControlDiarioMax) {
 

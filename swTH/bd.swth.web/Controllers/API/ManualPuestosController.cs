@@ -13,6 +13,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using MoreLinq;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -347,6 +348,34 @@ namespace bd.swth.web.Controllers.API
 
 
                 return listaRoles;
+
+            }
+            catch (Exception ex)
+            {
+                return new List<ManualPuesto>();
+            }
+        }
+
+
+        // POST: api/ManualPuestos
+        [HttpPost]
+        [Route("ListarManualPuestoPorSucursal")]
+        public async Task<List<ManualPuesto>> ListarManualPuestoPorSucursal([FromBody] IdFiltrosViewModel Filtro)
+        {
+            try
+            {
+
+                var lista = db.IndiceOcupacionalModalidadPartida
+                    .Where(w => w.IndiceOcupacional.Dependencia.IdSucursal == Filtro.IdSucursal)
+                    .Select(s => new ManualPuesto
+                    {
+                        IdManualPuesto = (int)s.IndiceOcupacional.IdManualPuesto,
+                        Nombre = s.IndiceOcupacional.ManualPuesto.Nombre
+                    }).DistinctBy(x => x.IdManualPuesto).ToList();
+
+                
+
+                return lista;
 
             }
             catch (Exception ex)
