@@ -57,33 +57,13 @@ namespace bd.swth.web.Controllers.API
         [Route("ListarSolicitudesViaticosPorEmpleado")]
         public async Task<List<SolicitudViatico>> ListarSolicitudesViaticosPorEmpleado([FromBody]Empleado empleado)
         {
-            //Persona persona = new Persona();
             try
             {
                 var SolicitudViaticos = new List<SolicitudViatico>();
-                //var SolicitudViaticos1 = new List<SolicitudViatico>();
-                //var emple = await db.Empleado.Where(x => x.IdEmpleado == empleado.IdEmpleado && x.EsJefe == true && x.Activo == true).FirstOrDefaultAsync();
-                //if (emple != null)
-                //{
-
-                //    var emplea = await db.Empleado.Where(x => x.IdDependencia == emple.IdDependencia && x.Activo == true).ToListAsync();
-                //    foreach (var item in emplea)
-                //    {
-                //        SolicitudViaticos1 = await db.SolicitudViatico
-                //                                       .Where(e => e.IdEmpleado == item.IdEmpleado).ToListAsync();
-                //        if (SolicitudViaticos1.Count != 0) {
-
-                //            SolicitudViaticos.AddRange(SolicitudViaticos1);
-                //        }
-
-                //    }
-                //}
-                //else
-                //{
+                
                 SolicitudViaticos = await db.SolicitudViatico
                                     .Where(e => e.IdEmpleado == empleado.IdEmpleado).ToListAsync();
-                //var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado };
-                //}
+                
                 return SolicitudViaticos;
 
 
