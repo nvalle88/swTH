@@ -1505,7 +1505,7 @@ namespace bd.swth.web.Controllers.API
                     && accion.TipoAccionPersonal.Definitivo == true
                     )
                 {
-
+                    // Desactivar empleado y Quitar la dependencia del empleado
                     var empleado = await db.Empleado
                         .Where(w =>
                             w.IdEmpleado == accion.IdEmpleado
@@ -1518,9 +1518,11 @@ namespace bd.swth.web.Controllers.API
                     {
 
                         empleado.Activo = false;
+                        empleado.IdDependencia = null;
                         await db.SaveChangesAsync();
                     }
 
+                    
 
                 }
 

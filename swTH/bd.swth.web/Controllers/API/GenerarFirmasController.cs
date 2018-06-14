@@ -13,6 +13,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.ViewModels;
 using bd.swth.entidades.Constantes;
+using MoreLinq;
 
 namespace bd.swth.web.Controllers.API
 {
