@@ -12,6 +12,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -321,5 +322,28 @@ namespace bd.swth.web.Controllers.API
                 Resultado = sucursalrespuesta,
             };
         }
+
+
+        // GET: api/Sucursal
+        [HttpPost]
+        [Route("ObtenerSucursalPorEmpleado")]
+        public async Task<Sucursal> ObtenerSucursalPorEmpleado([FromBody] IdFiltrosViewModel filtro)
+        {
+            try
+            {
+                var modelo = await db.Empleado
+                    .Where(w=>w.NombreUsuario == filtro.NombreUsuario)
+                    .Select(s=>s.Dependencia.Sucursal)
+                    .FirstOrDefaultAsync();
+
+                return modelo;
+            }
+            catch (Exception ex)
+            {
+
+                return new Sucursal();
+            }
+        }
+
     }
 }
