@@ -460,14 +460,10 @@ namespace bd.swth.web.Controllers.API
                         NombreRolPuesto = db.RolPuesto.Where(z => z.IdRolPuesto == x.FirstOrDefault().IdRolPuesto).FirstOrDefault().Nombre,
 
                         IdModalidadPartida = Convert.ToInt32(x.FirstOrDefault().IdModalidadPartida),
-                        NombreModalidadPartida = db.ModalidadPartida.Where(a => a.IdModalidadPartida == x.FirstOrDefault().IdModalidadPartida).FirstOrDefault().Nombre               
-                        
+                        NombreModalidadPartida = db.ModalidadPartida.Where(a => a.IdModalidadPartida == x.FirstOrDefault().IdModalidadPartida).FirstOrDefault().Nombre,
+                        GrupoOcupacional = db.EscalaGrados.Where(Z=>Z.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().GrupoOcupacional.TipoEscala                        
                         }
-                    )
-                    
-                    
-                    .ToListAsync();
-                
+                    ).ToListAsync();                
 
                 return lista;
 

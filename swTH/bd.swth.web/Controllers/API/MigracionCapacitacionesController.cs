@@ -28,7 +28,7 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("VerificarExcel")]
-        public async Task<List<PlanCapacitacion>> ExisteConceptoPorCodigo([FromBody] List<PlanCapacitacion> lista)
+        public async Task<List<PlanCapacitacion>> VerificarExcel([FromBody] List<PlanCapacitacion> lista)
         {
             try
             {
@@ -59,8 +59,6 @@ namespace bd.swth.web.Controllers.API
                     }
 
                 }
-
-
                 return lista;
 
             }

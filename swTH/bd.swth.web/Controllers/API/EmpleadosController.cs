@@ -1362,7 +1362,7 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 var Empleado = await db.Empleado
-                                   .Where(e => e.IdEmpleado == empleado.IdEmpleado)
+                                   .Where(e => e.IdEmpleado == empleado.IdEmpleado && e.IdDependencia !=null)
                                    .Select(x => new FichaEmpleadoViewModel
                                    {
 
@@ -1404,8 +1404,8 @@ namespace bd.swth.web.Controllers.API
                                        ExtencionTelefonica = x.Extension,
                                        FechaIngresoSectorPublico = x.FechaIngresoSectorPublico,
                                        FondosReservas = x.FondosReservas,
-                                       IdBrigadaSSORol = x.IdBrigadaSSORol,
-                                       IdBrigadaSSO = x.BrigadaSSORol.BrigadaSSO.IdBrigadaSSO,
+                                       IdBrigadaSSORol = x.IdBrigadaSSORol == null ? 0 : x.IdBrigadaSSORol,
+                                       IdBrigadaSSO = x.BrigadaSSORol.BrigadaSSO.IdBrigadaSSO == null ? 0 : x.BrigadaSSORol.BrigadaSSO.IdBrigadaSSO,
                                        IdPersona = x.IdPersona,
                                        IngresosOtraActividad = x.IngresosOtraActividad,
                                        MesesImposiciones = x.MesesImposiciones,
@@ -1415,8 +1415,6 @@ namespace bd.swth.web.Controllers.API
                                        Telefono = x.Telefono,
                                        TipoRelacion = x.TipoRelacion,
                                        TrabajoSuperintendenciaBanco = x.TrabajoSuperintendenciaBanco,
-
-
                                    }
                                    ).FirstOrDefaultAsync();
 
@@ -1738,106 +1736,7 @@ namespace bd.swth.web.Controllers.API
                 }
 
                 return new List<EmpleadoSolicitudViewModel>();
-                //var ListadoEmpleados = await (from p in db.Persona
-                //                              join e in db.Empleado
-                //                             on p.IdPersona equals e.IdPersona
-                //                              join d in db.Dependencia
-                //                              on e.IdDependencia equals d.IdDependencia
-                //                              where e.IdDependencia == EmpleadoJefe.IdDependencia && e.EsJefe == false 
-                //                             //group s by s.AdstDescripcion into pg
-                //                             select new Persona
-                //                             {
-                //                                 Nombres = p.Nombres,
-                //                                 Apellidos = p.Apellidos,
-                //                                 Identificacion = p.Identificacion,
-                //                                 Empleado=p.Empleado,
-                //                             }).ToListAsync();
-
-                //    var listaSalida = new List<Persona>();
-                //    foreach (var item3 in ListadoEmpleados)
-                //    {
-                //        listaSalida.Add(new Persona
-                //        {
-                //            Nombres = item3.Nombres,
-                //            Apellidos = item3.Apellidos,
-                //            Identificacion = item3.Identificacion
-                //        });
-                //    }
-
-                // var lista = new List<EmpleadoSolicitudViewModel>();
-
-
-                //foreach (var item in listaSalida)
-                //{
-                //    var a = new EmpleadoSolicitudViewModel { Apellidos = item.Apellidos, Nombres = item.Nombres, Identificacion = item.Identificacion, Empleado = item.Empleado,Aprobado=true };
-                //    //var solicitudes =await db.SolicitudPlanificacionVacaciones.Where(x => x.IdEmpleado == item.Empleado.FirstOrDefault().IdEmpleado).ToListAsync();
-                //    var solicitudes = new List<SolicitudPlanificacionVacaciones>();
-                //    solicitudes.Add( (from s in db.SolicitudPlanificacionVacaciones
-                //                           join e in db.Empleado
-                //                          on s.IdEmpleado equals e.IdEmpleado
-                //                           join p in db.Persona
-                //                          on e.IdPersona equals p.IdPersona
-                //                           where p.IdPersona == item.IdPersona
-                //                           //group s by s.AdstDescripcion into pg
-                //                           select new SolicitudPlanificacionVacaciones
-                //                           {
-                //                               IdSolicitudPlanificacionVacaciones = s.IdSolicitudPlanificacionVacaciones,
-                //                               IdEmpleado = s.IdEmpleado,
-                //                               FechaDesde = s.FechaDesde,
-                //                               FechaHasta = s.FechaDesde,
-                //                               Aprobado = s.Aprobado,
-                //                               Observaciones = s.Observaciones
-                //                           }));
-
-                //    foreach (var item1 in solicitudes)
-                //    {
-                //        if (item1.Aprobado==false)
-                //        {
-                //            a.Aprobado = false; 
-
-                //        }
-                //    }
-
-
-                //    lista.Add(a);
-
-                //}
-
-                //var listaSalida = new List<Persona>();
-                //foreach (var item in ListadoEmpleados)
-                //{
-                //    listaSalida.Add(new Persona
-                //    {
-                //        Nombres = item.Nombres,
-                //        Apellidos = item.Apellidos,
-                //        Identificacion = item.Identificacion
-                //    });
-                // var ListadoSolicitudesVacacionesEmpleados = new List<SolicitudPlanificacionVacaciones>();
-                // ListadoSolicitudesVacacionesEmpleados.Add( await (from s in db.SolicitudPlanificacionVacaciones
-                //                                                           join e in db.Empleado
-                //                                                          on s.IdEmpleado equals e.IdEmpleado
-                //                                                           join p in db.Persona
-                //                                                          on e.IdPersona equals p.IdPersona
-                //                                                           where p.IdPersona == item.IdPersona
-                //                                                           //group s by s.AdstDescripcion into pg
-                //                                                           select new <List<SolicitudPlanificacionVacaciones>>
-                //                                                           {
-                //                                                               IdSolicitudPlanificacionVacaciones = s.IdSolicitudPlanificacionVacaciones,
-                //                                                               IdEmpleado = s.IdEmpleado,
-                //                                                               FechaDesde = s.FechaDesde,
-                //                                                               FechaHasta = s.FechaDesde,
-                //                                                               Aprobado = s.Aprobado,
-                //                                                               Observaciones = s.Observaciones
-                //                                                           }).ToListAsync();
-                //    }   
-
-
-
-
-                //    return listaSalida;
-                //}
-
-                //return null;
+              
             }
             catch (Exception ex)
             {
