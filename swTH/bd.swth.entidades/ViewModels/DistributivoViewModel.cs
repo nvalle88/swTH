@@ -12,6 +12,9 @@ namespace bd.swth.entidades.ViewModels
         public int IdRolPuesto { get; set; }
         public string NombreRolPuesto { get; set; }
 
+        public int IdManualPuesto { get; set; }
+        public string NombreManualPuesto { get; set; }
+
         public int IdModalidadPartida { get; set; }
         public string NombreModalidadPartida { get; set; }
         public string GrupoOcupacional { get; set; }
@@ -21,5 +24,7 @@ namespace bd.swth.entidades.ViewModels
         public int Grado { get; set; }
 
         public int CantidadEmpleados { get; set; }
+
+        public string PartidaIndividual { get; set; }
     }
 }

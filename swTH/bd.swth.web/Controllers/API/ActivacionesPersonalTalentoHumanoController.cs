@@ -449,28 +449,70 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                var escala = await db.EscalaGrados.ToListAsync();
+
                 var modalidadPartida = await db.ModalidadPartida.ToListAsync();
-                var rolPuesto = await db.RolPuesto.ToListAsync();
-                var dependencia = await db.Dependencia.ToListAsync();
-                var iomp = await db.IndiceOcupacionalModalidadPartida.ToListAsync();
 
+                var iomp = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i => i.IndiceOcupacional)
+                    .ToListAsync();
 
-                lista =await  db.IndiceOcupacionalModalidadPartida
+                lista = await db.IndiceOcupacional
+                    .Include(i=>i.ModalidadPartida)
                     .Select(s => new DistributivoViewModel
                     {
-                        /*
-                        IdDependencia =  (int) s.IndiceOcupacional.IdDependencia,
-                        NombreDependencia = s.IndiceOcupacional.
+                        
+                        IdDependencia =  (int)s.IdDependencia,
+                        NombreDependencia = s.Dependencia.Nombre ,
+                        
+                        IdRolPuesto = (int) s.IdRolPuesto,
+                        NombreRolPuesto = s.RolPuesto.Nombre,
+                        
+                        IdModalidadPartida =  (s.IdModalidadPartida == null)?0:(int)s.IdModalidadPartida,
+                        NombreModalidadPartida = (s.IdModalidadPartida == null) ? "" : s.ModalidadPartida.Nombre,
+                        
+                        GrupoOcupacional = s.EscalaGrados.GrupoOcupacional.TipoEscala,
+                        
+                        RMU = (iomp
+                                .Where(w=>
+                                    w.IdIndiceOcupacional == s.IdIndiceOcupacional
+                                )
+                                .OrderByDescending(o=>o.Fecha)
+                                .FirstOrDefault() == null
+                            )?s.EscalaGrados.Remuneracion: iomp
+                                .Where(w =>
+                                    w.IdIndiceOcupacional == s.IdIndiceOcupacional
+                                )
+                                .OrderByDescending(o => o.Fecha)
+                                .FirstOrDefault().SalarioReal
+                        ,
+                        
+                        Grado = (int) s.EscalaGrados.Grado,
+                        
+                        CantidadEmpleados = iomp.Where(w=>
+                            /*
+                                w.IndiceOcupacional.IdRolPuesto == s.IdRolPuesto 
+                                && w.IndiceOcupacional.IdDependencia == s.IdDependencia
+                           */
+                                w.IdIndiceOcupacional == s.IdIndiceOcupacional
+                            ).Count()
+                        ,
 
-                        */
+                        PartidaIndividual = s.NumeroPartidaIndividual,
+
+                        IdManualPuesto = (int)s.IdManualPuesto,
+                        NombreManualPuesto = s.ManualPuesto.Nombre
                     }
-                    ).DistinctBy(d => new {d.IdDependencia, d.IdRolPuesto} ).ToAsyncEnumerable().ToList();                
+                    )
+                    //.DistinctBy(d => new {d.IdDependencia, d.IdRolPuesto} )
+                    .ToAsyncEnumerable().ToList();
+                
 
                 return lista;
 
 
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
 
                 return lista;
             }
