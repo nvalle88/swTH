@@ -20,6 +20,7 @@ using System.Diagnostics;
 using bd.swth.entidades.Constantes;
 using EnviarCorreo;
 using SendMails.methods;
+using MoreLinq;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -445,25 +446,26 @@ namespace bd.swth.web.Controllers.API
 
             var lista = new List<DistributivoViewModel>();
 
-            try {
+            try
+            {
+
+                var escala = await db.EscalaGrados.ToListAsync();
+                var modalidadPartida = await db.ModalidadPartida.ToListAsync();
+                var rolPuesto = await db.RolPuesto.ToListAsync();
+                var dependencia = await db.Dependencia.ToListAsync();
+                var iomp = await db.IndiceOcupacionalModalidadPartida.ToListAsync();
 
 
-                lista = await db.IndiceOcupacional
-                    .GroupBy(y => new { y.IdDependencia, y.IdRolPuesto })
-
-                    .Select(x => new DistributivoViewModel
+                lista =await  db.IndiceOcupacionalModalidadPartida
+                    .Select(s => new DistributivoViewModel
                     {
-                        IdDependencia = Convert.ToInt32(x.FirstOrDefault().IdDependencia),
-                        NombreDependencia = db.Dependencia.Where(y => y.IdDependencia == x.FirstOrDefault().IdDependencia).FirstOrDefault().Nombre,
+                        /*
+                        IdDependencia =  (int) s.IndiceOcupacional.IdDependencia,
+                        NombreDependencia = s.IndiceOcupacional.
 
-                        IdRolPuesto = Convert.ToInt32(x.FirstOrDefault().IdRolPuesto),
-                        NombreRolPuesto = db.RolPuesto.Where(z => z.IdRolPuesto == x.FirstOrDefault().IdRolPuesto).FirstOrDefault().Nombre,
-
-                        IdModalidadPartida = Convert.ToInt32(x.FirstOrDefault().IdModalidadPartida),
-                        NombreModalidadPartida = db.ModalidadPartida.Where(a => a.IdModalidadPartida == x.FirstOrDefault().IdModalidadPartida).FirstOrDefault().Nombre,
-                        GrupoOcupacional = db.EscalaGrados.Where(Z=>Z.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().GrupoOcupacional.TipoEscala                        
-                        }
-                    ).ToListAsync();                
+                        */
+                    }
+                    ).DistinctBy(d => new {d.IdDependencia, d.IdRolPuesto} ).ToAsyncEnumerable().ToList();                
 
                 return lista;
 

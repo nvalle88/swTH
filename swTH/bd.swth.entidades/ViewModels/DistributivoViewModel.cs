@@ -15,6 +15,11 @@ namespace bd.swth.entidades.ViewModels
         public int IdModalidadPartida { get; set; }
         public string NombreModalidadPartida { get; set; }
         public string GrupoOcupacional { get; set; }
+        
+        public decimal? RMU { get; set; }
 
+        public int Grado { get; set; }
+
+        public int CantidadEmpleados { get; set; }
     }
 }
