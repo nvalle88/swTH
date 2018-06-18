@@ -16,5 +16,6 @@ namespace bd.swth.entidades.ViewModels
         public string NombreDependenciaPadre { get; set; }
         public string NombreProceso { get; set; }
         public string Codigo { get; set; }
+        public string Ciudad { get; set; }
     }
 }
