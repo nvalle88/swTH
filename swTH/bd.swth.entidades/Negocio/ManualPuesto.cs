@@ -3,8 +3,7 @@ namespace bd.swth.entidades.Negocio
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
-     
-     
+    using System.ComponentModel.DataAnnotations.Schema;
 
     public partial class ManualPuesto
     {
@@ -28,5 +27,12 @@ namespace bd.swth.entidades.Negocio
 
         public virtual RelacionesInternasExternas RelacionesInternasExternas { get; set; }
         public virtual ICollection<FlujoAprobacion> FlujoAprobacion { get; set; }
+
+        [NotMapped]
+        public string Partida { get; set; }
+        [NotMapped]
+        public string GrupoOcupacional { get; set; }
+        [NotMapped]
+        public decimal Remuneracion { get; set; }
     }
 }
