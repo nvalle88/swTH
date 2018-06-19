@@ -45,7 +45,19 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                var listaDependencia = await db.Dependencia.Include(x=>x.DependenciaPadre).Include(x=>x.Sucursal).ToListAsync();
+                //var listaDependencia = await db.Dependencia.Include(x=>x.DependenciaPadre).Include(x=>x.Sucursal).Include(x=>x.Sucursal.Nombre).ToListAsync();
+                var listaDependencia = await db.Dependencia.Select(x => new DependenciaViewModel
+                {
+                    IdDependencia = x.IdDependencia,
+                    NombreDependencia = x.Nombre,
+                    NombreSucursal = x.Sucursal.Nombre,
+                    Codigo = x.Codigo,
+                    Ciudad = x.Sucursal.Ciudad.Nombre,
+                    NombreDependenciaPadre =x.DependenciaPadre.Nombre,
+                    IdProceso = x.IdProceso
+                    
+                    
+                }).OrderByDescending(x=>x.Codigo).ToListAsync();
 
                 var listaSalida = new List<DependenciaViewModel>();
 
@@ -53,33 +65,34 @@ namespace bd.swth.web.Controllers.API
                 {
 
                     var padre = "";
-                    if (item.DependenciaPadre == null)
+                    if (item.NombreDependenciaPadre == null)
                     {
                         padre = "No tiene dependencia padre";
                     }
                     else
                     {
-                        padre = item.DependenciaPadre.Nombre;
+                        padre = item.NombreDependenciaPadre;
                     }
 
                     var dependenciaSalida = new DependenciaViewModel
                     {
-                        IdDependencia =item.IdDependencia,
-                        NombreDependencia =item.Nombre,
-                        NombreSucursal = item.Sucursal.Nombre,
-                        NombreDependenciaPadre=padre,
-                        Codigo = item.Codigo
-                        
+                        IdDependencia = item.IdDependencia,
+                        NombreDependencia = item.NombreDependencia,
+                        NombreSucursal = item.NombreSucursal,
+                        NombreDependenciaPadre = padre,
+                        Codigo = item.Codigo,
+                        Ciudad = item.Ciudad
+
                     };
 
-                    var proceso =await db.Proceso.Where(x => x.IdProceso == item.IdProceso).FirstOrDefaultAsync();
+                    var proceso = await db.Proceso.Where(x => x.IdProceso == item.IdProceso).FirstOrDefaultAsync();
 
                     dependenciaSalida.NombreProceso = proceso.Nombre;
 
                     listaSalida.Add(dependenciaSalida);
 
                 }
-                return  listaSalida;
+                return listaSalida;
             }
             catch (Exception ex)
             {
@@ -275,7 +288,7 @@ namespace bd.swth.web.Controllers.API
                                 Message = Mensaje.Satisfactorio,
                             };
                         }
-                      
+
 
                     }
                     catch (Exception ex)
@@ -317,16 +330,16 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        
 
-             [HttpPost]
+
+        [HttpPost]
         [Route("ListarPadresPorSucursal")]
         public async Task<List<Dependencia>> ListarPadresPorSucursal([FromBody] Dependencia dependencia)
         {
             try
             {
                 return await db.Dependencia.Where(x => x.IdSucursal == dependencia.IdSucursal).OrderBy(x => x.Nombre).ToListAsync();
-                                                    
+
             }
             catch (Exception ex)
             {
@@ -356,7 +369,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message =Mensaje.ModeloInvalido,
+                        Message = Mensaje.ModeloInvalido,
                     };
                 }
 
@@ -364,7 +377,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     Nombre = dependenciaViewModel.NombreDependencia,
                     IdSucursal = dependenciaViewModel.IdSucursal,
-                    IdDependenciaPadre= dependenciaViewModel.IdDependenciaPadre,
+                    IdDependenciaPadre = dependenciaViewModel.IdDependenciaPadre,
                     IdProceso = dependenciaViewModel.IdProceso,
                     Codigo = dependenciaViewModel.Codigo
 
@@ -466,11 +479,11 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(Dependencia dependencia)
         {
             var nombre = dependencia.Nombre.ToUpper().TrimEnd().TrimStart();
-            var dependenciarespuesta = db.Dependencia.Where(p => p.Nombre.ToUpper().TrimEnd().TrimStart()==nombre
-                                                             && p.IdDependenciaPadre==dependencia.IdDependenciaPadre
-                                                             && p.IdSucursal==dependencia.IdSucursal
+            var dependenciarespuesta = db.Dependencia.Where(p =>(p.Codigo==dependencia.Codigo) || (p.Nombre.ToUpper().TrimEnd().TrimStart() == nombre
+                                                             && p.IdDependenciaPadre == dependencia.IdDependenciaPadre
+                                                             && p.IdSucursal == dependencia.IdSucursal
                                                              && p.IdProceso == dependencia.IdProceso
-                                                             && p.Codigo == dependencia.Codigo).FirstOrDefault();
+                                                             && p.Codigo == dependencia.Codigo)).FirstOrDefault();
             if (dependenciarespuesta != null)
             {
                 return new Response
@@ -501,16 +514,18 @@ namespace bd.swth.web.Controllers.API
         [Route("ObtenerDependenciaDatosViewModelPorUsuarioActual")]
         public async Task<DependenciaDatosViewModel> ObtenerDependenciaDatosViewModelPorUsuarioActual([FromBody]IdFiltrosViewModel idFiltrosViewModel)
         {
-            try {
+            try
+            {
 
                 var empleado = await db.Empleado
                     .Where(w => w.NombreUsuario == idFiltrosViewModel.NombreUsuario).FirstOrDefaultAsync();
 
                 var dependencia = await db.Dependencia
-                    .Include(i=>i.Sucursal)
+                    .Include(i => i.Sucursal)
                     .Where(w => w.IdDependencia == empleado.IdDependencia).FirstOrDefaultAsync();
 
-                var modelo = new DependenciaDatosViewModel {
+                var modelo = new DependenciaDatosViewModel
+                {
 
                     IdDependencia = dependencia.IdDependencia,
                     IdSucursal = dependencia.IdSucursal,
@@ -539,12 +554,12 @@ namespace bd.swth.web.Controllers.API
                     ListaDependenciasHijas = await ObtenerDependenciasHijas(dependencia.IdDependencia),
 
                     ListaEmpleadosDependencia = await db.Empleado
-                    .Where(wl=>
-                    wl.Activo == true 
+                    .Where(wl =>
+                    wl.Activo == true
                     && wl.IdDependencia == dependencia.IdDependencia
-                    && wl.EsJefe == false                    
+                    && wl.EsJefe == false
                     )
-                    .Select(s1=>new DatosBasicosEmpleadoViewModel
+                    .Select(s1 => new DatosBasicosEmpleadoViewModel
                     {
 
                         IdEmpleado = s1.IdEmpleado,
@@ -555,13 +570,15 @@ namespace bd.swth.web.Controllers.API
                     }
                     )
                     .ToListAsync()
-                    
+
                 };
-                
-                
+
+
                 return modelo;
 
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
 
                 return new DependenciaDatosViewModel();
             }
@@ -581,7 +598,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                
+
                 var dependencia = await db.Dependencia
                     .Include(i => i.Sucursal)
                     .Where(w => w.IdDependencia == idFiltrosViewModel.IdDependencia).FirstOrDefaultAsync();
@@ -647,7 +664,8 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        public async Task<List<DependenciaDatosViewModel>> ObtenerDependenciasHijas( int idDependencia) {
+        public async Task<List<DependenciaDatosViewModel>> ObtenerDependenciasHijas(int idDependencia)
+        {
 
             try
             {
@@ -662,20 +680,20 @@ namespace bd.swth.web.Controllers.API
                         DatosBasicosEmpleadoJefeViewModel = db.Empleado
                         .Where(we =>
                             we.IdDependencia == s.IdDependencia
-                            && we.EsJefe == true 
+                            && we.EsJefe == true
                             && we.Activo == true
                         )
                         .Select(se => new DatosBasicosEmpleadoViewModel
-                            {
-                                IdEmpleado = se.IdEmpleado,
-                                IdPersona = se.IdPersona,
-                                Nombres = se.Persona.Nombres,
-                                Apellidos = se.Persona.Apellidos
-                                
-                            }
+                        {
+                            IdEmpleado = se.IdEmpleado,
+                            IdPersona = se.IdPersona,
+                            Nombres = se.Persona.Nombres,
+                            Apellidos = se.Persona.Apellidos
+
+                        }
 
                         ).FirstOrDefault()
-                           
+
                     }
                     )
                     .ToListAsync();

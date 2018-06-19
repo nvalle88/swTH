@@ -15,13 +15,22 @@ namespace bd.swth.entidades.ViewModels
         public int OpcionMenu { get; set; }
         public string NombreUsuario { get; set; }
         public int idDependencia { get; set; }
+        public string Dependencia { get; set; }
         public int idsucursal { get; set; }
         public int? estado { get; set; }
         public string Institucion { get; set; }
+        public string Partida { get; set; }
+        public decimal Remuneracion { get; set; }
+        public string GrupoOcupacional { get; set; }
+        public decimal RemuneracionPropuesta { get; set; }
+        public string GradoPropuesto { get; set; }
+        public string GrupoOcupacionalPropuesta { get; set; }
         public string UnidadAdministrativa { get; set; }
         public string Puesto { get; set; }
         public string NombreApellido { get; set; }
         public string LugarTrabajo { get; set; }
+        public string TipoNombramiento { get; set; }
+        public string Modalidad { get; set; }
         public string Mision { get; set; }
         public int Anio { get; set; }
         public bool InternoMismoProceso { get; set; }

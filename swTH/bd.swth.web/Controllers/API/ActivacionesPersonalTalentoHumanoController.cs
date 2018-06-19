@@ -20,6 +20,7 @@ using System.Diagnostics;
 using bd.swth.entidades.Constantes;
 using EnviarCorreo;
 using SendMails.methods;
+using MoreLinq;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -445,34 +446,73 @@ namespace bd.swth.web.Controllers.API
 
             var lista = new List<DistributivoViewModel>();
 
-            try {
+            try
+            {
 
+
+                var modalidadPartida = await db.ModalidadPartida.ToListAsync();
+
+                var iomp = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i => i.IndiceOcupacional)
+                    .ToListAsync();
 
                 lista = await db.IndiceOcupacional
-                    .GroupBy(y => new { y.IdDependencia, y.IdRolPuesto })
-
-                    .Select(x => new DistributivoViewModel
+                    .Include(i=>i.ModalidadPartida)
+                    .Select(s => new DistributivoViewModel
                     {
-                        IdDependencia = Convert.ToInt32(x.FirstOrDefault().IdDependencia),
-                        NombreDependencia = db.Dependencia.Where(y => y.IdDependencia == x.FirstOrDefault().IdDependencia).FirstOrDefault().Nombre,
-
-                        IdRolPuesto = Convert.ToInt32(x.FirstOrDefault().IdRolPuesto),
-                        NombreRolPuesto = db.RolPuesto.Where(z => z.IdRolPuesto == x.FirstOrDefault().IdRolPuesto).FirstOrDefault().Nombre,
-
-                        IdModalidadPartida = Convert.ToInt32(x.FirstOrDefault().IdModalidadPartida),
-                        NombreModalidadPartida = db.ModalidadPartida.Where(a => a.IdModalidadPartida == x.FirstOrDefault().IdModalidadPartida).FirstOrDefault().Nombre               
                         
-                        }
+                        IdDependencia =  (int)s.IdDependencia,
+                        NombreDependencia = s.Dependencia.Nombre ,
+                        
+                        IdRolPuesto = (int) s.IdRolPuesto,
+                        NombreRolPuesto = s.RolPuesto.Nombre,
+                        
+                        IdModalidadPartida =  (s.IdModalidadPartida == null)?0:(int)s.IdModalidadPartida,
+                        NombreModalidadPartida = (s.IdModalidadPartida == null) ? "" : s.ModalidadPartida.Nombre,
+                        
+                        GrupoOcupacional = s.EscalaGrados.GrupoOcupacional.TipoEscala,
+                        
+                        RMU = (iomp
+                                .Where(w=>
+                                    w.IdIndiceOcupacional == s.IdIndiceOcupacional
+                                )
+                                .OrderByDescending(o=>o.Fecha)
+                                .FirstOrDefault() == null
+                            )?s.EscalaGrados.Remuneracion: iomp
+                                .Where(w =>
+                                    w.IdIndiceOcupacional == s.IdIndiceOcupacional
+                                )
+                                .OrderByDescending(o => o.Fecha)
+                                .FirstOrDefault().SalarioReal
+                        ,
+                        
+                        Grado = (int) s.EscalaGrados.Grado,
+                        
+                        CantidadEmpleados = iomp.Where(w=>
+                            /*
+                                w.IndiceOcupacional.IdRolPuesto == s.IdRolPuesto 
+                                && w.IndiceOcupacional.IdDependencia == s.IdDependencia
+                           */
+                                w.IdIndiceOcupacional == s.IdIndiceOcupacional
+                            ).Count()
+                        ,
+
+                        PartidaIndividual = s.NumeroPartidaIndividual,
+
+                        IdManualPuesto = (int)s.IdManualPuesto,
+                        NombreManualPuesto = s.ManualPuesto.Nombre
+                    }
                     )
-                    
-                    
-                    .ToListAsync();
+                    //.DistinctBy(d => new {d.IdDependencia, d.IdRolPuesto} )
+                    .ToAsyncEnumerable().ToList();
                 
 
                 return lista;
 
 
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
 
                 return lista;
             }

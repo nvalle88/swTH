@@ -328,17 +328,9 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(Presupuesto presupuesto)
         {
-            var bdd = presupuesto.IdPresupuesto;
             var bdd1 = presupuesto.NumeroPartidaPresupuestaria;
-            var bdd2 = presupuesto.Valor;
-            var bdd3 = presupuesto.Fecha;
-            var bdd4 = presupuesto.IdSucursal;
-            var Etniarespuesta = db.Presupuesto.Where(p => p.IdPresupuesto==bdd 
-            && p.NumeroPartidaPresupuestaria == bdd1
-            && p.Valor == bdd2
-            && p.Fecha == bdd3
-            && p.IdSucursal == bdd4).FirstOrDefault();
-            if (Etniarespuesta != null)
+            var presupuestorespuesta = db.Presupuesto.Where(p =>p.NumeroPartidaPresupuestaria == bdd1).FirstOrDefault();
+            if (presupuestorespuesta != null)
             {
                 return new Response
                 {
@@ -351,7 +343,7 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = Etniarespuesta,
+                Resultado = presupuestorespuesta,
             };
         }
     }
