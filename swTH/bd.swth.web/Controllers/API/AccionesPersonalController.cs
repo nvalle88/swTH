@@ -1307,11 +1307,15 @@ namespace bd.swth.web.Controllers.API
                 foreach (var item in lista) {
 
                     if (item.FechaRige < hoy) {
-
+                        
                         TimeSpan tiempo = (TimeSpan) (item.FechaRigeHasta - hoy);
                         var diasRestantes = (int) tiempo.TotalDays;
 
-                        if ( Convert.ToInt32(item.Numero) > diasRestantes ) {
+                        if (diasRestantes < 1 ) {
+                            diasRestantes = 0;
+                        }
+
+                        if ( Convert.ToInt32(item.Numero) > diasRestantes && Convert.ToInt32(item.Numero) > 0 ) {
 
                             var registro = db.AccionPersonal.Find(item.IdAccionPersonal);
                             registro.Numero = diasRestantes + "";
