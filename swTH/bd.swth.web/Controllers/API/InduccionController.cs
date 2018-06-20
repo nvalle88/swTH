@@ -17,6 +17,7 @@ using bd.swth.entidades.ObjectTransfer;
 using System.IO;
 using bd.swth.entidades.ViewModels;
 using bd.swth.entidades.Constantes;
+using MoreLinq;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -48,6 +49,9 @@ namespace bd.swth.web.Controllers.API
                     .FirstOrDefault()
                 ;
 
+               
+                        
+                /*
                 lista = await db.Empleado.Include(ei=>ei.Dependencia)
                     .Where(w=>w.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal)
                     .Select(x => new InduccionViewModel
@@ -61,10 +65,36 @@ namespace bd.swth.web.Controllers.API
                                 : ConstantesEstadoInduccion.InduccionNoFinalizada
                             ,
 
-                            ValorCompletado = ConstantesEstadoInduccion.InduccionFinalizada
+                            ValorCompletado = ConstantesEstadoInduccion.InduccionFinalizada,
+
+                            NombreDependencia = x.Dependencia.Nombre,
+                            NombreRol = (iomp)
                     } 
                     )
                     .ToListAsync();
+                */
+                lista = await db.IndiceOcupacionalModalidadPartida
+                    .Where(w=>
+                        w.Empleado.Activo == true
+                        && w.IndiceOcupacional.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal
+                    )
+                    .Select(s=>new InduccionViewModel
+                    {
+                        IdEmpleado = s.IdEmpleado,
+                        Nombres = s.Empleado.Persona.Nombres + " " + s.Empleado.Persona.Apellidos,
+                        FechaIngreso = s.Fecha,
+                        EstadoInduccion = (db.Induccion.Any(w => w.IdEmpleado == s.IdEmpleado))
+                                ? ConstantesEstadoInduccion.InduccionFinalizada
+                                : ConstantesEstadoInduccion.InduccionNoFinalizada
+                            ,
+                        ValorCompletado = ConstantesEstadoInduccion.InduccionFinalizada,
+                        NombreDependencia = s.Empleado.Dependencia.Nombre,
+                        NombreRol = s.IndiceOcupacional.RolPuesto.Nombre
+                    }
+                    )
+                    .OrderByDescending(o=>o.FechaIngreso)
+                    .DistinctBy(d=>d.IdEmpleado).ToAsyncEnumerable()
+                    .ToList();
 
                 return lista;
             }

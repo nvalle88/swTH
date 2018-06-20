@@ -11,5 +11,8 @@ namespace bd.swth.entidades.ViewModels
         public DateTime FechaIngreso { get; set; }
         public string EstadoInduccion { get; set; }
         public string ValorCompletado { get; set; }
+
+        public string NombreRol { get; set; }
+        public string NombreDependencia { get; set; }
     }
 }

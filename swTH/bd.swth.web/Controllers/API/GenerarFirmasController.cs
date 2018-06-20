@@ -60,8 +60,13 @@ namespace bd.swth.web.Controllers.API
                     .Include(i=>i.IndiceOcupacional).ThenInclude(t=>t.ManualPuesto)
                     .Include(t=>t.IndiceOcupacional).ThenInclude(t=>t.Dependencia)
                     .Include(i=>i.Empleado).ThenInclude(t=>t.Persona)
-                    .Where(w => w.IndiceOcupacional.IdDependencia == filtro.IdDependencia)
-                    .ToListAsync();
+                    .Where(w => 
+                        w.IndiceOcupacional.IdDependencia == filtro.IdDependencia
+                        && w.Empleado.Activo == true
+                    )
+                    .OrderByDescending(o=>o.Fecha)
+                    .DistinctBy(d=>d.IdEmpleado)
+                    .ToAsyncEnumerable().ToList();
 
                 return lista;
             }
