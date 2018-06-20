@@ -89,33 +89,35 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
+                var ItinerarioViatico =  db.ItinerarioViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).ToList();
+                var total = ItinerarioViatico.Sum(x=>x.Valor);
                 var SolicitudViatico = new SolicitudViatico();
 
                 SolicitudViatico = await db.SolicitudViatico.SingleOrDefaultAsync(m => m.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico);
-
+               
                 if (SolicitudViatico != null)
                 {
                     var empleado = await db.Empleado.Where(x => x.IdEmpleado == SolicitudViatico.IdEmpleado).FirstOrDefaultAsync();
-                    var valor = SolicitudViatico.FechaLlegada.Day - SolicitudViatico.FechaSalida.Day;
-
+                    var dias = SolicitudViatico.FechaLlegada.Day - SolicitudViatico.FechaSalida.Day;
+                    SolicitudViatico.valorItinerario=total;
                     if (empleado.EsJefe == true)
                     {
-                        if (valor == 0)
+                        if (dias == 0)
                         {
-                            valor = 1;
-                            SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Jefe) * valor;
+                            dias = 1;
+                            SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Jefe) * dias;
                         }
-                        SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Jefe) * valor;
+                        SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Jefe) * dias;
                     }
                     else
                     {
-                        if (valor == 0)
+                        if (dias == 0)
                         {
-                            valor = 1;
-                            SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Operativo) * valor;
+                            dias = 1;
+                            SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Operativo) * dias;
                         }
-                        SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Operativo) * valor;
-                    }
+                        SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Operativo) * dias;
+                    }                   
 
                     return SolicitudViatico;
                 }

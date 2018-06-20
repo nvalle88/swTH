@@ -3,6 +3,7 @@ namespace bd.swth.entidades.Negocio
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
 
     public partial class SolicitudViatico
     {
@@ -31,7 +32,10 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<DetallePresupuesto> DetallePresupuesto { get; set; }
         public virtual Ciudad Ciudad { get; set; }
         public virtual Pais Pais { get; set; }
-        public virtual Provincia Provincia { get; set; }
+        public virtual Provincia Provincia { get; set; } 
+
+        [NotMapped]
+        public decimal? valorItinerario { get; set; } 
 
     }
 }
