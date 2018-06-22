@@ -155,13 +155,13 @@ namespace bd.swth.web.Controllers.API
                             db.SolicitudVacaciones.Update(SolicitudVacacionesActualizar);
                             await db.SaveChangesAsync();
 
-
+                            
                             // Actualización del registro de vacaciones
                             var ctrl = new SolicitudPlanificacionVacacionesController(db);
                             await ctrl.CalcularYRegistrarVacacionesPorEmpleado(SolicitudVacaciones.IdEmpleado);
                             
                             transaction.Commit();
-
+                            
 
 
                             return new Response

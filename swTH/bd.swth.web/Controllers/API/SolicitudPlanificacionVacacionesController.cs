@@ -29,7 +29,7 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-
+        
 
         /// <summary>
         /// Este método crea automáticamente registros de vacaciones para los empleados por período fiscal
@@ -183,7 +183,7 @@ namespace bd.swth.web.Controllers.API
                 // Obtiene el total de vacaciones desde la fecha de ingreso hasta la fecha actual según
                 // el tipo de relacion laboral actual
                 totalDiasVacacionesEstePeriodoFiscal = (int)await CalcularVacacionesPorFechas(
-                    IOMPActual.TipoNombramiento.IdRelacionLaboral,
+                    Convert.ToInt32(IOMPActual.TipoNombramiento.RelacionLaboral.IdRegimenLaboral),
                     FechaInicioFunciones,
                     DateTime.Now
                  );
@@ -214,7 +214,7 @@ namespace bd.swth.web.Controllers.API
                     }
 
                     diasPorPeriodo = diasPorPeriodo + await CalcularVacacionesPorFechas(
-                            listaRegistrosIOMPPeriodoFiscalActual.ElementAt(i).TipoNombramiento.IdRelacionLaboral,
+                            Convert.ToInt32(listaRegistrosIOMPPeriodoFiscalActual.ElementAt(i).TipoNombramiento.RelacionLaboral.IdRegimenLaboral),
                             Fecha1,
                             Fecha2
                         );
@@ -317,7 +317,7 @@ namespace bd.swth.web.Controllers.API
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        private async Task<Double> CalcularVacacionesPorFechas(int IdRelacionLaboral,DateTime FechaInicio,DateTime FechaFin)
+        private async Task<Double> CalcularVacacionesPorFechas(int IdRegimenLaboral,DateTime FechaInicio,DateTime FechaFin)
         {
 
 
@@ -326,7 +326,7 @@ namespace bd.swth.web.Controllers.API
 
             // Obtención de las reglas por tipo de contrato
             var reglas = await db.VacacionRelacionLaboral
-                .Where(w => w.IdRelacionLaboral == IdRelacionLaboral)
+                .Where(w => w.IdRegimenLaboral == IdRegimenLaboral)
                 .FirstOrDefaultAsync();
 
             // Variable de almacenamiento del total de vacaciones
@@ -1146,6 +1146,6 @@ namespace bd.swth.web.Controllers.API
             return listaEstados;
         }
 
-
+    
     }
 }

@@ -20,5 +20,14 @@ namespace bd.swth.entidades.ObjectTransfer
         public string FondoFinanciamiento { get; set; } 
         public int IdConfiguracionViatico { get; set; }
         public DateTime FechaIngreso { get; set; }
+
+        public int IdRelacionLaboral { get; set; }
+        public string NombreRelacionLaboral { get; set; }
+
+        public int IdManualPuesto { get; set; }
+        public string ManualPuesto { get; set; }
+
+        public string PartidaIndividual { get; set; }
+
     }
 }

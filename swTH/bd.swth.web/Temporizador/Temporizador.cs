@@ -57,7 +57,7 @@ namespace bd.swth.web.Temporizador
                 var horaActual = DateTime.Now.Hour;
 
                 var horaControlDiarioMin = 0;//0
-                var horaControlDiarioMax = 3;//3
+                var horaControlDiarioMax = 19;//3
 
                 if (horaActual>horaControlDiarioMin && horaActual<horaControlDiarioMax) {
 
@@ -66,6 +66,7 @@ namespace bd.swth.web.Temporizador
 
                     var ctl1 = new SolicitudPlanificacionVacacionesController(db);
                     await ctl1.CrearRegistroVacacionesEmpleados();
+                    
                 }
 
                 
