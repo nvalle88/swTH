@@ -319,9 +319,9 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.IncrementoApartirPeriodoFiscal).HasColumnName("IncrementoAPartirPeriodoFiscal");
 
-                entity.HasOne(d => d.RelacionLaboral)
+                entity.HasOne(d => d.RegimenLaboral)
                     .WithMany(p => p.VacacionRelacionLaboral)
-                    .HasForeignKey(d => d.IdRelacionLaboral)
+                    .HasForeignKey(d => d.IdRegimenLaboral)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_VacacionRelacionLaboral_RelacionLaboral");
             });

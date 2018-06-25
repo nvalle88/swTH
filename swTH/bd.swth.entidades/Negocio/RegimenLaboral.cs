@@ -15,5 +15,6 @@ namespace bd.swth.entidades.Negocio
         public string Nombre { get; set; }
 
         public virtual ICollection<RelacionLaboral> RelacionLaboral { get; set; }
+        public virtual ICollection<VacacionRelacionLaboral> VacacionRelacionLaboral { get; set; }
     }
 }

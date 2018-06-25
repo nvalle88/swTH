@@ -35,7 +35,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.VacacionRelacionLaboral.Include(i=>i.RelacionLaboral).ToListAsync();
+                return await db.VacacionRelacionLaboral.Include(i=>i.RegimenLaboral).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -147,7 +147,7 @@ namespace bd.swth.web.Controllers.API
                     .FirstOrDefaultAsync();
 
                 var IdRelacionLaboralModel = await db.VacacionRelacionLaboral
-                    .Where(w => w.IdRelacionLaboral == vacacionRelacionLaboral.IdRelacionLaboral)
+                    .Where(w => w.IdRegimenLaboral == vacacionRelacionLaboral.IdRegimenLaboral)
                     .FirstOrDefaultAsync();
 
 
@@ -168,7 +168,7 @@ namespace bd.swth.web.Controllers.API
                     existe.IncrementoDiasPorPeriodoFiscal = vacacionRelacionLaboral.IncrementoDiasPorPeriodoFiscal;
                     existe.MaxAcumulacionDias = vacacionRelacionLaboral.MaxAcumulacionDias;
                     existe.MinAcumulacionDias = vacacionRelacionLaboral.MinAcumulacionDias;
-                    existe.IdRelacionLaboral = existe.IdRelacionLaboral;
+                    existe.IdRegimenLaboral = existe.IdRegimenLaboral;
 
 
                     db.VacacionRelacionLaboral.Update(existe);
@@ -239,7 +239,7 @@ namespace bd.swth.web.Controllers.API
 
                 var registro = await db.VacacionRelacionLaboral
                     .Where(w => 
-                        w.IdRelacionLaboral == vacacionRelacionLaboral.IdRelacionLaboral
+                        w.IdRegimenLaboral == vacacionRelacionLaboral.IdRegimenLaboral
                         )
                     .FirstOrDefaultAsync();
 

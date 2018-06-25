@@ -32,7 +32,7 @@ namespace bd.swth.entidades.Utils
         public static string ConceptoNoExiste { get { return "El concepto no existe en el proceso al cual pertenece el presente cálculo de nómina."; } }
         public static string EmpleadoNoExiste { get { return "Identificación del empleado no existe."; } }
 
-        public static string ExisteVacacionRelacionLaboral { get { return "Solo se permite 1 registro por relación laboral."; } }
+        public static string ExisteVacacionRelacionLaboral { get { return "Solo se permite 1 registro por régimen laboral."; } }
 
         public static string AccionPersonalBloqueada { get { return "Esta acción ya se ha aprobado por todos los responsables de aprobación, no puede editarse"; } }
 
