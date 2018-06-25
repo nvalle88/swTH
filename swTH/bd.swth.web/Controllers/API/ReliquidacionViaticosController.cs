@@ -28,7 +28,7 @@ namespace bd.swth.web.Controllers.API
 
             try
             {
-                return await db.ReliquidacionViatico.Where(x => x.IdItinerarioViatico == informeViatico.IdItinerarioViatico).Include(x => x.TipoTransporte).Include(x => x.CiudadOrigen).Include(x => x.CiudadDestino).ToListAsync();
+                return await db.ReliquidacionViatico.Where(x => x.IdItinerarioViatico == informeViatico.IdSolicitudViatico).Include(x => x.TipoTransporte).Include(x => x.CiudadOrigen).Include(x => x.CiudadDestino).ToListAsync();
             }
             catch (Exception ex)
             {

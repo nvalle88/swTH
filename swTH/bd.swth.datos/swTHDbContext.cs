@@ -2373,40 +2373,44 @@ namespace bd.swth.datos
             modelBuilder.Entity<FacturaViatico>(entity =>
             {
                 entity.HasKey(e => e.IdFacturaViatico)
-                    .HasName("PK_FacturaViatico");
+                    .HasName("PK253");
 
                 entity.HasIndex(e => e.AprobadoPor)
-                    .HasName("IX_FacturaViatico_EmpleadoIdEmpleado");
+                    .HasName("Ref15397");
 
                 entity.HasIndex(e => e.IdItemViatico)
-                    .HasName("IX_FacturaViatico_IdItemViatico");
+                    .HasName("Ref252388");
 
-                entity.HasIndex(e => e.IdItinerarioViatico)
-                    .HasName("IX_FacturaViatico_ItinerarioViaticoId");
+                entity.HasIndex(e => e.IdSolicitudViatico)
+                    .HasName("Ref251389");
+
+                entity.Property(e => e.FechaAprobacion).HasColumnType("date");
+
+                entity.Property(e => e.FechaFactura).HasColumnType("date");
 
                 entity.Property(e => e.NumeroFactura)
                     .IsRequired()
-                    .HasMaxLength(30);
+                    .HasColumnType("varchar(50)");
 
-                entity.Property(e => e.Observaciones).IsRequired();
+                entity.Property(e => e.Observaciones).HasColumnType("text");
 
-                entity.Property(e => e.ValorTotalAprobacion).HasColumnType("decimal");
+                entity.Property(e => e.Url).HasColumnType("varchar(1024)");
+
+                entity.Property(e => e.ValorTotalAprobacion).HasColumnType("date");
 
                 entity.Property(e => e.ValorTotalFactura).HasColumnType("decimal");
-
-                entity.HasOne(d => d.Empleado)
-                    .WithMany(p => p.FacturaViatico)
-                    .HasForeignKey(d => d.AprobadoPor);
 
                 entity.HasOne(d => d.ItemViatico)
                     .WithMany(p => p.FacturaViatico)
                     .HasForeignKey(d => d.IdItemViatico)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefItemViatico388");
 
-                entity.HasOne(d => d.ItinerarioViatico)
+                entity.HasOne(d => d.SolicitudViatico)
                     .WithMany(p => p.FacturaViatico)
-                    .HasForeignKey(d => d.IdItinerarioViatico)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasForeignKey(d => d.IdSolicitudViatico)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_FacturaViatico_SolicitudViatico");
             });
 
             modelBuilder.Entity<FondoFinanciamiento>(entity =>
@@ -2824,10 +2828,13 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.Descripcion).HasColumnType("text");
 
-                entity.HasOne(d => d.ItinerarioViatico)
+                entity.Property(e => e.Observacion).HasColumnType("text");
+
+                entity.HasOne(d => d.SolicitudViatico)
                     .WithMany(p => p.InformeActividadViatico)
-                    .HasForeignKey(d => d.IdItinerarioViatico)
-                    .HasConstraintName("FK_InformeActividadViatico_ItinerarioViatico");
+                    .HasForeignKey(d => d.IdSolicitudViatico)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_InformeActividadViatico_SolicitudViatico");
             });
 
             modelBuilder.Entity<InformeUATH>(entity =>
@@ -2869,10 +2876,8 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdInformeViatico)
                     .HasName("PK257");
 
-                entity.HasIndex(e => e.IdItinerarioViatico)
-                    .HasName("Ref251396");
-
-                entity.Property(e => e.Descripcion).HasColumnType("text");
+                entity.HasIndex(e => e.IdSolicitudViatico)
+                    .HasName("Ref251396");              
 
                 entity.Property(e => e.FechaLlegada).HasColumnType("date");
 
@@ -2882,25 +2887,30 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.NombreTransporte).HasColumnType("varchar(250)");
 
+                entity.Property(e => e.ValorEstimado).HasColumnType("decimal");
+
                 entity.HasOne(d => d.CiudadDestino)
-                    .WithMany(p => p.InformeViaticoIdCiudadDestino)
+                    .WithMany(p => p.InformeViaticoCiudadDestino)
                     .HasForeignKey(d => d.IdCiudadDestino)
+                    .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_InformeViatico_Ciudad");
 
                 entity.HasOne(d => d.CiudadOrigen)
-                    .WithMany(p => p.InformeViaticoIdCiudadOrigen)
+                    .WithMany(p => p.InformeViaticoCiudadOrigen)
                     .HasForeignKey(d => d.IdCiudadOrigen)
+                    .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_InformeViatico_Ciudad1");
 
-                entity.HasOne(d => d.ItinerarioViatico)
+                entity.HasOne(d => d.SolicitudViatico)
                     .WithMany(p => p.InformeViatico)
-                    .HasForeignKey(d => d.IdItinerarioViatico)
+                    .HasForeignKey(d => d.IdSolicitudViatico)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("RefItinerarioViatico396");
 
                 entity.HasOne(d => d.TipoTransporte)
                     .WithMany(p => p.InformeViatico)
                     .HasForeignKey(d => d.IdTipoTransporte)
+                    .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_InformeViatico_TipoTransporte");
             });
 
@@ -2967,9 +2977,17 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdTipoTransporte)
                     .HasName("Ref249385");
 
-                entity.Property(e => e.Descripcion).HasColumnType("varchar(300)");
+                entity.HasOne(d => d.CiudadDestino)
+                    .WithMany(p => p.ItinerarioViaticoCiudadDestino)
+                    .HasForeignKey(d => d.IdCiudadDestino)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ItinerarioViatico_Ciudad1");
 
-                entity.Property(e => e.Valor).HasColumnType("decimal");
+                entity.HasOne(d => d.CiudadOrigen)
+                    .WithMany(p => p.ItinerarioViaticoCiudadOrigen)
+                    .HasForeignKey(d => d.IdCiudadOrigen)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ItinerarioViatico_Ciudad");
 
                 entity.HasOne(d => d.SolicitudViatico)
                     .WithMany(p => p.ItinerarioViatico)
@@ -3894,12 +3912,12 @@ namespace bd.swth.datos
                 entity.Property(e => e.ValorEstimado).HasColumnType("decimal");
 
                 entity.HasOne(d => d.CiudadDestino)
-                    .WithMany(p => p.ReliquidacionViaticoIdCiudadDestino)
+                    .WithMany(p => p.ReliquidacionViaticoCiudadDestino)
                     .HasForeignKey(d => d.IdCiudadDestino)
                     .HasConstraintName("FK_RequlidacionViatico_Ciudad");
 
                 entity.HasOne(d => d.CiudadOrigen)
-                    .WithMany(p => p.ReliquidacionViaticoIdCiudadOrigen)
+                    .WithMany(p => p.ReliquidacionViaticoCiudadOrigen)
                     .HasForeignKey(d => d.IdCiudadOrigen)
                     .HasConstraintName("FK_RequlidacionViatico_Ciudad1");
 
@@ -4350,17 +4368,23 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_SolicitudViatico_Ciudad");
 
-                entity.HasOne(d => d.Pais)
+                entity.HasOne(d => d.ConfiguracionViatico)
                     .WithMany(p => p.SolicitudViatico)
-                    .HasForeignKey(d => d.IdPais)
+                    .HasForeignKey(d => d.IdConfiguracionViatico)
                     .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_SolicitudViatico_Pais");
+                    .HasConstraintName("FK_SolicitudViatico_ConfiguracionViatico");
 
-                entity.HasOne(d => d.Provincia)
+                entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.SolicitudViatico)
-                    .HasForeignKey(d => d.IdProvincia)
+                    .HasForeignKey(d => d.IdEmpleado)
                     .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_SolicitudViatico_Provincia");
+                    .HasConstraintName("FK_SolicitudViatico_Empleado");
+
+                entity.HasOne(d => d.FondoFinanciamiento)
+                    .WithMany(p => p.SolicitudViatico)
+                    .HasForeignKey(d => d.IdFondoFinanciamiento)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_SolicitudViatico_FondoFinanciamiento");
             });
 
 

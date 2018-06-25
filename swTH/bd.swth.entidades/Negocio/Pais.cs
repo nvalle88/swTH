@@ -15,6 +15,5 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<CapacitacionProveedor> CapacitacionProveedor { get; set; }
         public virtual ICollection<Provincia> Provincia { get; set; }
-        public virtual ICollection<SolicitudViatico> SolicitudViatico { get; set; }
     }
 }

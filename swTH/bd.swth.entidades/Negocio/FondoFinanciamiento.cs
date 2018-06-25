@@ -16,5 +16,6 @@ namespace bd.swth.entidades.Negocio
         //Propiedades Virtuales Referencias a otras clases
 
         public virtual ICollection<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
+        public virtual ICollection<SolicitudViatico> SolicitudViatico { get; set; }
     }
 }

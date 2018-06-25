@@ -13,7 +13,6 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<Ciudad> Ciudad { get; set; }
         public virtual ICollection<Empleado> Empleado { get; set; }
-        public virtual ICollection<SolicitudViatico> SolicitudViatico { get; set; }
         public virtual Pais Pais { get; set; }
 
     }
