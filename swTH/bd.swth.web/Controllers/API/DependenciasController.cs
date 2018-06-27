@@ -117,20 +117,15 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.Dependencia.Include(c => c.Sucursal).Where(x => x.IdSucursal == sucursal.IdSucursal).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Dependencia
+                    .Include(c => c.Sucursal)
+                    .Where(w => w.IdSucursal == sucursal.IdSucursal)
+                    .OrderBy(o => o.Nombre)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<Dependencia>();
             }
         }
@@ -141,39 +136,33 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var listadependeciasporsucursal = await db.Dependencia.Include(c => c.Sucursal).Where(x => x.IdSucursal == sucursal.IdSucursal).OrderBy(x => x.Nombre).ToListAsync();
-                var jefe = listadependeciasporsucursal.Where(x => x.IdDependenciaPadre == 0).FirstOrDefault();
-                SetChildren(jefe, listadependeciasporsucursal);
-                return jefe;
+                var listaDependencias = await db.Dependencia.Where(x => x.IdSucursal == sucursal.IdSucursal).OrderBy(x => x.Nombre).ToListAsync();
+
+                // ** Buscar dependencia padre
+                var padre = listaDependencias.Where(w => w.IdDependenciaPadre == 0).FirstOrDefault();
+
+                // ** Cada item se convierte en padre y se buscan sus hijos (así se llenan todos los padres)
+                foreach (var item in listaDependencias)
+                {
+
+                    var listaHijos = listaDependencias.Where(w => w.IdDependenciaPadre == item.IdDependencia).ToList();
+                    item.Dependencia1 = new List<Dependencia>(listaHijos);
+                }
+
+                // ** árbol de dependencias **
+
+                // añadir el padre al árbol
+                var arbol = padre;
+
+                return arbol;
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Dependencia();
             }
         }
-
-        private void SetChildren(Dependencia dependencia, List<Dependencia> listadependencias)
-        {
-            var hijos = listadependencias.Where(x => x.IdDependenciaPadre == dependencia.IdDependencia).ToList();
-            if (hijos.Count > 0)
-            {
-                foreach (var hijo in hijos)
-                {
-                    SetChildren(hijo, listadependencias);
-                    dependencia.Dependencia1.Add(hijo);
-                }
-            }
-        }
+        
+        
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]

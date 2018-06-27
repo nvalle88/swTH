@@ -7,6 +7,9 @@ using Microsoft.Extensions.Configuration;
 using System.IO;
 using bd.swth.datos;
 using bd.swth.web.Controllers.API;
+using System.Linq;
+using System.Collections.Generic;
+using bd.swth.entidades.Negocio;
 
 namespace bd.swth.web.Temporizador
 {
@@ -57,7 +60,7 @@ namespace bd.swth.web.Temporizador
                 var horaActual = DateTime.Now.Hour;
 
                 var horaControlDiarioMin = 0;//0
-                var horaControlDiarioMax = 19;//3
+                var horaControlDiarioMax = 3;//3
 
                 if (horaActual>horaControlDiarioMin && horaActual<horaControlDiarioMax) {
 
@@ -68,9 +71,7 @@ namespace bd.swth.web.Temporizador
                     await ctl1.CrearRegistroVacacionesEmpleados();
                     
                 }
-
-                
-
+            
             }
             catch (Exception)
             {
