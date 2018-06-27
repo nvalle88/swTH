@@ -34,7 +34,7 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                return await db.FacturaViatico.Where(x => x.IdItinerarioViatico == facturaViatico.IdItinerarioViatico).ToListAsync();
+                return await db.FacturaViatico.Where(x => x.IdSolicitudViatico == facturaViatico.IdSolicitudViatico).ToListAsync();
 
             }
             catch (Exception ex)
@@ -116,7 +116,7 @@ namespace bd.swth.web.Controllers.API
                         facturaViaticoActualizar.FechaFactura = facturaViatico.FechaFactura;
                         facturaViaticoActualizar.Observaciones = facturaViatico.Observaciones;
                         facturaViaticoActualizar.IdItemViatico = facturaViatico.IdItemViatico;
-                        facturaViaticoActualizar.IdItinerarioViatico = facturaViatico.IdItinerarioViatico;
+                        facturaViaticoActualizar.IdSolicitudViatico = facturaViatico.IdSolicitudViatico;
                         db.FacturaViatico.Update(facturaViaticoActualizar);
                         await db.SaveChangesAsync();
 
@@ -163,7 +163,7 @@ namespace bd.swth.web.Controllers.API
                 var documenttransfer = new FacturaViatico
                 {
                     NumeroFactura = viewModelFacturaViatico.NumeroFactura,
-                    IdItinerarioViatico = viewModelFacturaViatico.IdItinerarioViatico,
+                    IdSolicitudViatico = viewModelFacturaViatico.IdSolicitudViatico,
                     IdItemViatico = viewModelFacturaViatico.IdItemViatico,
                     FechaFactura = viewModelFacturaViatico.FechaFactura,
                     ValorTotalFactura = viewModelFacturaViatico.ValorTotalFactura,

@@ -166,8 +166,6 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<FormularioDevengacion> FormularioDevengacion2 { get; set; }
 
-        public virtual ICollection<FacturaViatico> FacturaViatico { get; set; }
-
         public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimiento { get; set; }
 
         public virtual ICollection<RMU> RMU { get; set; }

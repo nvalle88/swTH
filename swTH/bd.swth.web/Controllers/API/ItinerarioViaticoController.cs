@@ -34,7 +34,7 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                return await db.ItinerarioViatico.Where(x=>x.IdSolicitudViatico == itinerarioViatico.IdSolicitudViatico).Include(x => x.TipoTransporte).OrderBy(x => x.FechaDesde).ToListAsync();
+                return await db.ItinerarioViatico.Where(x=>x.IdSolicitudViatico == itinerarioViatico.IdSolicitudViatico).Include(x => x.TipoTransporte).Include(x=>x.SolicitudViatico).OrderBy(x => x.FechaDesde).ToListAsync();
 
             }
             catch (Exception ex)
@@ -138,10 +138,10 @@ namespace bd.swth.web.Controllers.API
                     try
                     {
                         itinerarioViaticoActualizar.IdTipoTransporte = itinerarioViatico.IdTipoTransporte;
-                        itinerarioViaticoActualizar.Descripcion = itinerarioViatico.Descripcion;
+                        itinerarioViaticoActualizar.IdCiudadOrigen = itinerarioViatico.IdCiudadOrigen;
                         itinerarioViaticoActualizar.FechaDesde = itinerarioViatico.FechaDesde;
                         itinerarioViaticoActualizar.FechaHasta = itinerarioViatico.FechaHasta;
-                        itinerarioViaticoActualizar.Valor = itinerarioViatico.Valor;
+                        itinerarioViaticoActualizar.IdCiudadDestino = itinerarioViatico.IdCiudadDestino;
                         itinerarioViaticoActualizar.HoraSalida = itinerarioViatico.HoraSalida;
                         itinerarioViaticoActualizar.HoraLlegada = itinerarioViatico.HoraLlegada;
                         db.ItinerarioViatico.Update(itinerarioViaticoActualizar);
@@ -197,14 +197,6 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = ""
-                    };
-                }
 
                 var respuesta = Existe(ItinerarioViatico);
                 if (!respuesta.IsSuccess)
@@ -302,18 +294,18 @@ namespace bd.swth.web.Controllers.API
         {
             var bdd1 = ItinerarioViatico.IdSolicitudViatico;
             var bdd2 = ItinerarioViatico.IdTipoTransporte;
-            var bdd3 = ItinerarioViatico.Descripcion;
+            var bdd3 = ItinerarioViatico.IdCiudadOrigen;
             var bdd4 = ItinerarioViatico.FechaDesde;
             var bdd5 = ItinerarioViatico.FechaHasta;
-            var bdd6 = ItinerarioViatico.Valor;
+            var bdd6 = ItinerarioViatico.IdCiudadDestino;
             var bdd7 = ItinerarioViatico.HoraSalida;
             var bdd8 = ItinerarioViatico.HoraLlegada;
             var itinerarioviaticorespuesta = db.ItinerarioViatico.Where(p => p.IdSolicitudViatico== bdd1 
             && p.IdTipoTransporte ==bdd2 
-            && p.Descripcion == bdd3
+            && p.IdCiudadOrigen == bdd3
             && p.FechaHasta == bdd4
             && p.FechaHasta == bdd5
-            && p.Valor == bdd6
+            && p.IdCiudadOrigen == bdd6
             && p.HoraSalida == bdd7
             && p.HoraLlegada == bdd8).FirstOrDefault();
             if (itinerarioviaticorespuesta != null)

@@ -17,5 +17,6 @@ namespace bd.swth.entidades.ViewModels
         public List<TipoViatico> ListaTipoViatico { get; set; }
         public List<String> ViaticosSeleccionados { get; set; }
         public Decimal Valor { get; set; }
+        
     }
 }

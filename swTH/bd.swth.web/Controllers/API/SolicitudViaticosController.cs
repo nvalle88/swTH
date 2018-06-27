@@ -28,7 +28,70 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        [HttpPost]
+        [Route("ObtenerSolicitudesViaticosporId")]
+
+        public async Task<ViewModelsSolicitudViaticos> ObtenerSolicitudesViaticosporId([FromBody]ViewModelsSolicitudViaticos viewModelsSolicitudViaticos)
+        {
+            try
+            {
+                var NuevoviewModelsSolicitudViaticos = new ViewModelsSolicitudViaticos();
+
+                NuevoviewModelsSolicitudViaticos = await db.SolicitudViatico.Select(x => new ViewModelsSolicitudViaticos
+                {
+                    FechaSolicitud = x.FechaSolicitud,
+                    IdEmpleado = x.IdEmpleado,
+                    FondoFinanciamiento = x.FondoFinanciamiento.Nombre,
+                    IdSolicitudViatico = x.IdSolicitudViatico,
+                    FechaLlegada = x.FechaLlegada,
+                    HoraLlegada = x.HoraLlegada,
+                    FechaSalida = x.FechaSalida,
+                    HoraSalida = x.HoraSalida,
+                    Ciudad = x.Ciudad.Nombre,
+                    Provincia = x.Ciudad.Provincia.Nombre,
+                    Pais = x.Ciudad.Provincia.Pais.Nombre,
+                    Servidor = x.Empleado.Persona.Nombres + " " + x.Empleado.Persona.Nombres,
+                    Dependencia = x.Empleado.Dependencia.Nombre,
+                    Descripcion = x.Descripcion,
+                    Observacion = x.Observacion,
+                    Estado = x.Estado
+                }
+                 ).SingleOrDefaultAsync(m => m.IdSolicitudViatico == viewModelsSolicitudViaticos.IdSolicitudViatico);
+                /// busca el puesto del empleado 
+                var modalidadpartida = await db.IndiceOcupacionalModalidadPartida.OrderByDescending(x => x.Fecha).Where(m => m.IdEmpleado == NuevoviewModelsSolicitudViaticos.IdEmpleado)
+                    .Select(y => new ManualPuesto
+                    {
+                        Nombre = y.IndiceOcupacional.ManualPuesto.Nombre
+                    }
+                ).FirstOrDefaultAsync();
+
+                //lista los itinerio de la solicitud
+                var ListaItinerario = await db.ItinerarioViatico.Where(m => m.IdSolicitudViatico == NuevoviewModelsSolicitudViaticos.IdSolicitudViatico)
+                    .Select(m => new ViewModelsItinerarioViaticos
+                    {
+                        IdItinerarioViatico=m.IdItinerarioViatico,
+                        IdCiudadDestino = m.IdCiudadDestino,
+                        IdCiudadOrigen =m.IdCiudadOrigen,
+                        Transporte = m.TipoTransporte.Descripcion,
+                        Ruta = m.CiudadOrigen.Nombre +"-"+ m.CiudadDestino.Nombre,
+                        FechaDesde = m.FechaDesde,
+                        HoraSalida = m.HoraSalida,
+                        FechaHasta = m.FechaHasta,
+                        HoraLlegada = m.HoraLlegada
+                    })
+                    .ToListAsync();
+
+                NuevoviewModelsSolicitudViaticos.Puesto = modalidadpartida.Nombre;
+                NuevoviewModelsSolicitudViaticos.ListaItinerarioViatico = ListaItinerario;
+
+                return NuevoviewModelsSolicitudViaticos;
+
+            }
+            catch (Exception ex)
+            {
+                return new ViewModelsSolicitudViaticos();
+            }
+        }
         [HttpGet]
         [Route("ListarSolicitudesViaticos")]
         public async Task<List<SolicitudViatico>> GetSolicitudViatico()
@@ -60,10 +123,10 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 var SolicitudViaticos = new List<SolicitudViatico>();
-                
+
                 SolicitudViaticos = await db.SolicitudViatico
                                     .Where(e => e.IdEmpleado == empleado.IdEmpleado).ToListAsync();
-                
+
                 return SolicitudViaticos;
 
 
@@ -89,38 +152,12 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var ItinerarioViatico =  db.ItinerarioViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).ToList();
-                var total = ItinerarioViatico.Sum(x=>x.Valor);
+                var ItinerarioViatico = db.ItinerarioViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).ToList();
+
                 var SolicitudViatico = new SolicitudViatico();
 
                 SolicitudViatico = await db.SolicitudViatico.SingleOrDefaultAsync(m => m.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico);
-               
-                if (SolicitudViatico != null)
-                {
-                    var empleado = await db.Empleado.Where(x => x.IdEmpleado == SolicitudViatico.IdEmpleado).FirstOrDefaultAsync();
-                    var dias = SolicitudViatico.FechaLlegada.Day - SolicitudViatico.FechaSalida.Day;
-                    SolicitudViatico.valorItinerario=total;
-                    if (empleado.EsJefe == true)
-                    {
-                        if (dias == 0)
-                        {
-                            dias = 1;
-                            SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Jefe) * dias;
-                        }
-                        SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Jefe) * dias;
-                    }
-                    else
-                    {
-                        if (dias == 0)
-                        {
-                            dias = 1;
-                            SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Operativo) * dias;
-                        }
-                        SolicitudViatico.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Operativo) * dias;
-                    }                   
 
-                    return SolicitudViatico;
-                }
                 return SolicitudViatico;
 
             }
@@ -215,8 +252,6 @@ namespace bd.swth.web.Controllers.API
                     try
                     {
                         solicitudViaticoActualizar.IdEmpleado = solicitudViatico.IdEmpleado;
-                        solicitudViaticoActualizar.IdPais = solicitudViatico.IdPais;
-                        solicitudViaticoActualizar.IdProvincia = solicitudViatico.IdProvincia;
                         solicitudViaticoActualizar.IdCiudad = solicitudViatico.IdCiudad;
                         solicitudViaticoActualizar.IdConfiguracionViatico = solicitudViatico.IdConfiguracionViatico;
                         solicitudViaticoActualizar.FechaSolicitud = solicitudViatico.FechaSolicitud;
@@ -277,30 +312,59 @@ namespace bd.swth.web.Controllers.API
         // POST: api/BasesDatos
         [HttpPost]
         [Route("InsertarSolicitudViatico")]
-        public async Task<Response> PostSolicitudViatico([FromBody] SolicitudViaticoViewModel solicitudViaticoViewModel)
+        public async Task<Response> PostSolicitudViatico([FromBody] ViewModelsSolicitudViaticos viewModelsSolicitudViaticos)
         {
             try
             {
-                var respuesta = Existe(solicitudViaticoViewModel.SolicitudViatico);
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == viewModelsSolicitudViaticos.IdEmpleado).FirstOrDefaultAsync();
+                var dias = viewModelsSolicitudViaticos.FechaLlegada.Day - viewModelsSolicitudViaticos.FechaSalida.Day;
+
+                if (empleado.EsJefe == true)
+                {
+                    if (dias == 0)
+                    {
+                        dias = 1;
+                        viewModelsSolicitudViaticos.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Jefe) * dias;
+                    }
+                    viewModelsSolicitudViaticos.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Jefe) * dias;
+                }
+                else
+                {
+                    if (dias == 0)
+                    {
+                        dias = 1;
+                        viewModelsSolicitudViaticos.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Operativo) * dias;
+                    }
+                    viewModelsSolicitudViaticos.ValorEstimado = Convert.ToDecimal(ConstantesViaticos.Operativo) * dias;
+                }
+                var datos = new SolicitudViatico()
+                {
+                    IdEmpleado = viewModelsSolicitudViaticos.IdEmpleado,
+                    IdCiudad = viewModelsSolicitudViaticos.IdCiudad,
+                    IdConfiguracionViatico = viewModelsSolicitudViaticos.IdConfiguracionViatico,
+                    FechaSolicitud = viewModelsSolicitudViaticos.FechaSolicitud,
+                    Descripcion = viewModelsSolicitudViaticos.Descripcion,
+                    ValorEstimado = viewModelsSolicitudViaticos.ValorEstimado,
+                    FechaLlegada = viewModelsSolicitudViaticos.FechaLlegada,
+                    FechaSalida = viewModelsSolicitudViaticos.FechaSalida,
+                    Observacion = viewModelsSolicitudViaticos.Observacion,
+                    Estado = 0,
+                    HoraSalida = viewModelsSolicitudViaticos.HoraSalida,
+                    HoraLlegada = viewModelsSolicitudViaticos.HoraLlegada,
+                    IdFondoFinanciamiento = viewModelsSolicitudViaticos.IdFondoFinanciamiento
+                };
+
+                var respuesta = Existe(datos);
                 if (!respuesta.IsSuccess)
                 {
-                    var solicitudViatico = db.SolicitudViatico.Add(solicitudViaticoViewModel.SolicitudViatico);
-                    await db.SaveChangesAsync();
+                    var solicitudViatico = db.SolicitudViatico.Add(datos);
 
-                    //solicitudViaticoViewModel.SolicitudTipoViatico. = solicitudViatico.Entity.IdSolicitudViatico;
-
-
-                    foreach (var item in solicitudViaticoViewModel.ViaticosSeleccionados)
+                    var solTipoViatico = new SolicitudTipoViatico
                     {
-
-
-                        var solTipoViatico = new SolicitudTipoViatico
-                        {
-                            IdSolicitudViatico = solicitudViatico.Entity.IdSolicitudViatico,
-                            IdTipoViatico = Convert.ToInt32(item)
-                        };
-                        db.SolicitudTipoViatico.Add(solTipoViatico);
-                    }
+                        IdSolicitudViatico = solicitudViatico.Entity.IdSolicitudViatico,
+                        IdTipoViatico = viewModelsSolicitudViaticos.IdConfiguracionViatico
+                    };
+                    db.SolicitudTipoViatico.Add(solTipoViatico);
 
                     await db.SaveChangesAsync();
 
@@ -308,7 +372,7 @@ namespace bd.swth.web.Controllers.API
                     {
                         IsSuccess = true,
                         Message = Mensaje.Satisfactorio,
-                        Resultado = solicitudViatico.Entity
+                        Resultado = solicitudViatico
 
                     };
                 }
@@ -322,16 +386,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -340,79 +394,6 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        [HttpPost]
-        [Route("ActualizarValorTotalViatico")]
-        public async Task<Response> PutValorTotalViatico([FromBody] SolicitudViatico solicitudViatico)
-        {
-            Decimal valor = new Decimal();
-            try
-            {
-
-
-                var solicitudViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
-
-                if (solicitudViaticoActualizar != null)
-                {
-
-                    var listaItinerarios = await db.ItinerarioViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).ToListAsync();
-
-
-                    foreach (var item in listaItinerarios)
-                    {
-                        valor = valor + item.Valor;
-                    }
-
-
-                    try
-                    {
-                        solicitudViaticoActualizar.ValorEstimado = valor;
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
-                };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Excepcion
-                };
-            }
-        }
 
         [HttpPost]
         [Route("ActualizarEstadoSolicitudViatico")]
@@ -420,8 +401,6 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-
-
                 var solicitudViaticoActualizar = await db.SolicitudViatico.Where(x => x.IdSolicitudViatico == solicitudViatico.IdSolicitudViatico).FirstOrDefaultAsync();
 
                 if (solicitudViaticoActualizar != null)
@@ -459,11 +438,7 @@ namespace bd.swth.web.Controllers.API
                             Message = Mensaje.Error,
                         };
                     }
-                }
-
-
-
-
+                }                
                 return new Response
                 {
                     IsSuccess = false,
@@ -509,7 +484,7 @@ namespace bd.swth.web.Controllers.API
                     }
                     db.SolicitudViatico.Remove(respuesta2);
                     await db.SaveChangesAsync();
-                }                
+                }
                 else
                 {
                     db.SolicitudTipoViatico.Remove(respuesta1);
@@ -554,8 +529,6 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(SolicitudViatico SolicitudViatico)
         {
             var bdd1 = SolicitudViatico.IdEmpleado;
-            var bdd2 = SolicitudViatico.IdPais;
-            var bdd3 = SolicitudViatico.IdProvincia;
             var bdd4 = SolicitudViatico.IdCiudad;
             var bdd5 = SolicitudViatico.IdConfiguracionViatico;
             var bdd6 = SolicitudViatico.FechaSolicitud;
@@ -568,8 +541,6 @@ namespace bd.swth.web.Controllers.API
             var bdd13 = SolicitudViatico.HoraSalida;
             var bdd14 = SolicitudViatico.HoraLlegada;
             var solicitudviaticorespuesta = db.SolicitudViatico.Where(p => p.IdEmpleado == bdd1
-            && p.IdPais == bdd2
-            && p.IdProvincia == bdd3
             && p.IdCiudad == bdd4
             && p.IdConfiguracionViatico == bdd5
             && p.FechaSolicitud == bdd6

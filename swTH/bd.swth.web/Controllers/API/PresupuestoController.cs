@@ -64,23 +64,23 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("ObtenerPresupuesto")]
-        public async Task<Response> ObtenerPresupuesto([FromBody] SolicitudViaticoViewModel solicitudViaticoViewModel)
+        public async Task<Response> ObtenerPresupuesto([FromBody] ViewModelsSolicitudViaticos viewModelsSolicitudViaticos)
         {
             try
             {
-                var a = await db.Presupuesto.Where(x => x.IdPresupuesto == solicitudViaticoViewModel.Presupuesto.IdPresupuesto && x.IdSucursal == null).OrderBy(x => x.Fecha).FirstOrDefaultAsync();
+                var a = await db.Presupuesto.Where(x => x.IdPresupuesto == viewModelsSolicitudViaticos.IdPresupuesto && x.IdSucursal == null).OrderBy(x => x.Fecha).FirstOrDefaultAsync();
                 if (a != null)
                 {
-                    var b = db.DetallePresupuesto.Where(x => x.IdPresupuesto == solicitudViaticoViewModel.Presupuesto.IdPresupuesto).ToListAsync().Result.Sum(x => x.Valor);
-                    var valor = b + Convert.ToDouble(solicitudViaticoViewModel.Valor);
+                    var b = db.DetallePresupuesto.Where(x => x.IdPresupuesto == viewModelsSolicitudViaticos.IdPresupuesto).ToListAsync().Result.Sum(x => x.Valor);
+                    var valor = b + Convert.ToDouble(viewModelsSolicitudViaticos.ValorEstimado);
                     if (valor <= a.Valor)
                     {
 
                         var detalle = new DetallePresupuesto
                         {
                             IdPresupuesto = a.IdPresupuesto,
-                            IdSolicitudViatico = solicitudViaticoViewModel.SolicitudViatico.IdSolicitudViatico,
-                            Valor = Convert.ToDouble(solicitudViaticoViewModel.Valor),
+                            IdSolicitudViatico = viewModelsSolicitudViaticos.IdSolicitudViatico,
+                            Valor = Convert.ToDouble(viewModelsSolicitudViaticos.ValorEstimado),
                             Fecha = DateTime.Now
 
                         };
