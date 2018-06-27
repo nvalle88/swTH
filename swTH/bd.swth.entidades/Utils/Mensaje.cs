@@ -26,7 +26,7 @@ namespace bd.swth.entidades.Utils
 
         public static string SeleccioneIndice { get { return "Debe seleccionar un índice en: situación propuesta."; } }
         public static string ErrorValorEstadoMovimientoInterno { get { return "Valor de estado sin nombre"; } }
-
+        public static string ExisteIdentificacion { get { return "La identificación ingresada corresponde a otra persona"; } }
 
         ////
         public static string ConceptoNoExiste { get { return "El concepto no existe en el proceso al cual pertenece el presente cálculo de nómina."; } }
@@ -37,6 +37,8 @@ namespace bd.swth.entidades.Utils
         public static string AccionPersonalBloqueada { get { return "Esta acción ya se ha aprobado por todos los responsables de aprobación, no puede editarse"; } }
 
         public static string ErrorPorComparacionFechasTipoAccionPersonal { get { return "La hora mínimo debe ser menor a la hora máximo y el día mínimo debe ser menor al día máximo"; } }
-        
+
+        public static string ExistePartidaIndividual { get { return "El número de partida / código ingresado ya existe"; } }
+
     }
 }

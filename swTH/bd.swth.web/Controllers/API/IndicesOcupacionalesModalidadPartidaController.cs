@@ -225,33 +225,99 @@ namespace bd.swth.web.Controllers.API
                             Message = ""
                         };
                     }
+                    
 
-                    var respuesta = Existe(IndiceOcupacionalModalidadPartida);
-                    if (!respuesta.IsSuccess)
+
+                    if (IndiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida < 1)
                     {
+                        
+                        // ** Si no existe un registro se crea uno nuevo
                         db.IndiceOcupacionalModalidadPartida.Add(IndiceOcupacionalModalidadPartida);
                         await db.SaveChangesAsync();
-                        //Agrega la dependencia y el estado del empleado
+
+                        // ** Se agrega la dependencia y el estado del empleado cambia a activo
                         var empleado = await db.Empleado.Where(x => x.IdEmpleado == IndiceOcupacionalModalidadPartida.IdEmpleado).FirstOrDefaultAsync();
+
                         empleado.IdDependencia = IndiceOcupacionalModalidadPartida.IdDependecia;
                         empleado.Activo = true;
+
                         db.Empleado.Update(empleado);
                         await db.SaveChangesAsync();
 
                         transaction.Commit();
+
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio
+                            Message = Mensaje.GuardadoSatisfactorio
+                        };
+                        
+                    }
+                    else
+                    {
+                        // En caso de existir un registro se edita
+
+                        var modelo = await db.IndiceOcupacionalModalidadPartida
+                            .Where(w => w.IdIndiceOcupacionalModalidadPartida == IndiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida)
+                            .FirstOrDefaultAsync();
+
+                        modelo.IdIndiceOcupacional = IndiceOcupacionalModalidadPartida.IdIndiceOcupacional;
+                        modelo.IdFondoFinanciamiento = IndiceOcupacionalModalidadPartida.IdFondoFinanciamiento;
+                        modelo.IdTipoNombramiento = IndiceOcupacionalModalidadPartida.IdTipoNombramiento;
+                        modelo.SalarioReal = IndiceOcupacionalModalidadPartida.SalarioReal;
+                        modelo.Fecha = IndiceOcupacionalModalidadPartida.Fecha;
+
+                        db.IndiceOcupacionalModalidadPartida.Update(modelo);
+                        
+
+
+                        // Se edita el estado del índice Ocupacional
+                        var indice = await db.IndiceOcupacional
+                            .Where(w => w.IdIndiceOcupacional == IndiceOcupacionalModalidadPartida.IdIndiceOcupacional)
+                            .FirstOrDefaultAsync();
+
+                        /*
+                          ** ESTE CÓDOGO COMENTADO EDITA EL NÚMERO DE PARTIDA (SI NO SE REPITE) **
+                          
+                        // verificar que el número de partida/ o código no se repitan
+                        var partidaExiste = await db.IndiceOcupacional
+                            .Where(w => 
+                                w.NumeroPartidaIndividual == IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual
+                                && w.IdIndiceOcupacional != IndiceOcupacionalModalidadPartida.IdIndiceOcupacional
+                                )
+                            .FirstOrDefaultAsync();
+
+                        if (partidaExiste != null)
+                        {
+
+                            transaction.Rollback();
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = Mensaje.ExistePartidaIndividual,
+                            };
+                        }
+
+
+                        indice.NumeroPartidaIndividual = IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual;
+                        */
+
+
+                        indice.IdModalidadPartida = IndiceOcupacionalModalidadPartida.IdModalidadPartida;
+                        
+
+                        db.IndiceOcupacional.Update(indice);
+                        await db.SaveChangesAsync();
+
+                        transaction.Commit(); 
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.GuardadoSatisfactorio
                         };
                     }
                     
-
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
-                    };
+                   
                 }
 
                 catch (Exception ex)
