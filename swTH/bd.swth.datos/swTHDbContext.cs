@@ -3914,27 +3914,31 @@ namespace bd.swth.datos
                 entity.HasOne(d => d.CiudadDestino)
                     .WithMany(p => p.ReliquidacionViaticoCiudadDestino)
                     .HasForeignKey(d => d.IdCiudadDestino)
+                    .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_RequlidacionViatico_Ciudad");
 
                 entity.HasOne(d => d.CiudadOrigen)
                     .WithMany(p => p.ReliquidacionViaticoCiudadOrigen)
                     .HasForeignKey(d => d.IdCiudadOrigen)
+                    .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_RequlidacionViatico_Ciudad1");
 
                 entity.HasOne(d => d.ItemViatico)
-                   .WithMany(p => p.ReliquidacionViatico)
-                   .HasForeignKey(d => d.IdItemViatico)
-                   .HasConstraintName("FK_ReliquidacionViatico_ItemViatico");
-
-                entity.HasOne(d => d.ItinerarioViatico)
                     .WithMany(p => p.ReliquidacionViatico)
-                    .HasForeignKey(d => d.IdItinerarioViatico)
+                    .HasForeignKey(d => d.IdItemViatico)
                     .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("RefRequlidacionViatico396");
+                    .HasConstraintName("FK_ReliquidacionViatico_ItemViatico");
+
+                entity.HasOne(d => d.SolicitudViatico)
+                    .WithMany(p => p.ReliquidacionViatico)
+                    .HasForeignKey(d => d.IdSolicitudViatico)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ReliquidacionViatico_SolicitudViatico");
 
                 entity.HasOne(d => d.TipoTransporte)
                     .WithMany(p => p.ReliquidacionViatico)
                     .HasForeignKey(d => d.IdTipoTransporte)
+                    .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_RequlidacionViatico_TipoTransporte");
             });
 
