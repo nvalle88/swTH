@@ -54,7 +54,8 @@ namespace bd.swth.web.Controllers.API
                     Dependencia = x.Empleado.Dependencia.Nombre,
                     Descripcion = x.Descripcion,
                     Observacion = x.Observacion,
-                    Estado = x.Estado
+                    Estado = x.Estado,
+                    ValorEstimado = x.ValorEstimado
                 }
                  ).SingleOrDefaultAsync(m => m.IdSolicitudViatico == viewModelsSolicitudViaticos.IdSolicitudViatico);
                 /// busca el puesto del empleado 
@@ -77,7 +78,7 @@ namespace bd.swth.web.Controllers.API
                         FechaDesde = m.FechaDesde,
                         HoraSalida = m.HoraSalida,
                         FechaHasta = m.FechaHasta,
-                        HoraLlegada = m.HoraLlegada
+                        HoraLlegada = m.HoraLlegada,
                     })
                     .ToListAsync();
 
