@@ -52,7 +52,6 @@ namespace bd.swth.web.Controllers
             }
 
             return ListaCapacitaciones;
-
         }
 
         // GET: api/BasesDatos
