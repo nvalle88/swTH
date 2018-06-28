@@ -823,7 +823,7 @@ namespace bd.swth.web.Controllers.API
                 var listaIndiceOcupacional = db.IndiceOcupacional
                     .Include(x => x.ManualPuesto)
                     .Include(x => x.ModalidadPartida)
-                    .Where(x => x.IdDependencia == indiceocupacional.IdDependencia && x.ModalidadPartida.Nombre == Constantes.PartidaVacante)
+                    .Where(x => x.IdDependencia == indiceocupacional.IdDependencia && x.ModalidadPartida.Nombre.ToUpper() == Constantes.PartidaVacante.ToUpper())
                     .OrderBy(x => x.IdDependencia).DistinctBy(x => x.IdManualPuesto).ToList();
 
                 return listaIndiceOcupacional;
