@@ -736,7 +736,7 @@ namespace bd.swth.web.Controllers.API
                     .Where(w => w.NombreUsuario == NombreUsuario).FirstOrDefaultAsync();
 
                 var listaIOMP = await db.IndiceOcupacionalModalidadPartida
-                                    .Where(w => w.Empleado.Dependencia.IdSucursal == usuarioActual.Dependencia.IdSucursal)
+                                    //.Where(w => w.Empleado.Dependencia.IdSucursal == usuarioActual.Dependencia.IdSucursal)
                                     .OrderByDescending(o => o.Fecha)
                                     .Select(x => new ListaEmpleadoViewModel
                                     {
@@ -759,9 +759,7 @@ namespace bd.swth.web.Controllers.API
 
 
                 var lista = await db.Empleado
-                                    .Where(
-                                        w => w.Dependencia.IdSucursal == usuarioActual.Dependencia.IdSucursal
-                                     )
+                                    //.Where(w => w.Dependencia.IdSucursal == usuarioActual.Dependencia.IdSucursal)
                                     .Select(x => new ListaEmpleadoViewModel
                                     {
                                         IdEmpleado = x.IdEmpleado,
