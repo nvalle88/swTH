@@ -54,6 +54,40 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        // GET: api/IndicesOcupacionalesModalidadPartida
+        [HttpGet]
+        [Route("MostrarDistributivo")]
+        public async Task<List<IndiceOcupacionalModalidadPartida>> MostrarDistributivo()
+        {
+            try
+            {
+                return await db.IndiceOcupacionalModalidadPartida
+                    .Include(i => i.IndiceOcupacional)
+                        .Include(i=> i.IndiceOcupacional.Dependencia)
+                        .Include(i => i.IndiceOcupacional.ManualPuesto)
+                        .Include(i => i.IndiceOcupacional.RolPuesto)
+                        .Include(i => i.IndiceOcupacional.Ambito)
+                        .Include(i => i.IndiceOcupacional.EscalaGrados)
+
+                    .Include(i => i.Empleado)
+                        .Include(i=>i.Empleado.Persona)
+
+                    .Include(i => i.FondoFinanciamiento)
+                    .Include(i => i.TipoNombramiento)
+                    .Include(i => i.ModalidadPartida)
+                    .Where(w=>w.Empleado.Activo == true)
+                    .OrderByDescending(x => x.Fecha)
+                    .DistinctBy(d => d.IdEmpleado)
+                    .ToAsyncEnumerable().ToList();
+
+            }
+            catch (Exception ex)
+            {
+                return new List<IndiceOcupacionalModalidadPartida>();
+            }
+        }
+
         /// <summary>
         /// Este método obtiene el salario de la escala de grados y si existe un salario real,
         /// envía el salario real
