@@ -2813,7 +2813,7 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.Fecha).HasColumnType("date");
 
-                entity.Property(e => e.FechaFin).HasColumnType("date");
+               // entity.Property(e => e.FechaFin).HasColumnType("date");
 
                 entity.Property(e => e.NumeroPartidaIndividual).HasColumnType("varchar(50)");
 
