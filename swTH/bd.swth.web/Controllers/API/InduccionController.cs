@@ -80,7 +80,7 @@ namespace bd.swth.web.Controllers.API
                     )
                     .Select(s=>new InduccionViewModel
                     {
-                        IdEmpleado = s.IdEmpleado,
+                        IdEmpleado = (int)s.IdEmpleado,
                         Nombres = s.Empleado.Persona.Nombres + " " + s.Empleado.Persona.Apellidos,
                         FechaIngreso = s.Fecha,
                         EstadoInduccion = (db.Induccion.Any(w => w.IdEmpleado == s.IdEmpleado))

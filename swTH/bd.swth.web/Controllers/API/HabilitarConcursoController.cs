@@ -40,6 +40,7 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
+        /*
         [Route("ListarPuestoVacantes")]
         public async Task<List<ViewModelPartidaFase>> ListarPuestoVacantes()
         {
@@ -219,6 +220,6 @@ namespace bd.swth.web.Controllers.API
             };
         }
 
-
+    */
     }
 }

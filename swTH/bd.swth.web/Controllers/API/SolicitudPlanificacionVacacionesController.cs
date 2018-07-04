@@ -58,7 +58,7 @@ namespace bd.swth.web.Controllers.API
                 //**** Realizar las acciones por cada empleado ****
                 foreach (var item2 in empleados) {
 
-                    await CalcularYRegistrarVacacionesPorEmpleado(item2.IdEmpleado);
+                    await CalcularYRegistrarVacacionesPorEmpleado((int)item2.IdEmpleado);
 
                 }// end forEach
                 

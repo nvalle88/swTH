@@ -113,7 +113,7 @@ namespace bd.swth.web.Controllers.API
 
                 var datos2 = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdEmpleado == planCapacitacion.IdEmpleado).OrderByDescending(x => x.Fecha).Select(y => new PlanCapacitacion
                 {
-                    IdEmpleado = y.IdEmpleado,
+                    IdEmpleado = (int)y.IdEmpleado,
                     Institucion = "BANCO DE DESARROLLO DEL ECUADOR B.P.",
                     Pais = y.IndiceOcupacional.Dependencia.Sucursal.Ciudad.Provincia.Pais.Nombre,
                     Provincia = y.IndiceOcupacional.Dependencia.Sucursal.Ciudad.Provincia.Nombre,
@@ -173,7 +173,7 @@ namespace bd.swth.web.Controllers.API
                         IdPlanCapacitacion = capacitacion.IdPlanCapacitacion,
                         IdPresupuesto = presupuesto.IdPresupuesto,
                         IdGestionPlanCapacitacion = capacitacion.IdGestionPlanCapacitacion,
-                        IdEmpleado = y.IdEmpleado,
+                        IdEmpleado = (int)y.IdEmpleado,
                         Institucion = capacitacion.Institucion,
                         NivelDesconcentracion = capacitacion.NivelDesconcentracion,
                         Pais = y.IndiceOcupacional.Dependencia.Sucursal.Ciudad.Provincia.Pais.Nombre,

@@ -2591,50 +2591,39 @@ namespace bd.swth.datos
             modelBuilder.Entity<IndiceOcupacional>(entity =>
             {
                 entity.HasKey(e => e.IdIndiceOcupacional)
-                    .HasName("PK_IndiceOcupacional");
-
-                entity.HasIndex(e => e.IdDependencia)
-                    .HasName("IX_IndiceOcupacional_IdDependencia");
-
-                entity.HasIndex(e => e.IdEscalaGrados)
-                    .HasName("IX_IndiceOcupacional_IdEscalaGrados");
-
-                entity.HasIndex(e => e.IdManualPuesto)
-                    .HasName("IX_IndiceOcupacional_IdManualPuesto");
-
-                entity.HasIndex(e => e.IdRolPuesto)
-                    .HasName("IX_IndiceOcupacional_IdRolPuesto");
+                    .HasName("PK69");
 
                 entity.Property(e => e.Nivel).HasColumnType("varchar(50)");
 
+                entity.HasOne(d => d.Ambito)
+                    .WithMany(p => p.IndiceOcupacional)
+                    .HasForeignKey(d => d.IdAmbito)
+                    .HasConstraintName("FK_IndiceOcupacional_Ambito");
+
                 entity.HasOne(d => d.Dependencia)
                     .WithMany(p => p.IndiceOcupacional)
-                    .HasForeignKey(d => d.IdDependencia);
+                    .HasForeignKey(d => d.IdDependencia)
+                    .HasConstraintName("RefDependencia98");
 
                 entity.HasOne(d => d.EscalaGrados)
                     .WithMany(p => p.IndiceOcupacional)
-                    .HasForeignKey(d => d.IdEscalaGrados);
+                    .HasForeignKey(d => d.IdEscalaGrados)
+                    .HasConstraintName("RefEscalaGrados101");
 
                 entity.HasOne(d => d.ManualPuesto)
                     .WithMany(p => p.IndiceOcupacional)
-                    .HasForeignKey(d => d.IdManualPuesto);
-
-                entity.HasOne(d => d.ModalidadPartida)
-                   .WithMany(p => p.IndiceOcupacional)
-                   .HasForeignKey(d => d.IdModalidadPartida);
-
-                entity.HasOne(d => d.Ambito)
-                   .WithMany(p => p.IndiceOcupacional)
-                   .HasForeignKey(d => d.IdAmbito)
-                   .HasConstraintName("FK_IndiceOcupacional_Ambito");
+                    .HasForeignKey(d => d.IdManualPuesto)
+                    .HasConstraintName("RefManualPuesto99");
 
                 entity.HasOne(d => d.PartidaGeneral)
                     .WithMany(p => p.IndiceOcupacional)
-                    .HasForeignKey(d => d.IdPartidaGeneral);
+                    .HasForeignKey(d => d.IdPartidaGeneral)
+                    .HasConstraintName("FK_IndiceOcupacional_PartidaGeneral");
 
                 entity.HasOne(d => d.RolPuesto)
                     .WithMany(p => p.IndiceOcupacional)
-                    .HasForeignKey(d => d.IdRolPuesto);
+                    .HasForeignKey(d => d.IdRolPuesto)
+                    .HasConstraintName("RefRolPuesto100");
             });
 
             modelBuilder.Entity<IndiceOcupacionalActividadesEsenciales>(entity =>
@@ -2775,19 +2764,13 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdIndiceOcupacionalModalidadPartida)
                     .HasName("PK71");
 
-                entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("Ref15189");
-
-                entity.HasIndex(e => e.IdFondoFinanciamiento)
-                    .HasName("Ref59104");
-
-                entity.HasIndex(e => e.IdIndiceOcupacional)
-                    .HasName("Ref69103");
-
-                entity.HasIndex(e => e.IdTipoNombramiento)
-                    .HasName("Ref58106");
+                entity.Property(e => e.CodigoContrato).HasColumnType("varchar(50)");
 
                 entity.Property(e => e.Fecha).HasColumnType("date");
+
+                entity.Property(e => e.FechaFin).HasColumnType("date");
+
+                entity.Property(e => e.NumeroPartidaIndividual).HasColumnType("varchar(50)");
 
                 entity.Property(e => e.SalarioReal).HasColumnType("decimal");
 
@@ -2801,6 +2784,11 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdIndiceOcupacional)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("RefIndiceOcupacional103");
+
+                entity.HasOne(d => d.ModalidadPartida)
+                    .WithMany(p => p.IndiceOcupacionalModalidadPartida)
+                    .HasForeignKey(d => d.IdModalidadPartida)
+                    .HasConstraintName("FK_IndiceOcupacionalModalidadPartida_ModalidadPartida");
 
                 entity.HasOne(d => d.TipoNombramiento)
                     .WithMany(p => p.IndiceOcupacionalModalidadPartida)
