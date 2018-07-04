@@ -14,6 +14,7 @@ using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.Utils;
 using bd.swth.entidades.ViewModels;
 using MoreLinq;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -353,130 +354,152 @@ namespace bd.swth.web.Controllers.API
 
         }
 
+
+
         // POST: api/IndiceOcupacionalModalidadPartida
         [HttpPost]
         [Route("InsertarIndiceOcupacionalModalidadPartida")]
         public async Task<Response> PostIndiceOcupacionalModalidadPartida([FromBody] IndiceOcupacionalModalidadPartida IndiceOcupacionalModalidadPartida)
         {
-            return new Response(); // borrar esta línea
+            
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    if (!ModelState.IsValid)
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = ""
+                        };
+                    }
 
-            //using (var transaction = await db.Database.BeginTransactionAsync())
-            //{
-            //    try
-            //    {
-            //        if (!ModelState.IsValid)
-            //        {
-            //            return new Response
-            //            {
-            //                IsSuccess = false,
-            //                Message = ""
-            //            };
-            //        }
+                    if (String.IsNullOrEmpty(IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual) )
+                    {
+                        return new Response {
+                            IsSuccess = false,
+                            Message = Mensaje.NumeroPartidaObligatorio
+                        };
+                    }
+                    
 
+                    // Se obtienen los diferentes tipos de relación laboral
+                    var nombramiento = await db.TipoNombramiento
+                        .Include(i=>i.RelacionLaboral)
+                        .Where(w => w.IdTipoNombramiento == IndiceOcupacionalModalidadPartida.IdTipoNombramiento)
+                        .FirstOrDefaultAsync();
 
+                    
+                    // Se crea el modelo para guardar
+                    var modelo = new IndiceOcupacionalModalidadPartida
+                    {
 
-            //        if (IndiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida < 1)
-            //        {
+                        IdIndiceOcupacional = IndiceOcupacionalModalidadPartida.IdIndiceOcupacional,
+                        IdFondoFinanciamiento = IndiceOcupacionalModalidadPartida.IdFondoFinanciamiento,
+                        IdTipoNombramiento = IndiceOcupacionalModalidadPartida.IdTipoNombramiento,
+                        SalarioReal = IndiceOcupacionalModalidadPartida.SalarioReal,
+                        Fecha = IndiceOcupacionalModalidadPartida.Fecha,
+                        IdEmpleado = IndiceOcupacionalModalidadPartida.IdEmpleado
 
-            //            // ** Si no existe un registro se crea uno nuevo
-            //            db.IndiceOcupacionalModalidadPartida.Add(IndiceOcupacionalModalidadPartida);
-            //            await db.SaveChangesAsync();
-
-            //            // ** Se agrega la dependencia y el estado del empleado cambia a activo
-            //            var empleado = await db.Empleado.Where(x => x.IdEmpleado == IndiceOcupacionalModalidadPartida.IdEmpleado).FirstOrDefaultAsync();
-
-            //            empleado.IdDependencia = IndiceOcupacionalModalidadPartida.IdDependecia;
-            //            empleado.Activo = true;
-
-            //            db.Empleado.Update(empleado);
-            //            await db.SaveChangesAsync();
-
-            //            transaction.Commit();
-
-            //            return new Response
-            //            {
-            //                IsSuccess = true,
-            //                Message = Mensaje.GuardadoSatisfactorio
-            //            };
-
-            //        }
-            //        else
-            //        {
-            //            // En caso de existir un registro se edita
-
-            //            var modelo = await db.IndiceOcupacionalModalidadPartida
-            //                .Where(w => w.IdIndiceOcupacionalModalidadPartida == IndiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida)
-            //                .FirstOrDefaultAsync();
-
-            //            modelo.IdIndiceOcupacional = IndiceOcupacionalModalidadPartida.IdIndiceOcupacional;
-            //            modelo.IdFondoFinanciamiento = IndiceOcupacionalModalidadPartida.IdFondoFinanciamiento;
-            //            modelo.IdTipoNombramiento = IndiceOcupacionalModalidadPartida.IdTipoNombramiento;
-            //            modelo.SalarioReal = IndiceOcupacionalModalidadPartida.SalarioReal;
-            //            modelo.Fecha = IndiceOcupacionalModalidadPartida.Fecha;
-
-            //            db.IndiceOcupacionalModalidadPartida.Update(modelo);
+                    };
 
 
 
-            //            // Se edita el estado del índice Ocupacional
-            //            var indice = await db.IndiceOcupacional
-            //                .Where(w => w.IdIndiceOcupacional == IndiceOcupacionalModalidadPartida.IdIndiceOcupacional)
-            //                .FirstOrDefaultAsync();
+                    if (
+                        nombramiento != null
+                        && nombramiento.RelacionLaboral.Nombre.ToUpper() == ConstantesTipoRelacion.Contrato.ToUpper()
+                        )
+                    {
+                        modelo.CodigoContrato = IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual;
+                        modelo.FechaFin = IndiceOcupacionalModalidadPartida.FechaFin;
 
-            //            /*
-            //              ** ESTE CÓDIGO COMENTADO EDITA EL NÚMERO DE PARTIDA (SI NO SE REPITE) **
-                          
-            //            // verificar que el número de partida/ o código no se repitan
-            //            var partidaExiste = await db.IndiceOcupacional
-            //                .Where(w => 
-            //                    w.NumeroPartidaIndividual == IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual
-            //                    && w.IdIndiceOcupacional != IndiceOcupacionalModalidadPartida.IdIndiceOcupacional
-            //                    )
-            //                .FirstOrDefaultAsync();
+                    }
 
-            //            if (partidaExiste != null)
-            //            {
+                    else if (
+                        nombramiento != null
+                        && nombramiento.RelacionLaboral.Nombre.ToUpper() == ConstantesTipoRelacion.Nombramiento.ToUpper()
+                        )
+                    {
+                        modelo.NumeroPartidaIndividual = IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual;
+                        modelo.IdModalidadPartida = IndiceOcupacionalModalidadPartida.IdModalidadPartida;
 
-            //                transaction.Rollback();
-            //                return new Response
-            //                {
-            //                    IsSuccess = false,
-            //                    Message = Mensaje.ExistePartidaIndividual,
-            //                };
-            //            }
+                    }
 
 
-            //            indice.NumeroPartidaIndividual = IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual;
-            //            */
+
+                        if (IndiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida < 1)
+                    {
+
+                        
 
 
-            //            indice.IdModalidadPartida = IndiceOcupacionalModalidadPartida.IdModalidadPartida;
+                        // ** Si no existe un registro se crea uno nuevo
+                        db.IndiceOcupacionalModalidadPartida.Add(modelo);
+                        await db.SaveChangesAsync();
+
+                        // ** Se agrega la dependencia y el estado del empleado cambia a activo
+                        var empleado = await db.Empleado.Where(x => x.IdEmpleado == modelo.IdEmpleado).FirstOrDefaultAsync();
+
+                        empleado.IdDependencia = IndiceOcupacionalModalidadPartida.IdDependencia;
+                        empleado.Activo = true;
+
+                        db.Empleado.Update(empleado);
+                        await db.SaveChangesAsync();
+
+                        transaction.Commit();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.GuardadoSatisfactorio
+                        };
+
+                    }
+                    else
+                    {
+                        // En caso de existir un registro se edita
+
+                        var actualizar = await db.IndiceOcupacionalModalidadPartida
+                            .Where(w => w.IdIndiceOcupacionalModalidadPartida == IndiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida)
+                            .FirstOrDefaultAsync();
+
+                        actualizar.IdIndiceOcupacional = modelo.IdIndiceOcupacional;
+                        actualizar.IdFondoFinanciamiento = modelo.IdFondoFinanciamiento;
+                        actualizar.IdTipoNombramiento = modelo.IdTipoNombramiento;
+                        actualizar.SalarioReal = modelo.SalarioReal;
+                        actualizar.Fecha = modelo.Fecha;
+                        actualizar.IdEmpleado = modelo.IdEmpleado;
+                        actualizar.CodigoContrato = modelo.CodigoContrato;
+                        actualizar.IdModalidadPartida = modelo.IdModalidadPartida;
+                        actualizar.NumeroPartidaIndividual = modelo.NumeroPartidaIndividual;
+                        actualizar.FechaFin = modelo.FechaFin;
+        
+                        db.IndiceOcupacionalModalidadPartida.Update(actualizar);
+                        await db.SaveChangesAsync();
+
+                        transaction.Commit();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.GuardadoSatisfactorio
+                        };
+                    }
 
 
-            //            db.IndiceOcupacional.Update(indice);
-            //            await db.SaveChangesAsync();
+                }
 
-            //            transaction.Commit();
-            //            return new Response
-            //            {
-            //                IsSuccess = true,
-            //                Message = Mensaje.GuardadoSatisfactorio
-            //            };
-            //        }
-
-
-            //    }
-
-            //    catch (Exception ex)
-            //    {
-            //        transaction.Rollback();
-            //        return new Response
-            //        {
-            //            IsSuccess = false,
-            //            Message = Mensaje.Error,
-            //        };
-            //    }
-            //}
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error,
+                    };
+                }
+            }
         }
 
         // DELETE: api/IndiceOcupacionalModalidadPartida/5

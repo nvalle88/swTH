@@ -44,7 +44,7 @@ namespace bd.swth.entidades.Negocio
         public virtual TipoNombramiento TipoNombramiento { get; set; }
 
         [Display(Name = "Código")]
-        [Required(ErrorMessage = "El campo {0}, no debe estar vacío")]
+        //[Required(ErrorMessage = "El campo {0}, no debe estar vacío")]
         public string CodigoContrato { get; set; }
         
         public int? IdModalidadPartida { get; set; }
@@ -57,7 +57,7 @@ namespace bd.swth.entidades.Negocio
         public DateTime? FechaFin { get; set; }
 
         [NotMapped]
-        public int IdDependecia { get; set; }
+        public int IdDependencia { get; set; }
 
         public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimientoIdIndiceOcupacionalModalidadPartidaDesde { get; set; }
         public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimientoIdIndiceOcupacionalModalidadPartidaHasta { get; set; }

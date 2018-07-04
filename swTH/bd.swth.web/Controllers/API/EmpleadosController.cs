@@ -776,7 +776,7 @@ namespace bd.swth.web.Controllers.API
                         item.NombreRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.Nombre;
                         item.ManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.Nombre;
                         item.IdManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.IdManualPuesto;
-                        item.PartidaIndividual = itemIomp.NumeroPartidaIndividual;
+                        item.PartidaIndividual = itemIomp.NumeroPartidaIndividual + itemIomp.CodigoContrato;
                     }
                 }
 
@@ -837,15 +837,81 @@ namespace bd.swth.web.Controllers.API
         
         [HttpPost]
         [Route("ListarManualPuestoporDependenciaYRelacionLaboral")]
-        public async Task<List<IndiceOcupacional>> ListarManualPuestoporDependenciaYRelacionLaboral([FromBody] IndiceOcupacional indiceocupacional)
+        public async Task<List<IndicesOcupacionalesModalidadPartidaViewModel>> ListarManualPuestoporDependenciaYRelacionLaboral([FromBody] IndiceOcupacional indiceocupacional)
         {
             try
             {
-                var listaIndiceOcupacional = new List<IndiceOcupacional>();
+                // Se obtienen todos los perfiles de puesto
+                var lista = await db.IndiceOcupacional
+                    .Where(w=>w.IdDependencia == indiceocupacional.IdDependencia)
+                    .Select(
+                        s => new IndicesOcupacionalesModalidadPartidaViewModel
+                        {
 
+                            NumeroPartidaIndividual = "",
+
+                            IndiceOcupacionalViewModel = new IndiceOcupacionalViewModel
+                            {
+
+                                IdIndiceOcupacional = s.IdIndiceOcupacional,
+                                IdDependencia = s.IdDependencia,
+                                IdManualPuesto = s.IdManualPuesto,
+                                IdRolPuesto = s.IdRolPuesto,
+                                IdEscalaGrados = s.IdEscalaGrados,
+                                IdPartidaGeneral = s.IdPartidaGeneral,
+                                IdAmbito = s.IdAmbito,
+                                Nivel = s.Nivel,
+
+
+                                NombreDependencia = s.Dependencia.Nombre,
+                                CodigoDependencia = s.Dependencia.Codigo,
+
+                                IdSucursal = s.Dependencia.Sucursal.IdSucursal,
+                                NombreSucursal = s.Dependencia.Sucursal.Nombre,
+
+                                NombreManualPuesto = s.ManualPuesto.Nombre,
+                                DescripcionManualPuesto = s.ManualPuesto.Descripcion,
+                                MisionManualPuesto = s.ManualPuesto.Mision,
+
+                                IdRelacionesInternasExternas =
+                                        s.ManualPuesto.RelacionesInternasExternas.IdRelacionesInternasExternas,
+                                NombreRelacionesInternasExternas =
+                                        s.ManualPuesto.RelacionesInternasExternas.Nombre,
+                                DescripcionRelacionesInternasExternas =
+                                        s.ManualPuesto.RelacionesInternasExternas.Descripcion,
+
+
+                                NombreRolPuesto = s.RolPuesto.Nombre,
+
+
+                                NombreEscalaGrados = s.EscalaGrados.Nombre,
+                                Remuneracion = s.EscalaGrados.Remuneracion,
+                                Grado = s.EscalaGrados.Grado,
+
+                                NumeroPartidaGeneral =
+                                    (s.PartidaGeneral == null)
+                                    ? ""
+                                    : s.PartidaGeneral.NumeroPartida,
+
+                                NombreAmbito = s.Ambito.Nombre
+
+                            }
+                            ,
+
+                        }
+
+                        ).ToListAsync();
+
+
+                // Se obtienen los diferentes tipos de relación laboral
                 var relacionLaboral = await db.RelacionLaboral
                     .Where(w => w.IdRelacionLaboral == indiceocupacional.IdRelacionLaboral)
                     .FirstOrDefaultAsync();
+
+
+                // Se obtienen los diferentes tipos de modalidad partida
+                var modalidadPartida = await db.ModalidadPartida.ToListAsync();
+
 
 
                 if (
@@ -854,14 +920,7 @@ namespace bd.swth.web.Controllers.API
                     )
                 {
 
-                    listaIndiceOcupacional = await db.IndiceOcupacional
-                        .Include(i=>i.ManualPuesto)
-                        .Where(w =>
-                            w.IdDependencia == indiceocupacional.IdDependencia
-                        )
-                        .OrderBy(x => x.IdDependencia)
-                        .DistinctBy(x => x.IdManualPuesto)
-                        .ToAsyncEnumerable().ToList();
+                    return lista;
                 }
 
                 else if (
@@ -869,22 +928,60 @@ namespace bd.swth.web.Controllers.API
                     && relacionLaboral.Nombre.ToUpper() == ConstantesTipoRelacion.Nombramiento.ToUpper()
                     )
                 {
-                    listaIndiceOcupacional = await db.IndiceOcupacional
-                        .Include(i => i.ManualPuesto)
+
+
+
+                    // Se obtienen los iomp que estén vacantes y tengan un numero de partida
+
+
+                    var listaIOMP = await db.IndiceOcupacionalModalidadPartida
+                        .Include(i => i.IndiceOcupacional)
+                        .Include(i => i.IndiceOcupacional.ManualPuesto)
                         .Where(w =>
-                            w.IdDependencia == indiceocupacional.IdDependencia
-                        )
-                        .OrderBy(x => x.IdDependencia)
-                        .DistinctBy(x => x.IdManualPuesto)
-                        .ToAsyncEnumerable().ToList();
+                                !String.IsNullOrEmpty(w.NumeroPartidaIndividual)
+                                && w.IdModalidadPartida == modalidadPartida
+                                            .Where(wm => wm.Nombre.ToUpper() == Constantes.PartidaVacante.ToUpper())
+                                            .FirstOrDefault()
+                                            .IdModalidadPartida
+
+                            )
+                        .OrderByDescending(o=>o.Fecha)
+                        .DistinctBy(d=>d.IndiceOcupacional.ManualPuesto.Nombre)
+                        .ToAsyncEnumerable()
+                        .ToList();
+
+                    
+
+
+                    foreach (var item in lista) {
+
+                        if (
+                            listaIOMP
+                            .Where(w=>w.IdIndiceOcupacional == item.IdIndiceOcupacional)
+                            .FirstOrDefault() != null
+                            )
+                        {
+                            var item2 = listaIOMP
+                            .Where(w => w.IdIndiceOcupacional == item.IdIndiceOcupacional)
+                            .FirstOrDefault();
+
+                            item.NumeroPartidaIndividual = item2.NumeroPartidaIndividual;
+                            item.IdModalidadPartida = item2.IdModalidadPartida;
+
+                        }
+
+                    }
+
+                    return lista;
+
                 }
 
 
-                return listaIndiceOcupacional;
+                return new List<IndicesOcupacionalesModalidadPartidaViewModel>();
             }
             catch (Exception ex)
             {
-                return new List<IndiceOcupacional>();
+                return new List<IndicesOcupacionalesModalidadPartidaViewModel>();
             }
         }
         
@@ -912,19 +1009,88 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        /*
+        
         [HttpPost]
         [Route("ListarRolPuestoporManualPuestoYRelacionLaboral")]
-        public async Task<List<IndiceOcupacional>> ListarRolPuestoporManualPuestoYRelacionLaboral([FromBody] IndiceOcupacional indiceocupacional)
+        public async Task<IndicesOcupacionalesModalidadPartidaViewModel> ListarRolPuestoporManualPuestoYRelacionLaboral([FromBody] IndiceOcupacional indiceocupacional)
         {
             try
             {
 
-                var listaIndiceOcupacional = new List<IndiceOcupacional>();
+                // Se obtienen todos los perfiles de puesto
+                var modelo = await db.IndiceOcupacional
+                    .Where(w => 
+                        w.IdDependencia == indiceocupacional.IdDependencia
+                        && w.ManualPuesto.IdManualPuesto == indiceocupacional.IdManualPuesto
+                    )
+                    .Select(
+                        s => new IndicesOcupacionalesModalidadPartidaViewModel
+                        {
 
+                            NumeroPartidaIndividual = "",
+
+                            IndiceOcupacionalViewModel = new IndiceOcupacionalViewModel
+                            {
+
+                                IdIndiceOcupacional = s.IdIndiceOcupacional,
+                                IdDependencia = s.IdDependencia,
+                                IdManualPuesto = s.IdManualPuesto,
+                                IdRolPuesto = s.IdRolPuesto,
+                                IdEscalaGrados = s.IdEscalaGrados,
+                                IdPartidaGeneral = s.IdPartidaGeneral,
+                                IdAmbito = s.IdAmbito,
+                                Nivel = s.Nivel,
+
+
+                                NombreDependencia = s.Dependencia.Nombre,
+                                CodigoDependencia = s.Dependencia.Codigo,
+
+                                IdSucursal = s.Dependencia.Sucursal.IdSucursal,
+                                NombreSucursal = s.Dependencia.Sucursal.Nombre,
+
+                                NombreManualPuesto = s.ManualPuesto.Nombre,
+                                DescripcionManualPuesto = s.ManualPuesto.Descripcion,
+                                MisionManualPuesto = s.ManualPuesto.Mision,
+
+                                IdRelacionesInternasExternas =
+                                        s.ManualPuesto.RelacionesInternasExternas.IdRelacionesInternasExternas,
+                                NombreRelacionesInternasExternas =
+                                        s.ManualPuesto.RelacionesInternasExternas.Nombre,
+                                DescripcionRelacionesInternasExternas =
+                                        s.ManualPuesto.RelacionesInternasExternas.Descripcion,
+
+
+                                NombreRolPuesto = s.RolPuesto.Nombre,
+
+
+                                NombreEscalaGrados = s.EscalaGrados.Nombre,
+                                Remuneracion = s.EscalaGrados.Remuneracion,
+                                Grado = s.EscalaGrados.Grado,
+
+                                NumeroPartidaGeneral =
+                                    (s.PartidaGeneral == null)
+                                    ? ""
+                                    : s.PartidaGeneral.NumeroPartida,
+
+                                NombreAmbito = s.Ambito.Nombre
+
+                            }
+                            ,
+
+                        }
+
+                        ).FirstOrDefaultAsync();
+
+
+                // Se obtienen los diferentes tipos de relación laboral
                 var relacionLaboral = await db.RelacionLaboral
                     .Where(w => w.IdRelacionLaboral == indiceocupacional.IdRelacionLaboral)
                     .FirstOrDefaultAsync();
+
+
+                // Se obtienen los diferentes tipos de modalidad partida
+                var modalidadPartida = await db.ModalidadPartida.ToListAsync();
+
 
 
                 if (
@@ -933,17 +1099,7 @@ namespace bd.swth.web.Controllers.API
                     )
                 {
 
-                    listaIndiceOcupacional = await db.IndiceOcupacional
-                        .Include(i => i.RolPuesto)
-                        .Where(x =>
-                            x.IdManualPuesto == indiceocupacional.IdManualPuesto
-                            && x.IdDependencia == indiceocupacional.IdDependencia
-                            && x.NumeroPartidaIndividual == null
-                        )
-                        .OrderBy(x => x.IdDependencia)
-                        .DistinctBy(x => x.IdRolPuesto)
-                        .ToAsyncEnumerable()
-                        .ToList();
+                    return modelo;
                 }
 
                 else if (
@@ -951,30 +1107,53 @@ namespace bd.swth.web.Controllers.API
                     && relacionLaboral.Nombre.ToUpper() == ConstantesTipoRelacion.Nombramiento.ToUpper()
                     )
                 {
-                    listaIndiceOcupacional = await db.IndiceOcupacional
-                        .Include(i => i.RolPuesto)
-                        .Include(i => i.ModalidadPartida)
-                        .Where(x =>
-                            x.IdManualPuesto == indiceocupacional.IdManualPuesto
-                            && x.IdDependencia == indiceocupacional.IdDependencia
-                            && x.ModalidadPartida.Nombre == Constantes.PartidaVacante
-                        )
-                        .OrderBy(x => x.IdDependencia)
-                        .DistinctBy(x => x.IdRolPuesto)
-                        .ToAsyncEnumerable()
-                        .ToList();
+
+                    // Se obtienen los iomp que estén vacantes y tengan un numero de partida
+                    var listaIOMP = await db.IndiceOcupacionalModalidadPartida
+                        .Include(i=>i.IndiceOcupacional)
+                        .Include(i=>i.IndiceOcupacional.ManualPuesto)
+                        .Where(w =>
+                                !String.IsNullOrEmpty(w.NumeroPartidaIndividual)
+                                && w.IdModalidadPartida == modalidadPartida
+                                            .Where(wm => wm.Nombre.ToUpper() == Constantes.PartidaVacante.ToUpper())
+                                            .FirstOrDefault()
+                                            .IdModalidadPartida
+                            )
+                        .OrderByDescending(o => o.Fecha)
+                        .DistinctBy(d => d.IndiceOcupacional.ManualPuesto.Nombre)
+                        .ToAsyncEnumerable().FirstOrDefault();
+
+
+                   
+
+                        if (
+                            listaIOMP != null
+                            )
+                        {
+                            var item2 = listaIOMP;
+
+                            modelo.NumeroPartidaIndividual = item2.NumeroPartidaIndividual;
+                            modelo.IdModalidadPartida = item2.IdModalidadPartida;
+                        
+                    }
+
+                    return modelo;
+
                 }
 
 
-                return listaIndiceOcupacional;
+                return new IndicesOcupacionalesModalidadPartidaViewModel();
             }
             catch (Exception ex)
             {
 
-                return new List<IndiceOcupacional>();
+                return new IndicesOcupacionalesModalidadPartidaViewModel();
             }
         }
 
+
+
+        /*
         [HttpPost]
         [Route("ListarEscalaGradosPorRolPuesto")]
         public async Task<List<IndiceOcupacional>> GetEscalaGradosPorRolPuesto([FromBody] IndiceOcupacional indiceocupacional)
@@ -3846,6 +4025,7 @@ namespace bd.swth.web.Controllers.API
                     .Include(i => i.TipoNombramiento.RelacionLaboral)
                     .Include(i => i.IndiceOcupacional)
                     .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
+                    .Include(i => i.ModalidadPartida)
                     .Where(w => w.IdEmpleado == IdEmpleado)
                     .OrderByDescending(o => o.Fecha)
                     .FirstOrDefaultAsync();
@@ -3854,6 +4034,10 @@ namespace bd.swth.web.Controllers.API
                     .Include(i => i.TipoNombramiento.RelacionLaboral)
                     .Include(i => i.IndiceOcupacional)
                     .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
+                    .Include(i=>i.IndiceOcupacional.ManualPuesto)
+                    .Include(i => i.IndiceOcupacional.RolPuesto)
+                    .Include(i => i.IndiceOcupacional.EscalaGrados)
+                    .Include(i => i.ModalidadPartida)
                     .Where(w => w.IdEmpleado == IdEmpleado)
                     .OrderBy(o => o.Fecha)
                     .FirstOrDefaultAsync();
@@ -3895,6 +4079,11 @@ namespace bd.swth.web.Controllers.API
                     modelo.Dependencia = iomp.IndiceOcupacional.Dependencia;
                     modelo.Dependencia.Sucursal = iomp.IndiceOcupacional.Dependencia.Sucursal;
                     modelo.IndiceOcupacional = iomp.IndiceOcupacional;
+
+                    if (iomp.ModalidadPartida != null) {
+                        modelo.IndiceOcupacional.IdModalidadPartida = iomp.ModalidadPartida.IdModalidadPartida;
+                    }
+                    
                 }
                 else
                 {

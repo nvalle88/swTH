@@ -37,6 +37,9 @@ namespace bd.swth.entidades.Negocio
 
         [NotMapped]
         public int IdRelacionLaboral { get; set; }
-        
+
+        [NotMapped]
+        public int IdModalidadPartida { get; set; }
+
     }
 }
