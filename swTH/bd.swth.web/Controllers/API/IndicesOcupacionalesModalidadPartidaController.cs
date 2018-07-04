@@ -116,7 +116,7 @@ namespace bd.swth.web.Controllers.API
                             CodigoContrato = s.CodigoContrato,
                             IdModalidadPartida = s.IdModalidadPartida,
                             NumeroPartidaIndividual = s.NumeroPartidaIndividual,
-                            FechaFin = s.FechaFin,
+                            //FechaFin = s.FechaFin,
 
         IndiceOcupacionalViewModel = new IndiceOcupacionalViewModel {
 

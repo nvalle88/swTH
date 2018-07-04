@@ -27,12 +27,12 @@ using bd.swth.entidades.ObjectTransfer;
 namespace bd.swth.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/SeleccionPersonalTalentoHumano")]
-    public class SeleccionPersonalTalentoHumanoController : Controller
+    [Route("api/SeleccionPersonalTalentoHumanoContrato")]
+    public class SeleccionPersonalTalentoHumanoContratoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public SeleccionPersonalTalentoHumanoController(SwTHDbContext db)
+        public SeleccionPersonalTalentoHumanoContratoController(SwTHDbContext db)
         {
             this.db = db;
         }
@@ -143,7 +143,7 @@ namespace bd.swth.web.Controllers.API
                 }
                 foreach (var item1 in DatosBasicosIndiceOcupacional)
                 {
-                    var estado = db.PartidasFase.Where(s => s.IdIndiceOcupacional == item1.idIndiceOcupacional && s.Contrato == false).ToList();
+                    var estado = db.PartidasFase.Where(s => s.IdIndiceOcupacional == item1.idIndiceOcupacional && s.Contrato == true).ToList();
                     foreach (var item2 in estado)
                     {
                         if (item1.idIndiceOcupacional == item2.IdIndiceOcupacional)

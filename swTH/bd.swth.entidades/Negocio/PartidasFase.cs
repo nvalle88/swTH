@@ -12,6 +12,7 @@ namespace bd.swth.entidades.Negocio
         public int? IdTipoConcurso { get; set; }
         public int Vacantes { get; set; }
         public int Estado { get; set; }
+        public bool Contrato { get; set; }
 
         public DateTime? Fecha { get; set; }
 

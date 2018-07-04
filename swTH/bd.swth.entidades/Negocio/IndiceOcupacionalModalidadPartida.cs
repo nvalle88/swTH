@@ -53,8 +53,8 @@ namespace bd.swth.entidades.Negocio
         [Display(Name = "Partida individual")]
         public string NumeroPartidaIndividual { get; set; }
 
-        [Display(Name = "Fecha fin")]
-        public DateTime? FechaFin { get; set; }
+        //[Display(Name = "Fecha fin")]
+        //public DateTime? FechaFin { get; set; }
 
         [NotMapped]
         public int IdDependecia { get; set; }
