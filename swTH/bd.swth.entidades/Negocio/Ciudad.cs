@@ -18,8 +18,8 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<ItinerarioViatico> ItinerarioViaticoCiudadOrigen { get; set; }
         public virtual ICollection<Parroquia> Parroquia { get; set; }
         public virtual ICollection<PlanCapacitacion> PlanCapacitacion { get; set; }
-        public virtual ICollection<ReliquidacionViatico> ReliquidacionViaticoCiudadDestino { get; set; }
-        public virtual ICollection<ReliquidacionViatico> ReliquidacionViaticoCiudadOrigen{ get; set; }
+        public virtual ICollection<DetalleReliquidacionViatico> DetalleReliquidacionViaticoCiudadDestino { get; set; }
+        public virtual ICollection<DetalleReliquidacionViatico> DetalleReliquidacionViaticoCiudadOrigen { get; set; }
         public virtual ICollection<SolicitudViatico> SolicitudViatico { get; set; }
         public virtual ICollection<Sucursal> Sucursal { get; set; }
         public virtual Provincia Provincia { get; set; }     

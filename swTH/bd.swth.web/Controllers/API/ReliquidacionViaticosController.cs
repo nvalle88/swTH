@@ -28,7 +28,7 @@ namespace bd.swth.web.Controllers.API
 
             try
             {
-                return await db.ReliquidacionViatico.Where(x => x.IdSolicitudViatico == informeViatico.IdSolicitudViatico).Include(x => x.TipoTransporte).Include(x => x.CiudadOrigen).Include(x => x.CiudadDestino).ToListAsync();
+                return await db.ReliquidacionViatico.Where(x => x.IdSolicitudViatico == informeViatico.IdSolicitudViatico).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -148,15 +148,7 @@ namespace bd.swth.web.Controllers.API
                     var existe = Existe(reliquidacionViatico);
                     if (!existe.IsSuccess)
                     {
-                        informeViaticoActualizar.IdSolicitudViatico = reliquidacionViatico.IdSolicitudViatico;
-                        informeViaticoActualizar.IdTipoTransporte = reliquidacionViatico.IdTipoTransporte;
-                        informeViaticoActualizar.NombreTransporte = reliquidacionViatico.NombreTransporte;
-                        informeViaticoActualizar.IdCiudadDestino = reliquidacionViatico.IdCiudadDestino;
-                        informeViaticoActualizar.IdCiudadOrigen = reliquidacionViatico.IdCiudadOrigen;
-                        informeViaticoActualizar.FechaSalida = reliquidacionViatico.FechaSalida;
-                        informeViaticoActualizar.FechaLlegada = reliquidacionViatico.FechaLlegada;
-                        informeViaticoActualizar.HoraSalida = reliquidacionViatico.HoraSalida;
-                        informeViaticoActualizar.HoraLlegada = reliquidacionViatico.HoraLlegada;
+                        informeViaticoActualizar.IdSolicitudViatico = reliquidacionViatico.IdSolicitudViatico;                        
                         informeViaticoActualizar.Descripcion = reliquidacionViatico.Descripcion;
                         informeViaticoActualizar.ValorEstimado = reliquidacionViatico.ValorEstimado;
                         db.ReliquidacionViatico.Update(reliquidacionViatico);
@@ -189,14 +181,6 @@ namespace bd.swth.web.Controllers.API
             else
             {
                 informeViaticoActualizar.IdSolicitudViatico = reliquidacionViatico.IdSolicitudViatico;
-                informeViaticoActualizar.IdTipoTransporte = reliquidacionViatico.IdTipoTransporte;
-                informeViaticoActualizar.NombreTransporte = reliquidacionViatico.NombreTransporte;
-                informeViaticoActualizar.IdCiudadDestino = reliquidacionViatico.IdCiudadDestino;
-                informeViaticoActualizar.IdCiudadOrigen = reliquidacionViatico.IdCiudadOrigen;
-                informeViaticoActualizar.FechaSalida = reliquidacionViatico.FechaSalida;
-                informeViaticoActualizar.FechaLlegada = reliquidacionViatico.FechaLlegada;
-                informeViaticoActualizar.HoraSalida = reliquidacionViatico.HoraSalida;
-                informeViaticoActualizar.HoraLlegada = reliquidacionViatico.HoraLlegada;
                 informeViaticoActualizar.Descripcion = reliquidacionViatico.Descripcion;
                 informeViaticoActualizar.ValorEstimado = reliquidacionViatico.ValorEstimado;
                 db.ReliquidacionViatico.Add(reliquidacionViatico);
@@ -248,25 +232,9 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(ReliquidacionViatico reliquidacionViatico)
         {
             var bdd1 = reliquidacionViatico.IdReliquidacionViatico;
-            var bdd2 = reliquidacionViatico.IdTipoTransporte;
-            var bdd3 = reliquidacionViatico.NombreTransporte;
-            var bdd4 = reliquidacionViatico.IdCiudadOrigen;
-            var bdd5 = reliquidacionViatico.IdCiudadDestino;
-            var bdd6 = reliquidacionViatico.FechaSalida;
-            var bdd7 = reliquidacionViatico.HoraSalida;
-            var bdd8 = reliquidacionViatico.FechaLlegada;
-            var bdd9 = reliquidacionViatico.HoraLlegada;
             var bdd10 = reliquidacionViatico.IdSolicitudViatico;
             var bdd11 = reliquidacionViatico.ValorEstimado;
-            var informeViaticos = db.ReliquidacionViatico.Where(p => p.IdReliquidacionViatico == bdd1
-            && p.IdTipoTransporte == bdd2
-            && p.NombreTransporte == bdd3
-            && p.IdCiudadOrigen == bdd4
-            && p.IdCiudadDestino == bdd5
-             && p.FechaSalida == bdd6
-            && p.HoraSalida == bdd7
-             && p.FechaSalida == bdd8
-            && p.HoraSalida == bdd9
+            var informeViaticos = db.ReliquidacionViatico.Where(p => p.IdReliquidacionViatico == bdd1           
             && p.IdSolicitudViatico == bdd10
             && p.ValorEstimado == bdd11).FirstOrDefault();
             if (informeViaticos != null)

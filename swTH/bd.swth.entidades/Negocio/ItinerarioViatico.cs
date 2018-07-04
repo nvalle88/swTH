@@ -17,7 +17,6 @@ namespace bd.swth.entidades.Negocio
         public int IdCiudadOrigen { get; set; }
         public int IdCiudadDestino { get; set; }
 
-        public virtual ICollection<ReliquidacionViatico> ReliquidacionViatico { get; set; }
         public virtual Ciudad CiudadDestino { get; set; }
         public virtual Ciudad CiudadOrigen{ get; set; }
         public virtual SolicitudViatico SolicitudViatico{ get; set; }
