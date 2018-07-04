@@ -8,6 +8,7 @@ using bd.swth.datos;
 using bd.swth.entidades.Constantes;
 using bd.swth.entidades.Negocio;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -89,6 +90,29 @@ namespace bd.swth.web.Controllers.API
             {
                 var listadoBorrar = await db.ReportadoNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).ToListAsync();
                 db.ReportadoNomina.RemoveRange(listadoBorrar);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
+        [HttpPost]
+        [Route("LimpiarHorasExtras")]
+        public async Task<Response> LimpiarHorasExtras([FromBody] CalculoNomina calculoNomina)
+        {
+            try
+            {
+                var listadoBorrar = await db.HorasExtrasNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).ToListAsync();
+                db.HorasExtrasNomina.RemoveRange(listadoBorrar);
                 await db.SaveChangesAsync();
                 return new Response
                 {
@@ -198,9 +222,34 @@ namespace bd.swth.web.Controllers.API
             {
                 return await db.ReportadoNomina.Where(x => x.IdCalculoNomina == CalculoNomina.IdCalculoNomina).ToListAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new List<ReportadoNomina>();
+            }
+        }
+
+
+        [HttpPost]
+        [Route("ListarHorasExtras")]
+        public async Task<List<HorasExtrasNomina>> ListarHorasExtras([FromBody] CalculoNomina CalculoNomina)
+        {
+            try
+            {
+                return await db.HorasExtrasNomina.Where(x => x.IdCalculoNomina == CalculoNomina.IdCalculoNomina).
+                    Select(x=>new HorasExtrasNomina
+                    {
+                       CantidadHoras=x.CantidadHoras,
+                       Nombres= db.Persona.Where(y=>y.Identificacion==x.IdentificacionEmpleado).FirstOrDefault().Nombres,
+                       Apellidos = db.Persona.Where(y => y.Identificacion == x.IdentificacionEmpleado).FirstOrDefault().Apellidos,
+                       EsExtraordinaria=x.EsExtraordinaria,
+                       IdentificacionEmpleado=x.IdentificacionEmpleado,
+                       IdHorasExtrasNomina=x.IdHorasExtrasNomina,
+
+                    }).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return new List<HorasExtrasNomina>();
             }
         }
 

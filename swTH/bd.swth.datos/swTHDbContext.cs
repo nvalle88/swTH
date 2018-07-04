@@ -35,6 +35,7 @@ namespace bd.swth.datos
         public virtual DbSet<DetalleNomina> DetalleNomina { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ConstanteNomina> ConstanteNomina { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.FuncionNomina> FuncionNomina { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.HorasExtrasNomina> HorasExtrasNomina { get; set; }
 
 
 
