@@ -4079,6 +4079,8 @@ namespace bd.swth.web.Controllers.API
                     modelo.Dependencia = iomp.IndiceOcupacional.Dependencia;
                     modelo.Dependencia.Sucursal = iomp.IndiceOcupacional.Dependencia.Sucursal;
                     modelo.IndiceOcupacional = iomp.IndiceOcupacional;
+                    modelo.IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual = iomp.NumeroPartidaIndividual
+                        + iomp.CodigoContrato;
 
                     if (iomp.ModalidadPartida != null) {
                         modelo.IndiceOcupacional.IdModalidadPartida = iomp.ModalidadPartida.IdModalidadPartida;
