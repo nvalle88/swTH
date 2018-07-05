@@ -14,6 +14,7 @@ using bd.swth.entidades.Utils;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.ObjectTransfer;
 using bd.swth.entidades.ViewModels;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -34,20 +35,19 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var lista=await db.IndiceOcupacional.Select(x=> new IndiceOcupacionalViewModel
-                   {
-                    CodigoDepencia = x.Dependencia.Codigo,
-                    Dependencia = x.Dependencia.Nombre,
-                    EscalaGrado = x.EscalaGrados.Nombre,
+                var lista = await db.IndiceOcupacional.Select(x => new IndiceOcupacionalViewModel
+                {
+                    CodigoDependencia = x.Dependencia.Codigo,
+                    NombreDependencia = x.Dependencia.Nombre,
+                    NombreEscalaGrados = x.EscalaGrados.Nombre,
                     IdIndiceOcupacional = x.IdIndiceOcupacional,
-                    ManualPuesto = x.ManualPuesto.Nombre,
-                    ModalidadPartida = x.ManualPuesto.Nombre,
+                    NombreManualPuesto = x.ManualPuesto.Nombre,
                     Remuneracion = Convert.ToDecimal(x.EscalaGrados.Remuneracion),
-                    PartidaGeneral = Convert.ToInt32(x.PartidaGeneral.NumeroPartida),
-                    PartidaIndividual = x.NumeroPartidaIndividual,
-                    RolPuesto = x.RolPuesto.Nombre,
-                    Ambito = x.Ambito.Nombre,
+                    NumeroPartidaGeneral = (x.PartidaGeneral != null)?x.PartidaGeneral.NumeroPartida:null,
+                    NombreRolPuesto = x.RolPuesto.Nombre,
+                    NombreAmbito = x.Ambito.Nombre,
                     Nivel = x.Nivel,
+                    
                 }
                 ).ToListAsync();
 
@@ -56,21 +56,79 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<IndiceOcupacionalViewModel>();
             }
         }
 
-        
+
+        /// <summary>
+        /// Devuelve la lista de IndicesOcupacionalesViewModel
+        /// </summary>
+        /// <returns></returns>
+        // api/IndicesOcupacionales
+        [HttpGet]
+        [Route("ListarIndicesOcupacionesViewModel")]
+        public async Task<List<IndiceOcupacionalViewModel>> ListarIndicesOcupacionesViewModel()
+        {
+            try
+            {
+                var lista = await db.IndiceOcupacional.Select(
+                    s => new IndiceOcupacionalViewModel
+                    {
+
+                        IdIndiceOcupacional = s.IdIndiceOcupacional,
+                        IdDependencia = s.IdDependencia,
+                        IdManualPuesto = s.IdManualPuesto,
+                        IdRolPuesto = s.IdRolPuesto,
+                        IdEscalaGrados = s.IdEscalaGrados,
+                        IdPartidaGeneral = s.IdPartidaGeneral,
+                        IdAmbito = s.IdAmbito,
+                        Nivel = s.Nivel,
+
+
+                        NombreDependencia = s.Dependencia.Nombre,
+                        CodigoDependencia = s.Dependencia.Codigo,
+
+                        IdSucursal = s.Dependencia.Sucursal.IdSucursal,
+                        NombreSucursal = s.Dependencia.Sucursal.Nombre,
+
+                        NombreManualPuesto = s.ManualPuesto.Nombre,
+                        DescripcionManualPuesto = s.ManualPuesto.Descripcion,
+                        MisionManualPuesto = s.ManualPuesto.Mision,
+
+                        IdRelacionesInternasExternas =
+                                    s.ManualPuesto.RelacionesInternasExternas.IdRelacionesInternasExternas,
+                        NombreRelacionesInternasExternas =
+                                    s.ManualPuesto.RelacionesInternasExternas.Nombre,
+                        DescripcionRelacionesInternasExternas =
+                                    s.ManualPuesto.RelacionesInternasExternas.Descripcion,
+
+
+                        NombreRolPuesto = s.RolPuesto.Nombre,
+
+
+                        NombreEscalaGrados = s.EscalaGrados.Nombre,
+                        Remuneracion = s.EscalaGrados.Remuneracion,
+                        Grado = s.EscalaGrados.Grado,
+
+                        NumeroPartidaGeneral =
+                                (s.PartidaGeneral == null)
+                                ? ""
+                                : s.PartidaGeneral.NumeroPartida,
+
+                        NombreAmbito = s.Ambito.Nombre
+
+                    }).ToListAsync();
+
+                return lista;
+            }
+            catch (Exception ex)
+            {
+                return new List<IndiceOcupacionalViewModel>();
+            }
+        }
+
+
 
         // GET: api/IndicesOcupacionales
         [HttpGet]
@@ -79,24 +137,17 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.IndiceOcupacional.Where(x=>x.IdIndiceOcupacional==indiceOcupacional.IdIndiceOcupacional).Include(x=>x.Dependencia).Include(x=>x.ManualPuesto).Include(x=>x.RolPuesto)
-                             .Include(x=>x.EscalaGrados).ThenInclude(x=>x.GrupoOcupacional).Include(x=>x.EscalaGrados).ThenInclude(x=>x.Remuneracion).ToListAsync();
+                return await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional).Include(x => x.Dependencia).Include(x => x.ManualPuesto).Include(x => x.RolPuesto)
+                             .Include(x => x.EscalaGrados).ThenInclude(x => x.GrupoOcupacional).Include(x => x.EscalaGrados).ThenInclude(x => x.Remuneracion).ToListAsync();
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<IndiceOcupacional>();
             }
         }
+
+
+
 
         // GET: api/IndicesOcupacionales/5
         [HttpGet("{id}")]
@@ -160,29 +211,57 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == indiceOcupacionalDetalle.IdIndiceOcupacional)
+                var modelo = await db.IndiceOcupacional
+                    .Where(w=>w.IdIndiceOcupacional == indiceOcupacionalDetalle.IdIndiceOcupacional)
+                    .Select(
+                     s => new IndiceOcupacionalViewModel
+                     {
 
-                                      .Select(x=> new IndiceOcupacionalViewModel
-                                                      {
-                                                        Dependencia =x.Dependencia.Nombre,
-                                                        EscalaGrado=x.EscalaGrados.Nombre,
-                                                        IdIndiceOcupacional=x.IdIndiceOcupacional,
-                                                        ManualPuesto=x.ManualPuesto.Nombre,
-                                                        ModalidadPartida=x.ModalidadPartida.Nombre,
-                                                        PartidaGeneral=Convert.ToInt32( x.PartidaGeneral.NumeroPartida),
-                                                        Grado= Convert.ToInt32(x.EscalaGrados.Grado),
-                                                        PartidaIndividual=x.NumeroPartidaIndividual,
-                                                        Remuneracion=Convert.ToDecimal(x.EscalaGrados.Remuneracion),
-                                                        RolPuesto=x.RolPuesto.Nombre,
-                                                        Mision=x.ManualPuesto.Mision,
-                                                        RelacionesInternasExternas=x.ManualPuesto.RelacionesInternasExternas.Descripcion,
-                                                        Ambito=x.Ambito.Nombre,
-                                                        Nivel=x.Nivel,
-                                                       }
-                                              )
-                                      .FirstOrDefaultAsync();
+                         IdIndiceOcupacional = s.IdIndiceOcupacional,
+                         IdDependencia = s.IdDependencia,
+                         IdManualPuesto = s.IdManualPuesto,
+                         IdRolPuesto = s.IdRolPuesto,
+                         IdEscalaGrados = s.IdEscalaGrados,
+                         IdPartidaGeneral = s.IdPartidaGeneral,
+                         IdAmbito = s.IdAmbito,
+                         Nivel = s.Nivel,
 
-                return DatosBasicosIndiceOcupacional;
+
+                         NombreDependencia = s.Dependencia.Nombre,
+                         CodigoDependencia = s.Dependencia.Codigo,
+
+                         IdSucursal = s.Dependencia.Sucursal.IdSucursal,
+                         NombreSucursal = s.Dependencia.Sucursal.Nombre,
+
+                         NombreManualPuesto = s.ManualPuesto.Nombre,
+                         DescripcionManualPuesto = s.ManualPuesto.Descripcion,
+                         MisionManualPuesto = s.ManualPuesto.Mision,
+
+                         IdRelacionesInternasExternas =
+                                     s.ManualPuesto.RelacionesInternasExternas.IdRelacionesInternasExternas,
+                         NombreRelacionesInternasExternas =
+                                     s.ManualPuesto.RelacionesInternasExternas.Nombre,
+                         DescripcionRelacionesInternasExternas =
+                                     s.ManualPuesto.RelacionesInternasExternas.Descripcion,
+
+
+                         NombreRolPuesto = s.RolPuesto.Nombre,
+
+
+                         NombreEscalaGrados = s.EscalaGrados.Nombre,
+                         Remuneracion = s.EscalaGrados.Remuneracion,
+                         Grado = s.EscalaGrados.Grado,
+
+                         NumeroPartidaGeneral =
+                                 (s.PartidaGeneral == null)
+                                 ? ""
+                                 : s.PartidaGeneral.NumeroPartida,
+
+                         NombreAmbito = s.Ambito.Nombre
+
+                     }).FirstOrDefaultAsync();
+
+                return modelo;
             }
             catch (Exception ex)
             {
@@ -385,14 +464,14 @@ namespace bd.swth.web.Controllers.API
         //            ListaEstudios=ListaEstudios,
         //            //ListaMisiones=listaMisiones,
         //            ListaExperienciaLaboralRequeridas=ListaExperienciaLaboralRequeridas,
-                  
+
 
 
         //        };
 
 
         //        return detalle;
-               
+
         //    }
         //    catch (Exception ex)
         //    {
@@ -632,13 +711,13 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ModeloInvalido,
                     };
                 }
-                    db.IndiceOcupacionalAreaConocimiento.Add(indiceOcupacionalAreaConocimiento);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
+                db.IndiceOcupacionalAreaConocimiento.Add(indiceOcupacionalAreaConocimiento);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio
+                };
             }
             catch (Exception ex)
             {
@@ -769,16 +848,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -794,6 +863,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
+                
                 if (!ModelState.IsValid)
                 {
                     return new Response
@@ -804,16 +874,47 @@ namespace bd.swth.web.Controllers.API
                 }
 
                 var respuesta = Existe(indiceOcupacional);
+
                 if (!respuesta.IsSuccess)
                 {
-                    db.IndiceOcupacional.Add(indiceOcupacional);
-                    await db.SaveChangesAsync();
-                    return new Response
+                    using (var transaction = await db.Database.BeginTransactionAsync())
                     {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
-                    };
+                        // Se crea el índice ocupacional
+                        db.IndiceOcupacional.Add(indiceOcupacional);
+
+
+                        // Se crea un indice ocupacional modalidad partida vacío
+                        // para el historial
+                        var modelo = new IndiceOcupacionalModalidadPartida
+                        { 
+                            IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional,
+                            IdEmpleado = null,
+                            IdFondoFinanciamiento = null,
+                            IdTipoNombramiento = null,
+                            Fecha = DateTime.Now,
+                            SalarioReal = null,
+                            CodigoContrato = null,
+                            NumeroPartidaIndividual = null,
+                            IdModalidadPartida = null
+                        };
+                        
+                        db.IndiceOcupacionalModalidadPartida.Add(modelo);
+
+                        await db.SaveChangesAsync();
+                        transaction.Commit();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio
+                        };
+
+
+                    } // end transaction
+
+
                 }
+
                 return new Response
                 {
                     IsSuccess = false,
@@ -823,44 +924,65 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
                 return new Response
                 {
                     IsSuccess = false,
                     Message = Mensaje.Error,
                 };
             }
+            
         }
+
+
 
         // DELETE: api/IndicesOcupacionales/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteIndiceOcupacional([FromRoute] int id)
+        public async Task<Response> DeleteIndiceOcupacional([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+
+            try
             {
-                return BadRequest(ModelState);
-            }
+                using (var transaction = await db.Database.BeginTransactionAsync())
+                {
+                    var iomp = await db.IndiceOcupacionalModalidadPartida
+                    .Where(w => w.IdIndiceOcupacional == id)
+                    .FirstOrDefaultAsync();
 
-            var indiceOcupacional = await db.IndiceOcupacional.SingleOrDefaultAsync(m => m.IdIndiceOcupacional == id);
-            if (indiceOcupacional == null)
+                    var indiceOcupacional = await db.IndiceOcupacional
+                            .Where(w => w.IdIndiceOcupacional == id)
+                            .FirstOrDefaultAsync();
+
+                    db.IndiceOcupacionalModalidadPartida.Remove(iomp);
+                    db.IndiceOcupacional.Remove(indiceOcupacional);
+                    await db.SaveChangesAsync();
+
+                    transaction.Commit();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.BorradoSatisfactorio
+
+                    };
+
+
+                } // end transaction
+
+            }
+            catch (Exception)
             {
-                return NotFound();
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.BorradoNoSatisfactorio
+
+                };
             }
-
-            db.IndiceOcupacional.Remove(indiceOcupacional);
-            await db.SaveChangesAsync();
-
-            return Ok(indiceOcupacional);
+            
         }
+
+
 
         private bool IndiceOcupacionalExists(int id)
         {
@@ -872,11 +994,12 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(IndiceOcupacional indiceOcupacional)
         {
-            
-            var indiceOcupacionalReturn = db.IndiceOcupacional.Where(p => p.IdDependencia == indiceOcupacional.IdDependencia && 
-                                                                      p.IdEscalaGrados==indiceOcupacional.IdEscalaGrados &&
-                                                                      p.IdManualPuesto==indiceOcupacional.IdManualPuesto && 
-                                                                      p.IdRolPuesto==indiceOcupacional.IdRolPuesto).FirstOrDefault();
+
+            var indiceOcupacionalReturn = db.IndiceOcupacional
+                .Where(p => 
+                    p.IdManualPuesto == indiceOcupacional.IdManualPuesto
+                ).FirstOrDefault();
+
             if (indiceOcupacionalReturn != null)
             {
                 return new Response
@@ -901,7 +1024,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-              
+
                 IndiceOcupacional IndiceOcupacional = new IndiceOcupacional();
                 if (indiceOcupacional.IdEscalaGrados != 0)
                 {
@@ -915,7 +1038,7 @@ namespace bd.swth.web.Controllers.API
                     IndiceOcupacional = await db.IndiceOcupacional.SingleOrDefaultAsync(m => m.IdDependencia == indiceOcupacional.IdDependencia
                                         && m.IdManualPuesto == indiceOcupacional.IdManualPuesto
                                         && m.IdRolPuesto == indiceOcupacional.IdRolPuesto);
-                } 
+                }
 
                 if (IndiceOcupacional == null)
                 {
@@ -953,13 +1076,14 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        /*
         [HttpPost]
         [Route("ActualizarModalidadPartida")]
         public async Task<Response> PutModalidadPartidaIndiceOcupacion([FromBody] IndiceOcupacional indiceOcupacional)
-        {
+        { 
             try
             {
-              
+
 
                 var indiceOcupacionalActualizar = await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional).FirstOrDefaultAsync();
 
@@ -1015,6 +1139,61 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+        */
+
+        /*
+        [HttpPost]
+        [Route("ObtenerPrimerIndicePorDatos")]
+        public async Task<IndiceOcupacional> ObtenerPrimerIndicePorDatos([FromBody] IdFiltrosViewModel filtro)
+        {
+            try
+            {
+
+                var lista = await db.IndiceOcupacional
+                    .Include(i => i.ModalidadPartida)
+                    .Where(w =>
+                        w.IdDependencia == filtro.IdDependencia
+                        && w.IdManualPuesto == filtro.IdManualPuesto
+                        && w.IdRolPuesto == filtro.IdRolPuesto
+                        && w.IdEscalaGrados == filtro.IdEscalaGrados
+                    )
+                    .ToListAsync();
+
+
+                var relacionLaboral = await db.RelacionLaboral
+                    .Where(w =>
+                       w.IdRelacionLaboral == filtro.IdTipoRelacion
+                    ).FirstOrDefaultAsync();
+
+                var enviar = new IndiceOcupacional();
+
+                // Cuando es un contrato
+                if (relacionLaboral.Nombre.ToUpper() == ConstantesTipoRelacion.Contrato.ToUpper())
+                {
+                    enviar = lista.Where(w => w.NumeroPartidaIndividual == null).FirstOrDefault();
+                }
+
+                // Cuando es un nombramiento
+                else if (relacionLaboral.Nombre.ToUpper() == ConstantesTipoRelacion.Nombramiento.ToUpper())
+                {
+                    enviar = lista
+                        .Where(w =>
+                            w.NumeroPartidaIndividual != null
+                            && w.ModalidadPartida.Nombre.ToUpper() == Constantes.PartidaVacante.ToUpper()
+                        )
+                        .FirstOrDefault();
+                }
+
+
+                return enviar;
+
+            }
+            catch (Exception ex)
+            {
+                return new IndiceOcupacional();
+            }
+        }
+        */
 
 
     }

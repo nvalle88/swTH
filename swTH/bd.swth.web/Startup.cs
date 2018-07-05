@@ -41,7 +41,10 @@ namespace bd.swth.web
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IUploadFileService, UploadFileService>();
 
-            
+            // Configuración Constantes tipo relacion
+            ConstantesTipoRelacion.Nombramiento = Configuration.GetSection("Nombramiento").Value;
+            ConstantesTipoRelacion.Contrato = Configuration.GetSection("Contrato").Value;
+
             Constantes.PartidaVacante = Configuration.GetSection("PartidaVacante").Value;
             Constantes.PartidaOcupada = Configuration.GetSection("PartidaOcupada").Value;
 

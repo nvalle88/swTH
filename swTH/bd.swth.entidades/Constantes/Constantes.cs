@@ -90,4 +90,10 @@ namespace bd.swth.entidades.Constantes
 
     }
 
+    public static class ConstantesTipoRelacion
+    {
+        public static string Contrato;
+        public static string Nombramiento;
+    }
+
 }

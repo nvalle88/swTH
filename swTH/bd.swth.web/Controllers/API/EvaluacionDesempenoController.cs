@@ -27,7 +27,6 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
-
         [HttpPost]
         [Route("ListarEmpleadosJefes")]
         public async Task<List<ViewModelEvaluacionDesempeno>> ListarEmpleadosPorJefes([FromBody] ViewModelEvaluacionDesempeno viewModelEvaluacionDesempeno)
@@ -243,9 +242,9 @@ namespace bd.swth.web.Controllers.API
                         };
                         var eval001Insertarda = db.Eval001.Add(eval001);
                         await db.SaveChangesAsync();
-                        
+
                         transaction.Commit();
-                        
+
 
                         return new Response
                         {
@@ -541,7 +540,7 @@ namespace bd.swth.web.Controllers.API
                     totales.ActividadesTotal = 0;
                 }
                 var conocimiento = await db.EvaluacionConocimiento.Where(x => x.IdEval001 == eval.IdEval001).ToListAsync();
-                if (conocimiento.Count!=0)
+                if (conocimiento.Count != 0)
                 {
                     //double valor = 0, total = 0;
                     double valor = 0, total = 0;
@@ -549,25 +548,26 @@ namespace bd.swth.web.Controllers.API
                     {
                         var a = await db.NivelConocimiento.Where(x => x.IdNivelConocimiento == item.IdNivelConocimiento).FirstOrDefaultAsync();
                         var b = a.Nombre;
-                        
-                        if (b == EvaluacionDesempeño.Sobresaliente) {
-                             valor = 8;
+
+                        if (b == EvaluacionDesempeño.Sobresaliente)
+                        {
+                            valor = 8;
                         }
                         if (b == EvaluacionDesempeño.MuyBueno)
                         {
-                             valor = 6;
+                            valor = 6;
                         }
                         if (b == EvaluacionDesempeño.Bueno)
                         {
-                             valor = 4;
+                            valor = 4;
                         }
                         if (b == EvaluacionDesempeño.Regular)
                         {
-                             valor = 2;
+                            valor = 2;
                         }
                         if (b == EvaluacionDesempeño.Insuficiente)
                         {
-                             valor = 0;
+                            valor = 0;
                         }
                         total = total + valor;
                     }
@@ -652,7 +652,8 @@ namespace bd.swth.web.Controllers.API
                     total = total / competenciasUniversales.Count;
                     totales.TotalCompetenciasUniversales = total;
                 }
-                else {
+                else
+                {
                     totales.TotalCompetenciasUniversales = 0;
                 }
                 var TrabajoLiderazgo = await db.EvaluacionTrabajoEquipoIniciativaLiderazgo.Where(x => x.IdEval001 == eval.IdEval001).ToListAsync();
@@ -737,11 +738,13 @@ namespace bd.swth.web.Controllers.API
         //api/EvaluacionDesempeno
         [HttpPost]
         [Route("EmpleadoListaEval001ViewModel")]
-        public async Task<EmpleadoListaEval001ViewModel> EmpleadoListaEval001ViewModel([FromBody] IdFiltrosViewModel filtros) {
+        public async Task<EmpleadoListaEval001ViewModel> EmpleadoListaEval001ViewModel([FromBody] IdFiltrosViewModel filtros)
+        {
 
             var modelo = new EmpleadoListaEval001ViewModel();
 
-            try {
+            try
+            {
 
                 var empleadoEvaluar = await db.Empleado.Include(i => i.Persona)
                                 .Where(w => w.IdEmpleado == filtros.IdEmpleadoEvaluado)
@@ -759,19 +762,19 @@ namespace bd.swth.web.Controllers.API
                 modelo.ListaEval001 = await db.Eval001
                     .Where(w => w.IdEmpleadoEvaluado == filtros.IdEmpleadoEvaluado)
                     .ToListAsync();
-                
+
                 modelo.EmpleadoEvaluado = new EmpleadoEvaluadoViewModel
                 {
-                    IdEmpleado = Convert.ToInt32(filtros.IdEmpleadoEvaluado ),
+                    IdEmpleado = Convert.ToInt32(filtros.IdEmpleadoEvaluado),
                     NombresApellidos = empleadoEvaluar.Persona.Nombres + " " + empleadoEvaluar.Persona.Apellidos,
 
                     ListaTituloProfesion = await db.PersonaEstudio
-                        .Where(w=>w.IdPersona == empleadoEvaluar.IdPersona)
-                        .Select(s=>new TituloViewModel
+                        .Where(w => w.IdPersona == empleadoEvaluar.IdPersona)
+                        .Select(s => new TituloViewModel
                         {
                             IdTitulo = s.Titulo.IdTitulo,
                             NombreTitulo = s.Titulo.Nombre
-                            
+
                         }
                         ).ToListAsync(),
 
@@ -779,21 +782,23 @@ namespace bd.swth.web.Controllers.API
 
                     NombrePuesto = manualPuesto.Nombre,
                 };
-                
+
                 modelo.EmpleadoEvaluador = await db.Empleado.Include(i => i.Persona)
                     .Where(w => w.NombreUsuario == filtros.NombreUsuario)
                     .FirstOrDefaultAsync();
 
                 return modelo;
 
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
 
                 return modelo;
             }
 
         }
 
-        
+
         //api/EvaluacionDesempeno
         [HttpPost]
         [Route("ListarActividadesEsencialesViewModelPorEval001")]
@@ -801,7 +806,7 @@ namespace bd.swth.web.Controllers.API
         {
 
             var lista = new List<ActividadesEsencialesPorEval001ViewModel>();
-            
+
             try
             {
 
@@ -810,19 +815,20 @@ namespace bd.swth.web.Controllers.API
 
                 lista = await db.EvaluacionActividadesPuestoTrabajo
                     .Where(w => w.IdEval001 == filtros.IdEval001)
-                    .Select(s=>new ActividadesEsencialesPorEval001ViewModel {
+                    .Select(s => new ActividadesEsencialesPorEval001ViewModel
+                    {
 
                         IdEval001 = Convert.ToInt32(s.IdEval001),
                         IdEvaluacionActividadesPuestoTrabajo = s.IdEvaluacionActividadesPuestoTrabajo,
 
                         IdActividadesEsenciales = s.IdActividadesEsenciales,
                         NombreActividadEsencial = actividadesEsenciales
-                                    .Where(aw=>aw.IdActividadesEsenciales == s.IdActividadesEsenciales)
+                                    .Where(aw => aw.IdActividadesEsenciales == s.IdActividadesEsenciales)
                                     .FirstOrDefault().Descripcion,
 
                         IdIndicador = Convert.ToInt32(s.IdIndicador),
                         NombreIndicador = indicadores
-                                    .Where(iw=>iw.IdIndicador == s.IdIndicador)
+                                    .Where(iw => iw.IdIndicador == s.IdIndicador)
                                     .FirstOrDefault().Nombre,
 
                         MetaPeriodo = s.MetaPeriodo,
@@ -830,8 +836,8 @@ namespace bd.swth.web.Controllers.API
                         NivelCumplimiento = s.NivelCumplimiento,
                         PorcentajeCumplimiento = s.PorcetajeCumplimiento,//Math.Round( Convert.ToDouble(s.PorcetajeCumplimiento), 2),
 
-                       Aumento = Convert.ToInt32(s.Aumento)
-                       
+                        Aumento = Convert.ToInt32(s.Aumento)
+
 
                     })
                     .ToListAsync();
@@ -851,7 +857,8 @@ namespace bd.swth.web.Controllers.API
         //api/EvaluacionDesempeno
         [HttpPost]
         [Route("ListarEvaluacionConocimientoPorEval001")]
-        public async Task<List<EvaluacionConocimiento>> ListarEvaluacionConocimientoPorEval001([FromBody] IdFiltrosViewModel filtros) {
+        public async Task<List<EvaluacionConocimiento>> ListarEvaluacionConocimientoPorEval001([FromBody] IdFiltrosViewModel filtros)
+        {
 
             var lista = new List<EvaluacionConocimiento>();
 
@@ -913,12 +920,12 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 lista = await db.EvaluacionCompetenciasUniversales
-                    .Include(i=>i.FrecuenciaAplicacion)
-                    .Include(i=>i.ComportamientoObservable).ThenInclude(t=>t.DenominacionCompetencia)
-                    .Include(i=>i.ComportamientoObservable).ThenInclude(t=>t.Nivel)
+                    .Include(i => i.FrecuenciaAplicacion)
+                    .Include(i => i.ComportamientoObservable).ThenInclude(t => t.DenominacionCompetencia)
+                    .Include(i => i.ComportamientoObservable).ThenInclude(t => t.Nivel)
                     .Where(w => w.IdEval001 == filtros.IdEval001)
                     .ToListAsync();
-                
+
 
                 return lista;
 
@@ -943,7 +950,7 @@ namespace bd.swth.web.Controllers.API
                     .Include(i => i.ComportamientoObservable)
                     .Include(i => i.ComportamientoObservable.DenominacionCompetencia)
                     .Include(i => i.ComportamientoObservable.Nivel)
-                    .Where(w => w.IdEval001 == filtros.IdEval001 && (w.ComportamientoObservable.DenominacionCompetencia.Nombre==EvaluacionDesempeño.TrabajoEnEquipo || w.ComportamientoObservable.DenominacionCompetencia.Nombre == EvaluacionDesempeño.Iniciativa ||
+                    .Where(w => w.IdEval001 == filtros.IdEval001 && (w.ComportamientoObservable.DenominacionCompetencia.Nombre == EvaluacionDesempeño.TrabajoEnEquipo || w.ComportamientoObservable.DenominacionCompetencia.Nombre == EvaluacionDesempeño.Iniciativa ||
                     w.ComportamientoObservable.DenominacionCompetencia.Nombre == EvaluacionDesempeño.Liderazgo))
                     .ToListAsync();
                 return lista;

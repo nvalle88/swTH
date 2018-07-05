@@ -15,5 +15,6 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<DetallePresupuesto> DetallePresupuesto { get; set; }
         public virtual Sucursal Sucursal { get; set; }
+        public virtual ICollection<ReliquidacionViatico> ReliquidacionViatico { get; set; }
     }
 }

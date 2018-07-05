@@ -40,29 +40,38 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
+
         [Route("ListarPuestoVacantes")]
         public async Task<List<ViewModelPartidaFase>> ListarPuestoVacantes()
         {
             try
             {
+                var DatosBasicosIndiceOcupacional = new List<ViewModelPartidaFase>();
                 //var name = Constantes.PartidaVacante;
                 var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaVacante).FirstOrDefaultAsync();
-                var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdModalidadPartida == ModalidadPartida.IdModalidadPartida)
-                 .GroupBy(m => m.ManualPuesto.Nombre)
-                 .Select(d => new ViewModelPartidaFase
-                 {
-                     idescalagrados = Convert.ToInt32(d.FirstOrDefault().IdEscalaGrados),
-                     PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == d.FirstOrDefault().IdManualPuesto).FirstOrDefault().Nombre,
-                     grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == d.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Nombre,
-                     Idindiceocupacional = d.FirstOrDefault().IdIndiceOcupacional
+                var modalidad = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdModalidadPartida == ModalidadPartida.IdModalidadPartida).ToListAsync();
+                //var DatosBasicosIndiceOcupacional == nu;
+                foreach (var item in modalidad)
+                {
+                    DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == item.IdIndiceOcupacional)
+                  .GroupBy(m => m.ManualPuesto.Nombre)
+                  .Select(d => new ViewModelPartidaFase
+                  {
+                      idescalagrados = Convert.ToInt32(d.FirstOrDefault().IdEscalaGrados),
+                      PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == d.FirstOrDefault().IdManualPuesto).FirstOrDefault().Nombre,
+                      grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == d.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Nombre,
+                      Idindiceocupacional = d.FirstOrDefault().IdIndiceOcupacional
 
-                 })
-                 .ToListAsync();
+                  })
+                  .ToListAsync();
+                }
 
                 return DatosBasicosIndiceOcupacional;
             }
             catch (Exception ex)
             {
+
+
                 return new List<ViewModelPartidaFase>();
             }
         }
@@ -71,31 +80,35 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
+                var DatosBasicosIndiceOcupacional = new List<ViewModelPartidaFase>();
                 var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaVacante).FirstOrDefaultAsync();
-                var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdModalidadPartida == ModalidadPartida.IdModalidadPartida)
-                 .GroupBy(n => new { grupoOcupacional = n.IdManualPuesto, PuestoInstitucional = n.IdEscalaGrados })
-                 .Select(x => new ViewModelPartidaFase
-                 {
-                     Idindiceocupacional  = x.FirstOrDefault().IdIndiceOcupacional,
-                     PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == x.FirstOrDefault().IdManualPuesto).FirstOrDefault().Nombre,
-                     grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Nombre,
-                     Vacantes = x.Count()
-                 })
-                    .ToListAsync();
-
-                foreach (var item in DatosBasicosIndiceOcupacional)
+                var modalidad = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdModalidadPartida == ModalidadPartida.IdModalidadPartida).ToListAsync();
+                foreach (var item in modalidad)
                 {
-                    var estado = db.PartidasFase.Where(s => s.IdIndiceOcupacional == item.Idindiceocupacional).ToList();
+                    DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == item.IdIndiceOcupacional)
+                   .GroupBy(n => new { grupoOcupacional = n.IdManualPuesto, PuestoInstitucional = n.IdEscalaGrados })
+                   .Select(x => new ViewModelPartidaFase
+                   {
+                       Idindiceocupacional = x.FirstOrDefault().IdIndiceOcupacional,
+                       PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == x.FirstOrDefault().IdManualPuesto).FirstOrDefault().Nombre,
+                       grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Nombre,
+                       Vacantes = x.Count()
+                   })
+                      .ToListAsync();
+                }
+                foreach (var item in DatosBasicosIndiceOcupacional)
+                { 
+                    var estado = db.PartidasFase.Where(s => s.IdIndiceOcupacional == item.Idindiceocupacional && s.Contrato==false).ToList();
                     foreach (var item1 in estado)
                     {
-                        if ( item.Idindiceocupacional == item1.IdIndiceOcupacional)
+                        if (item.Idindiceocupacional == item1.IdIndiceOcupacional)
                         {
                             item.IdPartidaFase = item1.IdPartidasFase;
                             item.estado = item1.Estado;
                             item.VacantesCredo = item1.Vacantes;
-                            
-                            
-                        } 
+
+
+                        }
                     }
                 }
                 return DatosBasicosIndiceOcupacional;
@@ -103,7 +116,80 @@ namespace bd.swth.web.Controllers.API
             catch (Exception ex)
             {
                 return new List<ViewModelPartidaFase>();
-                
+
+            }
+        }
+        /// <summary>
+        ///   metodos para consurso por contrato
+        /// </summary>
+        /// <param name="viewModelPartidaFase"></param>
+        /// <returns></returns>
+
+        [Route("ListarPuestoVacantesContrato")]
+        public async Task<List<ViewModelPartidaFase>> ListarPuestoVacantesContrato()
+        {
+            try
+            {
+
+                var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional
+               .GroupBy(m => m.ManualPuesto.Nombre)
+               .Select(d => new ViewModelPartidaFase
+               {
+                   idescalagrados = Convert.ToInt32(d.FirstOrDefault().IdEscalaGrados),
+                   PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == d.FirstOrDefault().IdManualPuesto).FirstOrDefault().Nombre,
+                   grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == d.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Nombre,
+                   Idindiceocupacional = d.FirstOrDefault().IdIndiceOcupacional
+
+               })
+               .ToListAsync();
+
+
+                return DatosBasicosIndiceOcupacional;
+            }
+            catch (Exception ex)
+            {
+
+
+                return new List<ViewModelPartidaFase>();
+            }
+        }
+        [Route("ListarConcursosVacantesContrato")]
+        public async Task<List<ViewModelPartidaFase>> ListarConcursosVacantesContrato()
+        {
+            try
+            {
+
+                var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional
+                 .GroupBy(n => new { grupoOcupacional = n.IdManualPuesto, PuestoInstitucional = n.IdEscalaGrados })
+                 .Select(x => new ViewModelPartidaFase
+                 {
+                     Idindiceocupacional = x.FirstOrDefault().IdIndiceOcupacional,
+                     PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == x.FirstOrDefault().IdManualPuesto).FirstOrDefault().Nombre,
+                     grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Nombre,
+                     Vacantes = x.Count()
+                 }).ToListAsync();
+
+                foreach (var item in DatosBasicosIndiceOcupacional)
+                {
+                    var estado = db.PartidasFase.Where(x => x.IdIndiceOcupacional == item.Idindiceocupacional && x.Contrato==true).ToList();
+                    foreach (var item1 in estado) 
+                    {
+                        if (item.Idindiceocupacional == item1.IdIndiceOcupacional)
+                        {
+                            item.IdPartidaFase = item1.IdPartidasFase;
+                            item.estado = item1.Estado;
+                            item.VacantesCredo = item1.Vacantes;
+
+
+                        }
+                    }
+                }
+                return DatosBasicosIndiceOcupacional;
+            }
+            catch (Exception ex)
+            {
+                return new List<ViewModelPartidaFase>();
+
             }
         }
         [HttpPost]
@@ -121,9 +207,10 @@ namespace bd.swth.web.Controllers.API
 
                    })
                 .FirstOrDefaultAsync();
-                return new Response {
-                IsSuccess = true,
-                Resultado = vacantes
+                return new Response
+                {
+                    IsSuccess = true,
+                    Resultado = vacantes
                 };
                 //return vacantes;
             }
@@ -201,7 +288,8 @@ namespace bd.swth.web.Controllers.API
         {
             var bdd = partidasFase.IdIndiceOcupacional;
             var bdd2 = partidasFase.IdTipoConcurso;
-            var loglevelrespuesta = db.PartidasFase.Where(p => p.IdIndiceOcupacional == bdd && p.IdTipoConcurso == bdd2).FirstOrDefault();
+            var bdd3 = partidasFase.Contrato;
+            var loglevelrespuesta = db.PartidasFase.Where(p => p.IdIndiceOcupacional == bdd && p.IdTipoConcurso == bdd2 && p.Contrato == bdd3).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
