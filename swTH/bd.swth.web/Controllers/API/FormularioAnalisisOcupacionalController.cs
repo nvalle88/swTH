@@ -44,21 +44,7 @@ namespace bd.swth.web.Controllers.API
                             IsSuccess = true,
                             Message = Mensaje.Satisfactorio
                         };
-                    }
-                    else
-                    {
-                        formularioAnalisisOcupacional.IdFormularioAnalisisOcupacional = empleado.IdFormularioAnalisisOcupacional;
-                        formularioAnalisisOcupacional.IdEmpleado = empleado.IdEmpleado;
-                        formularioAnalisisOcupacional.MisionPuesto = empleado.MisionPuesto;
-                        formularioAnalisisOcupacional.Estado = empleado.Estado;
-                        db.FormularioAnalisisOcupacional.Update(formularioAnalisisOcupacional);
-                        await db.SaveChangesAsync();
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio
-                        };
-                    }
+                    }                  
 
                 }
                 return new Response
