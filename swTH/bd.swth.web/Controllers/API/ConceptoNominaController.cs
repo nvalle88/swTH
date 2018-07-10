@@ -74,6 +74,81 @@ namespace bd.swth.web.Controllers.API
         }
 
         [HttpPost]
+        [Route("InsertarHorasExtrasNomina")]
+        public async Task<Response> InsertarHorasExtrasNomina([FromBody] List<HorasExtrasNomina> listaSalvar)
+        {
+            try
+            {
+                await db.HorasExtrasNomina.AddRangeAsync(listaSalvar);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
+
+        [HttpPost]
+        [Route("InsertarHorasExtrasNominaPorEmpleado")]
+        public async Task<Response> InsertarHorasExtrasNominaPorEmpleado([FromBody] HorasExtrasNomina horasExtrasNomina)
+        {
+            try
+            {
+
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == horasExtrasNomina.IdEmpleado).Include(x=>x.Persona).FirstOrDefaultAsync();
+                horasExtrasNomina.IdentificacionEmpleado =empleado.Persona.Identificacion ;
+                db.HorasExtrasNomina.Add(horasExtrasNomina);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
+
+
+        [HttpPost]
+        [Route("EliminarHoraExtra")]
+        public async Task<Response> EliminarHoraExtra([FromBody] HorasExtrasNomina horasExtrasNomina)
+        {
+            try
+            {
+                var horaExtraEliminar =await db.HorasExtrasNomina.Where(x => x.IdHorasExtrasNomina == horasExtrasNomina.IdHorasExtrasNomina).FirstOrDefaultAsync();
+                db.HorasExtrasNomina.Remove(horaExtraEliminar);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
+
+
+        [HttpPost]
         [Route("InsertarReportadoNomina")]
         public async Task<Response> InsertarReportadoNomina([FromBody] List<ReportadoNomina> listaSalvar)
         {
@@ -99,9 +174,42 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("VerificarExcelHorasExtras")]
+        public async Task<List<HorasExtrasNomina>> VerificarExcelHorasExtras([FromBody] List<HorasExtrasNomina> lista)
+        {
+            try
+            {
+                
+                foreach (var item in lista)
+                {
+                    var empleado = await db.Empleado.Where(x => x.Activo == true && x.Persona.Identificacion == item.IdentificacionEmpleado).FirstOrDefaultAsync();
+
+                    if (empleado == null)
+                    {
+                        item.Valido = false;
+                        item.MensajeError = Mensaje.EmpleadoNoExiste;
+                    }
+                    else
+                    {
+                        item.Valido = true;
+                        item.IdEmpleado = empleado.IdEmpleado;
+                    }
+                }
+                return lista;
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+
         [HttpPost]
         [Route("VerificarExcel")]
-        public async Task<List<ReportadoNomina>> ExisteConceptoPorCodigo([FromBody] List<ReportadoNomina> lista)
+        public async Task<List<ReportadoNomina>> VerificarExcel([FromBody] List<ReportadoNomina> lista)
         {
             try
             {
