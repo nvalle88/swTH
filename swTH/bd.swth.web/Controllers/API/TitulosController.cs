@@ -175,8 +175,14 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(Titulo);
-                if (existe.IsSuccess)
+                var existe = await db.Titulo
+                    .Where(w =>
+                        w.IdEstudio == Titulo.IdEstudio
+                        && w.IdAreaConocimiento == Titulo.IdAreaConocimiento
+                        && w.Nombre == Titulo.Nombre
+                    ).FirstOrDefaultAsync();
+
+                if (existe != null && existe.IdTitulo != Titulo.IdTitulo)
                 {
                     return new Response
                     {
@@ -191,7 +197,7 @@ namespace bd.swth.web.Controllers.API
                     try
                     {
 
-                        TituloActualizar.Nombre = Titulo.Nombre;
+                        TituloActualizar.Nombre = Titulo.Nombre.ToString().ToUpper();
                         TituloActualizar.IdAreaConocimiento = Titulo.IdAreaConocimiento;
                         TituloActualizar.IdEstudio = Titulo.IdEstudio;
                         db.Titulo.Update(TituloActualizar);
@@ -206,16 +212,7 @@ namespace bd.swth.web.Controllers.API
                     }
                     catch (Exception ex)
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
+                        
                         return new Response
                         {
                             IsSuccess = false,
@@ -259,6 +256,8 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(Titulo);
                 if (!respuesta.IsSuccess)
                 {
+                    Titulo.Nombre = Titulo.Nombre.ToUpper();
+
                     db.Titulo.Add(Titulo);
                     await db.SaveChangesAsync();
                     return new Response
@@ -271,22 +270,13 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol"
+                    Message = Mensaje.ExisteRegistro
                 };
 
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -365,7 +355,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una brigada de salud y seguridad ocupacional con igual rol",
+                    Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
 
