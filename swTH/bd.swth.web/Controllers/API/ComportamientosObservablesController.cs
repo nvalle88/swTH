@@ -141,20 +141,16 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ComportamientoObservable.Include(x => x.Nivel).Include(x => x.DenominacionCompetencia).OrderBy(x => x.Descripcion).ToListAsync();
+                var lista = await db.ComportamientoObservable
+                    .Include(x => x.Nivel)
+                    .Include(x => x.DenominacionCompetencia)
+                    .OrderBy(x => x.Descripcion.ToString())
+                    .ToListAsync();
+
+                return lista;
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<ComportamientoObservable>();
             }
         }
@@ -324,29 +320,40 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(ComportamientoObservable);
-                var ComportamientoObservableActualizar = (ComportamientoObservable)existe.Resultado;
-                if (existe.IsSuccess)
+
+                var bdd = ComportamientoObservable.Descripcion.ToUpper();
+                var bdd1 = ComportamientoObservable.IdDenominacionCompetencia;
+                var bdd2 = ComportamientoObservable.IdNivel;
+
+                var existe = db.ComportamientoObservable
+                .Where(p =>
+                    p.Descripcion.ToString().ToUpper().Trim() == bdd.Trim()
+                    && p.IdNivel == bdd2
+                    && p.IdDenominacionCompetencia == bdd1
+                )
+                .FirstOrDefault();
+
+
+                if (
+                    existe != null 
+                    && existe.IdComportamientoObservable != ComportamientoObservable.IdComportamientoObservable)
                 {
-                    //if (ComportamientoObservableActualizar.IdComportamientoObservable == ComportamientoObservable.IdComportamientoObservable)
-                    //{
-                    //    return new Response
-                    //    {
-                    //        IsSuccess = true,
-                    //    };
-                    //}
                     return new Response
                     {
                         IsSuccess = false,
                         Message = Mensaje.ExisteRegistro,
                     };
                 }
-                var comportamiento = db.ComportamientoObservable.Find(ComportamientoObservable.IdComportamientoObservable);
 
-                comportamiento.Descripcion = ComportamientoObservable.Descripcion;
-                comportamiento.IdNivel = ComportamientoObservable.IdNivel;
-                comportamiento.IdDenominacionCompetencia = ComportamientoObservable.IdDenominacionCompetencia;
-                db.ComportamientoObservable.Update(comportamiento);
+                var modelo = await db.ComportamientoObservable
+                     .Where(w => w.IdComportamientoObservable == ComportamientoObservable.IdComportamientoObservable)
+                     .FirstOrDefaultAsync();
+
+                modelo.Descripcion = ComportamientoObservable.Descripcion.ToString().ToUpper();
+                modelo.IdNivel = ComportamientoObservable.IdNivel;
+                modelo.IdDenominacionCompetencia = ComportamientoObservable.IdDenominacionCompetencia;
+
+                db.ComportamientoObservable.Update(modelo);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -357,18 +364,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
+                
                 return new Response
                 {
                     IsSuccess = true,
@@ -376,6 +372,7 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+
 
         // POST: api/BasesDatos
         [HttpPost]
@@ -396,6 +393,9 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(ComportamientoObservable);
                 if (!respuesta.IsSuccess)
                 {
+                    // Convertir la descripción en mayúsculas
+                    ComportamientoObservable.Descripcion = ComportamientoObservable.Descripcion.ToString().ToUpper();
+
                     db.ComportamientoObservable.Add(ComportamientoObservable);
                     await db.SaveChangesAsync();
                     return new Response
@@ -414,16 +414,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -541,10 +532,19 @@ namespace bd.swth.web.Controllers.API
 
         private Response Existe(ComportamientoObservable ComportamientoObservable)
         {
-            var bdd = ComportamientoObservable.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var bdd = ComportamientoObservable.Descripcion.ToUpper();
             var bdd1 = ComportamientoObservable.IdDenominacionCompetencia;
-            var bdd2 = ComportamientoObservable.IdNivel;
-            var ComportamientoObservablerespuesta = db.ComportamientoObservable.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd && p.IdNivel == bdd2 && p.IdDenominacionCompetencia == bdd1).FirstOrDefault();
+            var bdd2 = ComportamientoObservable.IdNivel; 
+
+            var ComportamientoObservablerespuesta = db.ComportamientoObservable
+            .Where(p => 
+                p.Descripcion.ToString().ToUpper().TrimStart().TrimEnd() == bdd 
+                && p.IdNivel == bdd2 
+            && p.IdDenominacionCompetencia == bdd1
+            )
+            .FirstOrDefault();
+
+
             if (ComportamientoObservablerespuesta != null)
             {
                 return new Response

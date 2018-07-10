@@ -65,7 +65,7 @@ namespace bd.swth.web.Temporizador
                 if (horaActual>horaControlDiarioMin && horaActual<horaControlDiarioMax) {
 
                     var ctl = new AccionesPersonalController(db);
-                    //await ctl.ActualizarDiasRestantesAccionPersonal();
+                    await ctl.ActualizarDiasRestantesAccionPersonal();
 
                     var ctl1 = new SolicitudPlanificacionVacacionesController(db);
                     await ctl1.CrearRegistroVacacionesEmpleados();
