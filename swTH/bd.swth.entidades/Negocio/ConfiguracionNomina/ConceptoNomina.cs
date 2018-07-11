@@ -16,9 +16,7 @@ namespace bd.swth.entidades.Negocio
         public string Codigo { get; set; }
         public string Descripcion { get; set; }
         public string TipoConcepto { get; set; }
-        public string TipoCalculo { get; set; }
-        public string NivelAcumulacion { get; set; }
-        public string RegistroEn { get; set; }
+        public string RelacionLaboral { get; set; }
         public string Estatus { get; set; }
         public string Abreviatura { get; set; }
         public string FormulaCalculo { get; set; }

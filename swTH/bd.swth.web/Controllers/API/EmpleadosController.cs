@@ -2541,7 +2541,7 @@ namespace bd.swth.web.Controllers.API
                 var empleadoSegunNombre = await db.Empleado
                                   .Include(x => x.Persona)
                                   .Where(x => x.NombreUsuario == nombreUsuario)
-                                  .SingleOrDefaultAsync();
+                                  .FirstOrDefaultAsync();
 
 
                 return empleadoSegunNombre;
