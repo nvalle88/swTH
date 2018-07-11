@@ -258,9 +258,13 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var existe = await db.ActividadesEsenciales
+                    .Where(w =>
+                        w.Descripcion.ToString().ToUpper() == ActividadesEsenciales.Descripcion.ToString().ToUpper()
+                    ).FirstOrDefaultAsync();
 
-                var existe = Existe(ActividadesEsenciales);
-                if (existe.IsSuccess)
+                
+                if (existe != null && existe.IdActividadesEsenciales !=  id)
                 {
                     return new Response
                     {
@@ -275,7 +279,9 @@ namespace bd.swth.web.Controllers.API
                     try
                     {
 
-                        ActividadesEsencialesActualizar.Descripcion = ActividadesEsenciales.Descripcion;
+
+
+                        ActividadesEsencialesActualizar.Descripcion = ActividadesEsenciales.Descripcion.ToString().ToUpper();
                         db.ActividadesEsenciales.Update(ActividadesEsencialesActualizar);
                         await db.SaveChangesAsync();
 
@@ -345,6 +351,9 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(ActividadesEsenciales);
                 if (!respuesta.IsSuccess)
                 {
+                    // convertir a mayúsculas
+                    ActividadesEsenciales.Descripcion = ActividadesEsenciales.Descripcion.ToString().ToUpper();
+
                     db.ActividadesEsenciales.Add(ActividadesEsenciales);
                     await db.SaveChangesAsync();
 
@@ -399,7 +408,9 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.ActividadesEsenciales.SingleOrDefaultAsync(m => m.IdActividadesEsenciales == id);
+                var respuesta = await db.ActividadesEsenciales
+                    .SingleOrDefaultAsync(m => m.IdActividadesEsenciales == id);
+
                 if (respuesta == null)
                 {
                     return new Response
@@ -408,31 +419,23 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
+
                 db.ActividadesEsenciales.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.BorradoSatisfactorio,
                 };
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.BorradoNoSatisfactorio,
                 };
             }
         }
@@ -493,7 +496,13 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(ActividadesEsenciales ActividadesEsenciales)
         {
             var bdd = ActividadesEsenciales.Descripcion;
-            var ActividadesEsencialesrespuesta = db.ActividadesEsenciales.Where(p => p.Descripcion.Equals(bdd)).FirstOrDefault();
+
+            var ActividadesEsencialesrespuesta = db.ActividadesEsenciales
+                .Where(p =>
+                    p.Descripcion.ToString().ToUpper() == bdd.ToString().ToUpper()
+                )
+                .FirstOrDefault();
+
             if (ActividadesEsencialesrespuesta != null)
             {
                 return new Response
