@@ -41,8 +41,11 @@ namespace bd.swth.entidades.Utils
         public static string ExistePartidaIndividual { get { return "El número de partida / código ingresado ya existe"; } }
 
         public static string NumeroPartidaObligatorio { get { return "El número de partida / código no puede ir vacío"; } }
-        
-        
 
+        public static string RequeridoTipoNombramiento { get { return "El tipo de nombramiento es requerido"; } }
+
+        public static string ErrorCodigoRepetido { get { return "El código ingresado ya existe en otro registro"; } }
+
+        public static string ErrorNumeroPartidaRepetida { get { return "El número de partida ingresado ya existe en otro registro"; } }
     }
 }

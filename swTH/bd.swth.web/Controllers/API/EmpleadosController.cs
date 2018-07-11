@@ -772,7 +772,7 @@ namespace bd.swth.web.Controllers.API
                     {
 
                         var itemIomp = listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault();
-
+                       
                         item.IdRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.IdRelacionLaboral;
                         item.NombreRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.Nombre;
                         item.ManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.Nombre;

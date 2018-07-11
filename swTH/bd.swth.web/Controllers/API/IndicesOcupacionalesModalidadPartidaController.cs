@@ -542,6 +542,19 @@ namespace bd.swth.web.Controllers.API
                         };
                     }
 
+                    if (
+                        IndiceOcupacionalModalidadPartida.IdEmpleado != null
+                        && IndiceOcupacionalModalidadPartida.IdTipoNombramiento == null
+                    )
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.RequeridoTipoNombramiento
+                        };
+                    }
+
+
                     if (String.IsNullOrEmpty(IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual) )
                     {
                         return new Response {
@@ -549,6 +562,7 @@ namespace bd.swth.web.Controllers.API
                             Message = Mensaje.NumeroPartidaObligatorio
                         };
                     }
+
                     
 
                     // Se obtienen los diferentes tipos de relación laboral
@@ -581,6 +595,25 @@ namespace bd.swth.web.Controllers.API
                         modelo.CodigoContrato = IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual;
                         modelo.FechaFin = IndiceOcupacionalModalidadPartida.FechaFin;
 
+
+                        // si el código ya existe para otro registro no debe guardar la información
+                        var existeCodigo = await db.IndiceOcupacionalModalidadPartida
+                            .Where(w => w.CodigoContrato == modelo.CodigoContrato)
+                            .FirstOrDefaultAsync();
+
+                        if (
+                            existeCodigo != null 
+                            && existeCodigo.IdIndiceOcupacionalModalidadPartida != IndiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida
+                        )
+                        {
+                            
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = Mensaje.ErrorCodigoRepetido
+                            };
+                        }
+
                     }
 
                     else if (
@@ -590,6 +623,24 @@ namespace bd.swth.web.Controllers.API
                     {
                         modelo.NumeroPartidaIndividual = IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual;
                         modelo.IdModalidadPartida = IndiceOcupacionalModalidadPartida.IdModalidadPartida;
+
+                        // si el código ya existe para otro registro no debe guardar la información
+                        var existeCodigo = await db.IndiceOcupacionalModalidadPartida
+                            .Where(w => w.NumeroPartidaIndividual == modelo.NumeroPartidaIndividual)
+                            .FirstOrDefaultAsync();
+
+                        if (
+                            existeCodigo != null
+                            && existeCodigo.IdIndiceOcupacionalModalidadPartida != IndiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida
+                        )
+                        {
+
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = Mensaje.ErrorNumeroPartidaRepetida
+                            };
+                        }
 
                     }
 
@@ -608,6 +659,7 @@ namespace bd.swth.web.Controllers.API
                         // ** Se agrega la dependencia y el estado del empleado cambia a activo
                         var empleado = await db.Empleado.Where(x => x.IdEmpleado == modelo.IdEmpleado).FirstOrDefaultAsync();
 
+                        empleado.TipoRelacion = nombramiento.RelacionLaboral.Nombre.ToUpper();
                         empleado.IdDependencia = IndiceOcupacionalModalidadPartida.IdDependencia;
                         empleado.Activo = true;
 
