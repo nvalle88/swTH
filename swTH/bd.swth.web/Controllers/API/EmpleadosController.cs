@@ -373,10 +373,11 @@ namespace bd.swth.web.Controllers.API
                 var EmpleadoEncontrado = await db.Empleado.OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario && x.Activo == true).FirstOrDefaultAsync();
                 if (EmpleadoEncontrado != null)
                 {
+                    var modalidar = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaOcupada).FirstOrDefaultAsync();
                     var EmpleadoDeJefe = await db.Empleado.Where(x => x.IdDependencia == EmpleadoEncontrado.IdDependencia).ToListAsync();
                     foreach (var item in EmpleadoDeJefe)
                     {
-                        var modalidadPartida = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdEmpleado == item.IdEmpleado).Select(x => new DocumentoFAOViewModel
+                        var modalidadPartida = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdEmpleado == item.IdEmpleado && x.IdModalidadPartida == modalidar.IdModalidadPartida).Select(x => new DocumentoFAOViewModel
                         {
                             //IdEmpleado =Convert.ToInt32( x.IdEmpleado),
                             Modalidad = x.ModalidadPartida.Nombre,
@@ -771,7 +772,7 @@ namespace bd.swth.web.Controllers.API
                     {
 
                         var itemIomp = listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault();
-
+                       
                         item.IdRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.IdRelacionLaboral;
                         item.NombreRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.Nombre;
                         item.ManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.Nombre;
@@ -1930,16 +1931,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Empleado();
             }
         }

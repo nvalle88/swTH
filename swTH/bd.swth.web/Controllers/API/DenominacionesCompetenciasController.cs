@@ -86,16 +86,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -130,61 +121,53 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(DenominacionCompetencia);
-                var DenominacionCompetenciaActualizar = (DenominacionCompetencia)existe.Resultado;
-
-                if (existe.IsSuccess)
-                {
+                var modeloAcualizar = await db.DenominacionCompetencia
+                    .Where(w=>w.IdDenominacionCompetencia == DenominacionCompetencia.IdDenominacionCompetencia)
+                    .FirstOrDefaultAsync();
 
 
-                    //if (DenominacionCompetenciaActualizar.IdDenominacionCompetencia == DenominacionCompetencia.IdDenominacionCompetencia)
-                    //{
-                    //    if (DenominacionCompetencia.Nombre == DenominacionCompetenciaActualizar.Nombre &&
-                    //    DenominacionCompetencia.Definicion == DenominacionCompetenciaActualizar.Definicion &&
-                    //    DenominacionCompetencia.CompetenciaTecnica == DenominacionCompetenciaActualizar.CompetenciaTecnica)
-                    //    {
-                    //        return new Response
-                    //        {
-                    //            IsSuccess = true,
-                    //        };
-                    //    }
+                if (modeloAcualizar != null) {
 
-                    //    await Actualizar(DenominacionCompetencia);
-                    //    return new Response
-                    //    {
-                    //        IsSuccess = true,
-                    //        Message = Mensaje.Satisfactorio,
-                    //    };
-                    //}
-                    return new Response
+                    var existe = await db.DenominacionCompetencia
+                        .Where(w => w.Nombre.ToUpper() == DenominacionCompetencia.Nombre.ToUpper())
+                        .FirstOrDefaultAsync();
+
+                    if (existe != null
+                        && existe.IdDenominacionCompetencia != modeloAcualizar.IdDenominacionCompetencia)
                     {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
-                    };
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.ExisteRegistro
+                        };
+                    }
+                    else {
+
+                        // Conversión de los campos de texo a mayúsculas
+                        DenominacionCompetencia.Nombre = DenominacionCompetencia.Nombre.ToUpper();
+                        DenominacionCompetencia.Definicion = DenominacionCompetencia.Definicion.ToUpper();
+
+                        await Actualizar(DenominacionCompetencia);
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.Satisfactorio,
+                        };
+
+                    }
+
                 }
 
-                await Actualizar(DenominacionCompetencia);
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    IsSuccess = false,
+                    Message = Mensaje.RegistroNoEncontrado
                 };
 
             }
             catch (Exception ex)
             {
-
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
                 return new Response
                 {
                     IsSuccess = true,
@@ -212,6 +195,11 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(DenominacionCompetencia);
                 if (!respuesta.IsSuccess)
                 {
+                    // Conversión de los campos de texo a mayúsculas
+                    DenominacionCompetencia.Nombre = DenominacionCompetencia.Nombre.ToUpper();
+                    DenominacionCompetencia.Definicion = DenominacionCompetencia.Definicion.ToUpper();
+
+
                     db.DenominacionCompetencia.Add(DenominacionCompetencia);
                     await db.SaveChangesAsync();
                     return new Response

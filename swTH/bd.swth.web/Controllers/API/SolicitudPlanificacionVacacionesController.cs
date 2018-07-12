@@ -46,7 +46,10 @@ namespace bd.swth.web.Controllers.API
                 var empleados = await db.IndiceOcupacionalModalidadPartida
                     .Include(i=>i.TipoNombramiento).ThenInclude(t=>t.RelacionLaboral)
                     .Include(i2=>i2.Empleado)
-                    .Where(w=>w.Empleado.Activo == true)
+                    .Where(w=>
+                        w.Empleado.Activo == true
+                        && w.IdEmpleado != null
+                     )
                     .OrderByDescending(o=>o.Fecha)
                     .ToAsyncEnumerable()
                     .Distinct(d => d.IdEmpleado)

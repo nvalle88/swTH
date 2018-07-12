@@ -96,16 +96,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
                 return new List<DependenciaViewModel>();
             }
         }
@@ -447,16 +438,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -468,11 +449,16 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(Dependencia dependencia)
         {
             var nombre = dependencia.Nombre.ToUpper().TrimEnd().TrimStart();
-            var dependenciarespuesta = db.Dependencia.Where(p =>(p.Codigo==dependencia.Codigo) || (p.Nombre.ToUpper().TrimEnd().TrimStart() == nombre
-                                                             && p.IdDependenciaPadre == dependencia.IdDependenciaPadre
-                                                             && p.IdSucursal == dependencia.IdSucursal
-                                                             && p.IdProceso == dependencia.IdProceso
-                                                             && p.Codigo == dependencia.Codigo)).FirstOrDefault();
+
+            var dependenciarespuesta = db.Dependencia
+                .Where(p =>(p.Codigo==dependencia.Codigo) || 
+                (p.Nombre.ToUpper().TrimEnd().TrimStart() == nombre
+                    && p.IdDependenciaPadre == dependencia.IdDependenciaPadre
+                    && p.IdSucursal == dependencia.IdSucursal
+                    && p.IdProceso == dependencia.IdProceso
+                    && p.Codigo == dependencia.Codigo)
+                ).FirstOrDefault();
+
             if (dependenciarespuesta != null)
             {
                 return new Response

@@ -220,7 +220,140 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        
+        /// <summary>
+        /// Este método obtiene el salario de la escala de grados y si existe un salario real,
+        /// envía el salario real, discrimina por Fecha, numeroPartida y codigotrabajo
+        /// </summary>
+        /// <returns></returns>
+        // GET: api/IndicesOcupacionalesModalidadPartida
+        [HttpGet]
+        [Route("ListarIOMPVMCodigosDiferentes")]
+        public async Task<List<IndicesOcupacionalesModalidadPartidaViewModel>> ListarIOMPVMCodigosDiferentes()
+        {
+
+            var lista = new List<IndicesOcupacionalesModalidadPartidaViewModel>();
+
+
+            try
+            {
+                var listaIOMP = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i => i.IndiceOcupacional)
+                        .ThenInclude(t => t.EscalaGrados)
+
+                        .Include(i => i.IndiceOcupacional.Dependencia)
+                            .ThenInclude(t => t.Sucursal)
+
+                        .Include(i => i.IndiceOcupacional.ManualPuesto)
+                            .ThenInclude(t => t.RelacionesInternasExternas)
+
+                        .Include(i => i.IndiceOcupacional.RolPuesto)
+
+                        .Include(i => i.IndiceOcupacional.Ambito)
+
+                        .Include(i => i.IndiceOcupacional.PartidaGeneral)
+
+                    .Include(i => i.ModalidadPartida)
+                    .Include(i => i.FondoFinanciamiento)
+
+                    .Include(i => i.TipoNombramiento)
+                        .ThenInclude(t => t.RelacionLaboral)
+
+                    .OrderByDescending(o => o.Fecha)
+                    .DistinctBy(d => new { d.IndiceOcupacional.ManualPuesto.Nombre, d.NumeroPartidaIndividual,d.CodigoContrato})
+                    .ToAsyncEnumerable().ToList();
+
+
+
+                lista = listaIOMP.Select(
+                    s => new IndicesOcupacionalesModalidadPartidaViewModel
+                    {
+                        IdIndiceOcupacionalModalidadPartida = s.IdIndiceOcupacionalModalidadPartida,
+                        Fecha = s.Fecha,
+
+                        SalarioActual =
+                                s.SalarioReal > 0
+                                ? s.SalarioReal
+                                : s.IndiceOcupacional.EscalaGrados.Remuneracion
+                            ,
+
+                        IdIndiceOcupacional = s.IdIndiceOcupacional,
+                        IdEmpleado = s.IdEmpleado,
+                        IdFondoFinanciamiento = s.IdFondoFinanciamiento,
+                        IdTipoNombramiento = s.IdTipoNombramiento,
+                        CodigoContrato = s.CodigoContrato,
+                        IdModalidadPartida = s.IdModalidadPartida,
+                        NumeroPartidaIndividual = s.NumeroPartidaIndividual,
+                        FechaFin = s.FechaFin,
+
+                        IndiceOcupacionalViewModel = new IndiceOcupacionalViewModel
+                        {
+
+                            IdIndiceOcupacional = s.IndiceOcupacional.IdIndiceOcupacional,
+                            IdDependencia = s.IndiceOcupacional.IdDependencia,
+                            IdManualPuesto = s.IndiceOcupacional.IdManualPuesto,
+                            IdRolPuesto = s.IndiceOcupacional.IdRolPuesto,
+                            IdEscalaGrados = s.IndiceOcupacional.IdEscalaGrados,
+                            IdPartidaGeneral = s.IndiceOcupacional.IdPartidaGeneral,
+                            IdAmbito = s.IndiceOcupacional.IdAmbito,
+                            Nivel = s.IndiceOcupacional.Nivel,
+
+
+                            NombreDependencia = s.IndiceOcupacional.Dependencia.Nombre,
+                            CodigoDependencia = s.IndiceOcupacional.Dependencia.Codigo,
+
+                            IdSucursal = s.IndiceOcupacional.Dependencia.Sucursal.IdSucursal,
+                            NombreSucursal = s.IndiceOcupacional.Dependencia.Sucursal.Nombre,
+
+                            NombreManualPuesto = s.IndiceOcupacional.ManualPuesto.Nombre,
+                            DescripcionManualPuesto = s.IndiceOcupacional.ManualPuesto.Descripcion,
+                            MisionManualPuesto = s.IndiceOcupacional.ManualPuesto.Mision,
+
+                            IdRelacionesInternasExternas =
+                                    s.IndiceOcupacional.ManualPuesto.RelacionesInternasExternas.IdRelacionesInternasExternas,
+                            NombreRelacionesInternasExternas =
+                                    s.IndiceOcupacional.ManualPuesto.RelacionesInternasExternas.Nombre,
+                            DescripcionRelacionesInternasExternas =
+                                    s.IndiceOcupacional.ManualPuesto.RelacionesInternasExternas.Descripcion,
+
+
+                            NombreRolPuesto = s.IndiceOcupacional.RolPuesto.Nombre,
+
+
+                            NombreEscalaGrados = s.IndiceOcupacional.EscalaGrados.Nombre,
+                            Remuneracion = s.IndiceOcupacional.EscalaGrados.Remuneracion,
+                            Grado = s.IndiceOcupacional.EscalaGrados.Grado,
+
+                            NumeroPartidaGeneral =
+                                (s.IndiceOcupacional.PartidaGeneral == null)
+                                ? ""
+                                : s.IndiceOcupacional.PartidaGeneral.NumeroPartida,
+
+                            NombreAmbito = s.IndiceOcupacional.Ambito.Nombre
+
+                        }
+
+                            ,
+
+                        NombreFondoFinanciamiento = (s.FondoFinanciamiento != null) ? s.FondoFinanciamiento.Nombre : "",
+                        NombreTipoNombramiento = (s.TipoNombramiento != null) ? s.TipoNombramiento.Nombre : "",
+                        IdRelacionLaboral = (s.TipoNombramiento != null) ? s.TipoNombramiento.RelacionLaboral.IdRelacionLaboral : 0,
+                        NombreRelacionLaboral = (s.TipoNombramiento != null) ? s.TipoNombramiento.RelacionLaboral.Nombre : "",
+                        NombreModalidadPartida = (s.ModalidadPartida != null) ? s.ModalidadPartida.Nombre : ""
+
+                    }
+
+                    ).ToList();
+
+                return lista;
+
+            }
+            catch (Exception ex)
+            {
+                return lista;
+            }
+        }
+
+
         [HttpPost]
         [Route("IndiceOcupacionalModalidadPartidaPorIdEmpleado")]
         public async Task<Response> IndiceOcupacionalModalidadPartidaPorIdEmpleado([FromBody] IndiceOcupacionalModalidadPartida indiceOcupacionalModalidadPartida)
@@ -409,6 +542,19 @@ namespace bd.swth.web.Controllers.API
                         };
                     }
 
+                    if (
+                        IndiceOcupacionalModalidadPartida.IdEmpleado != null
+                        && IndiceOcupacionalModalidadPartida.IdTipoNombramiento == null
+                    )
+                    {
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.RequeridoTipoNombramiento
+                        };
+                    }
+
+
                     if (String.IsNullOrEmpty(IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual) )
                     {
                         return new Response {
@@ -416,6 +562,7 @@ namespace bd.swth.web.Controllers.API
                             Message = Mensaje.NumeroPartidaObligatorio
                         };
                     }
+
                     
 
                     // Se obtienen los diferentes tipos de relación laboral
@@ -448,6 +595,25 @@ namespace bd.swth.web.Controllers.API
                         modelo.CodigoContrato = IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual;
                         modelo.FechaFin = IndiceOcupacionalModalidadPartida.FechaFin;
 
+
+                        // si el código ya existe para otro registro no debe guardar la información
+                        var existeCodigo = await db.IndiceOcupacionalModalidadPartida
+                            .Where(w => w.CodigoContrato == modelo.CodigoContrato)
+                            .FirstOrDefaultAsync();
+
+                        if (
+                            existeCodigo != null 
+                            && existeCodigo.IdIndiceOcupacionalModalidadPartida != IndiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida
+                        )
+                        {
+                            
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = Mensaje.ErrorCodigoRepetido
+                            };
+                        }
+
                     }
 
                     else if (
@@ -457,6 +623,24 @@ namespace bd.swth.web.Controllers.API
                     {
                         modelo.NumeroPartidaIndividual = IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual;
                         modelo.IdModalidadPartida = IndiceOcupacionalModalidadPartida.IdModalidadPartida;
+
+                        // si el código ya existe para otro registro no debe guardar la información
+                        var existeCodigo = await db.IndiceOcupacionalModalidadPartida
+                            .Where(w => w.NumeroPartidaIndividual == modelo.NumeroPartidaIndividual)
+                            .FirstOrDefaultAsync();
+
+                        if (
+                            existeCodigo != null
+                            && existeCodigo.IdIndiceOcupacionalModalidadPartida != IndiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida
+                        )
+                        {
+
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message = Mensaje.ErrorNumeroPartidaRepetida
+                            };
+                        }
 
                     }
 
@@ -475,6 +659,7 @@ namespace bd.swth.web.Controllers.API
                         // ** Se agrega la dependencia y el estado del empleado cambia a activo
                         var empleado = await db.Empleado.Where(x => x.IdEmpleado == modelo.IdEmpleado).FirstOrDefaultAsync();
 
+                        empleado.TipoRelacion = nombramiento.RelacionLaboral.Nombre.ToUpper();
                         empleado.IdDependencia = IndiceOcupacionalModalidadPartida.IdDependencia;
                         empleado.Activo = true;
 

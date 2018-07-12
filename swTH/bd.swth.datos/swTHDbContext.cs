@@ -815,7 +815,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdActividadesEsenciales)
                     .HasName("PK221");
 
-                entity.Property(e => e.Descripcion).HasMaxLength(100);
+                entity.Property(e => e.Descripcion).HasMaxLength(255);
             });
 
 
