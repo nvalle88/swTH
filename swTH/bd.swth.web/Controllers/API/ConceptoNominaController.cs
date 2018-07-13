@@ -316,9 +316,7 @@ namespace bd.swth.web.Controllers.API
                 ConceptoNominaActualizar.Codigo = ConceptoNomina.Codigo;
                 ConceptoNominaActualizar.Descripcion = ConceptoNomina.Descripcion;
                 ConceptoNominaActualizar.TipoConcepto = ConceptoNomina.TipoConcepto;
-                ConceptoNominaActualizar.TipoCalculo = ConceptoNomina.TipoCalculo;
-                ConceptoNominaActualizar.NivelAcumulacion = ConceptoNomina.NivelAcumulacion;
-                ConceptoNominaActualizar.RegistroEn = ConceptoNomina.RegistroEn;
+                ConceptoNominaActualizar.RelacionLaboral = ConceptoNomina.RelacionLaboral;
                 ConceptoNominaActualizar.Estatus = ConceptoNomina.Estatus;
                 ConceptoNominaActualizar.Abreviatura = ConceptoNomina.Abreviatura;
                 ConceptoNominaActualizar.Prioridad = ConceptoNomina.Prioridad;

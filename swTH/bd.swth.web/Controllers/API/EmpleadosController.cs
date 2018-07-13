@@ -772,7 +772,7 @@ namespace bd.swth.web.Controllers.API
                     {
 
                         var itemIomp = listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault();
-
+                       
                         item.IdRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.IdRelacionLaboral;
                         item.NombreRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.Nombre;
                         item.ManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.Nombre;
@@ -1931,16 +1931,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Empleado();
             }
         }
@@ -2542,7 +2532,7 @@ namespace bd.swth.web.Controllers.API
                 var empleadoSegunNombre = await db.Empleado
                                   .Include(x => x.Persona)
                                   .Where(x => x.NombreUsuario == nombreUsuario)
-                                  .SingleOrDefaultAsync();
+                                  .FirstOrDefaultAsync();
 
 
                 return empleadoSegunNombre;

@@ -13,7 +13,7 @@ namespace bd.swth.entidades.Negocio
         public int CantidadHoras { get; set; }
         public string IdentificacionEmpleado { get; set; }
         public bool EsExtraordinaria { get; set; }
-    
+        public bool EsCienPorciento { get; set; }
 
 
 
