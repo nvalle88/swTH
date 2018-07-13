@@ -22,7 +22,7 @@ namespace bd.swth.entidades.ViewModels
 
         public int? IdBrigadaSSORol { get; set; }
 
-        public int IdBrigadaSSO { get; set; }
+        public int? IdBrigadaSSO { get; set; }
 
         public bool TrabajoSuperintendenciaBanco { get; set; }
 
@@ -43,6 +43,7 @@ namespace bd.swth.entidades.ViewModels
         public int? AnoDesvinculacion { get; set; }
 
         public string TipoRelacion { get; set; }
+        
 
     }
 }

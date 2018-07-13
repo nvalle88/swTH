@@ -15,6 +15,8 @@ namespace bd.swth.entidades.ViewModels
         public int IdSexo { get; set; }
         public int IdGenero { get; set; }
 
+        public string RelacionSuperintendencia { get; set; }
+
         public int IdPaisLugarNacimiento { get; set; }
         public int IdPaisLugarSufragio { get; set; }
         public int IdPaisLugarPersona { get; set; }

@@ -47,5 +47,8 @@ namespace bd.swth.entidades.Utils
         public static string ErrorCodigoRepetido { get { return "El código ingresado ya existe en otro registro"; } }
 
         public static string ErrorNumeroPartidaRepetida { get { return "El número de partida ingresado ya existe en otro registro"; } }
+
+        public static string ErrorFechaFinMenorFechaInicio { get { return "LA FECHA FIN ES MAYOR QUE LA FECHA DE INICIO"; } }
+
     }
 }

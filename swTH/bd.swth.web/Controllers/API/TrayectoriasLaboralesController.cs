@@ -58,22 +58,194 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.TrayectoriaLaboral.Where(x => x.IdPersona == empleado.IdPersona).OrderBy(x => x.FechaInicio).ToListAsync();
+                var lista = await db.TrayectoriaLaboral
+                    .Where(x => x.IdPersona == empleado.IdPersona)
+                    .Select(s=> new TrayectoriaLaboral {
+                        IdTrayectoriaLaboral = s.IdTrayectoriaLaboral,
+                        IdPersona = s.IdPersona,
+                        FechaInicio = s.FechaInicio,
+                        FechaFin = s.FechaFin,
+                        Empresa = s.Empresa,
+                        PuestoTrabajo = s.PuestoTrabajo,
+                        TipoInstitucion = s.TipoInstitucion,
+                        FormaIngreso = s.FormaIngreso,
+                        MotivoSalida = s.MotivoSalida,
+                        AreaAsignada = s.AreaAsignada,
+                        DescripcionFunciones = s.DescripcionFunciones,
+
+                        NumeroDias = ObtenerDiferenciaFechasEnDias(s.FechaInicio, s.FechaFin),
+
+                        TiempoTexto = ObtenerDiferenciaFechasEnTexto(s.FechaInicio,s.FechaFin),
+                            
+
+                    })
+                    .OrderBy(x => x.FechaInicio)
+                    .ToListAsync();
+
+                return lista;
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<TrayectoriaLaboral>();
             }
+        }
+
+        private int ObtenerDiferenciaFechasEnDias(DateTime fechaInicio, DateTime fechaFin) {
+            var days = 0;
+
+            if (fechaFin < fechaInicio) {
+                return days;
+            }
+
+            // Se añade + 1 porque cuenta también el día de ingreso
+            days = (fechaFin - fechaInicio).Days + 1;
+
+            return days;
+        }
+
+
+        private string ObtenerDiferenciaFechasEnTexto(DateTime fechaInicio, DateTime fechaFin) {
+            string respuesta="";
+
+            int year = 0;
+            int month = 0;
+            int days = 0;
+
+            // ---- Cálculo de años ----
+            year = fechaFin.Year - fechaInicio.Year;
+
+            //  No calcular si la fechafin > fecha inicio
+            if (fechaFin < fechaInicio) {
+
+                respuesta = Mensaje.ErrorFechaFinMenorFechaInicio.ToString().ToUpper();
+                return respuesta;
+            }
+
+            if (year > 0)
+            {
+                // se resta 1 año porque ya se calculan los meses del año de ingreso
+                year = year - 1;
+
+                // ---- Cálculo de meses ----
+                var monthToEndYear = (12 - fechaInicio.Month);
+                var thisMonth = fechaFin.Month;
+                
+
+                month = monthToEndYear + thisMonth;
+
+
+
+                if (month / 12 > 1)
+                {
+                    year = year + ((int)month / 12);
+                    month = month % 12;
+                } else if (month == 12) {
+                    month = 0;
+                }
+
+
+                // resto 1 mes porque ya se calculan los días del mes de ingreso
+                month = month - 1;
+
+
+                // ----Cálculo de días----
+                var daysFirstMonth = DateTime.DaysInMonth(fechaInicio.Year, fechaInicio.Month);
+
+                // Se añade 1 día porque se toma en cuenta también el día de ingreso
+                var daysToEndMonth = daysFirstMonth - fechaInicio.Day + 1;
+                days = daysToEndMonth + fechaFin.Day;
+
+
+                if (days / daysFirstMonth >=1) {
+
+                    month = month + (days / daysFirstMonth);
+                    days = (days % daysFirstMonth);
+                }
+
+
+            }
+            else if (year == 0)
+            {
+                month = fechaFin.Month - fechaInicio.Month;
+
+                if (month > 0)
+                {
+                    // ---- Cálculo de días ----
+                    var diasMesInicio = DateTime.DaysInMonth(fechaInicio.Year, fechaInicio.Month);
+
+                    // Se añade un día porque también cuenta el día de ingreso
+                    var diasHastaFinMes = diasMesInicio - fechaInicio.Day + 1;
+                    days = diasHastaFinMes + fechaFin.Day;
+
+
+                    // ---- Cálculo de meses ---
+
+                    // Se resta 1 porque ya se calcularon los días del primer mes
+                    month = fechaFin.Month - fechaInicio.Month - 1;
+
+                    if (days / diasHastaFinMes >= 1)
+                    {
+
+                        month = month + (days / diasMesInicio);
+                        days = (days % diasMesInicio);
+                    }
+
+                }
+                else
+                {
+                    var diasMesInicio = DateTime.DaysInMonth(fechaInicio.Year, fechaInicio.Month);
+
+                    // Se añade un día porque también cuenta el día de ingreso
+                    days = fechaFin.Day - fechaInicio.Day + 1;
+
+                    if (days / diasMesInicio >= 1)
+                    {
+
+                        month = month + (days / diasMesInicio);
+                        days = (days % diasMesInicio);
+                    }
+
+                }
+            }
+
+
+            switch (year) {
+                case 0:
+                    respuesta = "";
+                break;case 1:
+                    respuesta = year + " año,";
+                break;default:
+                    respuesta = year + " años,";
+                break;
+            }
+
+            switch (month)
+            {
+                case 0:
+                    respuesta = respuesta + " " + month + " meses";
+                break;case 1:
+                    respuesta = respuesta +" "+ month + " mes";
+
+                break;default:
+                    respuesta = respuesta + " " + month + " meses";
+                break;
+            }
+
+            switch (days)
+            {
+                case 0:
+                    respuesta = respuesta + " y " + days + " días";
+                    break;
+                case 1:
+                    respuesta = respuesta + " y " + days + " día";
+
+                    break;
+                default:
+                    respuesta = respuesta + " y " + days + " días";
+                    break;
+            }
+
+            return respuesta.ToString().ToUpper();
         }
 
         // GET: api/TrayectoriaLaboral/5
@@ -146,7 +318,9 @@ namespace bd.swth.web.Controllers.API
 
                 var existe = Existe(trayectoriaLaboral);
                 var TrayectoriaLaboralActualizar = (TrayectoriaLaboral)existe.Resultado;
-                if (existe.IsSuccess)
+
+
+                if (existe.IsSuccess && TrayectoriaLaboralActualizar.IdTrayectoriaLaboral != id)
                 {
                   
                     return new Response
@@ -160,14 +334,14 @@ namespace bd.swth.web.Controllers.API
                 TrayectoriaLaboral.IdPersona = trayectoriaLaboral.IdPersona;
                 TrayectoriaLaboral.FechaInicio = trayectoriaLaboral.FechaInicio;
                 TrayectoriaLaboral.FechaFin = trayectoriaLaboral.FechaFin;
-                TrayectoriaLaboral.Empresa = trayectoriaLaboral.Empresa;
-                TrayectoriaLaboral.PuestoTrabajo = trayectoriaLaboral.PuestoTrabajo;
-                TrayectoriaLaboral.DescripcionFunciones = trayectoriaLaboral.DescripcionFunciones;
+                TrayectoriaLaboral.Empresa = trayectoriaLaboral.Empresa.ToString().ToUpper();
+                TrayectoriaLaboral.PuestoTrabajo = trayectoriaLaboral.PuestoTrabajo.ToString().ToUpper();
+                TrayectoriaLaboral.DescripcionFunciones = trayectoriaLaboral.DescripcionFunciones.ToString().ToUpper();
 
-                TrayectoriaLaboral.AreaAsignada = trayectoriaLaboral.AreaAsignada;
-                TrayectoriaLaboral.FormaIngreso = trayectoriaLaboral.FormaIngreso;
-                TrayectoriaLaboral.MotivoSalida = trayectoriaLaboral.MotivoSalida;
-                TrayectoriaLaboral.TipoInstitucion = trayectoriaLaboral.TipoInstitucion;
+                TrayectoriaLaboral.AreaAsignada = trayectoriaLaboral.AreaAsignada.ToString().ToUpper();
+                TrayectoriaLaboral.FormaIngreso = trayectoriaLaboral.FormaIngreso.ToString().ToUpper();
+                TrayectoriaLaboral.MotivoSalida = trayectoriaLaboral.MotivoSalida.ToString().ToUpper();
+                TrayectoriaLaboral.TipoInstitucion = trayectoriaLaboral.TipoInstitucion.ToString().ToUpper();
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -179,16 +353,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
 
                 return new Response
                 {
@@ -218,6 +382,15 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(TrayectoriaLaboral);
                 if (!respuesta.IsSuccess)
                 {
+                    // Convertir a mayúsculas
+                    TrayectoriaLaboral.Empresa = TrayectoriaLaboral.Empresa.ToString().ToUpper();
+                    TrayectoriaLaboral.PuestoTrabajo = TrayectoriaLaboral.PuestoTrabajo.ToString().ToUpper();
+                    TrayectoriaLaboral.AreaAsignada = TrayectoriaLaboral.AreaAsignada.ToString().ToUpper();
+                    TrayectoriaLaboral.FormaIngreso = TrayectoriaLaboral.FormaIngreso.ToString().ToUpper();
+                    TrayectoriaLaboral.MotivoSalida = TrayectoriaLaboral.MotivoSalida.ToString().ToUpper();
+                    TrayectoriaLaboral.DescripcionFunciones = TrayectoriaLaboral.ToString().ToUpper();
+                    TrayectoriaLaboral.TipoInstitucion = TrayectoriaLaboral.TipoInstitucion.ToString().ToUpper();
+
                     db.TrayectoriaLaboral.Add(TrayectoriaLaboral);
                     await db.SaveChangesAsync();
                     return new Response
@@ -236,16 +409,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
 
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -312,22 +476,25 @@ namespace bd.swth.web.Controllers.API
             var fechaInicio = TrayectoriaLaboral.FechaInicio;
             var fechaFin = TrayectoriaLaboral.FechaFin;
             var Empresa = TrayectoriaLaboral.Empresa;
-            var PuestoTrabajo = TrayectoriaLaboral.PuestoTrabajo;
-            var DescripcionFunciones = TrayectoriaLaboral.DescripcionFunciones;
-            var tipoInstitucion = TrayectoriaLaboral.TipoInstitucion;
-            var areaAsignada = TrayectoriaLaboral.AreaAsignada;
-            var formaIngreso = TrayectoriaLaboral.FormaIngreso;
-            var motivoSalida = TrayectoriaLaboral.MotivoSalida;
+            var PuestoTrabajo = TrayectoriaLaboral.PuestoTrabajo.ToString().ToUpper();
+            var DescripcionFunciones = TrayectoriaLaboral.DescripcionFunciones.ToString().ToUpper();
+            var tipoInstitucion = TrayectoriaLaboral.TipoInstitucion.ToString().ToUpper();
+            var areaAsignada = TrayectoriaLaboral.AreaAsignada.ToString().ToUpper();
+            var formaIngreso = TrayectoriaLaboral.FormaIngreso.ToString().ToUpper();
+            var motivoSalida = TrayectoriaLaboral.MotivoSalida.ToString().ToUpper();
 
-            var TrayectoriaLaboralrespuesta = db.TrayectoriaLaboral.Where(p => p.FechaInicio == fechaInicio 
-            && p.FechaFin == fechaFin
-            && p.Empresa == Empresa
-            && p.PuestoTrabajo == PuestoTrabajo
-            && p.TipoInstitucion == tipoInstitucion
-            && p.AreaAsignada == areaAsignada
-            && p.FormaIngreso == formaIngreso
-            && p.MotivoSalida == motivoSalida
-            && p.DescripcionFunciones == DescripcionFunciones).FirstOrDefault();
+            var TrayectoriaLaboralrespuesta = db.TrayectoriaLaboral
+                .Where(p => 
+                p.FechaInicio == fechaInicio 
+                && p.FechaFin == fechaFin
+                && p.Empresa == Empresa.ToString().ToUpper()
+                && p.PuestoTrabajo == PuestoTrabajo.ToString().ToUpper()
+                && p.TipoInstitucion == tipoInstitucion.ToString().ToUpper()
+                && p.AreaAsignada == areaAsignada.ToString().ToUpper()
+                && p.FormaIngreso == formaIngreso.ToString().ToUpper()
+                && p.MotivoSalida == motivoSalida.ToString().ToUpper()
+                && p.DescripcionFunciones == DescripcionFunciones.ToString().ToUpper()
+                ).FirstOrDefault();
 
             if (TrayectoriaLaboralrespuesta != null)
             {

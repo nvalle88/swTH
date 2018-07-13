@@ -46,6 +46,8 @@ namespace bd.swth.entidades.Negocio
 
         public string TipoRelacion { get; set; }
 
+        public string Foto { get; set; }
+
         //Propiedades Virtuales Referencias a otras clases
 
 
@@ -64,6 +66,8 @@ namespace bd.swth.entidades.Negocio
 
         public int? IdDependencia { get; set; }
         public virtual Dependencia Dependencia { get; set; }
+
+        public string RelacionSuperintendencia { get; set; }
 
 
         public virtual ICollection<Quejas> Quejas { get; set; }

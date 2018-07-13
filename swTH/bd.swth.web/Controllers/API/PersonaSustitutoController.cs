@@ -250,6 +250,10 @@ namespace bd.swth.web.Controllers.API
                     enfermedadActualizar.IdTipoEnfermedad = viewModel.IdTipoEnfermedad;
                     enfermedadActualizar.InstitucionEmite = viewModel.InstitucionEmite;
 
+
+                    //convertir a mayúsculas 
+                    enfermedadActualizar.InstitucionEmite = enfermedadActualizar.InstitucionEmite.ToString().ToUpper();
+
                     db.EnfermedadSustituto.Update(enfermedadActualizar);
                     await db.SaveChangesAsync();
 
@@ -335,6 +339,10 @@ namespace bd.swth.web.Controllers.API
                     IdTipoEnfermedad=viewModel.IdTipoEnfermedad,
                     InstitucionEmite=viewModel.InstitucionEmite,
                 };
+
+                // convertir a mayúsculas
+                enfermedadSustituto.InstitucionEmite = enfermedadSustituto.InstitucionEmite.ToString().ToUpper();
+
 
                 await db.EnfermedadSustituto.AddAsync(enfermedadSustituto);
                 await db.SaveChangesAsync();
@@ -478,7 +486,15 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.PersonaSustituto.Where(y => y.IdEmpleado == viewModel.IdEmpleado)
+                var enfermedades = await db.EnfermedadSustituto
+                .Include(i => i.TipoEnfermedad)
+                .ToListAsync();
+
+                var discapacidades = await db.DiscapacidadSustituto
+                    .Include(i => i.TipoDiscapacidad)
+                    .ToListAsync();
+
+                var lista = await db.PersonaSustituto.Where(y => y.IdEmpleado == viewModel.IdEmpleado)
                                 .Select(x => new ViewModelEmpleadoSustituto
                                 {
                                     IdPersona = x.IdPersona,
@@ -491,12 +507,49 @@ namespace bd.swth.web.Controllers.API
                                     NombreParentesco = x.Parentesco.Nombre,
                                     IdPersonaSustituto = x.IdPersonaSustituto,
 
+                                    Enfermedades = EnfermedadesPersonaSustitutoTexto(x.IdPersonaSustituto, enfermedades),
+                                    Discapacidades = DiscapacidadesPersonaSustitutoTexto(x.IdPersonaSustituto, discapacidades)
+
                                 }).ToListAsync();
+                return lista;
             }
             catch (Exception ex)
             {
                 return new List<ViewModelEmpleadoSustituto>();
             }
+        }
+
+        private string EnfermedadesPersonaSustitutoTexto(int id, List<EnfermedadSustituto> ListasEnfermedades) {
+            var texto = "";
+
+            var lista = new List<EnfermedadSustituto>(ListasEnfermedades);
+
+            lista = lista.Where(w => w.IdPersonaSustituto == id).ToList();
+
+            foreach (var item in lista) {
+                texto = texto + item.TipoEnfermedad.Nombre + ", ";
+            }
+
+            texto = texto.TrimEnd(' ');
+            texto = texto.TrimEnd(',');
+            return texto;
+        }
+
+        private string DiscapacidadesPersonaSustitutoTexto(int id, List<DiscapacidadSustituto> ListaDiscapacidades)
+        {
+            var texto = "";
+
+            var lista = new List<DiscapacidadSustituto>(ListaDiscapacidades);
+
+            lista = lista.Where(w => w.IdPersonaSustituto == id).ToList();
+
+            foreach (var item in lista)
+            {
+                texto = texto + item.TipoDiscapacidad.Nombre + ", ";
+            }
+            texto = texto.TrimEnd(' ');
+            texto = texto.TrimEnd(',');
+            return texto;
         }
 
 
@@ -816,7 +869,14 @@ namespace bd.swth.web.Controllers.API
                         Apellidos = viewModelEmpleadoSustituto.Apellido,
                         TelefonoPrivado = viewModelEmpleadoSustituto.TelefonoPrivado,
                         TelefonoCasa = viewModelEmpleadoSustituto.TelefonoCasa,
+                        IdTipoIdentificacion = null
                     };
+
+
+                    // cambiar a mayúsculas
+                    persona.Nombres = persona.Nombres.ToString().ToUpper();
+                    persona.Apellidos = persona.Apellidos.ToString().ToUpper();
+
 
                     var personaInsertarda = await db.Persona.AddAsync(persona);
                     await db.SaveChangesAsync();
@@ -883,8 +943,8 @@ namespace bd.swth.web.Controllers.API
                     var personaActualizar = await db.Persona.Where(y => y.IdPersona == personaSustitutoActualizar.IdPersona)
                               .FirstOrDefaultAsync();
                     //2. Insertar PersonaDiscapacidad
-                    personaActualizar.Nombres = viewModelEmpleadoSustituto.Nombre;
-                    personaActualizar.Apellidos = viewModelEmpleadoSustituto.Apellido;
+                    personaActualizar.Nombres = viewModelEmpleadoSustituto.Nombre.ToString().ToUpper();
+                    personaActualizar.Apellidos = viewModelEmpleadoSustituto.Apellido.ToString().ToUpper();
                     personaActualizar.TelefonoPrivado = viewModelEmpleadoSustituto.TelefonoPrivado;
                     personaActualizar.TelefonoCasa = viewModelEmpleadoSustituto.TelefonoCasa;
                     db.Persona.Update(personaActualizar);

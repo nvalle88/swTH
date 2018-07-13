@@ -1843,6 +1843,7 @@ namespace bd.swth.web.Controllers.API
                                        Telefono = x.Telefono,
                                        TipoRelacion = x.TipoRelacion,
                                        TrabajoSuperintendenciaBanco = x.TrabajoSuperintendenciaBanco,
+                                       RelacionSuperintendencia = x.RelacionSuperintendencia
                                    }
                                    ).FirstOrDefaultAsync();
 
@@ -1901,6 +1902,7 @@ namespace bd.swth.web.Controllers.API
                                        IdPaisLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
                                        IdCiudadLugarPersona = x.Persona.Parroquia.Ciudad.IdCiudad,
                                        IdProvinciaLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
+                                       RelacionSuperintendencia = x.RelacionSuperintendencia
 
                                    }
                                    ).FirstOrDefaultAsync();
@@ -2616,6 +2618,7 @@ namespace bd.swth.web.Controllers.API
                         empleadoActual.Nepotismo = datosBasicosEmpleado.Nepotismo;
                         empleadoActual.OtrosIngresos = datosBasicosEmpleado.OtrosIngresos;
                         empleadoActual.Detalle = datosBasicosEmpleado.Detalle;
+                        empleadoActual.RelacionSuperintendencia = datosBasicosEmpleado.RelacionSuperintendencia;
                         empleadoActual.AnoDesvinculacion = datosBasicosEmpleado.AnoDesvinculacion;
                         empleadoActual.TipoRelacion = datosBasicosEmpleado.TipoRelacion;
                         empleadoActual.IdBrigadaSSORol = datosBasicosEmpleado.IdBrigadaSSORol;

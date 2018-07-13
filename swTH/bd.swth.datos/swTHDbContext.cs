@@ -357,18 +357,36 @@ namespace bd.swth.datos
                 entity.HasIndex(e => e.IdProvinciaLugarSufragio)
                     .HasName("IX_Empleado_ProvinciaSufragioIdProvincia");
 
-                entity.Property(e => e.IngresosOtraActividad)
-                    .IsRequired()
-                    .HasMaxLength(20);
+                entity.Property(e => e.Detalle).HasColumnType("varchar(2000)");
+
+                entity.Property(e => e.Foto).HasColumnType("text");
+
+                entity.Property(e => e.IdBrigadaSSORol).HasColumnName("IdBrigadaSSORol");
+
+                entity.Property(e => e.IngresosOtraActividad).HasMaxLength(150);
+
+                entity.Property(e => e.NombreUsuario).HasMaxLength(50);
+
+                entity.Property(e => e.RelacionSuperintendencia).HasColumnType("varchar(200)");
+
+                entity.Property(e => e.Telefono).HasColumnType("varchar(20)");
+
+                entity.Property(e => e.TipoRelacion).HasColumnType("varchar(50)");
+
+                entity.HasOne(d => d.BrigadaSSORol)
+                    .WithMany(p => p.Empleado)
+                    .HasForeignKey(d => d.IdBrigadaSSORol)
+                    .HasConstraintName("FK_Empleado_BrigadaSSORol1");
 
                 entity.HasOne(d => d.CiudadNacimiento)
                     .WithMany(p => p.Empleado)
-                    .HasForeignKey(d => d.IdCiudadLugarNacimiento);
+                    .HasForeignKey(d => d.IdCiudadLugarNacimiento)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Empleado_Ciudad_CiudadNacimientoIdCiudad");
 
                 entity.HasOne(d => d.Dependencia)
                     .WithMany(p => p.Empleado)
-                    .HasForeignKey(d => d.IdDependencia)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasForeignKey(d => d.IdDependencia);
 
                 entity.HasOne(d => d.Persona)
                     .WithMany(p => p.Empleado)
@@ -377,11 +395,9 @@ namespace bd.swth.datos
 
                 entity.HasOne(d => d.ProvinciaSufragio)
                     .WithMany(p => p.Empleado)
-                    .HasForeignKey(d => d.IdProvinciaLugarSufragio);
-
-                entity.HasOne(d => d.BrigadaSSORol)
-                   .WithMany(p => p.Empleado)
-                   .HasForeignKey(d => d.IdBrigadaSSORol);
+                    .HasForeignKey(d => d.IdProvinciaLugarSufragio)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Empleado_Provincia_ProvinciaSufragioIdProvincia");
             });
 
             modelBuilder.Entity<TipoConjuntoNomina>(entity =>
@@ -4632,19 +4648,31 @@ namespace bd.swth.datos
             modelBuilder.Entity<TrayectoriaLaboral>(entity =>
             {
                 entity.HasKey(e => e.IdTrayectoriaLaboral)
-                    .HasName("PK_TrayectoriaLaboral");
+                    .HasName("PK271");
 
-                entity.HasIndex(e => e.IdPersona)
-                    .HasName("IX_TrayectoriaLaboral_IdPersona");
+                entity.Property(e => e.AreaAsignada).HasColumnType("varchar(100)");
 
-                entity.Property(e => e.Empresa).HasMaxLength(100);
+                entity.Property(e => e.DescripcionFunciones).HasColumnType("varchar(250)");
 
-                entity.Property(e => e.PuestoTrabajo).HasMaxLength(250);
+                entity.Property(e => e.Empresa).HasColumnType("varchar(100)");
+
+                entity.Property(e => e.FechaFin).HasColumnType("date");
+
+                entity.Property(e => e.FechaInicio).HasColumnType("date");
+
+                entity.Property(e => e.FormaIngreso).HasColumnType("varchar(100)");
+
+                entity.Property(e => e.MotivoSalida).HasColumnType("varchar(1000)");
+
+                entity.Property(e => e.PuestoTrabajo).HasColumnType("varchar(250)");
+
+                entity.Property(e => e.TipoInstitucion).HasColumnType("varchar(100)");
 
                 entity.HasOne(d => d.Persona)
                     .WithMany(p => p.TrayectoriaLaboral)
                     .HasForeignKey(d => d.IdPersona)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefPersona422");
             });
 
 
