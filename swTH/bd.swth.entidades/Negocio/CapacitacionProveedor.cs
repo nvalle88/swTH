@@ -5,9 +5,6 @@ namespace bd.swth.entidades.Negocio
 
     public partial class CapacitacionProveedor
     {
-
-
-
         public CapacitacionProveedor()
         {
             CapacitacionTemarioProveedor = new HashSet<CapacitacionTemarioProveedor>();
