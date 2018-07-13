@@ -520,15 +520,9 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.FormulaCalculo).HasColumnType("varchar(500)");
 
-                entity.Property(e => e.NivelAcumulacion)
-                    .IsRequired()
-                    .HasColumnType("varchar(100)");
+              
 
-                entity.Property(e => e.RegistroEn)
-                    .IsRequired()
-                    .HasColumnType("varchar(100)");
-
-                entity.Property(e => e.TipoCalculo)
+                entity.Property(e => e.RelacionLaboral)
                     .IsRequired()
                     .HasColumnType("varchar(100)");
 

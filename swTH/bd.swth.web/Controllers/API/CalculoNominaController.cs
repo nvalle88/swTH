@@ -236,14 +236,15 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 return await db.HorasExtrasNomina.Where(x => x.IdCalculoNomina == CalculoNomina.IdCalculoNomina).
-                    Select(x=>new HorasExtrasNomina
+                    Select(x => new HorasExtrasNomina
                     {
-                       CantidadHoras=x.CantidadHoras,
-                       Nombres= db.Persona.Where(y=>y.Identificacion==x.IdentificacionEmpleado).FirstOrDefault().Nombres,
-                       Apellidos = db.Persona.Where(y => y.Identificacion == x.IdentificacionEmpleado).FirstOrDefault().Apellidos,
-                       EsExtraordinaria=x.EsExtraordinaria,
-                       IdentificacionEmpleado=x.IdentificacionEmpleado,
-                       IdHorasExtrasNomina=x.IdHorasExtrasNomina,
+                        CantidadHoras = x.CantidadHoras,
+                        Nombres = db.Persona.Where(y => y.Identificacion == x.IdentificacionEmpleado).FirstOrDefault().Nombres,
+                        Apellidos = db.Persona.Where(y => y.Identificacion == x.IdentificacionEmpleado).FirstOrDefault().Apellidos,
+                        EsExtraordinaria = x.EsExtraordinaria,
+                        IdentificacionEmpleado = x.IdentificacionEmpleado,
+                        IdHorasExtrasNomina = x.IdHorasExtrasNomina,
+                        EsCienPorciento = x.EsCienPorciento,
 
                     }).ToListAsync();
             }
