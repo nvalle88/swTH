@@ -19,7 +19,7 @@ namespace bd.swth.entidades.ObjectTransfer
         public string InstitucionBancaria { get; set; }
         public string FondoFinanciamiento { get; set; } 
         public int IdConfiguracionViatico { get; set; }
-        public DateTime FechaIngreso { get; set; }
+        public DateTime? FechaIngreso { get; set; }
 
         public int IdRelacionLaboral { get; set; }
         public string NombreRelacionLaboral { get; set; }

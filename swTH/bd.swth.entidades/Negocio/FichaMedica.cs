@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace bd.swth.entidades.Negocio
 {
@@ -286,5 +287,13 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<AntecedentesLaborales> AntecedentesLaborales { get; set; }
         public virtual ICollection<ExamenComplementario> ExamenComplementario { get; set; }
         public virtual Persona Persona { get; set; }
+
+
+        [NotMapped]
+        public string TipoSangre { get; set; }
+
+        [NotMapped]
+        public string Sexo { get; set; }
+
     }
 }

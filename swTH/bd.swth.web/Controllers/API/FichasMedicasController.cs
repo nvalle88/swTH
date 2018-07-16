@@ -34,232 +34,249 @@ namespace bd.swth.web.Controllers.API
         [Route("ListarFichaMedicaViewModel")]
         public async Task<Response> ListarFichaMedicaViewModel([FromBody] FichaMedicaViewModel fmv)
         {
-            
-            Persona personaVar = new Persona();
 
-            if (fmv.DatosBasicosPersonaViewModel.IdPersona < 1  )
+            try
             {
-                try
+                Persona personaVar = new Persona();
+
+                if (fmv.DatosBasicosPersonaViewModel.IdPersona < 1)
                 {
-                    personaVar = db.Persona.Where(x => x.Identificacion == fmv.DatosBasicosPersonaViewModel.Identificacion).FirstOrDefault();
+                    try
+                    {
+                        personaVar = db.Persona.Where(x => x.Identificacion == fmv.DatosBasicosPersonaViewModel.Identificacion).FirstOrDefault();
+                    }
+                    catch (Exception ex)
+                    {
+                        return new Response { IsSuccess = false, Message = Mensaje.RegistroNoEncontrado };
+                    }
+
                 }
-                catch (Exception ex)
+                else
+                {
+                    try
+                    {
+                        personaVar = db.Persona.Where(x => x.IdPersona == fmv.DatosBasicosPersonaViewModel.IdPersona).FirstOrDefault();
+                    }
+                    catch (Exception ex)
+                    {
+                        return new Response { IsSuccess = false, Message = Mensaje.RegistroNoEncontrado };
+                    }
+                }
+
+
+
+
+
+                if (personaVar == null)
                 {
                     return new Response { IsSuccess = false, Message = Mensaje.RegistroNoEncontrado };
                 }
 
-            }
-            else
-            {
-                try
+
+                PersonaEstudio personaEstudioVar = db.PersonaEstudio.Where(x => x.IdPersona == personaVar.IdPersona).FirstOrDefault();
+                Sexo sexoVar = db.Sexo.Where(x => x.IdSexo == personaVar.IdSexo).FirstOrDefault();
+                Nacionalidad NacionalidadVar = db.Nacionalidad.Where(x => x.IdNacionalidad == personaVar.IdNacionalidad).FirstOrDefault();
+                Parroquia parroquiaVar = db.Parroquia.Where(x => x.IdParroquia == personaVar.IdParroquia).FirstOrDefault();
+                EstadoCivil estadoCivilVar = db.EstadoCivil.Where(x => x.IdEstadoCivil == personaVar.IdEstadoCivil).FirstOrDefault();
+                Etnia etniaVar = db.Etnia.Where(x => x.IdEtnia == personaVar.IdEtnia).FirstOrDefault();
+                TipoSangre tipoSangreVar = db.TipoSangre.Where(x => x.IdTipoSangre == personaVar.IdTipoSangre).FirstOrDefault();
+                PersonaDiscapacidad personaDiscapacidadVar = db.PersonaDiscapacidad.Where(x => x.IdPersona == personaVar.IdPersona).FirstOrDefault();
+                Empleado empleadoVar = db.Empleado.Where(x => x.IdPersona == personaVar.IdPersona).FirstOrDefault();
+
+
+                /* INICIALIZACIÓN DE OBJETOS CON VALORES NULOS */
+
+                Titulo tituloVar = new Titulo();
+                Estudio estudioVar = new Estudio();
+                EmpleadoContactoEmergencia contactoEmergenciaVar = new EmpleadoContactoEmergencia();
+                Dependencia dependenciaVar = new Dependencia();
+                EmpleadoFamiliar empleadoFamiliarVar = new EmpleadoFamiliar();
+                Persona personaEmergenciaVar = new Persona();
+                Sucursal sucursalVar = new Sucursal();
+                Parentesco parentescoVar = new Parentesco();
+                TipoDiscapacidad discapacidadVar = new TipoDiscapacidad();
+                IndiceOcupacionalModalidadPartida indOcupModParVar = new IndiceOcupacionalModalidadPartida();
+                IndiceOcupacional inOcupVar = new IndiceOcupacional();
+                ManualPuesto manPuestoVar = new ManualPuesto();
+
+                /* INICIALIZACIÓN DE VARIABLES NULAS*/
+
+                var datoConadis = "";
+                var datoPorcentaje = "";
+                var datoCargoTrabajo = "";
+                var datoPuestoTrabajo = "";
+                var datoEdad = "";
+                bool datoCondicionEspecial = false;
+                int datoNumHijos = 0;
+                var datoSedeTrabajo = "";
+                var datoPersonaEmergencia = "";
+                var datoPersonaEmergenciaContacto = "";
+
+
+                var nombreCampoHijos = "Hijo/a";
+
+
+                if (personaEstudioVar != null && personaEstudioVar.IdPersonaEstudio > 0)
                 {
-                    personaVar = db.Persona.Where(x => x.IdPersona == fmv.DatosBasicosPersonaViewModel.IdPersona).FirstOrDefault();
+                    tituloVar = db.Titulo.Where(x => x.IdTitulo == personaEstudioVar.IdTitulo).FirstOrDefault();
                 }
-                catch (Exception ex)
+
+                if (tituloVar != null && tituloVar.IdEstudio > 0)
                 {
-                    return new Response { IsSuccess = false, Message = Mensaje.RegistroNoEncontrado };
+                    estudioVar = db.Estudio.Where(x => x.IdEstudio == tituloVar.IdEstudio).FirstOrDefault();
                 }
+
+
+                if (empleadoVar != null && empleadoVar.IdEmpleado > 0)
+                {
+                    contactoEmergenciaVar = db.EmpleadoContactoEmergencia.Where(x => x.IdEmpleado == empleadoVar.IdEmpleado).FirstOrDefault();
+                    dependenciaVar = db.Dependencia.Where(x => x.IdDependencia == empleadoVar.IdDependencia).FirstOrDefault();
+                    empleadoFamiliarVar = db.EmpleadoFamiliar.Where(x => x.IdEmpleado == empleadoVar.IdEmpleado).FirstOrDefault();
+                    indOcupModParVar = db.IndiceOcupacionalModalidadPartida.Where(x => x.IdEmpleado == empleadoVar.IdEmpleado).FirstOrDefault();
+
+
+                    var listaHijos = db.EmpleadoFamiliar.Where(x => x.IdEmpleado == empleadoVar.IdEmpleado).ToList();
+
+                    datoNumHijos = listaHijos.Count();
+                }
+
+                if (indOcupModParVar != null && indOcupModParVar.IdEmpleado > 0)
+                {
+                    inOcupVar = db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == indOcupModParVar.IdIndiceOcupacional).FirstOrDefault();
+                }
+
+                if (inOcupVar != null && inOcupVar.IdIndiceOcupacional > 0)
+                {
+                    manPuestoVar = db.ManualPuesto.Where(x => x.IdManualPuesto == inOcupVar.IdManualPuesto).FirstOrDefault();
+                }
+
+
+                if (contactoEmergenciaVar != null && contactoEmergenciaVar.IdEmpleadoContactoEmergencia > 0)
+                {
+                    personaEmergenciaVar = db.Persona.Where(x => x.IdPersona == contactoEmergenciaVar.IdPersona).FirstOrDefault();
+                }
+
+
+                if (dependenciaVar != null && dependenciaVar.IdDependencia > 0)
+                {
+                    sucursalVar = db.Sucursal.Where(x => x.IdSucursal == dependenciaVar.IdSucursal).FirstOrDefault();
+                }
+
+
+                if (empleadoFamiliarVar != null && empleadoFamiliarVar.IdEmpleadoFamiliar > 0 && contactoEmergenciaVar != null && contactoEmergenciaVar.IdEmpleadoContactoEmergencia > 0)
+                {
+                    parentescoVar = db.Parentesco.Where(x => x.IdParentesco == contactoEmergenciaVar.IdParentesco).FirstOrDefault();
+                }
+
+                if (personaDiscapacidadVar != null && personaDiscapacidadVar.IdPersonaDiscapacidad > 0)
+                {
+                    discapacidadVar = db.TipoDiscapacidad.Where(x => x.IdTipoDiscapacidad == personaDiscapacidadVar.IdTipoDiscapacidad).FirstOrDefault();
+                    datoCondicionEspecial = true;
+                }
+
+
+
+
+                /* Validación obtencion de dato nulo */
+
+
+                if (discapacidadVar != null && discapacidadVar.IdTipoDiscapacidad > 0)
+                {
+                    datoConadis = personaDiscapacidadVar.NumeroCarnet;
+                    datoPorcentaje = personaDiscapacidadVar.Porciento + " %";
+                }
+
+                if (sucursalVar != null && sucursalVar.IdSucursal > 0)
+                {
+                    datoSedeTrabajo = sucursalVar.Nombre;
+                }
+
+                if (personaEmergenciaVar != null && personaEmergenciaVar.IdPersona > 0)
+                {
+                    datoPersonaEmergencia = personaEmergenciaVar.Nombres + " " + personaEmergenciaVar.Apellidos;
+                    datoPersonaEmergenciaContacto = personaEmergenciaVar.TelefonoCasa + "  " + personaEmergenciaVar.TelefonoPrivado;
+                }
+
+                if (manPuestoVar != null && manPuestoVar.IdManualPuesto > 0)
+                {
+                    datoPuestoTrabajo = manPuestoVar.Descripcion;
+                    datoCargoTrabajo = manPuestoVar.Nombre;
+                }
+
+
+
+
+                DateTime year = (DateTime)personaVar.FechaNacimiento;
+
+
+                int yActual = DateTime.Now.Year;
+                int yNacimiento = (int)(year.Year);
+
+                datoEdad = (yActual - yNacimiento) + "";
+
+
+                DatosBasicosPersonaViewModel dbvm =
+
+                     new DatosBasicosPersonaViewModel
+
+                     {
+                         IdPersona = personaVar.IdPersona,
+                         NombresApellidos = personaVar.Nombres + " " + personaVar.Apellidos,
+                         Identificacion = personaVar.Identificacion,
+                         
+                         LugarNacimiento = NacionalidadVar.Nombre + "/ " + parroquiaVar.Nombre,
+                         FechaNacimiento = year.ToString("dd/MM/yyyy"),
+                         
+                         
+                         DireccionDomiciliaria = personaVar.CallePrincipal + " " + personaVar.CalleSecundaria + " " + personaVar.Numero,
+                         Telefono = personaVar.TelefonoPrivado + "   " + personaVar.TelefonoCasa,
+                         Edad = datoEdad,
+                         
+
+                         Genero = sexoVar.Nombre,
+                         NivelEducativo = estudioVar.Nombre,
+                         EstadoCivil = estadoCivilVar.Nombre,
+                         Profesion = (tituloVar != null)? tituloVar.Nombre:"",
+                         NumeroHijos = datoNumHijos,
+                         Etnia = etniaVar.Nombre,
+                         
+                         
+                         CondicionEspecial = datoCondicionEspecial,
+                         TipoDiscapacidad = discapacidadVar.Nombre,
+                         Conadis = datoConadis,
+                         Porcentaje = datoPorcentaje,
+                         
+                         NombreCargoTrabajo = datoCargoTrabajo,
+                         DescripcionPuestoTrabajo = datoPuestoTrabajo,
+                         SedeTrabajo = datoSedeTrabajo,
+                         ContactoEmergencias = datoPersonaEmergencia,
+                         
+                         Parentesco = parentescoVar.Nombre,
+                         ParienteTelefono = datoPersonaEmergenciaContacto,
+                         FechaIngreso = empleadoVar.FechaIngreso
+                         
+
+                     };
+
+
+
+
+                var ListaFichasMedicas = await db.FichaMedica.Where(x => x.IdPersona == personaVar.IdPersona).OrderByDescending(x => x.FechaFichaMedica).ToListAsync(); // devuelve una lista
+
+
+                var fichaMedicaViewModel = new FichaMedicaViewModel { DatosBasicosPersonaViewModel = dbvm, FichasMedicas = ListaFichasMedicas, ListaPersonas = ListaPersonasFichaMedicaView() };
+
+
+
+                return new Response { IsSuccess = true, Resultado = fichaMedicaViewModel };
             }
-            
-
-            
-
-            
-            if (personaVar==null)
+            catch(Exception ex)
             {
-                return new Response { IsSuccess = false, Message = Mensaje.RegistroNoEncontrado };
+
+                var fichaMedicaViewModel = new FichaMedicaViewModel();
+
+                return new Response { IsSuccess = false, Resultado = fichaMedicaViewModel, Message = Mensaje.Error };
             }
-            
-
-            PersonaEstudio personaEstudioVar = db.PersonaEstudio.Where(x => x.IdPersona == personaVar.IdPersona).FirstOrDefault();
-            Sexo sexoVar = db.Sexo.Where(x => x.IdSexo == personaVar.IdSexo).FirstOrDefault();
-            Nacionalidad NacionalidadVar = db.Nacionalidad.Where(x => x.IdNacionalidad == personaVar.IdNacionalidad).FirstOrDefault();
-            Parroquia parroquiaVar = db.Parroquia.Where(x => x.IdParroquia == personaVar.IdParroquia).FirstOrDefault();
-            EstadoCivil estadoCivilVar = db.EstadoCivil.Where(x => x.IdEstadoCivil == personaVar.IdEstadoCivil).FirstOrDefault();
-            Etnia etniaVar = db.Etnia.Where(x => x.IdEtnia == personaVar.IdEtnia).FirstOrDefault();
-            TipoSangre tipoSangreVar = db.TipoSangre.Where(x => x.IdTipoSangre == personaVar.IdTipoSangre).FirstOrDefault();
-            PersonaDiscapacidad personaDiscapacidadVar = db.PersonaDiscapacidad.Where(x => x.IdPersona == personaVar.IdPersona).FirstOrDefault();
-            Empleado empleadoVar = db.Empleado.Where(x => x.IdPersona == personaVar.IdPersona).FirstOrDefault();
-
-
-            /* INICIALIZACIÓN DE OBJETOS CON VALORES NULOS */
-
-            Titulo tituloVar = new Titulo();
-            Estudio estudioVar = new Estudio();
-            EmpleadoContactoEmergencia contactoEmergenciaVar = new EmpleadoContactoEmergencia();
-            Dependencia dependenciaVar = new Dependencia();
-            EmpleadoFamiliar empleadoFamiliarVar = new EmpleadoFamiliar();
-            Persona personaEmergenciaVar = new Persona();
-            Sucursal sucursalVar = new Sucursal();
-            Parentesco parentescoVar = new Parentesco();
-            TipoDiscapacidad discapacidadVar = new TipoDiscapacidad();
-            IndiceOcupacionalModalidadPartida indOcupModParVar = new IndiceOcupacionalModalidadPartida();
-            IndiceOcupacional inOcupVar = new IndiceOcupacional();
-            ManualPuesto manPuestoVar = new ManualPuesto();
-
-            /* INICIALIZACIÓN DE VARIABLES NULAS*/
-
-            var datoConadis = "";
-            var datoPorcentaje = "";
-            var datoCargoTrabajo = "";
-            var datoPuestoTrabajo = "";
-            var datoEdad = "";
-            bool datoCondicionEspecial = false;
-            int datoNumHijos = 0;
-            var datoSedeTrabajo = "";
-            var datoPersonaEmergencia = "";
-            var datoPersonaEmergenciaContacto = "";
-          
-
-            var nombreCampoHijos = "Hijo/a";
-
-
-            if ( personaEstudioVar != null  && personaEstudioVar.IdPersonaEstudio > 0 )
-            {
-                tituloVar = db.Titulo.Where(x => x.IdTitulo == personaEstudioVar.IdTitulo).FirstOrDefault();
-            }
-
-            if ( tituloVar != null && tituloVar.IdEstudio > 0 )
-            {
-                estudioVar = db.Estudio.Where(x => x.IdEstudio == tituloVar.IdEstudio).FirstOrDefault();
-            }
-
-
-            if (empleadoVar != null && empleadoVar.IdEmpleado > 0)
-            {
-                contactoEmergenciaVar = db.EmpleadoContactoEmergencia.Where(x => x.IdEmpleado == empleadoVar.IdEmpleado).FirstOrDefault();
-                dependenciaVar = db.Dependencia.Where(x => x.IdDependencia == empleadoVar.IdDependencia).FirstOrDefault();
-                empleadoFamiliarVar = db.EmpleadoFamiliar.Where(x => x.IdEmpleado == empleadoVar.IdEmpleado).FirstOrDefault();
-                indOcupModParVar = db.IndiceOcupacionalModalidadPartida.Where(x => x.IdEmpleado == empleadoVar.IdEmpleado).FirstOrDefault();
-
-
-                var listaHijos = db.EmpleadoFamiliar.Where(x => x.IdEmpleado == empleadoVar.IdEmpleado).ToList();
-
-                datoNumHijos = listaHijos.Count();
-            }
-
-            if (indOcupModParVar != null && indOcupModParVar.IdEmpleado > 0)
-            {
-                inOcupVar = db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == indOcupModParVar.IdIndiceOcupacional).FirstOrDefault();
-            }
-
-            if (inOcupVar != null && inOcupVar.IdIndiceOcupacional > 0)
-            {
-                manPuestoVar = db.ManualPuesto.Where(x => x.IdManualPuesto == inOcupVar.IdManualPuesto).FirstOrDefault();
-            }
-
-
-            if (contactoEmergenciaVar != null && contactoEmergenciaVar.IdEmpleadoContactoEmergencia > 0 ) {
-                personaEmergenciaVar = db.Persona.Where(x => x.IdPersona == contactoEmergenciaVar.IdPersona).FirstOrDefault();
-            }
-
-            
-            if (dependenciaVar != null && dependenciaVar.IdDependencia > 0 )
-            {
-                sucursalVar = db.Sucursal.Where(x => x.IdSucursal == dependenciaVar.IdSucursal).FirstOrDefault();
-            }
-            
-
-            if (empleadoFamiliarVar != null && empleadoFamiliarVar.IdEmpleadoFamiliar > 0  && contactoEmergenciaVar != null && contactoEmergenciaVar.IdEmpleadoContactoEmergencia > 0)
-            {
-                parentescoVar = db.Parentesco.Where(x => x.IdParentesco == contactoEmergenciaVar.IdParentesco).FirstOrDefault();
-            }
-
-            if (personaDiscapacidadVar != null && personaDiscapacidadVar.IdPersonaDiscapacidad >0)
-            {
-               discapacidadVar = db.TipoDiscapacidad.Where(x => x.IdTipoDiscapacidad == personaDiscapacidadVar.IdTipoDiscapacidad).FirstOrDefault();
-               datoCondicionEspecial = true;
-            }
-
-
-
-
-            /* Validación obtencion de dato nulo */
-            
-
-            if (discapacidadVar != null && discapacidadVar.IdTipoDiscapacidad > 0 )
-            {
-                datoConadis = personaDiscapacidadVar.NumeroCarnet;
-                datoPorcentaje = personaDiscapacidadVar.Porciento + " %";
-            }
-
-            if (sucursalVar != null && sucursalVar.IdSucursal > 0)
-            {
-                datoSedeTrabajo = sucursalVar.Nombre;
-            }
-
-            if (personaEmergenciaVar != null && personaEmergenciaVar.IdPersona > 0)
-            {
-                datoPersonaEmergencia = personaEmergenciaVar.Nombres + " " + personaEmergenciaVar.Apellidos;
-                datoPersonaEmergenciaContacto = personaEmergenciaVar.TelefonoCasa + "  " + personaEmergenciaVar.TelefonoPrivado;
-            }
-
-            if (manPuestoVar != null && manPuestoVar.IdManualPuesto > 0)
-            {
-                datoPuestoTrabajo = manPuestoVar.Descripcion;
-                datoCargoTrabajo = manPuestoVar.Nombre;
-            }
-
-
-            
-
-            DateTime year = (DateTime) personaVar.FechaNacimiento;
-            
-
-            int yActual = DateTime.Now.Year;
-            int yNacimiento = (int)(year.Year);
-
-            datoEdad = (yActual - yNacimiento) + "";
-
-
-            DatosBasicosPersonaViewModel dbvm =
-
-                 new DatosBasicosPersonaViewModel
-
-                 {
-                     IdPersona = personaVar.IdPersona,
-                     NombresApellidos = personaVar.Nombres + " " + personaVar.Apellidos,
-                     Identificacion = personaVar.Identificacion,
-                     LugarNacimiento = NacionalidadVar.Nombre + "/ " + parroquiaVar.Nombre,
-                     FechaNacimiento = year.ToString("dd/MM/yyyy"),
-                     DireccionDomiciliaria = personaVar.CallePrincipal + " " + personaVar.CalleSecundaria + " " + personaVar.Numero,
-                     Telefono = personaVar.TelefonoPrivado + "   " + personaVar.TelefonoCasa,
-                     Edad = datoEdad,
-                     Genero = sexoVar.Nombre,
-                     NivelEducativo = estudioVar.Nombre,
-                     EstadoCivil = estadoCivilVar.Nombre,
-                     Profesion = tituloVar.Nombre,
-                     NumeroHijos = datoNumHijos,
-                     Etnia = etniaVar.Nombre,
-
-                     CondicionEspecial = datoCondicionEspecial,
-                     TipoDiscapacidad = discapacidadVar.Nombre,
-                     Conadis = datoConadis,
-                     Porcentaje = datoPorcentaje,
-
-                     NombreCargoTrabajo = datoCargoTrabajo,
-                     DescripcionPuestoTrabajo = datoPuestoTrabajo,
-                     SedeTrabajo = datoSedeTrabajo,
-                     ContactoEmergencias = datoPersonaEmergencia,
-
-                     Parentesco = parentescoVar.Nombre,
-                     ParienteTelefono = datoPersonaEmergenciaContacto,
-                     FechaIngreso = empleadoVar.FechaIngreso
-                     
-                    
-                };
-
-            
-            
-            
-            var ListaFichasMedicas = await db.FichaMedica.Where(x => x.IdPersona == personaVar.IdPersona).OrderByDescending( x => x.FechaFichaMedica ).ToListAsync(); // devuelve una lista
-
-
-            var fichaMedicaViewModel = new FichaMedicaViewModel { DatosBasicosPersonaViewModel = dbvm, FichasMedicas = ListaFichasMedicas, ListaPersonas = ListaPersonasFichaMedicaView() };
-            
-
-
-            return new Response { IsSuccess = true, Resultado = fichaMedicaViewModel };
 
         }
 
@@ -277,15 +294,23 @@ namespace bd.swth.web.Controllers.API
             {
                 //Estado 0 = Ficha recién creada
 
-                UltimaFicha = db.FichaMedica.Where(
+                UltimaFicha = await db.FichaMedica.Where(
                     x => x.Estado == 0 
                     && x.IdPersona == fichaMedica.IdPersona
-                ).FirstOrDefault();
+                ).FirstOrDefaultAsync();
 
+                var persona = await db.Persona
+                    .Include(i=>i.Sexo)
+                    .Include(i=>i.TipoSangre)
+                    .Where(w => w.IdPersona == fichaMedica.IdPersona)
+                    .FirstOrDefaultAsync();
                 
-
+                
                 if (UltimaFicha != null)
                 {
+                    UltimaFicha.Sexo = persona.Sexo.Nombre;
+                    UltimaFicha.TipoSangre = persona.TipoSangre.Nombre;
+
                     return new Response { IsSuccess = true, Resultado = UltimaFicha };
                 }
 
