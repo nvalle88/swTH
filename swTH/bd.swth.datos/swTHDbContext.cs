@@ -3215,7 +3215,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdOtroIngreso)
                     .HasName("PK_OtroIngreso");
 
-                entity.Property(e => e.DescripcionOtros).HasColumnType("nchar(10)");
+                entity.Property(e => e.DescripcionOtros).HasColumnType("nvarchar(250)");
 
                 entity.Property(e => e.IngresoArriendos).HasColumnType("decimal");
 
@@ -4505,7 +4505,7 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
-                    .HasMaxLength(20);
+                    .HasMaxLength(255);
             });
 
             modelBuilder.Entity<TipoIdentificacion>(entity =>
