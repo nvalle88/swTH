@@ -72,7 +72,7 @@ namespace bd.swth.web.Controllers.API
         }
         // PUT: api/BasesDatos/5
         [HttpPost]
-        [Route("EditarCalculoNomina")]
+        [Route("EditarGestionCapacitaciones")]
         public async Task<Response> EditarCalculoNomina([FromBody] GestionPlanCapacitacion gestionPlanCapacitacion)
         {
             try
@@ -160,7 +160,7 @@ namespace bd.swth.web.Controllers.API
 
         // DELETE: api/BasesDatos/5
         [HttpPost]
-        [Route("EliminarCalculoNomina")]
+        [Route("EliminarGestionCapacitacion")]
         public async Task<Response> EliminarCalculoNomina([FromBody]GestionPlanCapacitacion gestionPlanCapacitacion)
         {
             try
@@ -197,7 +197,10 @@ namespace bd.swth.web.Controllers.API
         private async Task<bool> Existe(GestionPlanCapacitacion gestionPlanCapacitacion)
         {
             var anio = gestionPlanCapacitacion.Anio;
-            var respuesta = await db.GestionPlanCapacitacion.Where(p => p.Anio == anio).FirstOrDefaultAsync();
+            var nombre = gestionPlanCapacitacion.Nombre;
+            var descripcion = gestionPlanCapacitacion.Descripcion;
+            var respuesta = await db.GestionPlanCapacitacion.Where(p => p.Anio == anio
+            && p.Nombre == nombre && p.Descripcion==descripcion).FirstOrDefaultAsync();
 
             if (respuesta == null )
             {

@@ -67,7 +67,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     var PreguntasEvaluacion = await db.PreguntaEvaluacionEvento.ToListAsync();
                     DatosBasicos.ListaPreguntaEvaluacionEvento = PreguntasEvaluacion;
-                    DatosBasicos.NombreEvento = Plan.NombreEvento;
+                    DatosBasicos.NombreEvento = Plan.IdNombreEvento.Nombre;
                     DatosBasicos.Institucion = Plan.Institucion;
                     DatosBasicos.LugarFecha = Plan.Ubicacion + " del " + Plan.FechaInicio + " al " + Plan.FechaFin;
                 }
@@ -114,7 +114,7 @@ namespace bd.swth.web.Controllers.API
                     DatosBasicos.ListaPreguntaEvaluacionFacilitadorDetalle = Facilitador;
                     DatosBasicos.ListaPreguntaOrganizadorDetalle = Organizador;
                     DatosBasicos.ListaPreguntaEvaluacionConocimientoDetalle = Conocimientos;
-                    DatosBasicos.NombreEvento = Plan.NombreEvento;
+                    DatosBasicos.NombreEvento = Plan.IdNombreEvento.Nombre;
                     DatosBasicos.Institucion = Plan.Institucion;
                     DatosBasicos.LugarFecha = Plan.Ubicacion + " del " + Plan.FechaInicio + " al " + Plan.FechaFin;
                 }
