@@ -373,7 +373,7 @@ namespace bd.swth.web.Controllers.API
                     {
                         IsSuccess = true,
                         Message = Mensaje.Satisfactorio,
-                        Resultado = solicitudViatico
+                        Resultado = solicitudViatico.Entity
 
                     };
                 }
@@ -557,7 +557,7 @@ namespace bd.swth.web.Controllers.API
             {
                 return new Response
                 {
-                    IsSuccess = true,
+                    IsSuccess = false,
                     Message = Mensaje.ExisteRegistro,
                     Resultado = null,
                 };
@@ -567,7 +567,6 @@ namespace bd.swth.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Resultado = solicitudviaticorespuesta,
             };
         }
     }
