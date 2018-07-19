@@ -619,25 +619,54 @@ namespace bd.swth.web.Controllers.API
         [Route("ListarEmpleadosActivos")]
         public async Task<List<ListaEmpleadoViewModel>> ListarEmpleadosActivos()
         {
-            try
-            {
-                //var lista = await db.Empleado.Include(x => x.Persona).Include(x => x.Dependencia).Include(x=>x.DatosBancarios).Include(x => x.IndiceOcupacionalModalidadPartida).ThenInclude(x => x.IndiceOcupacional).ThenInclude(x => x.RolPuesto).OrderBy(x => x.FechaIngreso).ToListAsync();
-                var lista = await db.Empleado.Where(x => x.Activo == true)
-                                    .Select(x => new ListaEmpleadoViewModel
-                                    {
-                                        IdEmpleado = x.IdEmpleado,
-                                        IdPersona = x.Persona.IdPersona,
-                                        NombreApellido = string.Format("{0} {1}", x.Persona.Nombres, x.Persona.Apellidos),
-                                        TelefonoPrivado = x.Persona.TelefonoPrivado,
-                                        CorreoPrivado = x.Persona.CorreoPrivado,
-                                        Dependencia = x.Dependencia == null ? "No asignado" : x.Dependencia.Nombre,
-                                        Identificacion = x.Persona.Identificacion,
+                try
+                {
 
-                                    })
-                                    .ToListAsync();
-                return lista;
+                    var listaIOMP = await db.IndiceOcupacionalModalidadPartida
+                        .Include(i => i.TipoNombramiento)
+                        .Include(i => i.TipoNombramiento.RelacionLaboral)
 
-            }
+                        .Include(i => i.IndiceOcupacional)
+                        .Include(i => i.IndiceOcupacional.ManualPuesto)
+                        .Where(w => w.IdEmpleado != null)
+                        .ToListAsync();
+
+
+                    var lista = await db.Empleado
+                                        .Where(w => w.Activo == true)
+                                        .Select(x => new ListaEmpleadoViewModel
+                                        {
+                                            IdEmpleado = x.IdEmpleado,
+                                            IdPersona = x.Persona.IdPersona,
+                                            NombreApellido = string.Format("{0} {1}", x.Persona.Nombres, x.Persona.Apellidos),
+                                            TelefonoPrivado = x.Persona.TelefonoPrivado,
+                                            CorreoPrivado = x.Persona.CorreoPrivado,
+                                            Dependencia = x.IdDependencia == null ? "No asignado" : x.Dependencia.Nombre,
+                                            Identificacion = x.Persona.Identificacion
+                                        })
+                                        .DistinctBy(d => d.IdEmpleado)
+                                        .ToAsyncEnumerable().ToList();
+
+                    foreach (var item in lista)
+                    {
+
+                        if (listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault() != null)
+                        {
+
+                            var itemIomp = listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault();
+
+                            item.IdRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.IdRelacionLaboral;
+                            item.NombreRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.Nombre;
+                            item.ManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.Nombre;
+                            item.IdManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.IdManualPuesto;
+                            item.PartidaIndividual = itemIomp.NumeroPartidaIndividual + itemIomp.CodigoContrato;
+                        }
+                    }
+
+
+                    return lista;
+
+                }
             catch (Exception ex)
             {
                 return new List<ListaEmpleadoViewModel>();
@@ -759,7 +788,7 @@ namespace bd.swth.web.Controllers.API
                                         NombreApellido = string.Format("{0} {1}", x.Persona.Nombres, x.Persona.Apellidos),
                                         TelefonoPrivado = x.Persona.TelefonoPrivado,
                                         CorreoPrivado = x.Persona.CorreoPrivado,
-                                        Dependencia = x.IdDependencia == null ? "No asignado" : x.Dependencia.Nombre,
+                                        Dependencia = x.IdDependencia == null ? "" : x.Dependencia.Nombre,
                                         Identificacion = x.Persona.Identificacion
                                     })
                                     .DistinctBy(d => d.IdEmpleado)
@@ -1843,6 +1872,7 @@ namespace bd.swth.web.Controllers.API
                                        Telefono = x.Telefono,
                                        TipoRelacion = x.TipoRelacion,
                                        TrabajoSuperintendenciaBanco = x.TrabajoSuperintendenciaBanco,
+                                       RelacionSuperintendencia = x.RelacionSuperintendencia
                                    }
                                    ).FirstOrDefaultAsync();
 
@@ -1901,6 +1931,7 @@ namespace bd.swth.web.Controllers.API
                                        IdPaisLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.Pais.IdPais,
                                        IdCiudadLugarPersona = x.Persona.Parroquia.Ciudad.IdCiudad,
                                        IdProvinciaLugarPersona = x.Persona.Parroquia.Ciudad.Provincia.IdProvincia,
+                                       RelacionSuperintendencia = x.RelacionSuperintendencia
 
                                    }
                                    ).FirstOrDefaultAsync();
@@ -2008,6 +2039,9 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+
+        
 
         [HttpPost]
         [Route("ListarEmpleadosdeDependenciaSinCesacion")]
@@ -2579,20 +2613,20 @@ namespace bd.swth.web.Controllers.API
                         personaActual.IdNacionalidad = datosBasicosEmpleado.IdNacionalidad;
                         personaActual.IdTipoSangre = datosBasicosEmpleado.IdTipoSangre;
                         personaActual.IdEtnia = datosBasicosEmpleado.IdEtnia;
-                        personaActual.Identificacion = datosBasicosEmpleado.Identificacion;
-                        personaActual.Nombres = datosBasicosEmpleado.Nombres;
-                        personaActual.Apellidos = datosBasicosEmpleado.Apellidos;
+                        personaActual.Identificacion = (datosBasicosEmpleado.Identificacion != null)?datosBasicosEmpleado.Identificacion.ToString().ToUpper():"";
+                        personaActual.Nombres = (datosBasicosEmpleado.Nombres != null) ? datosBasicosEmpleado.Nombres.ToString().ToUpper():"";
+                        personaActual.Apellidos = (datosBasicosEmpleado.Apellidos != null) ? datosBasicosEmpleado.Apellidos.ToString().ToUpper():"";
                         personaActual.TelefonoPrivado = datosBasicosEmpleado.TelefonoPrivado;
                         personaActual.TelefonoCasa = datosBasicosEmpleado.TelefonoCasa;
                         personaActual.CorreoPrivado = datosBasicosEmpleado.CorreoPrivado;
-                        personaActual.LugarTrabajo = datosBasicosEmpleado.LugarTrabajo;
+                        personaActual.LugarTrabajo = (datosBasicosEmpleado.LugarTrabajo != null) ? datosBasicosEmpleado.LugarTrabajo.ToString().ToUpper():"";
                         personaActual.IdNacionalidadIndigena = datosBasicosEmpleado.IdNacionalidadIndigena;
-                        personaActual.CallePrincipal = datosBasicosEmpleado.CallePrincipal;
-                        personaActual.CalleSecundaria = datosBasicosEmpleado.CalleSecundaria;
-                        personaActual.Referencia = datosBasicosEmpleado.Referencia;
-                        personaActual.Numero = datosBasicosEmpleado.Numero;
+                        personaActual.CallePrincipal = (datosBasicosEmpleado.CallePrincipal != null) ? datosBasicosEmpleado.CallePrincipal.ToString().ToUpper():"";
+                        personaActual.CalleSecundaria = (datosBasicosEmpleado.CalleSecundaria != null) ? datosBasicosEmpleado.CalleSecundaria.ToString().ToUpper():"";
+                        personaActual.Referencia = (datosBasicosEmpleado.Referencia != null) ? datosBasicosEmpleado.Referencia.ToString().ToUpper():"";
+                        personaActual.Numero = (datosBasicosEmpleado.Numero != null) ? datosBasicosEmpleado.Numero.ToString().ToUpper():"";
                         personaActual.IdParroquia = datosBasicosEmpleado.IdParroquia;
-                        personaActual.Ocupacion = datosBasicosEmpleado.Ocupacion;
+                        personaActual.Ocupacion = (datosBasicosEmpleado.Ocupacion != null) ? datosBasicosEmpleado.Ocupacion.ToString().ToUpper():"";
                         //1. Actualizar Persona Persona 
                         var personaInsertarda = db.Persona.Update(personaActual);
 
@@ -2606,7 +2640,7 @@ namespace bd.swth.web.Controllers.API
                         empleadoActual.EsJefe = datosBasicosEmpleado.EsJefe;
                         empleadoActual.TrabajoSuperintendenciaBanco = datosBasicosEmpleado.TrabajoSuperintendenciaBanco;
                         empleadoActual.DeclaracionJurada = datosBasicosEmpleado.DeclaracionJurada;
-                        empleadoActual.IngresosOtraActividad = datosBasicosEmpleado.IngresosOtraActividad;
+                        empleadoActual.IngresosOtraActividad = (datosBasicosEmpleado.IngresosOtraActividad != null) ? datosBasicosEmpleado.IngresosOtraActividad.ToString().ToUpper():"";
                         empleadoActual.MesesImposiciones = datosBasicosEmpleado.MesesImposiciones;
                         empleadoActual.DiasImposiciones = datosBasicosEmpleado.DiasImposiciones;
                         empleadoActual.FondosReservas = datosBasicosEmpleado.FondosReservas;
@@ -2615,9 +2649,10 @@ namespace bd.swth.web.Controllers.API
                         empleadoActual.Extension = datosBasicosEmpleado.ExtencionTelefonica;
                         empleadoActual.Nepotismo = datosBasicosEmpleado.Nepotismo;
                         empleadoActual.OtrosIngresos = datosBasicosEmpleado.OtrosIngresos;
-                        empleadoActual.Detalle = datosBasicosEmpleado.Detalle;
+                        empleadoActual.Detalle = (datosBasicosEmpleado.Detalle != null) ? datosBasicosEmpleado.Detalle.ToString().ToUpper():"";
+                        empleadoActual.RelacionSuperintendencia = (datosBasicosEmpleado.RelacionSuperintendencia != null) ? datosBasicosEmpleado.RelacionSuperintendencia.ToString().ToUpper():"";
                         empleadoActual.AnoDesvinculacion = datosBasicosEmpleado.AnoDesvinculacion;
-                        empleadoActual.TipoRelacion = datosBasicosEmpleado.TipoRelacion;
+                        empleadoActual.TipoRelacion = (datosBasicosEmpleado.TipoRelacion != null) ? datosBasicosEmpleado.TipoRelacion.ToString().ToUpper():"";
                         empleadoActual.IdBrigadaSSORol = datosBasicosEmpleado.IdBrigadaSSORol;
 
                         var empleado = db.Empleado.Update(empleadoActual);
@@ -2648,16 +2683,7 @@ namespace bd.swth.web.Controllers.API
                 {
 
                     transaction.Rollback();
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex.Message,
-                        Message = Mensaje.Excepcion,
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
+                    
                     return new Response
                     {
                         IsSuccess = false,
@@ -2695,20 +2721,20 @@ namespace bd.swth.web.Controllers.API
                             IdNacionalidad = datosBasicosEmpleado.IdNacionalidad,
                             IdTipoSangre = datosBasicosEmpleado.IdTipoSangre,
                             IdEtnia = datosBasicosEmpleado.IdEtnia,
-                            Identificacion = datosBasicosEmpleado.Identificacion,
-                            Nombres = datosBasicosEmpleado.Nombres,
-                            Apellidos = datosBasicosEmpleado.Apellidos,
+                            Identificacion = datosBasicosEmpleado.Identificacion.ToString().ToUpper(),
+                            Nombres = (datosBasicosEmpleado.Nombres != null)?datosBasicosEmpleado.Nombres.ToString().ToUpper():"",
+                            Apellidos = (datosBasicosEmpleado.Apellidos != null)?datosBasicosEmpleado.Apellidos.ToString().ToUpper():"",
                             TelefonoPrivado = datosBasicosEmpleado.TelefonoPrivado,
                             TelefonoCasa = datosBasicosEmpleado.TelefonoCasa,
                             CorreoPrivado = datosBasicosEmpleado.CorreoPrivado,
                             LugarTrabajo = datosBasicosEmpleado.LugarTrabajo,
                             IdNacionalidadIndigena = datosBasicosEmpleado.IdNacionalidadIndigena,
-                            CallePrincipal = datosBasicosEmpleado.CallePrincipal,
-                            CalleSecundaria = datosBasicosEmpleado.CalleSecundaria,
-                            Referencia = datosBasicosEmpleado.Referencia,
-                            Numero = datosBasicosEmpleado.Numero,
+                            CallePrincipal = (datosBasicosEmpleado.CallePrincipal != null)?datosBasicosEmpleado.CallePrincipal.ToString().ToUpper():"",
+                            CalleSecundaria = (datosBasicosEmpleado.CalleSecundaria != null)?datosBasicosEmpleado.CalleSecundaria.ToString().ToUpper():"",
+                            Referencia = (datosBasicosEmpleado.Referencia != null)?datosBasicosEmpleado.Referencia.ToString().ToUpper():"",
+                            Numero = (datosBasicosEmpleado.Numero != null)?datosBasicosEmpleado.Numero.ToString().ToUpper():"",
                             IdParroquia = datosBasicosEmpleado.IdParroquia,
-                            Ocupacion = datosBasicosEmpleado.Ocupacion,
+                            Ocupacion = (datosBasicosEmpleado.Ocupacion != null) ?datosBasicosEmpleado.Ocupacion.ToString().ToUpper():"",
 
 
 
@@ -2752,16 +2778,7 @@ namespace bd.swth.web.Controllers.API
                 {
 
                     transaction.Rollback();
-                    await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                    {
-                        ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                        ExceptionTrace = ex.Message,
-                        Message = Mensaje.Excepcion,
-                        LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                        LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                        UserName = "",
-
-                    });
+                    
                     return new Response
                     {
                         IsSuccess = false,
@@ -3264,16 +3281,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,

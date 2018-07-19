@@ -133,6 +133,14 @@ namespace bd.swth.web
             ConstantesViaticos.Jefe = Configuration.GetSection("Jefe").Value;
 
 
+            //valor de PLanificacionCapacitaciones
+            PlanificacionCapacitacion.TipoCapacitacion = Configuration.GetSection("TipoCapacitacion").Value;
+            PlanificacionCapacitacion.EstadoEvento= Configuration.GetSection("EstadoEvento").Value;
+            PlanificacionCapacitacion.Ambitovento = Configuration.GetSection("Ambitovento").Value;
+            PlanificacionCapacitacion.NombreEvento = Configuration.GetSection("NombreEvento").Value;
+            PlanificacionCapacitacion.TipoEvento = Configuration.GetSection("TipoEvento").Value;
+            PlanificacionCapacitacion.TipoEvaluacion = Configuration.GetSection("TipoEvaluacion").Value;
+
             /// <summary>
             /// Se lee el fichero appsetting.json según las etiquetas expuestas en este.
             /// Ejemplo:IntervaloTemporizadorHoras Horas que tendra de vida la token.

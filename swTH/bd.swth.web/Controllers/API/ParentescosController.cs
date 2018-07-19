@@ -37,16 +37,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<Parentesco>();
             }
         }
@@ -86,16 +77,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -135,28 +117,20 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        ParentescoActualizar.Nombre = Parentesco.Nombre;
+
+                        ParentescoActualizar.Nombre = Parentesco.Nombre.ToString().ToUpper();
                         await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
+                            Message = Mensaje.GuardadoSatisfactorio,
                         };
 
                     }
                     catch (Exception ex)
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
+                       
                         return new Response
                         {
                             IsSuccess = false,
@@ -200,12 +174,15 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(Parentesco);
                 if (!respuesta.IsSuccess)
                 {
+                    // Convertir a mayúsculas
+                    Parentesco.Nombre = Parentesco.Nombre.ToString().ToUpper();
+
                     db.Parentesco.Add(Parentesco);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = Mensaje.GuardadoSatisfactorio
                     };
                 }
 
@@ -266,25 +243,15 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.BorradoSatisfactorio,
                 };
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.BorradoNoSatisfactorio,
                 };
             }
         }
@@ -292,7 +259,12 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(Parentesco Parentesco)
         {
             var bdd = Parentesco.Nombre;
-            var Parentescorespuesta = db.Parentesco.Where(p => p.Nombre == bdd).FirstOrDefault();
+            var Parentescorespuesta = db.Parentesco
+                .Where(p =>
+                    p.Nombre.ToString().ToUpper() == bdd.ToString().ToUpper()
+                )
+                .FirstOrDefault();
+
             if (Parentescorespuesta != null)
             {
                 return new Response

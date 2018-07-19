@@ -146,7 +146,10 @@ namespace bd.swth.web.Controllers.API
 
                 var existe = Existe(PersonaEnfermedad);
                 var PersonaEnfermedadActualizar = (PersonaEnfermedad)existe.Resultado;
-                if (existe.IsSuccess)
+                if (
+                    existe.IsSuccess 
+                    && PersonaEnfermedadActualizar.IdPersonaEnfermedad != PersonaEnfermedad.IdPersonaEnfermedad
+                    )
                 {
                     return new Response
                     {
@@ -159,29 +162,19 @@ namespace bd.swth.web.Controllers.API
 
                 PersonaEnfermedadAct.IdTipoEnfermedad = PersonaEnfermedad.IdTipoEnfermedad;
                 PersonaEnfermedadAct.IdPersona = PersonaEnfermedad.IdPersona;
-                PersonaEnfermedadAct.InstitucionEmite = PersonaEnfermedad.InstitucionEmite;
+                PersonaEnfermedadAct.InstitucionEmite = PersonaEnfermedad.InstitucionEmite.ToString().ToUpper();
 
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.GuardadoSatisfactorio,
                 };
 
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
 
                 return new Response
                 {
@@ -211,12 +204,14 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(PersonaEnfermedad);
                 if (!respuesta.IsSuccess)
                 {
+                    PersonaEnfermedad.InstitucionEmite = PersonaEnfermedad.InstitucionEmite.ToString().ToUpper();
+
                     db.PersonaEnfermedad.Add(PersonaEnfermedad);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = Mensaje.GuardadoSatisfactorio
                     };
                 }
 
@@ -229,16 +224,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+               
                 return new Response
                 {
                     IsSuccess = false,
@@ -277,32 +263,23 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.BorradoSatisfactorio,
                 };
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.BorradoNoSatisfactorio,
                 };
             }
         }
 
         private Response Existe(PersonaEnfermedad PersonaEnfermedad)
         {
-            var institucionemite = PersonaEnfermedad.InstitucionEmite;
+            var institucionemite = PersonaEnfermedad.InstitucionEmite.ToString().ToUpper();
             var idtipoenfermedad = PersonaEnfermedad.IdTipoEnfermedad;
             var idpersona = PersonaEnfermedad.IdPersona;
 

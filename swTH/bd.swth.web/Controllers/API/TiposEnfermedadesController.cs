@@ -37,16 +37,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<TipoEnfermedad>();
             }
         }
@@ -86,16 +77,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -119,8 +101,13 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(TipoEnfermedad);
-                if (existe.IsSuccess)
+                var existe = await db.TipoEnfermedad
+                    .Where(w =>
+                        w.Nombre.ToString().ToUpper() == TipoEnfermedad.Nombre.ToString().ToUpper()
+                    )
+                    .FirstOrDefaultAsync();
+
+                if (existe != null && existe.IdTipoEnfermedad != id)
                 {
                     return new Response
                     {
@@ -135,28 +122,19 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        TipoEnfermedadActualizar.Nombre = TipoEnfermedad.Nombre;
+                        TipoEnfermedadActualizar.Nombre = TipoEnfermedad.Nombre.ToString().ToUpper();
                         await db.SaveChangesAsync();
 
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
+                            Message = Mensaje.GuardadoSatisfactorio,
                         };
 
                     }
                     catch (Exception ex)
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
+                       
                         return new Response
                         {
                             IsSuccess = false,
@@ -203,12 +181,16 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(TipoEnfermedad);
                 if (!respuesta.IsSuccess)
                 {
+
+                    // Converir a mayúsculas
+                    TipoEnfermedad.Nombre = TipoEnfermedad.Nombre.ToString().ToUpper();
+
                     db.TipoEnfermedad.Add(TipoEnfermedad);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = Mensaje.GuardadoSatisfactorio
                     };
                 }
 
@@ -221,16 +203,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -269,21 +242,12 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.BorradoSatisfactorio,
                 };
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -295,7 +259,11 @@ namespace bd.swth.web.Controllers.API
         private Response Existe(TipoEnfermedad TipoEnfermedad)
         {
             var bdd = TipoEnfermedad.Nombre;
-            var TipoEnfermedadrespuesta = db.TipoEnfermedad.Where(p => p.Nombre == bdd).FirstOrDefault();
+            var TipoEnfermedadrespuesta = db.TipoEnfermedad
+                .Where(p => p.Nombre.ToString().ToUpper() == bdd.ToString().ToUpper())
+                .FirstOrDefault();
+
+
             if (TipoEnfermedadrespuesta != null)
             {
                 return new Response

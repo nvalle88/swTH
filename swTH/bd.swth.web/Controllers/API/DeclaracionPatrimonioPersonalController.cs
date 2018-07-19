@@ -38,16 +38,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<DeclaracionPatrimonioPersonal>();
             }
         }
@@ -87,16 +78,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -105,91 +87,105 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        //// PUT: api/BasesDatos/5
-        //[HttpPut("{id}")]
-        //public async Task<Response> PutDeclaracionPatrimonioPersonal([FromRoute] int id, [FromBody] DeclaracionPatrimonioPersonal declaracionPatrimonioPersonal)
-        //{
-        //    try
-        //    {
-        //        if (!ModelState.IsValid)
-        //        {
-        //            return new Response
-        //            {
-        //                IsSuccess = false,
-        //                Message = Mensaje.ModeloInvalido
-        //            };
-        //        }
 
-        //        var existe = ExisteDeclaracionPatrimonioPersonal(declaracionPatrimonioPersonal);
-        //        if (existe.IsSuccess)
-        //        {
-        //            return new Response
-        //            {
-        //                IsSuccess = false,
-        //                Message = Mensaje.ExisteRegistro,
-        //            };
-        //        }
 
-        //        var declaracionPatrimonioPersonalActualizar = await db.DeclaracionPatrimonioPersonal.Where(x => x.IdDeclaracionPatrimonioPersonal == id).FirstOrDefaultAsync();
+        // POST: api/DeclaracionPatrimonioPersonal
+        [HttpPost]
+        [Route("ObtenerDeclaracionPatrimonial")]
+        public async Task<Response> ObtenerDeclaracionPatrimonial([FromBody] ViewModelDeclaracionPatrimonioPersonal viewModelDeclaracionPatrimonioPersonal)
+        {
+            try {
 
-        //        if (declaracionPatrimonioPersonalActualizar != null)
-        //        {
-        //            try
-        //            {
-        //                declaracionPatrimonioPersonalActualizar.IdEmpleado = declaracionPatrimonioPersonal.IdEmpleado;
-        //                declaracionPatrimonioPersonalActualizar.FechaDeclaracion = declaracionPatrimonioPersonal.FechaDeclaracion;
-        //                declaracionPatrimonioPersonalActualizar.TotalEfectivo = declaracionPatrimonioPersonal.TotalEfectivo;
-        //                declaracionPatrimonioPersonalActualizar.TotalBienInmueble = declaracionPatrimonioPersonal.TotalBienInmueble;
-        //                declaracionPatrimonioPersonalActualizar.TotalBienMueble = declaracionPatrimonioPersonal.TotalBienMueble;
-        //                declaracionPatrimonioPersonalActualizar.TotalPasivo = declaracionPatrimonioPersonal.TotalPasivo;
-        //                declaracionPatrimonioPersonalActualizar.TotalPatrimonio = declaracionPatrimonioPersonal.TotalPatrimonio;
-        //                await db.SaveChangesAsync();
+                var modelo = new ViewModelDeclaracionPatrimonioPersonal();
 
-        //                return new Response
-        //                {
-        //                    IsSuccess = true,
-        //                    Message = Mensaje.Satisfactorio,
-        //                };
+                modelo.DeclaracionPatrimonioPersonalActual = new DeclaracionPatrimonioPersonal {
+                    TotalBienInmueble = 0,
+                    TotalBienMueble = 0,
+                    TotalPatrimonio = 0,
+                    TotalEfectivo = 0,
+                    TotalPasivo = 0,
+                    FechaDeclaracion = DateTime.Now
+                };
 
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-        //                {
-        //                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-        //                    ExceptionTrace = ex.Message,
-        //                    Message = Mensaje.Excepcion,
-        //                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-        //                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-        //                    UserName = "",
+                modelo.DeclaracionPatrimonioPersonalPasado = new DeclaracionPatrimonioPersonal {
+                    TotalBienInmueble = 0,
+                    TotalBienMueble = 0,
+                    TotalPatrimonio = 0,
+                    TotalEfectivo = 0,
+                    TotalPasivo = 0,
+                    FechaDeclaracion = new DateTime(DateTime.Now.Year - 1 ,1,1)
+                };
 
-        //                });
-        //                return new Response
-        //                {
-        //                    IsSuccess = false,
-        //                    Message = Mensaje.Error,
-        //                };
-        //            }
-        //        }
+
+                modelo.OtroIngresoActual = new OtroIngreso {
+                    IngresoArriendos = 0,
+                    IngresoConyuge = 0,
+                    IngresoNegocioParticular = 0,
+                    IngresoRentasFinancieras = 0,
+                    OtrosIngresos = 0,
+                    IdDeclaracionPatrimonioPersonal = 0,
+                    DescripcionOtros = ""
+                };
+                
+                
+                var datosActual = await db.DeclaracionPatrimonioPersonal
+                    .Where(w => 
+                        w.IdEmpleado == viewModelDeclaracionPatrimonioPersonal.IdEmpleado
+                        && w.FechaDeclaracion.Year == DateTime.Now.Year
+                    )
+                    .FirstOrDefaultAsync();
+
+                var datosPasado = await db.DeclaracionPatrimonioPersonal
+                    .Where(w =>
+                        w.IdEmpleado == viewModelDeclaracionPatrimonioPersonal.IdEmpleado
+                        && w.FechaDeclaracion.Year == (DateTime.Now.Year - 1)
+                    )
+                    .FirstOrDefaultAsync();
 
 
 
 
-        //        return new Response
-        //        {
-        //            IsSuccess = false,
-        //            Message = Mensaje.ExisteRegistro
-        //        };
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return new Response
-        //        {
-        //            IsSuccess = false,
-        //            Message = Mensaje.Excepcion
-        //        };
-        //    }
-        //}
+                if (datosActual != null) {
+                    modelo.DeclaracionPatrimonioPersonalActual = datosActual;
+
+                    var datosOtrosIngresos = await db.OtroIngreso
+                        .Where(w => w.IdDeclaracionPatrimonioPersonal == datosActual.IdDeclaracionPatrimonioPersonal)
+                        .FirstOrDefaultAsync();
+
+                    if (datosOtrosIngresos != null) {
+
+                        modelo.OtroIngresoActual = datosOtrosIngresos;
+
+                    }
+
+                }
+
+                if (datosPasado != null)
+                {
+                    modelo.DeclaracionPatrimonioPersonalPasado = datosPasado;
+                }
+
+
+                return new Response {
+
+                    IsSuccess = true,
+                    Resultado = modelo,
+
+                };
+
+
+            } catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+
+        }
+
+
 
         // POST: api/BasesDatos
         [HttpPost]
@@ -198,38 +194,159 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
+
+                if (!ModelState.IsValid) {
+                    return new Response {
                         IsSuccess = false,
-                        Message = ""
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
-                var respuesta = ExisteDeclaracionPatrimonioPersonal(viewModelDeclaracionPatrimonioPersonal);
-                if (!respuesta.IsSuccess)
+
+                var modeloActual = new DeclaracionPatrimonioPersonal {
+
+                    IdEmpleado = viewModelDeclaracionPatrimonioPersonal.IdEmpleado,
+
+                    FechaDeclaracion = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalActual.FechaDeclaracion,
+
+                    TotalBienInmueble = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalActual.TotalBienInmueble,
+
+                    TotalBienMueble = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalActual.TotalBienMueble,
+
+                    TotalEfectivo = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalActual.TotalEfectivo,
+
+                    TotalPasivo = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalActual.TotalPasivo,
+
+                    TotalPatrimonio = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalActual.TotalPatrimonio
+                };
+
+                var modeloPasado = new DeclaracionPatrimonioPersonal
                 {
-                    var declaracionpersonal = db.DeclaracionPatrimonioPersonal.Add(viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonal);
-                    await db.SaveChangesAsync();
 
-                    viewModelDeclaracionPatrimonioPersonal.OtroIngreso.IdDeclaracionPatrimonioPersonal = declaracionpersonal.Entity.IdDeclaracionPatrimonioPersonal;
-                    var otrosingresos = await db.OtroIngreso.AddAsync(viewModelDeclaracionPatrimonioPersonal.OtroIngreso);
-                    await db.SaveChangesAsync();
+                    IdEmpleado = viewModelDeclaracionPatrimonioPersonal.IdEmpleado,
 
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                        
+                    FechaDeclaracion = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalPasado.FechaDeclaracion,
+
+                    TotalBienInmueble = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalPasado.TotalBienInmueble,
+
+                    TotalBienMueble = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalPasado.TotalBienMueble,
+
+                    TotalEfectivo = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalPasado.TotalEfectivo,
+
+                    TotalPasivo = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalPasado.TotalPasivo,
+
+                    TotalPatrimonio = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalPasado.TotalPatrimonio
+                };
+
+                var modeloOtroIngreso = new OtroIngreso
+                {
+
+                    IdDeclaracionPatrimonioPersonal = viewModelDeclaracionPatrimonioPersonal.OtroIngresoActual.IdDeclaracionPatrimonioPersonal,
+
+                    IngresoConyuge = viewModelDeclaracionPatrimonioPersonal.OtroIngresoActual.IngresoConyuge,
+
+                    IngresoArriendos = viewModelDeclaracionPatrimonioPersonal.OtroIngresoActual.IngresoArriendos,
+
+                    IngresoNegocioParticular = viewModelDeclaracionPatrimonioPersonal.OtroIngresoActual.IngresoNegocioParticular,
+
+                    IngresoRentasFinancieras = viewModelDeclaracionPatrimonioPersonal.OtroIngresoActual.IngresoRentasFinancieras,
+
+                    OtrosIngresos = viewModelDeclaracionPatrimonioPersonal.OtroIngresoActual.OtrosIngresos,
+
+                    DescripcionOtros = (viewModelDeclaracionPatrimonioPersonal.OtroIngresoActual.DescripcionOtros != null)?
+                    viewModelDeclaracionPatrimonioPersonal.OtroIngresoActual.DescripcionOtros.ToString().ToUpper():"",
+
+                    Total = viewModelDeclaracionPatrimonioPersonal.OtroIngresoActual.Total
+                };
+
+
+                if (
+                    modeloPasado.FechaDeclaracion > modeloActual.FechaDeclaracion
+                    || modeloActual.FechaDeclaracion.Year > DateTime.Now.Year
+                )
+                {
+                    return new Response {
+                        IsSuccess = false,
+                        Message = Mensaje.ErrorRevisarFechas
+
                     };
                 }
-                
+
+
+                if (viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalActual.IdDeclaracionPatrimonioPersonal > 0)
+                {
+
+                    var registroActual = await db.DeclaracionPatrimonioPersonal
+                        .Where(w => w.IdDeclaracionPatrimonioPersonal == viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalActual.IdDeclaracionPatrimonioPersonal)
+                        .FirstOrDefaultAsync();
+
+                    registroActual.IdEmpleado = modeloActual.IdEmpleado;
+                    registroActual.FechaDeclaracion = modeloActual.FechaDeclaracion;
+                    registroActual.TotalBienInmueble = modeloActual.TotalBienInmueble;
+                    registroActual.TotalBienMueble = modeloActual.TotalBienMueble;
+                    registroActual.TotalEfectivo = modeloActual.TotalEfectivo;
+                    registroActual.TotalPasivo = modeloActual.TotalPasivo;
+                    registroActual.TotalPatrimonio = modeloActual.TotalPatrimonio;
+
+                    db.DeclaracionPatrimonioPersonal.Update(registroActual);
+                    await db.SaveChangesAsync();
+                }
+                else {
+                    db.DeclaracionPatrimonioPersonal.Add(modeloActual);
+                }
+
+
+                if (viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalPasado.IdDeclaracionPatrimonioPersonal > 0)
+                {
+
+                    var registroPasado = await db.DeclaracionPatrimonioPersonal
+                        .Where(w => w.IdDeclaracionPatrimonioPersonal == viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalPasado.IdDeclaracionPatrimonioPersonal)
+                        .FirstOrDefaultAsync();
+
+                    registroPasado.IdEmpleado = modeloPasado.IdEmpleado;
+                    registroPasado.FechaDeclaracion = modeloPasado.FechaDeclaracion;
+                    registroPasado.TotalBienInmueble = modeloPasado.TotalBienInmueble;
+                    registroPasado.TotalBienMueble = modeloPasado.TotalBienMueble;
+                    registroPasado.TotalEfectivo = modeloPasado.TotalEfectivo;
+                    registroPasado.TotalPasivo = modeloPasado.TotalPasivo;
+                    registroPasado.TotalPatrimonio = modeloPasado.TotalPatrimonio;
+
+                    db.DeclaracionPatrimonioPersonal.Update(registroPasado);
+                    await db.SaveChangesAsync();
+                }
+                else
+                {
+                    db.DeclaracionPatrimonioPersonal.Add(modeloPasado);
+                }
+
+                if (viewModelDeclaracionPatrimonioPersonal.OtroIngresoActual.IdOtroIngreso > 0)
+                {
+
+                    var registroOtroIngreso = await db.OtroIngreso
+                        .Where(w => w.IdOtroIngreso == viewModelDeclaracionPatrimonioPersonal.OtroIngresoActual.IdOtroIngreso)
+                        .FirstOrDefaultAsync();
+
+                    registroOtroIngreso.IngresoConyuge = modeloOtroIngreso.IngresoConyuge;
+                    registroOtroIngreso.IngresoArriendos = modeloOtroIngreso.IngresoArriendos;
+                    registroOtroIngreso.IngresoNegocioParticular = modeloOtroIngreso.IngresoNegocioParticular;
+                    registroOtroIngreso.IngresoRentasFinancieras = modeloOtroIngreso.IngresoRentasFinancieras;
+                    registroOtroIngreso.OtrosIngresos = modeloOtroIngreso.OtrosIngresos;
+                    registroOtroIngreso.DescripcionOtros = modeloOtroIngreso.DescripcionOtros;
+                    registroOtroIngreso.Total = modeloOtroIngreso.Total;
+
+                }
+                else {
+                    modeloOtroIngreso.IdDeclaracionPatrimonioPersonal = modeloActual.IdDeclaracionPatrimonioPersonal;
+                    db.OtroIngreso.Add(modeloOtroIngreso);
+                    
+                }
+
+                await db.SaveChangesAsync();
 
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = "No puede realizar una Declaración de Patrimonio Personal del mismo año o superior"
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio
                 };
 
             }
@@ -353,8 +470,8 @@ namespace bd.swth.web.Controllers.API
 
         private Response ExisteDeclaracionPatrimonioPersonal(ViewModelDeclaracionPatrimonioPersonal viewModelDeclaracionPatrimonioPersonal)
         {
-            var bdd = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonal.IdEmpleado;
-            var bdd2 = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonal.FechaDeclaracion.Date.Year;
+            var bdd = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalActual.IdEmpleado;
+            var bdd2 = viewModelDeclaracionPatrimonioPersonal.DeclaracionPatrimonioPersonalActual.FechaDeclaracion.Date.Year;
             var declaracionrespuesta = db.DeclaracionPatrimonioPersonal.Where(p => p.IdEmpleado == bdd && p.FechaDeclaracion.Date.Year == bdd2).FirstOrDefault();
             if (declaracionrespuesta != null || bdd2 > DateTime.Now.Year)
             {
@@ -396,5 +513,8 @@ namespace bd.swth.web.Controllers.API
                 Resultado = otroIngreso,
             };
         }
+
+
+
     }
 }

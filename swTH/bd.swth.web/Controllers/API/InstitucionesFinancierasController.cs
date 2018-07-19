@@ -37,16 +37,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<InstitucionFinanciera>();
             }
         }
@@ -131,32 +122,23 @@ namespace bd.swth.web.Controllers.API
 
 
                 
-                var existe = Existe(InstitucionFinanciera);
-                var InstitucionFinancieraActualizar = (InstitucionFinanciera)existe.Resultado;
+                var existe = db.InstitucionFinanciera
+                    .Where(w=>
+                        w.IdInstitucionFinanciera != id
+                        && (
+                        w.Nombre.ToString().ToUpper() == InstitucionFinanciera.Nombre.ToString().ToUpper()
+                        || w.SPI == InstitucionFinanciera.SPI
+                        )
+                    )
+                    .ToList()
+                ;
+                
 
-                if (existe.IsSuccess)
+                if 
+                (
+                    existe.Count > 0 
+                )
                 {
-
-
-                    //if (InstitucionFinancieraActualizar.IdInstitucionFinanciera == InstitucionFinanciera.IdInstitucionFinanciera)
-                    //{
-                    //    if (
-                    //    InstitucionFinanciera.Nombre == InstitucionFinancieraActualizar.Nombre &&
-                    //    InstitucionFinanciera.SPI == InstitucionFinancieraActualizar.SPI)
-                    //    {
-                    //        return new Response
-                    //        {
-                    //            IsSuccess = true,
-                    //        };
-                    //    }
-
-                    //    await Actualizar(InstitucionFinanciera);
-                    //    return new Response
-                    //    {
-                    //        IsSuccess = true,
-                    //        Message = Mensaje.Satisfactorio,
-                    //    };
-                    //}
                     return new Response
                     {
                         IsSuccess = false,
@@ -164,11 +146,14 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                // convertir a mayúsculas
+                InstitucionFinanciera.Nombre = InstitucionFinanciera.Nombre.ToString().ToUpper();
+
                 await Actualizar(InstitucionFinanciera);
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.GuardadoSatisfactorio,
                 };
             }
             catch (Exception ex)
@@ -205,12 +190,16 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(InstitucionFinanciera);
                 if (!respuesta.IsSuccess)
                 {
+
+                    // convertir a mayúsculas
+                    InstitucionFinanciera.Nombre = InstitucionFinanciera.Nombre.ToString().ToUpper();
+
                     db.InstitucionFinanciera.Add(InstitucionFinanciera);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = Mensaje.GuardadoSatisfactorio
                     };
                 }
 
@@ -232,16 +221,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -280,25 +259,16 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.BorradoSatisfactorio,
                 };
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+               
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.BorradoNoSatisfactorio,
                 };
             }
         }
@@ -308,7 +278,13 @@ namespace bd.swth.web.Controllers.API
             var bdd = InstitucionFinanciera.Nombre;
             var bdd1 = InstitucionFinanciera.SPI;
 
-            var InstitucionFinancierarespuesta = db.InstitucionFinanciera.Where(p => p.Nombre == bdd && p.SPI == bdd1).FirstOrDefault();
+            var InstitucionFinancierarespuesta = db.InstitucionFinanciera
+                .Where(p =>
+                    p.Nombre.ToString().ToUpper() == bdd.ToString().ToUpper()
+                    || p.SPI == bdd1
+                ).FirstOrDefault();
+            
+
             if (InstitucionFinancierarespuesta != null)
             {
                 return new Response

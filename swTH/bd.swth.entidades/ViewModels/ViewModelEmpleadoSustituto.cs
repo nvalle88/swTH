@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace bd.swth.entidades.ViewModels
@@ -69,8 +70,11 @@ namespace bd.swth.entidades.ViewModels
         public string NumeroCarnet { get; set; }
         public int IdPersonaSustitutoDiscapacidad { get; set; }
 
+        [NotMapped]
+        public string Enfermedades { get; set; }
 
-
+        [NotMapped]
+        public string Discapacidades { get; set; }
 
     }
 }
