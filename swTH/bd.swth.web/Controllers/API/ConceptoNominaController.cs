@@ -134,6 +134,32 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("InsertarDiasLaboradosNomina")]
+        public async Task<Response> InsertarDiasLaboradosNomina([FromBody] List<DiasLaboradosNomina> listaSalvar)
+        {
+            try
+            {
+                var ListaDiasReportadosEliminar =await db.DiasLaboradosNomina.Where(x => x.IdCalculoNomina == listaSalvar.FirstOrDefault().IdCalculoNomina).ToListAsync();
+                db.DiasLaboradosNomina.RemoveRange(ListaDiasReportadosEliminar);
+                await db.SaveChangesAsync();
+                await db.DiasLaboradosNomina.AddRangeAsync(listaSalvar);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
         [HttpPost]
         [Route("InsertarHorasExtrasNomina")]
         public async Task<Response> InsertarHorasExtrasNomina([FromBody] List<HorasExtrasNomina> listaSalvar)
@@ -206,6 +232,29 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("EliminarDiasLaborados")]
+        public async Task<Response> EliminarDiasLaborados([FromBody] DiasLaboradosNomina diasLaboradosNomina)
+        {
+            try
+            {
+                var diasLaboradosEliminar = await db.DiasLaboradosNomina.Where(x => x.IdDiasLaboradosNomina == diasLaboradosNomina.IdDiasLaboradosNomina).FirstOrDefaultAsync();
+                db.DiasLaboradosNomina.Remove(diasLaboradosEliminar);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
 
         [HttpPost]
         [Route("EliminarHoraExtra")]
@@ -258,6 +307,37 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("VerificarExcelDiasLaborados")]
+        public async Task<List<DiasLaboradosNomina>> VerificarExcelDiasLaborados([FromBody] List<DiasLaboradosNomina> lista)
+        {
+            try
+            {
+
+                foreach (var item in lista)
+                {
+                    var empleado = await db.Empleado.Where(x => x.Activo == true && x.Persona.Identificacion == item.IdentificacionEmpleado).FirstOrDefaultAsync();
+
+                    if (empleado == null)
+                    {
+                        item.Valido = false;
+                        item.MensajeError = Mensaje.EmpleadoNoExiste;
+                    }
+                    else
+                    {
+                        item.Valido = true;
+                        item.IdEmpleado = empleado.IdEmpleado;
+                    }
+                }
+                return lista;
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
 
         [HttpPost]
         [Route("VerificarExcelHorasExtras")]

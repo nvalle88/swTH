@@ -230,6 +230,32 @@ namespace bd.swth.web.Controllers.API
 
 
         [HttpPost]
+        [Route("ListarDiasLaborados")]
+        public async Task<List<DiasLaboradosNomina>> ListarDiasLaborados([FromBody] CalculoNomina CalculoNomina)
+        {
+            try
+            {
+                return await db.DiasLaboradosNomina.Where(x => x.IdCalculoNomina == CalculoNomina.IdCalculoNomina).
+                    Select(x => new DiasLaboradosNomina
+                    {
+                        CantidadDias = x.CantidadDias,
+                        Nombres = db.Persona.Where(y => y.Identificacion == x.IdentificacionEmpleado).FirstOrDefault().Nombres,
+                        Apellidos = db.Persona.Where(y => y.Identificacion == x.IdentificacionEmpleado).FirstOrDefault().Apellidos,
+                        IdentificacionEmpleado = x.IdentificacionEmpleado,
+                        IdCalculoNomina=x.IdCalculoNomina,
+                        IdDiasLaboradosNomina=x.IdDiasLaboradosNomina,
+                        IdEmpleado=x.IdEmpleado,
+
+                    }).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return new List<DiasLaboradosNomina>();
+            }
+        }
+
+
+        [HttpPost]
         [Route("ListarHorasExtras")]
         public async Task<List<HorasExtrasNomina>> ListarHorasExtras([FromBody] CalculoNomina CalculoNomina)
         {

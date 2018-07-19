@@ -108,6 +108,7 @@ namespace bd.swth.entidades.Negocio
         public virtual ICollection<SolicitudViatico> SolicitudViatico { get; set; }
 
         public virtual ICollection<HorasExtrasNomina> HorasExtrasNomina { get; set; }
+        public virtual ICollection<DiasLaboradosNomina> DiasLaboradosNomina { get; set; }
 
 
 
