@@ -6,6 +6,7 @@ using bd.swth.datos;
 using bd.swth.entidades.Negocio;
 using bd.swth.entidades.ObjectTransfer;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,28 @@ namespace bd.swth.web.Controllers.API
         public ConceptoNominaController(SwTHDbContext db)
         {
             this.db = db;
+        }
+
+
+
+        [HttpPost]
+        [Route("ListarConceptoNomina")]
+        public async Task<List<ConceptoNomina>> ListarConceptoNomina([FromBody] bool activo)
+        {
+            try
+            {
+                var estado = "";
+                if (activo == true)
+                {
+                    estado = "Activo";
+                }
+                else { estado = "Inactivo"; }
+                return await db.ConceptoNomina.Where(x=>x.Estatus==estado).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return new List<ConceptoNomina>();
+            }
         }
 
         // GET: api/BasesDatos
@@ -73,6 +96,44 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("InsertarReportadoNominaIndividual")]
+        public async Task<Response> InsertarReportadoNominaIndividual([FromBody] AdicionarReportadoNominaViewModel adicionarReportado)
+        {
+            try
+            {
+
+
+                var concepto =await  db.ConceptoNomina.Where(x => x.IdConcepto == adicionarReportado.IdConcepto).FirstOrDefaultAsync();
+                var empleado = await db.Empleado.Where(x => x.IdEmpleado == adicionarReportado.IdEmpleado).Include(x=>x.Persona).FirstOrDefaultAsync();
+
+                var reportadoNomina = new ReportadoNomina
+                {
+                    IdCalculoNomina = adicionarReportado.IdCalculoNomina,
+                    Importe = adicionarReportado.Valor,
+                    NombreEmpleado = $"{empleado.Persona.Nombres + " " + empleado.Persona.Apellidos }",
+                    IdentificacionEmpleado = $"{empleado.Persona.Identificacion}",
+                    CodigoConcepto = concepto.Codigo,
+                };
+
+                await db.ReportadoNomina.AddAsync(reportadoNomina);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
         [HttpPost]
         [Route("InsertarHorasExtrasNomina")]
         public async Task<Response> InsertarHorasExtrasNomina([FromBody] List<HorasExtrasNomina> listaSalvar)
@@ -121,6 +182,29 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpPost]
+        [Route("EliminarReportado")]
+        public async Task<Response> EliminarReportado([FromBody] ReportadoNomina reportadoNomina)
+        {
+            try
+            {
+                var reportadoEliminar = await db.ReportadoNomina.Where(x => x.IdReportadoNomina == reportadoNomina.IdReportadoNomina).FirstOrDefaultAsync();
+                db.ReportadoNomina.Remove(reportadoEliminar);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
 
 
         [HttpPost]
