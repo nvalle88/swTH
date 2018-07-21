@@ -11,6 +11,7 @@ namespace bd.swth.entidades.Negocio
         [Key]
         public int IdReportadoNomina { get; set; }
         public string CodigoConcepto { get; set; }
+        
         public string IdentificacionEmpleado { get; set; }
         public string NombreEmpleado { get; set; }
         public double Cantidad { get; set; }
@@ -20,6 +21,9 @@ namespace bd.swth.entidades.Negocio
         public bool Valido { get; set; }
         [NotMapped]
         public string MensajeError { get; set; }
+
+        [NotMapped]
+        public string DescripcionConcepto { get; set; }
 
         public int IdCalculoNomina { get; set; }
         public virtual CalculoNomina CalculoNomina { get; set; }

@@ -24,7 +24,20 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-
+        [HttpPost]
+        [Route("ListarConceptoNominaPorTipoRelacionDelEmpleado")]
+        public async Task<List<ConceptoNomina>> ListarConceptoNominaPorTipoRelacionDelEmpleado([FromBody] Empleado empleado)
+        {
+            try
+            {
+                
+                return await db.ConceptoNomina.Where(x => x.Estatus =="Activo" && x.RelacionLaboral== "AMBOS" && x.RelacionLaboral==db.Empleado.Where(e=>e.IdEmpleado==empleado.IdEmpleado).FirstOrDefault().TipoRelacion).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return new List<ConceptoNomina>();
+            }
+        }
 
         [HttpPost]
         [Route("ListarConceptoNomina")]

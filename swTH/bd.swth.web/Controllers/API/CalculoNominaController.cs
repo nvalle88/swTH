@@ -51,6 +51,9 @@ namespace bd.swth.web.Controllers.API
             return lista;
         }
 
+
+        
+
         private async Task<CalculoNomina> ObtenerCalculoNominaDetalle(CalculoNomina calculoNomina)
         {
             var calculoNominaRequest = await db.CalculoNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).Include(x => x.PeriodoNomina).Include(y => y.ProcesoNomina).ThenInclude(y => y.ConceptoNomina).FirstOrDefaultAsync();
@@ -80,6 +83,29 @@ namespace bd.swth.web.Controllers.API
                 , calculoNomina.IdCalculoNomina);
 
             return new Response {IsSuccess=true,Message=Convert.ToString(rowsAfected) };
+        }
+
+        [HttpPost]
+        [Route("LimpiarDiasLaborados")]
+        public async Task<Response> LimpiarDiasLaborados([FromBody] CalculoNomina calculoNomina)
+        {
+            try
+            {
+                var listadoBorrar = await db.DiasLaboradosNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).ToListAsync();
+                db.DiasLaboradosNomina.RemoveRange(listadoBorrar);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
         }
 
         [HttpPost]
@@ -124,6 +150,84 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
+                };
+            }
+        }
+
+
+        [HttpGet]
+        [HttpPost("EditarDiasLaborados")]
+        public async Task<Response> EditarDiasLaborados([FromBody] DiasLaboradosNomina laboradosNomina)
+        {
+            try
+            {
+                var diasLaborados = await db.DiasLaboradosNomina.Where(x => x.IdDiasLaboradosNomina == laboradosNomina.IdDiasLaboradosNomina).FirstOrDefaultAsync();
+
+
+                if (diasLaborados == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+
+                diasLaborados.CantidadDias = laboradosNomina.CantidadDias;
+                db.DiasLaboradosNomina.Update(diasLaborados);
+                await db.SaveChangesAsync();
+              
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = diasLaborados,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        [HttpGet]
+        [HttpPost("ObtenerDiasLaborados")]
+        public async Task<Response> ObtenerDiasLaborados([FromBody] DiasLaboradosNomina laboradosNomina)
+        {
+            try
+            {
+                var diasLaborados = await db.DiasLaboradosNomina.Where(x=>x.IdDiasLaboradosNomina==laboradosNomina.IdDiasLaboradosNomina).FirstOrDefaultAsync();
+
+
+                if (diasLaborados == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+
+                diasLaborados.Nombres =  db.Empleado.Where(x => x.IdEmpleado == diasLaborados.IdEmpleado).Include(x=>x.Persona).FirstOrDefault().Persona.Nombres;
+                diasLaborados.Apellidos = db.Empleado.Where(x => x.IdEmpleado == diasLaborados.IdEmpleado).Include(x => x.Persona).FirstOrDefault().Persona.Apellidos;
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = diasLaborados,
+                };
+            }
+            catch (Exception ex) 
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
                 };
             }
         }
@@ -220,9 +324,21 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ReportadoNomina.Where(x => x.IdCalculoNomina == CalculoNomina.IdCalculoNomina).ToListAsync();
+                return await  db.ReportadoNomina.Where(x => x.IdCalculoNomina == CalculoNomina.IdCalculoNomina)
+                    .Select(x=> new ReportadoNomina
+                    {
+                        IdCalculoNomina=x.IdCalculoNomina,
+                        Cantidad=x.Cantidad,
+                        Importe=x.Importe,
+                        CodigoConcepto=x.CodigoConcepto,
+                        IdentificacionEmpleado=x.IdentificacionEmpleado,
+                        NombreEmpleado=x.NombreEmpleado,
+                        IdReportadoNomina=x.IdReportadoNomina,
+                        DescripcionConcepto= db.ConceptoNomina.Where(c=>c.Codigo==x.CodigoConcepto).FirstOrDefault().Descripcion,
+                        
+                    }) .ToListAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new List<ReportadoNomina>();
             }
