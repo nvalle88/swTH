@@ -137,8 +137,9 @@ namespace bd.swth.web.Controllers.API
                     try
                     {
 
-                        RelacionesInternasExternasActualizar.Nombre = RelacionesInternasExternas.Nombre;
-                        RelacionesInternasExternasActualizar.Descripcion = RelacionesInternasExternas.Descripcion;
+                        RelacionesInternasExternasActualizar.Nombre = RelacionesInternasExternas.Nombre.ToString().ToUpper();
+                        RelacionesInternasExternasActualizar.Descripcion = RelacionesInternasExternas.Descripcion.ToString().ToUpper();
+
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -150,16 +151,7 @@ namespace bd.swth.web.Controllers.API
                     }
                     catch (Exception ex)
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
+                        
                         return new Response
                         {
                             IsSuccess = false,
@@ -206,6 +198,9 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(RelacionesInternasExternas);
                 if (!respuesta.IsSuccess)
                 {
+                    RelacionesInternasExternas.Nombre = RelacionesInternasExternas.Nombre.ToString().ToUpper();
+                    RelacionesInternasExternas.Descripcion = RelacionesInternasExternas.Descripcion.ToString().ToUpper();
+
                     db.RelacionesInternasExternas.Add(RelacionesInternasExternas);
                     await db.SaveChangesAsync();
                     return new Response
@@ -224,16 +219,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+               
                 return new Response
                 {
                     IsSuccess = false,

@@ -175,7 +175,9 @@ namespace bd.swth.web.Controllers.API
                 var TipoAccionPersonalActualizar = db.TipoAccionPersonal.Find(tipoAccionPersonal.IdTipoAccionPersonal);
 
                 var TipoAccionPersonalPorNombre = await db.TipoAccionPersonal
-                    .Where(w => w.Nombre == tipoAccionPersonal.Nombre && w.IdTipoAccionPersonal != tipoAccionPersonal.IdTipoAccionPersonal)
+                    .Where(w => 
+                        w.Nombre == tipoAccionPersonal.Nombre.ToString().ToUpper() 
+                        && w.IdTipoAccionPersonal != tipoAccionPersonal.IdTipoAccionPersonal)
                     .FirstOrDefaultAsync();
                 ;
 
@@ -188,7 +190,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                TipoAccionPersonalActualizar.Nombre = tipoAccionPersonal.Nombre;
+                TipoAccionPersonalActualizar.Nombre = tipoAccionPersonal.Nombre.ToString().ToUpper();
 
                 TipoAccionPersonalActualizar.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
                 TipoAccionPersonalActualizar.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
@@ -200,8 +202,9 @@ namespace bd.swth.web.Controllers.API
                 TipoAccionPersonalActualizar.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
                 TipoAccionPersonalActualizar.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
 
-                TipoAccionPersonalActualizar.Matriz = tipoAccionPersonal.Matriz;
-                TipoAccionPersonalActualizar.Descripcion = tipoAccionPersonal.Descripcion;
+                TipoAccionPersonalActualizar.Matriz = tipoAccionPersonal.Matriz.ToString().ToUpper();
+                TipoAccionPersonalActualizar.Descripcion = (tipoAccionPersonal.Descripcion != null)?
+                    tipoAccionPersonal.Descripcion.ToString().ToUpper():"";
 
                 TipoAccionPersonalActualizar.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
                 TipoAccionPersonalActualizar.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
@@ -277,6 +280,11 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(TipoAccionPersonal);
                 if (!respuesta.IsSuccess)
                 {
+                    // Convertir a mayúsculas
+                    TipoAccionPersonal.Nombre = TipoAccionPersonal.Nombre.ToString().ToUpper();
+                    TipoAccionPersonal.Descripcion = (TipoAccionPersonal.Descripcion != null)?TipoAccionPersonal.Descripcion.ToString().ToUpper():"";
+                    TipoAccionPersonal.Matriz = (TipoAccionPersonal.Matriz != null) ? TipoAccionPersonal.Matriz.ToString().ToUpper():"";
+
                     db.TipoAccionPersonal.Add(TipoAccionPersonal);
                     await db.SaveChangesAsync();
                     return new Response

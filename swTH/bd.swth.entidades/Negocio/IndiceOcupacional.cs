@@ -33,7 +33,7 @@ namespace bd.swth.entidades.Negocio
         public virtual ManualPuesto ManualPuesto { get; set; }
         public virtual PartidaGeneral PartidaGeneral { get; set; }
         public virtual RolPuesto RolPuesto { get; set; }
-
+        public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimiento { get; set; }
 
         [NotMapped]
         public int IdRelacionLaboral { get; set; }

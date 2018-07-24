@@ -2749,6 +2749,7 @@ namespace bd.swth.web.Controllers.API
                             FondosReservas = false,
                             MesesImposiciones = 0,
                             DiasImposiciones = 0,
+                            FechaIngreso = DateTime.Now
                         };
                         var empleado = await db.Empleado.AddAsync(empleadoinsertado);
                         await db.SaveChangesAsync();
@@ -4054,6 +4055,7 @@ namespace bd.swth.web.Controllers.API
                 .Where(w =>
                     w.TipoAccionPersonal.Definitivo == true
                     && w.TipoAccionPersonal.DesactivarEmpleado == true
+                    && w.FechaRigeHasta != null
                 )
                 .OrderByDescending(o => o.FechaRige);
 

@@ -113,6 +113,7 @@ namespace bd.swth.web.Controllers.API
                 .Include(i => i.TipoAccionPersonal)
                 .Where(w =>
                     w.IdEmpleado == idEmpleado
+                    && w.Ejecutado == true
                 )
                 .ToListAsync();
 

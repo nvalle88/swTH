@@ -17,5 +17,6 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
         public virtual ICollection<SolicitudViatico> SolicitudViatico { get; set; }
+        public virtual ICollection<EmpleadoMovimiento> EmpleadoMovimiento { get; set; }
     }
 }
