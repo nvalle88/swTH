@@ -38,7 +38,7 @@ namespace bd.swth.web.Controllers.API
             {
                 return await db.CalculoNomina.Include(x => x.PeriodoNomina).Include(x => x.ProcesoNomina).ToListAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new List<CalculoNomina>();
             }
@@ -295,10 +295,9 @@ namespace bd.swth.web.Controllers.API
                 CalculoNominaActualizar.Descripcion = CalculoNomina.Descripcion;
                 CalculoNominaActualizar.IdPeriodo = CalculoNomina.IdPeriodo;
                 CalculoNominaActualizar.IdProceso = CalculoNomina.IdProceso;
-                CalculoNominaActualizar.Automatico = CalculoNomina.Automatico;
-                CalculoNominaActualizar.Reportado = CalculoNomina.Reportado;
+                CalculoNominaActualizar.DecimoTercerSueldo = CalculoNomina.DecimoTercerSueldo;
+                CalculoNominaActualizar.DecimoCuartoSueldo = CalculoNomina.DecimoCuartoSueldo;
                 CalculoNominaActualizar.EmpleadoActivo = CalculoNomina.EmpleadoActivo;
-                CalculoNominaActualizar.EmpleadoPasivo = CalculoNomina.EmpleadoPasivo;
                 db.CalculoNomina.Update(CalculoNominaActualizar);
                 await db.SaveChangesAsync();
 
