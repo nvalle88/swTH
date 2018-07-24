@@ -30,8 +30,9 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                
-                return await db.ConceptoNomina.Where(x => x.Estatus =="Activo" && x.RelacionLaboral== "AMBOS" && x.RelacionLaboral==db.Empleado.Where(e=>e.IdEmpleado==empleado.IdEmpleado).FirstOrDefault().TipoRelacion).ToListAsync();
+                var relacionEmpleado =await db.Empleado.Where(e => e.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
+                var lista= await db.ConceptoNomina.Where(x => x.Estatus =="Activo" && (x.RelacionLaboral==relacionEmpleado.TipoRelacion || x.RelacionLaboral=="AMBOS")).ToListAsync();
+                return lista;
             }
             catch (Exception ex)
             {
