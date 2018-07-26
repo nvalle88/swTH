@@ -370,23 +370,46 @@ namespace bd.swth.web.Controllers.API
                 var anio = DateTime.Now.Year;
                 var listaSalida2 = new List<DocumentoFAOViewModel>();
 
-                var EmpleadoEncontrado = await db.Empleado.OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario && x.Activo == true).FirstOrDefaultAsync();
+                var EmpleadoEncontrado = await db.Empleado
+                    .OrderBy(x => x.FechaIngreso)
+                    .Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario && x.Activo == true)
+                    .FirstOrDefaultAsync();
+
                 if (EmpleadoEncontrado != null)
                 {
-                    var modalidar = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaOcupada).FirstOrDefaultAsync();
-                    var EmpleadoDeJefe = await db.Empleado.Where(x => x.IdDependencia == EmpleadoEncontrado.IdDependencia).ToListAsync();
+                    //var modalidar = await db.ModalidadPartida
+                    //    .Where(x => x.Nombre == Constantes.PartidaOcupada)
+                    //    .FirstOrDefaultAsync();
+
+                    var EmpleadoDeJefe = await db.Empleado
+                        //.Where(x => x.IdDependencia == EmpleadoEncontrado.IdDependencia)
+                        .ToListAsync();
+
                     foreach (var item in EmpleadoDeJefe)
                     {
-                        var modalidadPartida = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdEmpleado == item.IdEmpleado && x.IdModalidadPartida == modalidar.IdModalidadPartida).Select(x => new DocumentoFAOViewModel
+                        var iompEmpleado = await db.IndiceOcupacionalModalidadPartida
+                            .Where(x =>
+                                x.IdEmpleado == item.IdEmpleado
+                                && x.Empleado.Activo == true
+                                //&& x.IdModalidadPartida == modalidar.IdModalidadPartida
+                            )
+                            .OrderByDescending(o => o.Fecha)
+                            .Select(x => new DocumentoFAOViewModel
+                            {
+                                //IdEmpleado =Convert.ToInt32( x.IdEmpleado),
+                                Modalidad = "",//x.ModalidadPartida.Nombre, NO SE QUE HACE ESTE CAMPO DESCOMENTAR AL VERIFICAR SU USO
+                                Puesto = x.IndiceOcupacional.ManualPuesto.Nombre
+                            })
+                            .FirstOrDefaultAsync();
+
+
+                        if (iompEmpleado != null)
                         {
-                            //IdEmpleado =Convert.ToInt32( x.IdEmpleado),
-                            Modalidad = x.ModalidadPartida.Nombre,
-                            Puesto = x.IndiceOcupacional.ManualPuesto.Nombre
-                        }).FirstOrDefaultAsync();
-                        if (modalidadPartida != null)
-                        {
-                            var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == item.IdEmpleado).FirstOrDefaultAsync();
-                            if (a == null)
+                            var formulario = await db.FormularioAnalisisOcupacional
+                                .Where(x => x.Anio == anio && x.IdEmpleado == item.IdEmpleado)
+                                .FirstOrDefaultAsync();
+
+                            if (formulario == null)
                             {
                                 var EmpleadoDeJefe1 = await db.Empleado.Where(x => x.IdEmpleado == item.IdEmpleado).Select(x => new DocumentoFAOViewModel
                                 {
@@ -400,9 +423,11 @@ namespace bd.swth.web.Controllers.API
                                     //Dependencia = x.Dependencia.DependenciaPadre.Nombre,
                                     UnidadAdministrativa = x.Dependencia.Nombre,
                                     TipoNombramiento = x.IndiceOcupacionalModalidadPartida.FirstOrDefault().TipoNombramiento.Nombre,
-                                    Modalidad = modalidadPartida.Modalidad,
-                                    Puesto = modalidadPartida.Puesto,
-                                }).FirstOrDefaultAsync();
+                                    Modalidad = iompEmpleado.Modalidad,
+                                    Puesto = iompEmpleado.Puesto,
+                                })
+                                .FirstOrDefaultAsync();
+
                                 listaSalida2.Add(new DocumentoFAOViewModel
                                 {
                                     IdEmpleado = EmpleadoDeJefe1.IdEmpleado,
@@ -424,26 +449,19 @@ namespace bd.swth.web.Controllers.API
 
                     }
 
-                }
+                    }
 
                 return listaSalida2;
 
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<DocumentoFAOViewModel>();
             }
         }
+
+
         [HttpPost]
         [Route("ListarEmpleadosConFAO")]
         public async Task<List<DocumentoFAOViewModel>> ListarEmpleadosConFAO([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
@@ -1149,6 +1167,8 @@ namespace bd.swth.web.Controllers.API
                                             .Where(wm => wm.Nombre.ToUpper() == Constantes.PartidaVacante.ToUpper())
                                             .FirstOrDefault()
                                             .IdModalidadPartida
+
+                                && w.IdIndiceOcupacional == modelo.IndiceOcupacionalViewModel.IdIndiceOcupacional
                             )
                         .OrderByDescending(o => o.Fecha)
                         .DistinctBy(d => d.IndiceOcupacional.ManualPuesto.Nombre)

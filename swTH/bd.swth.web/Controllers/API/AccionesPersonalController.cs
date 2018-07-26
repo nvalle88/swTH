@@ -484,6 +484,8 @@ namespace bd.swth.web.Controllers.API
 
                 modelo.EmpleadoMovimiento.NumeroPartidaIndividual = modelo.EmpleadoMovimiento.NumeroPartidaIndividual + modelo.EmpleadoMovimiento.CodigoContrato;
 
+                
+
 
                 return new Response
                 {
@@ -652,500 +654,6 @@ namespace bd.swth.web.Controllers.API
                     definitivo = tiempo indefinido                 
                  */
 
-                
-                if (
-                    tipoAccionPersonal.ModificaDistributivo == true
-                    && tipoAccionPersonal.ModalidadContratacion == true
-                    && tipoAccionPersonal.DesactivarEmpleado == false
-                )
-                {
-                    // se registra en MovimientoEmpleado, pero 
-                    // Se deben buscar los valores que deben asignarse
-
-                    
-                    if (accionPersonalViewModel.ConfigurarPuesto == true)
-                    {
-                        // tomar datos del modelo de entrada: accionPersonalViewModel.empleadoMovimiento
-
-                        using (var transaction = await db.Database.BeginTransactionAsync())
-                        {
-                            await db.AccionPersonal.AddAsync(modelo);
-
-                            var modeloEmpleadoMovimiento = new EmpleadoMovimiento
-                            {
-                                IdEmpleado = modelo.IdEmpleado,
-                                FechaDesde = modelo.FechaRige,
-                                FechaHasta = modelo.FechaRigeHasta,
-
-                                IdIndiceOcupacionalModalidadPartidaDesde =
-                                    accionPersonalViewModel.EmpleadoMovimiento
-                                    .IndiceOcupacionalModalidadPartidaDesde
-                                    .IdIndiceOcupacionalModalidadPartida,
-
-                                IdIndiceOcupacionalModalidadPartidaHasta =
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .IdIndiceOcupacionalModalidadPartidaHasta,
-
-                                IdAccionPersonal = modelo.IdAccionPersonal,
-
-                                IdIndiceOcupacional = 
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .IndiceOcupacionalModalidadPartidaHasta
-                                    .IdIndiceOcupacional,
-
-                                IdFondoFinanciamiento = 
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .IdFondoFinanciamiento,
-
-                                IdTipoNombramiento = 
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .IdTipoNombramiento,
-
-                                SalarioReal = 
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .SalarioReal
-                                    
-                            };
-
-                            var contratacion = tipoNombramiento
-                                .Where(w =>
-                                    w.IdTipoNombramiento == modeloEmpleadoMovimiento.IdTipoNombramiento
-                                ).FirstOrDefault();
-
-
-                            if (
-                                contratacion.RelacionLaboral.Nombre.ToString().ToUpper() ==
-                                ConstantesTipoRelacion.Contrato.ToString().ToUpper()
-                                )
-                            {
-
-                                modeloEmpleadoMovimiento.CodigoContrato = accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .NumeroPartidaIndividual;
-
-                            }
-
-                            else if (
-                                contratacion.RelacionLaboral.Nombre.ToString().ToUpper() ==
-                                ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
-                                )
-                            {
-
-
-                                modeloEmpleadoMovimiento.NumeroPartidaIndividual = accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .NumeroPartidaIndividual;
-
-                                modeloEmpleadoMovimiento.IdModalidadPartida = accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .IdModalidadPartida;
-                            }
-                            else {
-
-                                return new Response {
-                                    IsSuccess = false,
-                                    Resultado = accionPersonalViewModel.EmpleadoMovimiento.Empleado.Persona.Identificacion,
-                                    Message = Mensaje.ErrorSeleccionContratacionNoDefinida
-                                };
-                            }
-
-
-                            await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
-                            
-                            await db.SaveChangesAsync();
-
-                            transaction.Commit();
-                        }
-
-                        
-                    }
-                    else
-                    {
-                        // tomar el IdIOMPhasta del modelo de entrada accionPersonalViewModel
-
-                        var iompHasta = await db.IndiceOcupacionalModalidadPartida
-                            .Where(w =>
-                                w.IdIndiceOcupacionalModalidadPartida ==
-                                 accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .IdIndiceOcupacionalModalidadPartidaHasta
-                            ).FirstOrDefaultAsync();
-
-
-                        if (iompHasta.IdTipoNombramiento == null) {
-
-                            var idNombramiento = tipoNombramiento
-                                .Where(w =>
-                                    w.RelacionLaboral.Nombre.ToString().ToUpper() ==
-                                    ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
-                                ).FirstOrDefault().IdTipoNombramiento;
-
-                            if (iompHasta.NumeroPartidaIndividual != null) {
-
-                                iompHasta.IdTipoNombramiento = idNombramiento;
-
-                            }
-                        }
-
-
-                        using (var transaction = await db.Database.BeginTransactionAsync())
-                        {
-
-                            await db.AccionPersonal.AddAsync(modelo);
-
-                            var modeloEmpleadoMovimiento = new EmpleadoMovimiento
-                            {
-                                IdEmpleado = modelo.IdEmpleado,
-                                FechaDesde = modelo.FechaRige,
-                                FechaHasta = modelo.FechaRigeHasta,
-
-                                IdIndiceOcupacionalModalidadPartidaDesde =
-                                    accionPersonalViewModel.EmpleadoMovimiento
-                                    .IndiceOcupacionalModalidadPartidaDesde
-                                    .IdIndiceOcupacionalModalidadPartida,
-
-                                IdIndiceOcupacionalModalidadPartidaHasta =
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .IdIndiceOcupacionalModalidadPartidaHasta,
-
-                                IdAccionPersonal = modelo.IdAccionPersonal,
-
-                                IdIndiceOcupacional = iompHasta.IdIndiceOcupacional,
-                                IdFondoFinanciamiento = iompHasta.IdFondoFinanciamiento,
-                                IdTipoNombramiento = iompHasta.IdTipoNombramiento,
-                                SalarioReal = iompHasta.SalarioReal,
-                                CodigoContrato = iompHasta.CodigoContrato,
-                                NumeroPartidaIndividual = iompHasta.NumeroPartidaIndividual,
-                                IdModalidadPartida = iompHasta.IdModalidadPartida
-                            };
-
-                            await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
-                            
-
-                            await db.SaveChangesAsync();
-                            
-                            transaction.Commit();
-                        }
-                    }
-
-
-                }
-
-                else if (
-                    tipoAccionPersonal.ModificaDistributivo == true
-                    && tipoAccionPersonal.ModalidadContratacion == false
-                    && tipoAccionPersonal.DesactivarEmpleado == false
-                )
-                {
-                    // se registra en MovimientoEmpleado, cambia el puesto, pero se mantienen los 
-                    // datos del iomp actual (fondoFinanciamiento, modalidadPartida,etc)
-
-                    using (var transaction = await db.Database.BeginTransactionAsync())
-                    {
-
-                        await db.AccionPersonal.AddAsync(modelo);
-
-                        var iompActual = await db.IndiceOcupacionalModalidadPartida
-                            .Where(w =>
-                                w.IdIndiceOcupacionalModalidadPartida ==
-                                accionPersonalViewModel.EmpleadoMovimiento
-                                .IndiceOcupacionalModalidadPartidaDesde
-                                .IdIndiceOcupacionalModalidadPartida
-                            ).FirstOrDefaultAsync();
-
-
-                        var modeloEmpleadoMovimiento = new EmpleadoMovimiento
-                        {
-                            IdEmpleado = modelo.IdEmpleado,
-                            FechaDesde = modelo.FechaRige,
-                            FechaHasta = modelo.FechaRigeHasta,
-
-                            IdIndiceOcupacionalModalidadPartidaDesde =
-                                        accionPersonalViewModel.EmpleadoMovimiento
-                                        .IndiceOcupacionalModalidadPartidaDesde
-                                        .IdIndiceOcupacionalModalidadPartida,
-
-                            IdAccionPersonal = modelo.IdAccionPersonal
-
-
-                        };
-
-
-                        if (accionPersonalViewModel.ConfigurarPuesto == true)
-                        {
-                            
-
-                            modeloEmpleadoMovimiento.IdIndiceOcupacional =
-                                accionPersonalViewModel
-                                .EmpleadoMovimiento
-                                .IndiceOcupacionalModalidadPartidaHasta
-                                .IdIndiceOcupacional;
-
-                            modeloEmpleadoMovimiento.IdFondoFinanciamiento = 
-                                accionPersonalViewModel
-                                .EmpleadoMovimiento
-                                .IdFondoFinanciamiento;
-
-                            modeloEmpleadoMovimiento.IdTipoNombramiento =
-                                accionPersonalViewModel
-                                .EmpleadoMovimiento
-                                .IdTipoNombramiento;
-
-                            modeloEmpleadoMovimiento.SalarioReal =
-                                accionPersonalViewModel
-                                .EmpleadoMovimiento
-                                .SalarioReal;
-
-
-                            var contratacion = tipoNombramiento
-                                .Where(w => w.IdTipoNombramiento == modeloEmpleadoMovimiento.IdTipoNombramiento)
-                                .FirstOrDefault().RelacionLaboral.Nombre;
-
-                            if (
-                                contratacion.ToString().ToUpper() ==
-                                ConstantesTipoRelacion.Contrato.ToString().ToUpper()
-                                )
-                            {
-                                modeloEmpleadoMovimiento.CodigoContrato =
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .NumeroPartidaIndividual;
-                            }
-
-                            else if (
-                                contratacion.ToString().ToUpper() ==
-                                ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
-                                )
-                            {
-                                modeloEmpleadoMovimiento.NumeroPartidaIndividual =
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .NumeroPartidaIndividual;
-
-                                modeloEmpleadoMovimiento.IdModalidadPartida =
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .IdModalidadPartida;
-                            }
-
-
-                            
-                            await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
-
-                            await db.SaveChangesAsync();
-
-                            transaction.Commit();
-
-
-
-                        }
-                        else
-                        {
-
-                            var iompHasta = await db.IndiceOcupacionalModalidadPartida
-                                .Where(w =>
-                                    w.IdIndiceOcupacionalModalidadPartida ==
-                                    accionPersonalViewModel.EmpleadoMovimiento
-                                    .IdIndiceOcupacionalModalidadPartidaHasta
-                                ).FirstOrDefaultAsync();
-
-
-                            modeloEmpleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta  = 
-                                iompHasta.IdIndiceOcupacionalModalidadPartida;
-
-                            modeloEmpleadoMovimiento.IdIndiceOcupacional =
-                                iompHasta.IdIndiceOcupacional;
-
-                            modeloEmpleadoMovimiento.IdFondoFinanciamiento = iompActual.IdFondoFinanciamiento;
-
-                            modeloEmpleadoMovimiento.IdTipoNombramiento = iompActual.IdTipoNombramiento;
-
-                            modeloEmpleadoMovimiento.SalarioReal = iompActual.SalarioReal;
-
-
-
-                            var contratacion = tipoNombramiento
-                                .Where(w => w.IdTipoNombramiento == modeloEmpleadoMovimiento.IdTipoNombramiento)
-                                .FirstOrDefault().RelacionLaboral.Nombre;
-
-                            if (
-                                contratacion.ToString().ToUpper() ==
-                                ConstantesTipoRelacion.Contrato.ToString().ToUpper()
-                                )
-                            {
-                                modeloEmpleadoMovimiento.CodigoContrato =
-                                    iompActual.CodigoContrato;
-                            }
-
-                            else if (
-                                contratacion.ToString().ToUpper() ==
-                                ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
-                                )
-                            {
-                                modeloEmpleadoMovimiento.NumeroPartidaIndividual =
-                                    iompActual.NumeroPartidaIndividual;
-
-                                modeloEmpleadoMovimiento.IdModalidadPartida =
-                                    iompActual.IdModalidadPartida;
-                            }
-                            
-
-                            await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
-
-                            await db.SaveChangesAsync();
-
-                            transaction.Commit();
-
-                        }
-
-                        
-                    }
-
-                }
-
-                else if (
-                    tipoAccionPersonal.ModificaDistributivo == true
-                    && tipoAccionPersonal.DesactivarEmpleado == true
-                )
-                {
-                    // Esto es una desvinculación por tanto no se registra en empleado Movimiento
-                    
-                    await db.AccionPersonal.AddAsync(modelo);
-                    await db.SaveChangesAsync();
-
-                }
-
-                else if (
-                    tipoAccionPersonal.ModificaDistributivo == false
-                )
-                {
-                    // No se registra en MovimientoEmpleado
-
-                    await db.AccionPersonal.AddAsync(modelo);
-                    await db.SaveChangesAsync();
-                }
-
-                return new Response {
-                    IsSuccess = true,
-                    Message = Mensaje.GuardadoSatisfactorio,
-                    Resultado = accionPersonalViewModel.EmpleadoMovimiento.Empleado.Persona.Identificacion
-                };
-                
-
-            }
-            catch (Exception ex)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-            
-        }
-
-
-
-        // POST: api/AccionesPersonal
-        [HttpPost]
-        [Route("EditarAccionPersonal")]
-        public async Task<Response> EditarAccionPersonal([FromBody] AccionPersonalViewModel accionPersonalViewModel)
-        {
-
-
-            try
-            {
-
-                var modelo = await db.AccionPersonal
-                    .Where(w=>w.IdAccionPersonal == accionPersonalViewModel.IdAccionPersonal)
-                    .FirstOrDefaultAsync();
-
-                modelo.IdEmpleado = accionPersonalViewModel.EmpleadoMovimiento.Empleado.IdEmpleado;
-                modelo.IdTipoAccionPersonal = accionPersonalViewModel.TipoAccionPersonalViewModel.IdTipoAccionPersonal;
-                modelo.Fecha = accionPersonalViewModel.Fecha;
-                modelo.NoDias = accionPersonalViewModel.NoDias;
-                modelo.Numero = accionPersonalViewModel.Numero;
-                modelo.Solicitud = accionPersonalViewModel.Solicitud.ToString().ToUpper();
-                modelo.Explicacion = accionPersonalViewModel.Explicacion.ToString().ToUpper();
-                modelo.FechaRige = accionPersonalViewModel.FechaRige;
-                modelo.FechaRigeHasta = accionPersonalViewModel.FechaRigeHasta;
-                modelo.Estado = accionPersonalViewModel.Estado;
-                
-
-
-                if (modelo.FechaRigeHasta < modelo.FechaRige)
-                {
-                    modelo.FechaRigeHasta = modelo.FechaRige;
-                }
-
-
-                var tipoNombramiento = await db.TipoNombramiento
-                    .Include(i => i.RelacionLaboral)
-                    .ToListAsync();
-
-                // 1) OBTENER EL TIPO DE ACCIÓN DE PERSONAL
-                var tipoAccionPersonal = await db.TipoAccionPersonal
-                    .Where(w => w.IdTipoAccionPersonal == accionPersonalViewModel.TipoAccionPersonalViewModel.IdTipoAccionPersonal)
-                    .FirstOrDefaultAsync();
-
-
-
-                if (tipoAccionPersonal.Definitivo == true)
-                {
-                    modelo.FechaRigeHasta = null;
-
-                    modelo.NoDias = 0;
-                    modelo.Numero = "0";
-                }
-                else
-                {
-
-                    modelo.NoDias = ((DateTime)modelo.FechaRigeHasta - modelo.FechaRige).Days;
-
-
-                    if (modelo.NoDias < 0)
-                    {
-                        modelo.NoDias = 0;
-                        modelo.Numero = "0";
-                    }
-                    else
-                    {
-                        modelo.Numero = modelo.NoDias + "";
-                    }
-
-                }
-
-
-
-
-                //// Si el movimiento existe no se registra
-                //var existe = Existe(modelo);
-                //if (existe.IsSuccess)
-                //{
-                //    return new Response
-                //    {
-                //        IsSuccess = false,
-                //        Message = Mensaje.ExisteRegistro,
-                //        Resultado = accionPersonalViewModel.EmpleadoMovimiento.Empleado.Persona.Identificacion
-                //    };
-                //}
-
-
-
-                // 2) Interpretación de datos 
-
-                /*
-                    modificaDistributivo = genera movimiento de personal (osea debe ser registrado)
-                    modalidadContratacion = toma los datos del puesto ( IOMP hasta), si es falso los datos del cambio se toman de los actuales de la persona
-                    definitivo = tiempo indefinido                 
-                 */
-
 
                 if (
                     tipoAccionPersonal.ModificaDistributivo == true
@@ -1239,11 +747,9 @@ namespace bd.swth.web.Controllers.API
                                     .EmpleadoMovimiento
                                     .IdModalidadPartida;
                             }
-                            else
-                            {
+                            else {
 
-                                return new Response
-                                {
+                                return new Response {
                                     IsSuccess = false,
                                     Resultado = accionPersonalViewModel.EmpleadoMovimiento.Empleado.Persona.Identificacion,
                                     Message = Mensaje.ErrorSeleccionContratacionNoDefinida
@@ -1251,46 +757,7 @@ namespace bd.swth.web.Controllers.API
                             }
 
 
-                            var existe = await db.EmpleadoMovimiento
-                                .Where(w => w.IdAccionPersonal == modelo.IdAccionPersonal)
-                                .FirstOrDefaultAsync();
-
-                            if (existe == null)
-                            {
-                                await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
-                            }else
-                            {
-
-                                existe.IdIndiceOcupacionalModalidadPartidaDesde = modeloEmpleadoMovimiento.IdIndiceOcupacionalModalidadPartidaDesde;
-
-                                existe.IdIndiceOcupacionalModalidadPartidaHasta =
-                                    modeloEmpleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta;
-
-                                existe.FechaDesde = modeloEmpleadoMovimiento.FechaDesde;
-
-                                existe.FechaHasta = modeloEmpleadoMovimiento.FechaHasta;
-
-                                existe.IdAccionPersonal = modeloEmpleadoMovimiento.IdAccionPersonal;
-
-                                existe.IdIndiceOcupacional = modeloEmpleadoMovimiento.IdIndiceOcupacional;
-
-                                existe.IdFondoFinanciamiento = modeloEmpleadoMovimiento.IdFondoFinanciamiento;
-
-                                existe.IdTipoNombramiento = modeloEmpleadoMovimiento.IdTipoNombramiento;
-
-                                existe.SalarioReal = modeloEmpleadoMovimiento.SalarioReal;
-
-                                existe.CodigoContrato = modeloEmpleadoMovimiento.CodigoContrato;
-
-                                existe.NumeroPartidaIndividual = modeloEmpleadoMovimiento.NumeroPartidaIndividual;
-
-                                existe.IdModalidadPartida = modeloEmpleadoMovimiento.IdModalidadPartida;
-
-
-                                db.EmpleadoMovimiento.Update(modeloEmpleadoMovimiento);
-                            }
-
-                            
+                            await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
 
                             await db.SaveChangesAsync();
 
@@ -1312,8 +779,7 @@ namespace bd.swth.web.Controllers.API
                             ).FirstOrDefaultAsync();
 
 
-                        if (iompHasta.IdTipoNombramiento == null)
-                        {
+                        if (iompHasta.IdTipoNombramiento == null) {
 
                             var idNombramiento = tipoNombramiento
                                 .Where(w =>
@@ -1321,8 +787,7 @@ namespace bd.swth.web.Controllers.API
                                     ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
                                 ).FirstOrDefault().IdTipoNombramiento;
 
-                            if (iompHasta.NumeroPartidaIndividual != null)
-                            {
+                            if (iompHasta.NumeroPartidaIndividual != null) {
 
                                 iompHasta.IdTipoNombramiento = idNombramiento;
 
@@ -1552,7 +1017,7 @@ namespace bd.swth.web.Controllers.API
                 )
                 {
                     // Esto es una desvinculación por tanto no se registra en empleado Movimiento
-
+                    
                     await db.AccionPersonal.AddAsync(modelo);
                     await db.SaveChangesAsync();
 
@@ -1566,6 +1031,722 @@ namespace bd.swth.web.Controllers.API
 
                     await db.AccionPersonal.AddAsync(modelo);
                     await db.SaveChangesAsync();
+                }
+
+                return new Response {
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio,
+                    Resultado = accionPersonalViewModel.EmpleadoMovimiento.Empleado.Persona.Identificacion
+                };
+                
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+            
+        }
+
+
+
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("EditarAccionPersonal")]
+        public async Task<Response> EditarAccionPersonal([FromBody] AccionPersonalViewModel accionPersonalViewModel)
+        {
+
+
+            try
+            {
+
+                var modelo = await db.AccionPersonal
+                    .Where(w=>w.IdAccionPersonal == accionPersonalViewModel.IdAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+                modelo.IdEmpleado = accionPersonalViewModel.EmpleadoMovimiento.Empleado.IdEmpleado;
+                modelo.IdTipoAccionPersonal = accionPersonalViewModel.TipoAccionPersonalViewModel.IdTipoAccionPersonal;
+                modelo.Fecha = accionPersonalViewModel.Fecha;
+                modelo.NoDias = accionPersonalViewModel.NoDias;
+                modelo.Numero = accionPersonalViewModel.Numero;
+                modelo.Solicitud = accionPersonalViewModel.Solicitud.ToString().ToUpper();
+                modelo.Explicacion = accionPersonalViewModel.Explicacion.ToString().ToUpper();
+                modelo.FechaRige = accionPersonalViewModel.FechaRige;
+                modelo.FechaRigeHasta = accionPersonalViewModel.FechaRigeHasta;
+                modelo.Estado = accionPersonalViewModel.Estado;
+                
+
+
+                if (modelo.FechaRigeHasta < modelo.FechaRige)
+                {
+                    modelo.FechaRigeHasta = modelo.FechaRige;
+                }
+
+
+                var tipoNombramiento = await db.TipoNombramiento
+                    .Include(i => i.RelacionLaboral)
+                    .ToListAsync();
+
+                // 1) OBTENER EL TIPO DE ACCIÓN DE PERSONAL
+                var tipoAccionPersonal = await db.TipoAccionPersonal
+                    .Where(w => w.IdTipoAccionPersonal == accionPersonalViewModel.TipoAccionPersonalViewModel.IdTipoAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+
+
+                if (tipoAccionPersonal.Definitivo == true)
+                {
+                    modelo.FechaRigeHasta = null;
+
+                    modelo.NoDias = 0;
+                    modelo.Numero = "0";
+                }
+                else
+                {
+
+                    modelo.NoDias = ((DateTime)modelo.FechaRigeHasta - modelo.FechaRige).Days;
+
+
+                    if (modelo.NoDias < 0)
+                    {
+                        modelo.NoDias = 0;
+                        modelo.Numero = "0";
+                    }
+                    else
+                    {
+                        modelo.Numero = modelo.NoDias + "";
+                    }
+
+                }
+
+
+
+
+                //// Si el movimiento existe no se registra
+                //var existe = Existe(modelo);
+                //if (existe.IsSuccess)
+                //{
+                //    return new Response
+                //    {
+                //        IsSuccess = false,
+                //        Message = Mensaje.ExisteRegistro,
+                //        Resultado = accionPersonalViewModel.EmpleadoMovimiento.Empleado.Persona.Identificacion
+                //    };
+                //}
+
+
+
+                // 2) Interpretación de datos 
+
+                /*
+                    modificaDistributivo = genera movimiento de personal (osea debe ser registrado)
+                    modalidadContratacion = toma los datos del puesto ( IOMP hasta), si es falso los datos del cambio se toman de los actuales de la persona
+                    definitivo = tiempo indefinido                 
+                 */
+
+
+                if (
+                    tipoAccionPersonal.ModificaDistributivo == true
+                    && tipoAccionPersonal.ModalidadContratacion == true
+                    && tipoAccionPersonal.DesactivarEmpleado == false
+                )
+                {
+                    // se registra en MovimientoEmpleado, pero 
+                    // Se deben buscar los valores que deben asignarse
+
+
+                    if (accionPersonalViewModel.ConfigurarPuesto == true)
+                    {
+                        // tomar datos del modelo de entrada: accionPersonalViewModel.empleadoMovimiento
+
+                        using (var transaction = await db.Database.BeginTransactionAsync())
+                        {
+
+                            
+                            db.AccionPersonal.Update(modelo);
+
+
+
+                            var modeloEmpleadoMovimiento = new EmpleadoMovimiento
+                            {
+                                IdEmpleado = modelo.IdEmpleado,
+                                FechaDesde = modelo.FechaRige,
+                                FechaHasta = modelo.FechaRigeHasta,
+
+                                IdIndiceOcupacionalModalidadPartidaDesde =
+                                    accionPersonalViewModel.EmpleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                    .IdIndiceOcupacionalModalidadPartida,
+
+                                IdIndiceOcupacionalModalidadPartidaHasta =
+                                    accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .IdIndiceOcupacionalModalidadPartidaHasta,
+
+                                IdAccionPersonal = modelo.IdAccionPersonal,
+
+                                IdIndiceOcupacional =
+                                    accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaHasta
+                                    .IdIndiceOcupacional,
+
+                                IdFondoFinanciamiento =
+                                    accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .IdFondoFinanciamiento,
+
+                                IdTipoNombramiento =
+                                    accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .IdTipoNombramiento,
+
+                                SalarioReal =
+                                    accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .SalarioReal
+
+                            };
+
+                            var contratacion = tipoNombramiento
+                                .Where(w =>
+                                    w.IdTipoNombramiento == modeloEmpleadoMovimiento.IdTipoNombramiento
+                                ).FirstOrDefault();
+
+
+                            if (
+                                contratacion.RelacionLaboral.Nombre.ToString().ToUpper() ==
+                                ConstantesTipoRelacion.Contrato.ToString().ToUpper()
+                                )
+                            {
+
+                                modeloEmpleadoMovimiento.CodigoContrato = accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .NumeroPartidaIndividual;
+
+                                modeloEmpleadoMovimiento.NumeroPartidaIndividual = null;
+                                modeloEmpleadoMovimiento.TipoNombramiento = null;
+
+                            }
+
+                            else if (
+                                contratacion.RelacionLaboral.Nombre.ToString().ToUpper() ==
+                                ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
+                                )
+                            {
+
+
+                                modeloEmpleadoMovimiento.NumeroPartidaIndividual = accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .NumeroPartidaIndividual;
+
+                                modeloEmpleadoMovimiento.IdModalidadPartida = accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .IdModalidadPartida;
+
+                                modeloEmpleadoMovimiento.CodigoContrato = null;
+                            }
+                            else
+                            {
+
+                                return new Response
+                                {
+                                    IsSuccess = false,
+                                    Resultado = accionPersonalViewModel.EmpleadoMovimiento.Empleado.Persona.Identificacion,
+                                    Message = Mensaje.ErrorSeleccionContratacionNoDefinida
+                                };
+                            }
+
+
+                            var existe = await db.EmpleadoMovimiento
+                                .Where(w => w.IdAccionPersonal == modelo.IdAccionPersonal)
+                                .FirstOrDefaultAsync();
+
+                            if (existe == null)
+                            {
+                                await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
+                            }else
+                            {
+
+                                existe.IdIndiceOcupacionalModalidadPartidaDesde = modeloEmpleadoMovimiento
+                                    .IdIndiceOcupacionalModalidadPartidaDesde;
+
+                                existe.IdIndiceOcupacionalModalidadPartidaHasta = null;
+
+                                existe.FechaDesde = modeloEmpleadoMovimiento.FechaDesde;
+
+                                existe.FechaHasta = modeloEmpleadoMovimiento.FechaHasta;
+
+                                existe.IdAccionPersonal = modeloEmpleadoMovimiento.IdAccionPersonal;
+
+                                existe.IdIndiceOcupacional = modeloEmpleadoMovimiento.IdIndiceOcupacional;
+
+                                existe.IdFondoFinanciamiento = modeloEmpleadoMovimiento.IdFondoFinanciamiento;
+
+                                existe.IdTipoNombramiento = modeloEmpleadoMovimiento.IdTipoNombramiento;
+
+                                existe.SalarioReal = modeloEmpleadoMovimiento.SalarioReal;
+
+                                existe.CodigoContrato = modeloEmpleadoMovimiento.CodigoContrato;
+
+                                existe.NumeroPartidaIndividual = modeloEmpleadoMovimiento.NumeroPartidaIndividual;
+
+                                existe.IdModalidadPartida = modeloEmpleadoMovimiento.IdModalidadPartida;
+
+
+                                db.EmpleadoMovimiento.Update(existe);
+                            }
+
+                            
+
+                            await db.SaveChangesAsync();
+
+                            transaction.Commit();
+                        }
+
+
+                    }
+                    else
+                    {
+                        // tomar el IdIOMPhasta del modelo de entrada accionPersonalViewModel
+
+                        var iompHasta = await db.IndiceOcupacionalModalidadPartida
+                            .Where(w =>
+                                w.IdIndiceOcupacionalModalidadPartida ==
+                                 accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .IdIndiceOcupacionalModalidadPartidaHasta
+                            ).FirstOrDefaultAsync();
+
+
+                        if (iompHasta.IdTipoNombramiento == null)
+                        {
+
+                            var idNombramiento = tipoNombramiento
+                                .Where(w =>
+                                    w.RelacionLaboral.Nombre.ToString().ToUpper() ==
+                                    ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
+                                ).FirstOrDefault().IdTipoNombramiento;
+
+                            if (iompHasta.NumeroPartidaIndividual != null)
+                            {
+
+                                iompHasta.IdTipoNombramiento = idNombramiento;
+
+                            }
+                        }
+
+
+                        using (var transaction = await db.Database.BeginTransactionAsync())
+                        {
+
+                            db.AccionPersonal.Update(modelo);
+
+                            var modeloEmpleadoMovimiento = new EmpleadoMovimiento
+                            {
+                                IdEmpleado = modelo.IdEmpleado,
+                                FechaDesde = modelo.FechaRige,
+                                FechaHasta = modelo.FechaRigeHasta,
+
+                                IdIndiceOcupacionalModalidadPartidaDesde =
+                                    accionPersonalViewModel.EmpleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                    .IdIndiceOcupacionalModalidadPartida,
+
+                                IdIndiceOcupacionalModalidadPartidaHasta =
+                                    accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .IdIndiceOcupacionalModalidadPartidaHasta,
+
+                                IdAccionPersonal = modelo.IdAccionPersonal,
+
+                                IdIndiceOcupacional = iompHasta.IdIndiceOcupacional,
+                                IdFondoFinanciamiento = iompHasta.IdFondoFinanciamiento,
+                                IdTipoNombramiento = iompHasta.IdTipoNombramiento,
+                                SalarioReal = iompHasta.SalarioReal,
+                                CodigoContrato = iompHasta.CodigoContrato,
+                                NumeroPartidaIndividual = iompHasta.NumeroPartidaIndividual,
+                                IdModalidadPartida = iompHasta.IdModalidadPartida
+                            };
+
+
+                            var existe = await db.EmpleadoMovimiento
+                                .Where(w => w.IdAccionPersonal == modelo.IdAccionPersonal)
+                                .FirstOrDefaultAsync();
+
+
+                            if (existe == null)
+                            {
+                                await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
+                            }
+                            else
+                            {
+
+                                existe.IdIndiceOcupacionalModalidadPartidaDesde = modeloEmpleadoMovimiento
+                                    .IdIndiceOcupacionalModalidadPartidaDesde;
+
+                                existe.IdIndiceOcupacionalModalidadPartidaHasta = modeloEmpleadoMovimiento
+                                    .IdIndiceOcupacionalModalidadPartidaHasta;
+
+                                existe.FechaDesde = modeloEmpleadoMovimiento.FechaDesde;
+
+                                existe.FechaHasta = modeloEmpleadoMovimiento.FechaHasta;
+
+                                existe.IdAccionPersonal = modeloEmpleadoMovimiento.IdAccionPersonal;
+
+                                existe.IdIndiceOcupacional = modeloEmpleadoMovimiento.IdIndiceOcupacional;
+
+                                existe.IdFondoFinanciamiento = modeloEmpleadoMovimiento.IdFondoFinanciamiento;
+
+                                existe.IdTipoNombramiento = modeloEmpleadoMovimiento.IdTipoNombramiento;
+
+                                existe.SalarioReal = modeloEmpleadoMovimiento.SalarioReal;
+
+                                existe.CodigoContrato = modeloEmpleadoMovimiento.CodigoContrato;
+
+                                existe.NumeroPartidaIndividual = modeloEmpleadoMovimiento.NumeroPartidaIndividual;
+
+                                existe.IdModalidadPartida = modeloEmpleadoMovimiento.IdModalidadPartida;
+
+
+                                db.EmpleadoMovimiento.Update(existe);
+                            }
+
+
+
+                            await db.SaveChangesAsync();
+
+                            transaction.Commit();
+                        }
+                    }
+
+
+                }
+
+                else if (
+                    tipoAccionPersonal.ModificaDistributivo == true
+                    && tipoAccionPersonal.ModalidadContratacion == false
+                    && tipoAccionPersonal.DesactivarEmpleado == false
+                )
+                {
+                    // se registra en MovimientoEmpleado, cambia el puesto, pero se mantienen los 
+                    // datos del iomp actual (fondoFinanciamiento, modalidadPartida,etc)
+
+                    using (var transaction = await db.Database.BeginTransactionAsync())
+                    {
+
+                        db.AccionPersonal.Update(modelo);
+
+                        var iompActual = await db.IndiceOcupacionalModalidadPartida
+                            .Where(w =>
+                                w.IdIndiceOcupacionalModalidadPartida ==
+                                accionPersonalViewModel.EmpleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                .IdIndiceOcupacionalModalidadPartida
+                            ).FirstOrDefaultAsync();
+
+
+                        var modeloEmpleadoMovimiento = new EmpleadoMovimiento
+                        {
+                            IdEmpleado = modelo.IdEmpleado,
+                            FechaDesde = modelo.FechaRige,
+                            FechaHasta = modelo.FechaRigeHasta,
+
+                            IdIndiceOcupacionalModalidadPartidaDesde =
+                                        accionPersonalViewModel.EmpleadoMovimiento
+                                        .IndiceOcupacionalModalidadPartidaDesde
+                                        .IdIndiceOcupacionalModalidadPartida,
+
+                            IdAccionPersonal = modelo.IdAccionPersonal
+
+
+                        };
+
+
+                        if (accionPersonalViewModel.ConfigurarPuesto == true)
+                        {
+
+                            modeloEmpleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta =
+                                null;
+
+                            modeloEmpleadoMovimiento.IdIndiceOcupacional =
+                                accionPersonalViewModel
+                                .EmpleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaHasta
+                                .IdIndiceOcupacional;
+
+                            modeloEmpleadoMovimiento.IdFondoFinanciamiento =
+                                accionPersonalViewModel
+                                .EmpleadoMovimiento
+                                .IdFondoFinanciamiento;
+
+                            modeloEmpleadoMovimiento.IdTipoNombramiento =
+                                accionPersonalViewModel
+                                .EmpleadoMovimiento
+                                .IdTipoNombramiento;
+
+                            modeloEmpleadoMovimiento.SalarioReal =
+                                accionPersonalViewModel
+                                .EmpleadoMovimiento
+                                .SalarioReal;
+
+
+                            var contratacion = tipoNombramiento
+                                .Where(w => w.IdTipoNombramiento == modeloEmpleadoMovimiento.IdTipoNombramiento)
+                                .FirstOrDefault().RelacionLaboral.Nombre;
+
+                            if (
+                                contratacion.ToString().ToUpper() ==
+                                ConstantesTipoRelacion.Contrato.ToString().ToUpper()
+                                )
+                            {
+                                modeloEmpleadoMovimiento.CodigoContrato =
+                                    accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .NumeroPartidaIndividual;
+                            }
+
+                            else if (
+                                contratacion.ToString().ToUpper() ==
+                                ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
+                                )
+                            {
+                                modeloEmpleadoMovimiento.NumeroPartidaIndividual =
+                                    accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .NumeroPartidaIndividual;
+
+                                modeloEmpleadoMovimiento.IdModalidadPartida =
+                                    accionPersonalViewModel
+                                    .EmpleadoMovimiento
+                                    .IdModalidadPartida;
+                            }
+
+
+
+                            var existe = await db.EmpleadoMovimiento
+                                .Where(w => w.IdAccionPersonal == modelo.IdAccionPersonal)
+                                .FirstOrDefaultAsync();
+
+
+                            if (existe == null)
+                            {
+                                await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
+                            }
+                            else
+                            {
+
+                                existe.IdIndiceOcupacionalModalidadPartidaDesde = modeloEmpleadoMovimiento
+                                    .IdIndiceOcupacionalModalidadPartidaDesde;
+
+                                existe.IdIndiceOcupacionalModalidadPartidaHasta = modeloEmpleadoMovimiento
+                                    .IdIndiceOcupacionalModalidadPartidaHasta;
+
+                                existe.FechaDesde = modeloEmpleadoMovimiento.FechaDesde;
+
+                                existe.FechaHasta = modeloEmpleadoMovimiento.FechaHasta;
+
+                                existe.IdAccionPersonal = modeloEmpleadoMovimiento.IdAccionPersonal;
+
+                                existe.IdIndiceOcupacional = modeloEmpleadoMovimiento.IdIndiceOcupacional;
+
+                                existe.IdFondoFinanciamiento = modeloEmpleadoMovimiento.IdFondoFinanciamiento;
+
+                                existe.IdTipoNombramiento = modeloEmpleadoMovimiento.IdTipoNombramiento;
+
+                                existe.SalarioReal = modeloEmpleadoMovimiento.SalarioReal;
+
+                                existe.CodigoContrato = modeloEmpleadoMovimiento.CodigoContrato;
+
+                                existe.NumeroPartidaIndividual = modeloEmpleadoMovimiento.NumeroPartidaIndividual;
+
+                                existe.IdModalidadPartida = modeloEmpleadoMovimiento.IdModalidadPartida;
+
+
+                                db.EmpleadoMovimiento.Update(existe);
+                            }
+
+
+
+                            await db.SaveChangesAsync();
+
+                            transaction.Commit();
+
+
+
+                        }
+                        else
+                        {
+
+                            var iompHasta = await db.IndiceOcupacionalModalidadPartida
+                                .Where(w =>
+                                    w.IdIndiceOcupacionalModalidadPartida ==
+                                    accionPersonalViewModel.EmpleadoMovimiento
+                                    .IdIndiceOcupacionalModalidadPartidaHasta
+                                ).FirstOrDefaultAsync();
+
+
+                            modeloEmpleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta =
+                                iompHasta.IdIndiceOcupacionalModalidadPartida;
+
+                            modeloEmpleadoMovimiento.IdIndiceOcupacional =
+                                iompHasta.IdIndiceOcupacional;
+
+                            modeloEmpleadoMovimiento.IdFondoFinanciamiento = iompActual.IdFondoFinanciamiento;
+
+                            modeloEmpleadoMovimiento.IdTipoNombramiento = iompActual.IdTipoNombramiento;
+
+                            modeloEmpleadoMovimiento.SalarioReal = iompActual.SalarioReal;
+
+
+
+                            var contratacion = tipoNombramiento
+                                .Where(w => w.IdTipoNombramiento == modeloEmpleadoMovimiento.IdTipoNombramiento)
+                                .FirstOrDefault().RelacionLaboral.Nombre;
+
+                            if (
+                                contratacion.ToString().ToUpper() ==
+                                ConstantesTipoRelacion.Contrato.ToString().ToUpper()
+                                )
+                            {
+                                modeloEmpleadoMovimiento.CodigoContrato =
+                                    iompActual.CodigoContrato;
+
+                                modeloEmpleadoMovimiento.NumeroPartidaIndividual = null;
+
+                                modeloEmpleadoMovimiento.IdModalidadPartida = null;
+                            }
+
+                            else if (
+                                contratacion.ToString().ToUpper() ==
+                                ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
+                                )
+                            {
+                                modeloEmpleadoMovimiento.CodigoContrato = null;
+
+                                modeloEmpleadoMovimiento.NumeroPartidaIndividual =
+                                    iompActual.NumeroPartidaIndividual;
+
+                                modeloEmpleadoMovimiento.IdModalidadPartida =
+                                    iompActual.IdModalidadPartida;
+                            }
+
+
+                            var existe = await db.EmpleadoMovimiento
+                                   .Where(w => w.IdAccionPersonal == modelo.IdAccionPersonal)
+                                   .FirstOrDefaultAsync();
+
+                            if (existe == null)
+                            {
+                                await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
+                            }
+                            else
+                            {
+
+                                existe.IdIndiceOcupacionalModalidadPartidaDesde = modeloEmpleadoMovimiento
+                                    .IdIndiceOcupacionalModalidadPartidaDesde;
+
+                                existe.IdIndiceOcupacionalModalidadPartidaHasta = modeloEmpleadoMovimiento
+                                    .IdIndiceOcupacionalModalidadPartidaHasta;
+
+                                existe.FechaDesde = modeloEmpleadoMovimiento.FechaDesde;
+
+                                existe.FechaHasta = modeloEmpleadoMovimiento.FechaHasta;
+
+                                existe.IdAccionPersonal = modeloEmpleadoMovimiento.IdAccionPersonal;
+
+                                existe.IdIndiceOcupacional = modeloEmpleadoMovimiento.IdIndiceOcupacional;
+
+                                existe.IdFondoFinanciamiento = modeloEmpleadoMovimiento.IdFondoFinanciamiento;
+
+                                existe.IdTipoNombramiento = modeloEmpleadoMovimiento.IdTipoNombramiento;
+
+                                existe.SalarioReal = modeloEmpleadoMovimiento.SalarioReal;
+
+                                existe.CodigoContrato = modeloEmpleadoMovimiento.CodigoContrato;
+
+                                existe.NumeroPartidaIndividual = modeloEmpleadoMovimiento.NumeroPartidaIndividual;
+
+                                existe.IdModalidadPartida = modeloEmpleadoMovimiento.IdModalidadPartida;
+
+
+                                db.EmpleadoMovimiento.Update(existe);
+                            }
+
+
+
+                            await db.SaveChangesAsync();
+
+                            transaction.Commit();
+
+                        }
+
+
+                    }
+
+                }
+
+                else if (
+                    tipoAccionPersonal.ModificaDistributivo == true
+                    && tipoAccionPersonal.DesactivarEmpleado == true
+                )
+                {
+                    // Esto es una desvinculación por tanto no se registra en empleado Movimiento
+
+                    using (var transaction = await db.Database.BeginTransactionAsync())
+                    {
+                        db.AccionPersonal.Update(modelo);
+
+                        var existe = await db.EmpleadoMovimiento
+                                .Where(w => w.IdAccionPersonal == modelo.IdAccionPersonal)
+                                .FirstOrDefaultAsync();
+
+
+                        if (existe != null)
+                        {
+                            db.EmpleadoMovimiento.Remove(existe);
+                        }
+
+                        
+
+                        await db.SaveChangesAsync();
+
+                        transaction.Commit();
+
+                    }
+
+                }
+
+                else if (
+                    tipoAccionPersonal.ModificaDistributivo == false
+                )
+                {
+                    // No se registra en MovimientoEmpleado
+
+                    using (var transaction = await db.Database.BeginTransactionAsync())
+                    {
+                        db.AccionPersonal.Update(modelo);
+
+
+                        var existe = await db.EmpleadoMovimiento
+                                .Where(w => w.IdAccionPersonal == modelo.IdAccionPersonal)
+                                .FirstOrDefaultAsync();
+
+
+                        if (existe != null)
+                        {
+                            db.EmpleadoMovimiento.Remove(existe);
+                        }
+
+                        
+                        await db.SaveChangesAsync();
+
+                        transaction.Commit();
+                    }
                 }
 
                 return new Response

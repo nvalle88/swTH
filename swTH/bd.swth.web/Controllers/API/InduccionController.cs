@@ -76,7 +76,7 @@ namespace bd.swth.web.Controllers.API
                 lista = await db.IndiceOcupacionalModalidadPartida
                     .Where(w=>
                         w.Empleado.Activo == true
-                        && w.IndiceOcupacional.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal
+                        //&& w.IndiceOcupacional.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal
                     )
                     .Select(s=>new InduccionViewModel
                     {
