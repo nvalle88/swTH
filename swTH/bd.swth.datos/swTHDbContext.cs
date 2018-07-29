@@ -266,6 +266,16 @@ namespace bd.swth.datos
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
+            //modelBuilder.Entity<CalculoNomina>(entity =>
+            //{
+            //    entity.HasKey(e => e.IdCalculoNomina);
+
+            //    entity.Property(e => e.FechaFinDecimoCuarto).HasColumnType("datetime");
+            //    entity.Property(e => e.FechaFinDecimoTercero).HasColumnType("datetime");
+            //    entity.Property(e => e.FechaInicioDecimoCuarto).HasColumnType("datetime");
+            //    entity.Property(e => e.FechaInicioDecimoTercero).HasColumnType("datetime");
+            //});
+
             modelBuilder.Entity<AprobacionAccionPersonal>(entity =>
             {
                 entity.HasKey(e => e.IdAprobacionAccionPersonal)

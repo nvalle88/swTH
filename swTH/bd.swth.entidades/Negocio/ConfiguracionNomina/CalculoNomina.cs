@@ -12,13 +12,13 @@ namespace bd.swth.entidades.Negocio
         public bool EmpleadoActivo { get; set; }
         public string Descripcion { get; set; }
 
-        public DateTime FechaInicioDecimoTercero { get; set; }
+        public DateTime? FechaInicioDecimoTercero { get; set; }
 
-        public DateTime FechaFinDecimoTercero { get; set; }
+        public DateTime? FechaFinDecimoTercero { get; set; }
 
-        public DateTime FechaInicioDecimoCuarto { get; set; }
+        public DateTime? FechaInicioDecimoCuarto { get; set; }
 
-        public DateTime FechaFinDecimoCuarto { get; set; }
+        public DateTime? FechaFinDecimoCuarto { get; set; }
 
         public bool DecimoTercerSueldo { get; set; }
         public string DecimoCuartoSueldo { get; set; }

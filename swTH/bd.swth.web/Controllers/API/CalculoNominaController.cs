@@ -293,6 +293,10 @@ namespace bd.swth.web.Controllers.API
 
                 }
                 CalculoNominaActualizar.Descripcion = CalculoNomina.Descripcion;
+                CalculoNominaActualizar.FechaFinDecimoCuarto = CalculoNomina.FechaFinDecimoCuarto;
+                CalculoNominaActualizar.FechaFinDecimoTercero = CalculoNomina.FechaFinDecimoTercero;
+                CalculoNominaActualizar.FechaInicioDecimoCuarto = CalculoNomina.FechaInicioDecimoCuarto;
+                CalculoNominaActualizar.FechaInicioDecimoTercero = CalculoNomina.FechaInicioDecimoTercero;
                 CalculoNominaActualizar.IdPeriodo = CalculoNomina.IdPeriodo;
                 CalculoNominaActualizar.IdProceso = CalculoNomina.IdProceso;
                 CalculoNominaActualizar.DecimoTercerSueldo = CalculoNomina.DecimoTercerSueldo;
