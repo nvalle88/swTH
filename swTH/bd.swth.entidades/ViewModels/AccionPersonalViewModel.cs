@@ -24,9 +24,12 @@ namespace bd.swth.entidades.ViewModels
         
         public int Estado { get; set; }
         
-        public int NoDias { get; set; }
+        public int? NoDias { get; set; }
 
-       
+        public bool Bloquear { get; set; }
+        public bool Ejecutado { get; set; }
+
+
         // campos estados validación
         public string EstadoDirector { get; set; }
         public string EstadoValidacionTTHH { get; set; }

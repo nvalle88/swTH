@@ -299,7 +299,6 @@ namespace bd.swth.datos
                 entity.HasOne(d => d.ManualPuesto)
                     .WithMany(p => p.FlujoAprobacion)
                     .HasForeignKey(d => d.IdManualPuesto)
-                    .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_FlujoAprobacion_ManualPuesto");
 
                 entity.HasOne(d => d.Sucursal)

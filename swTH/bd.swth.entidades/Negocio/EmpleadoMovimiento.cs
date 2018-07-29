@@ -20,6 +20,7 @@ namespace bd.swth.entidades.Negocio
         public string CodigoContrato { get; set; }
         public string NumeroPartidaIndividual { get; set; }
         public int? IdModalidadPartida { get; set; }
+        public bool EsJefe { get; set; }
 
         public virtual AccionPersonal AccionPersonal { get; set; }
         public virtual Empleado Empleado { get; set; }

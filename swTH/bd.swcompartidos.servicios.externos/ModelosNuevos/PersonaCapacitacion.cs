@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace bd.sw.externos.ModelosNuevos
+{
+    public partial class PersonaCapacitacion
+    {
+        public int IdPersonaCapacitacion { get; set; }
+        public string Observaciones { get; set; }
+        public DateTime? Fecha { get; set; }
+        public int IdCapacitacion { get; set; }
+        public int IdPersona { get; set; }
+
+        public virtual Persona IdPersonaNavigation { get; set; }
+    }
+}

@@ -9,7 +9,8 @@ namespace bd.swth.entidades.Negocio
         public int IdFlujoAprobacion { get; set; }
         public int IdTipoAccionPersonal { get; set; }
         public int IdSucursal { get; set; }
-        public int IdManualPuesto { get; set; }
+        public int? IdManualPuesto { get; set; }
+        public bool ApruebaJefe { get; set; }
 
         public virtual ManualPuesto ManualPuesto{ get; set; }
         public virtual Sucursal Sucursal { get; set; }
