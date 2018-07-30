@@ -392,6 +392,10 @@ namespace bd.swth.web.Controllers.API
 
                 var empleadoMovimiento = await db.EmpleadoMovimiento
                     .Include(i=>i.IndiceOcupacionalModalidadPartidaDesde)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.TipoNombramiento)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.TipoNombramiento.RelacionLaboral)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.TipoNombramiento.RelacionLaboral.RegimenLaboral)
+
 
                     .Include(i=>i.IndiceOcupacionalModalidadPartidaHasta)
                     .Include(i => i.IndiceOcupacionalModalidadPartidaHasta.TipoNombramiento)
@@ -486,6 +490,245 @@ namespace bd.swth.web.Controllers.API
                 modelo.EmpleadoMovimiento.NumeroPartidaIndividual = modelo.EmpleadoMovimiento.NumeroPartidaIndividual + modelo.EmpleadoMovimiento.CodigoContrato;
 
                 
+
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Resultado = modelo
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error
+                };
+            }
+        }
+
+
+        /// <summary>
+        /// Este método permite visualizar el estado anterior del empleado y el movimiento de personal
+        /// que se realizó
+        /// </summary>
+        /// <param name="IdAccionPersonal"></param>
+        /// <returns></returns>
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("ObtenerAccionPersonalViewModelParaVisualizar")]
+        public async Task<Response> ObtenerAccionPersonalViewModelParaVisualizar([FromBody] int IdAccionPersonal)
+        {
+            try
+            {
+                var accionPersonal = await db.AccionPersonal
+                    .Include(i => i.TipoAccionPersonal)
+                    .Where(w => w.IdAccionPersonal == IdAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+
+                if (accionPersonal == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado
+                    };
+                }
+
+                
+
+                var indiceOcupacionalModalidadPartida = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i=>i.Empleado)
+                    
+                    .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacional.Dependencia)
+                    .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
+
+                    .Include(i => i.IndiceOcupacional.EscalaGrados)
+                    .Include(i => i.IndiceOcupacional.ManualPuesto)
+                    .Include(i => i.TipoNombramiento)
+                    .Include(i => i.TipoNombramiento.RelacionLaboral)
+                    .Where(w => 
+                        w.IdEmpleado == accionPersonal.IdEmpleado
+                        && w.Fecha <= accionPersonal.Fecha
+                    )
+                    .OrderByDescending(o => o.Fecha)
+                    .FirstOrDefaultAsync();
+
+                var listaIOMPOcupados = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i => i.Empleado)
+                    .Include(i => i.Empleado.Persona)
+                    .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacional.Dependencia)
+                    .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
+                    .Include(i => i.IndiceOcupacional.EscalaGrados)
+                    .Include(i => i.FondoFinanciamiento)
+                    .Include(i => i.ModalidadPartida)
+                    .Where(w =>
+                        w.IdEmpleado != null
+                        && w.Empleado.Activo == true
+                        && w.Fecha <= accionPersonal.Fecha
+                    )
+                    .OrderByDescending(o => o.Fecha)
+                    .DistinctBy(d => d.IdEmpleado)
+                    .ToAsyncEnumerable()
+                    .ToList();
+
+                var listaPuestosVacios = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacional.EscalaGrados)
+                    .Include(i => i.IndiceOcupacional.Dependencia)
+                    .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
+                    .Include(i => i.ModalidadPartida)
+                    .Include(i => i.FondoFinanciamiento)
+                    .Where(w =>
+                        w.IdEmpleado == null && w.NumeroPartidaIndividual != null
+                        && w.Fecha <= accionPersonal.Fecha
+                    ).ToListAsync();
+
+
+                foreach (var item in listaPuestosVacios)
+                {
+                    listaIOMPOcupados.Add(item);
+                }
+
+                var empleado = await db.Empleado
+                    .Include(i => i.Persona)
+                    .Where(w =>
+                        w.IdEmpleado == accionPersonal.IdEmpleado
+                        //&& w.Activo == true
+                    )
+                    .FirstOrDefaultAsync();
+                
+
+
+                if (empleado == null)
+                {
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.EmpleadoNoExiste
+
+                    };
+                }
+
+
+
+                var empleadoMovimiento = await db.EmpleadoMovimiento
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.TipoNombramiento)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.TipoNombramiento.RelacionLaboral)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.TipoNombramiento.RelacionLaboral.RegimenLaboral)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional.ManualPuesto)
+
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaHasta)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaHasta.TipoNombramiento)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaHasta.TipoNombramiento.RelacionLaboral)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaHasta.TipoNombramiento.RelacionLaboral.RegimenLaboral)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaHasta.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaHasta.IndiceOcupacional.Dependencia)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaHasta.IndiceOcupacional.Dependencia.Sucursal)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaHasta.IndiceOcupacional.ManualPuesto)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaHasta.IndiceOcupacional.RolPuesto)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaHasta.IndiceOcupacional.EscalaGrados)
+                    .Where(w => w.IdAccionPersonal == accionPersonal.IdAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+
+
+                var modelo = new AccionPersonalViewModel
+                {
+
+                    EmpleadoMovimiento = empleadoMovimiento != null ?
+                    empleadoMovimiento
+                    :
+                    new EmpleadoMovimiento
+                    {
+                        Empleado = empleado,
+                        IndiceOcupacionalModalidadPartidaDesde = indiceOcupacionalModalidadPartida,
+                        IdIndiceOcupacionalModalidadPartidaHasta = 0
+                    },
+
+                    ListaPuestosOcupados = listaIOMPOcupados,
+
+                    IdAccionPersonal = accionPersonal.IdAccionPersonal,
+                    Solicitud = accionPersonal.Solicitud,
+                    Explicacion = accionPersonal.Explicacion,
+
+                    NoDias = accionPersonal.NoDias,
+                    Numero = accionPersonal.Numero,
+                    Fecha = accionPersonal.Fecha,
+                    FechaRige = accionPersonal.FechaRige,
+                    FechaRigeHasta = accionPersonal.FechaRigeHasta,
+
+
+                    GeneraMovimientoPersonal = (empleadoMovimiento != null) ? true : false,
+                    ConfigurarPuesto = (empleadoMovimiento != null
+                    && empleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta == null)
+                    ? true : false,
+
+                    TipoAccionPersonalViewModel = new TipoAccionesPersonalViewModel
+                    {
+                        IdTipoAccionPersonal = accionPersonal.TipoAccionPersonal.IdTipoAccionPersonal,
+                    },
+
+                    Estado = accionPersonal.Estado
+
+                };
+
+                modelo.EmpleadoMovimiento.Empleado.Dependencia = modelo.EmpleadoMovimiento
+                    .IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional.Dependencia;
+
+                modelo.EmpleadoMovimiento.Empleado.Dependencia.Sucursal = modelo.EmpleadoMovimiento
+                    .IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional.Dependencia.Sucursal;
+
+
+
+                if (
+                    empleadoMovimiento != null
+                    && modelo.EmpleadoMovimiento.IndiceOcupacionalModalidadPartidaHasta == null
+                    )
+                {
+
+                    var varIO = await db.IndiceOcupacional
+                            .Include(i => i.Dependencia)
+                            .Include(i => i.Dependencia.Sucursal)
+                            .Include(i => i.ManualPuesto)
+                            .Include(i => i.RolPuesto)
+                            .Include(i => i.EscalaGrados)
+                            .Where(w => w.IdIndiceOcupacional == (int)empleadoMovimiento.IdIndiceOcupacional)
+                            .FirstOrDefaultAsync();
+
+                    modelo.EmpleadoMovimiento.IndiceOcupacionalModalidadPartidaHasta =
+                        new IndiceOcupacionalModalidadPartida
+                        {
+                            IdIndiceOcupacional = (int)empleadoMovimiento.IdIndiceOcupacional,
+                            IdFondoFinanciamiento = (int)empleadoMovimiento.IdFondoFinanciamiento,
+                            IdTipoNombramiento = (int)empleadoMovimiento.IdTipoNombramiento,
+                            SalarioReal = empleadoMovimiento.SalarioReal,
+
+                            TipoNombramiento = await db.TipoNombramiento
+                            .Include(i => i.RelacionLaboral)
+                            .Include(i => i.RelacionLaboral.RegimenLaboral)
+                            .Where(w => w.IdTipoNombramiento == (int)empleadoMovimiento.IdTipoNombramiento).FirstOrDefaultAsync(),
+
+                            IndiceOcupacional = varIO,
+
+                            IdDependencia = (int)varIO.IdDependencia,
+
+                        };
+
+                }
+
+                modelo.EmpleadoMovimiento.NumeroPartidaIndividual = modelo.EmpleadoMovimiento.NumeroPartidaIndividual + modelo.EmpleadoMovimiento.CodigoContrato;
+
+
 
 
                 return new Response
@@ -2319,6 +2562,7 @@ namespace bd.swth.web.Controllers.API
                         {
 
                             await EjecutarAccionesPersonal(accionPersonalActualizar.IdAccionPersonal);
+                            accionPersonalActualizar.Ejecutado = true;
                         }
 
                         // se vuelven a guardar los cambios por el cambio de estado en accionPersonal
@@ -3258,6 +3502,8 @@ namespace bd.swth.web.Controllers.API
                     )
                     {
                         var empleadoMovimiento = await db.EmpleadoMovimiento
+                            .Include(i=>i.IndiceOcupacional)
+                            .Include(i => i.IndiceOcupacional.Dependencia)
                             .Where(w => w.IdAccionPersonal == accion.IdAccionPersonal)
                             .FirstOrDefaultAsync();
 
@@ -3275,14 +3521,86 @@ namespace bd.swth.web.Controllers.API
                             FechaFin = empleadoMovimiento.FechaHasta
 
                         };
-
+                        
                         await db.IndiceOcupacionalModalidadPartida.AddAsync(modeloIOMP);
+
+                        var tipoRelacion = await db.TipoNombramiento
+                            .Include(i=>i.RelacionLaboral)
+                            .Where(w => w.IdTipoNombramiento == modeloIOMP.IdTipoNombramiento)
+                            .FirstOrDefaultAsync();
+
+                        empleadoAfectado.IdDependencia = empleadoMovimiento.IndiceOcupacional.IdDependencia;
+                        empleadoAfectado.TipoRelacion = tipoRelacion.RelacionLaboral.Nombre;
+
+                        db.Empleado.Update(empleadoAfectado);
+                        
+                        if (!String.IsNullOrEmpty(modeloIOMP.NumeroPartidaIndividual))
+                        {
+                            var puestoAnterior = await db.IndiceOcupacionalModalidadPartida
+                                .Where(w =>
+                                    w.IdIndiceOcupacionalModalidadPartida == empleadoMovimiento.IdIndiceOcupacionalModalidadPartidaDesde
+                                ).FirstOrDefaultAsync();
+
+                            var partidaVacante = await db.ModalidadPartida.
+                                Where(w => w.Nombre == Constantes.PartidaVacante)
+                                .FirstOrDefaultAsync();
+
+                            puestoAnterior.IdModalidadPartida = partidaVacante.IdModalidadPartida;
+
+                            db.IndiceOcupacionalModalidadPartida.Update(puestoAnterior);
+
+                        }
+
+                    }
+
+                    if (accion.TipoAccionPersonal.DesactivarCargo == true) {
+                        
+                        var iompActual = await db.IndiceOcupacionalModalidadPartida
+                            .Where(w => 
+                                w.IdEmpleado == empleadoAfectado.IdEmpleado
+                                && w.IdModalidadPartida != null
+                            )
+                            .OrderByDescending(o=>o.Fecha)
+                            .FirstOrDefaultAsync();
+
+
+                        var idModalidadPartidaSuprimida = await db.ModalidadPartida
+                            .Where(w => w.Nombre == Constantes.PartidaSuprimida.ToString().ToUpper())
+                            .FirstOrDefaultAsync();
+
+
+                        if (idModalidadPartidaSuprimida == null)
+                        {
+                            var modeloPartida = new ModalidadPartida {
+                                Nombre = Constantes.PartidaSuprimida.ToString().ToUpper()
+                            };
+
+                            await db.ModalidadPartida.AddAsync(modeloPartida);
+
+                            idModalidadPartidaSuprimida = modeloPartida;
+                        }
+
+                        if (iompActual != null)
+                        {
+                            iompActual.IdModalidadPartida = idModalidadPartidaSuprimida.IdModalidadPartida;
+                            empleadoAfectado.AnoDesvinculacion = accion.FechaRige.Year;
+                        }
 
                     }
                 }
 
                 //hay que agregar un campo con estado activo, desactivado en el indiceOcupacional
-                //para el movimiento de supresion de partida
+                //para el movimiento de supresion de partida o poner un estado de partida en indiceOcupacional
+
+                // calcula las vacaciones si es imputable a vacaiones 
+                //(en calcular se toma ya en cuenta los movimientos imputables a vacaciones)
+                if (accion.TipoAccionPersonal.ImputableVacaciones == true)
+                {
+                    var ctrl = new SolicitudPlanificacionVacacionesController(db);
+                    await ctrl.CalcularYRegistrarVacacionesPorEmpleado(accion.IdEmpleado);
+                }
+
+                
 
             }
             catch (Exception ex)

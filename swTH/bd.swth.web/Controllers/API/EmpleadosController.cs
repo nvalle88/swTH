@@ -794,6 +794,7 @@ namespace bd.swth.web.Controllers.API
                     .Include(i => i.IndiceOcupacional)
                     .Include(i => i.IndiceOcupacional.ManualPuesto)
                     .Where(w => w.IdEmpleado != null)
+                    .OrderByDescending(o=>o.Fecha)
                     .ToListAsync();
 
 
@@ -4045,8 +4046,13 @@ namespace bd.swth.web.Controllers.API
 
                 var iomp = await db.IndiceOcupacionalModalidadPartida
                     .Include(i => i.TipoNombramiento.RelacionLaboral)
+                    
                     .Include(i => i.IndiceOcupacional)
                     .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
+                    .Include(i => i.IndiceOcupacional.ManualPuesto)
+                    .Include(i => i.IndiceOcupacional.RolPuesto)
+                    .Include(i => i.IndiceOcupacional.EscalaGrados)
+
                     .Include(i => i.ModalidadPartida)
                     .Where(w => w.IdEmpleado == IdEmpleado)
                     .OrderByDescending(o => o.Fecha)
@@ -4104,6 +4110,7 @@ namespace bd.swth.web.Controllers.API
                     modelo.IndiceOcupacional = iomp.IndiceOcupacional;
                     modelo.IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual = iomp.NumeroPartidaIndividual
                         + iomp.CodigoContrato;
+                    modelo.SalarioReal = iomp.SalarioReal != null && iomp.SalarioReal > 0?true:false;
 
                     if (iomp.ModalidadPartida != null)
                     {

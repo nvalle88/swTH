@@ -17,7 +17,7 @@ namespace bd.swth.entidades.Constantes
 
         public static string PartidaVacante { get; set; }
         public static string PartidaOcupada { get; set; }
-
+        public static string PartidaSuprimida { get; set; }
 
         public static string EscapeConstantes { get { return "#"; } }
         public static string EscapeFunciones { get { return "@"; } }
