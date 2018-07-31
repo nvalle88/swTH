@@ -111,33 +111,65 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var modelo = new FlujoAprobacion
+                {
+                    IdFlujoAprobacion = flujoAprobacion.IdFlujoAprobacion,
+                    IdTipoAccionPersonal = flujoAprobacion.IdTipoAccionPersonal,
+                    IdSucursal = flujoAprobacion.IdSucursal,
+                    IdManualPuesto = flujoAprobacion.IdManualPuesto,
+                    ApruebaJefe = flujoAprobacion.ApruebaJefe
+
+                };
+
+                if (modelo.ApruebaJefe == true)
+                {
+                    modelo.IdManualPuesto = null;
+                }
+                else if
+                    (
+                        modelo.ApruebaJefe == false
+                        &&
+                        (modelo.IdManualPuesto == null || modelo.IdManualPuesto < 1)
+
+                    )
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ErrorFlujoAprobacionSeleccion
+                    };
+                }
+
+
+
                 var existe = await db.FlujoAprobacion
                     .Where(w => 
-                        w.IdSucursal == flujoAprobacion.IdSucursal
-                        && w.IdManualPuesto == flujoAprobacion.IdManualPuesto
-                        && w.IdTipoAccionPersonal == flujoAprobacion.IdTipoAccionPersonal
+                        w.IdSucursal == modelo.IdSucursal
+                        && w.IdManualPuesto == modelo.IdManualPuesto
+                        && w.IdTipoAccionPersonal == modelo.IdTipoAccionPersonal
+                        && w.ApruebaJefe == modelo.ApruebaJefe
                 ).FirstOrDefaultAsync();
 
 
                 if (existe == null || existe != null && existe.IdFlujoAprobacion == flujoAprobacion.IdFlujoAprobacion)
                 {
 
-                    var modelo = await db.FlujoAprobacion
+                    var modeloFlujoAprobacion = await db.FlujoAprobacion
                         .Where(w => w.IdFlujoAprobacion == flujoAprobacion.IdFlujoAprobacion)
                         .FirstOrDefaultAsync();
 
-                    modelo.IdTipoAccionPersonal = flujoAprobacion.IdTipoAccionPersonal;
-                    modelo.IdSucursal = flujoAprobacion.IdSucursal;
-                    modelo.IdManualPuesto = flujoAprobacion.IdManualPuesto;
+                    modeloFlujoAprobacion.IdTipoAccionPersonal = modelo.IdTipoAccionPersonal;
+                    modeloFlujoAprobacion.IdSucursal = modelo.IdSucursal;
+                    modeloFlujoAprobacion.IdManualPuesto = modelo.IdManualPuesto;
+                    modeloFlujoAprobacion.ApruebaJefe = modelo.ApruebaJefe;
 
-
-                    db.FlujoAprobacion.Update(modelo);
+                    db.FlujoAprobacion.Update(modeloFlujoAprobacion);
                     await db.SaveChangesAsync();
 
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
+                        Message = Mensaje.GuardadoSatisfactorio,
                     };
 
 
@@ -180,18 +212,47 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var modelo = new FlujoAprobacion {
+                    IdFlujoAprobacion = FlujoAprobacion.IdFlujoAprobacion,
+                    IdTipoAccionPersonal = FlujoAprobacion.IdTipoAccionPersonal,
+                    IdSucursal = FlujoAprobacion.IdSucursal,
+                    IdManualPuesto = FlujoAprobacion.IdManualPuesto,
+                    ApruebaJefe = FlujoAprobacion.ApruebaJefe
+
+                };
+
+                if (modelo.ApruebaJefe == true)
+                {
+                    modelo.IdManualPuesto = null;
+                }
+                else if
+                    (
+                        modelo.ApruebaJefe == false
+                        && 
+                        (modelo.IdManualPuesto == null || modelo.IdManualPuesto < 1)
+
+                    )
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ErrorFlujoAprobacionSeleccion
+                    };
+                }
+
 
                 var existe = await db.FlujoAprobacion
                     .Where(w =>
-                        w.IdTipoAccionPersonal == FlujoAprobacion.IdTipoAccionPersonal
-                        && w.IdSucursal == FlujoAprobacion.IdSucursal
-                        && w.IdManualPuesto == FlujoAprobacion.IdManualPuesto
+                        w.IdTipoAccionPersonal == modelo.IdTipoAccionPersonal
+                        && w.IdSucursal == modelo.IdSucursal
+                        && w.IdManualPuesto == modelo.IdManualPuesto
+                        && w.ApruebaJefe == modelo.ApruebaJefe
                      )
                      .FirstOrDefaultAsync();
 
                 if (existe == null)
                 {
-                    db.FlujoAprobacion.Add(FlujoAprobacion);
+                    db.FlujoAprobacion.Add(modelo);
                     await db.SaveChangesAsync();
                     return new Response
                     {

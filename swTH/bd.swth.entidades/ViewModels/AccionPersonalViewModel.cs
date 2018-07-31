@@ -1,4 +1,5 @@
-﻿using System;
+﻿using bd.swth.entidades.Negocio;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,7 +7,7 @@ namespace bd.swth.entidades.ViewModels
 {
     public class AccionPersonalViewModel
     {
-        // campos de tabla Acción Personal
+        // campos tabla accionPersonal
         public int IdAccionPersonal { get; set; }
         
         public DateTime Fecha { get; set; }
@@ -19,31 +20,32 @@ namespace bd.swth.entidades.ViewModels
         
         public DateTime FechaRige { get; set; }
         
-        public DateTime FechaRigeHasta { get; set; }
+        public DateTime? FechaRigeHasta { get; set; }
         
         public int Estado { get; set; }
         
-        public int NoDias { get; set; }
+        public int? NoDias { get; set; }
 
-        // Campos que no pertenecen a la tabla
+        public bool Bloquear { get; set; }
+        public bool Ejecutado { get; set; }
+
+
+        // campos estados validación
         public string EstadoDirector { get; set; }
         public string EstadoValidacionTTHH { get; set; }
 
 
         public bool GeneraMovimientoPersonal { get; set; }
-
-        //Referencias a tablas
-        public DatosBasicosEmpleadoViewModel DatosBasicosEmpleadoViewModel { get; set; }
         
         public TipoAccionesPersonalViewModel TipoAccionPersonalViewModel { get; set; }
+        
+        public EmpleadoMovimiento EmpleadoMovimiento { get; set; }
 
-        public SituacionActualEmpleadoViewModel SituacionActualEmpleadoViewModel { get; set; }
-        public SituacionActualEmpleadoViewModel SituacionPropuestaEmpleadoViewModel { get; set; }
-
-        public int IdIndiceOcupacionalModalidadPartidaPropuesta { get; set; }
-
-        public List<IndicesOcupacionalesModalidadPartidaViewModel> ListaIndicesOcupacionalesModalidadPartida { get; set; }
+        public List<IndiceOcupacionalModalidadPartida> ListaPuestosOcupados { get; set; }
 
         public string NombreUsuarioAprobador { get; set; }
+
+        public bool ConfigurarPuesto { get; set; }
+
     }
 }

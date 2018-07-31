@@ -52,5 +52,8 @@ namespace bd.swth.entidades.Utils
 
         public static string ErrorRevisarFechas { get { return "Revise que la fecha del año anterior no sea mayor que la fecha del año actual, y que el año actual esté bien ingresado"; } }
 
+        public static string ErrorSeleccionContratacionNoDefinida { get { return "No existe una acción a realizarse para ese tipo de contratación / nombramiento, no se guardará el registro"; } }
+
+        public static string ErrorFlujoAprobacionSeleccion { get { return "Seleccione: aprueba el jefe, o el cargo responsable de la aprobación"; } }
     }
 }
