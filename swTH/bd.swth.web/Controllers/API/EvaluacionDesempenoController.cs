@@ -55,8 +55,7 @@ namespace bd.swth.web.Controllers.API
                                         .FirstOrDefaultAsync();
                         if (lista != null)
                         {
-                            var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaOcupada).FirstOrDefaultAsync();
-                            var b = db.IndiceOcupacional.Where(y => y.IdIndiceOcupacional == item.IdIndiceOcupacional && y.IdModalidadPartida == ModalidadPartida.IdModalidadPartida).FirstOrDefault();
+                            var b = db.IndiceOcupacional.Where(y => y.IdIndiceOcupacional == item.IdIndiceOcupacional).FirstOrDefault();
                             if (b != null)
                             {
 
