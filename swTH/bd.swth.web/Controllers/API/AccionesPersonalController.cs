@@ -2105,10 +2105,10 @@ namespace bd.swth.web.Controllers.API
                     definitivo = tiempo indefinido                 
                  */
 
-
+            
                 if (
                     tipoAccionPersonal.ModificaDistributivo == true
-                    && tipoAccionPersonal.ModalidadContratacion == true
+                    //&& tipoAccionPersonal.ModalidadContratacion == true
                     && tipoAccionPersonal.DesactivarEmpleado == false
                 )
                 {
@@ -2298,7 +2298,8 @@ namespace bd.swth.web.Controllers.API
 
 
                 }
-
+            
+                /*
                 else if (
                     tipoAccionPersonal.ModificaDistributivo == true
                     && tipoAccionPersonal.ModalidadContratacion == false
@@ -2481,6 +2482,7 @@ namespace bd.swth.web.Controllers.API
                     }
 
                 }
+                */
 
                 else if (
                     tipoAccionPersonal.ModificaDistributivo == true
@@ -3301,7 +3303,11 @@ namespace bd.swth.web.Controllers.API
                     .Where(w =>
                         w.AccionPersonal.Ejecutado == true
                         && w.FechaDesde <= DateTime.Now
-                        && (w.FechaHasta != null && w.FechaHasta >= DateTime.Now)
+                        && ( 
+                            (w.FechaHasta != null && w.FechaHasta >= DateTime.Now)
+                            || w.FechaHasta == null
+                        )
+                        && w.IdEmpleado == empleadoLogueado.IdEmpleado
                     )
                     .OrderByDescending(o => new { o.FechaDesde, o.FechaHasta })
                     .FirstOrDefaultAsync();
@@ -3850,6 +3856,7 @@ namespace bd.swth.web.Controllers.API
 
                     else if (
                         accion.TipoAccionPersonal.DesactivarEmpleado == false
+                        && accion.TipoAccionPersonal.ModalidadContratacion == true
                     )
                     {
                         await RealizarMovimientoPersonal(accion.IdAccionPersonal);
