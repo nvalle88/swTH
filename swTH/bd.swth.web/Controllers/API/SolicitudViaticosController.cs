@@ -363,7 +363,7 @@ namespace bd.swth.web.Controllers.API
                     var solTipoViatico = new SolicitudTipoViatico
                     {
                         IdSolicitudViatico = solicitudViatico.Entity.IdSolicitudViatico,
-                        IdTipoViatico = viewModelsSolicitudViaticos.IdConfiguracionViatico
+                        IdTipoViatico = 1
                     };
                     db.SolicitudTipoViatico.Add(solTipoViatico);
 
