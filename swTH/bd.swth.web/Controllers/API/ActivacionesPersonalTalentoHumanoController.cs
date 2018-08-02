@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
         // POST: api/ActivacionesPersonalTalentoHumano
         [HttpPost]
         [Route("GetListDependenciasByFiscalYearActual")]
-        public async Task<List<ActivarPersonalTalentoHumanoViewModel>> GetListDependenciasByFiscalYearActual(UsuarioViewModel usuario)
+        public async Task<List<ActivarPersonalTalentoHumanoViewModel>> GetListDependenciasByFiscalYearActual([FromBody]UsuarioViewModel usuario)
         {
 
             List<ActivarPersonalTalentoHumanoViewModel> listaResultado = new List<ActivarPersonalTalentoHumanoViewModel>();
@@ -49,13 +49,15 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                var empleadoActual = db.Empleado.Include(d => d.Dependencia)
+                var empleadoActual = db.Empleado
+                    .Include(d => d.Dependencia)
                     .Where(x => x.NombreUsuario == usuario.NombreUsuarioActual)
                     .FirstOrDefault()
                 ;
 
 
                 var listaDependencias = await db.Dependencia
+                    .Include(i=>i.Sucursal)
                     .Where(w => w.IdSucursal == empleadoActual.Dependencia.IdSucursal)
                     .OrderBy(x => x.IdDependencia).ToListAsync();
 
@@ -74,7 +76,8 @@ namespace bd.swth.web.Controllers.API
                     model.Fecha = DateTime.Now;
                     model.Estado = false;
                     model.Nombre = listaDependencias.ElementAt(i).Nombre;
-
+                    model.IdSucursal = listaDependencias.ElementAt(i).Sucursal.IdSucursal;
+                    model.SucursalNombre = listaDependencias.ElementAt(i).Sucursal.Nombre;
 
                     // Validación de estado para los checkBox
                     for (int j = 0; j < listaDependenciasEnviadasCorreoThisYear.Count; j++)
@@ -121,20 +124,23 @@ namespace bd.swth.web.Controllers.API
         // GET: api/ActivacionesPersonalTalentoHumano
         [HttpGet]
         [Route("GetJefePorDependencia")]
-        public Empleado GetJefePorDependencia(int idDependencia)
+        public async Task<Empleado> GetJefePorDependencia(int idDependencia)
         {
 
             Empleado empleado = new Empleado();
-
-
+            
             try
             {
 
-                empleado = db.Empleado.Include(x => x.Dependencia).Include(x => x.Persona).Where(x =>
-                       x.EsJefe == true
-                       && x.Dependencia.IdDependencia == idDependencia
-                       && x.Activo == true
-                    ).FirstOrDefault();
+                empleado = await db.Empleado
+                    .Include(i => i.Dependencia)
+                    .Include(i => i.Persona)
+                    .Where(w =>
+                       w.EsJefe == true
+                       && (w.IdDependencia == idDependencia)
+                       && w.Activo == true
+
+                    ).FirstOrDefaultAsync();
 
                 return empleado;
             }
@@ -205,12 +211,12 @@ namespace bd.swth.web.Controllers.API
 
                             if (!response.IsSuccess && estado == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado))
                             {
-                                var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
+                                var empleado = await GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
 
                                 if (empleado != null && empleado.IdEmpleado > 0)
                                 {
                                     var correo = empleado.Persona.CorreoPrivado;
-                                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo, empleado.Dependencia.Nombre));
+                                    correoResponse.Add( await EnviarMailDesdeCorreoTalentohumano(correo, empleado.Dependencia.Nombre));
 
                                     db.ActivarPersonalTalentoHumano.Add(activarPersonalTalentoHumano);
                                     await db.SaveChangesAsync();
@@ -244,14 +250,14 @@ namespace bd.swth.web.Controllers.API
                                 {
                                     actualizar.Estado = Convert.ToInt32(Constantes.ActivacionPersonalValorActivado);
 
-                                    var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
+                                    var empleado = await GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
 
 
                                     if (empleado != null && empleado.IdEmpleado > 0)
                                     {
 
                                         var correo = empleado.Persona.CorreoPrivado;
-                                        correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo, empleado.Dependencia.Nombre));
+                                        correoResponse.Add(await EnviarMailDesdeCorreoTalentohumano(correo, empleado.Dependencia.Nombre));
 
                                         db.ActivarPersonalTalentoHumano.Update(actualizar);
                                         await db.SaveChangesAsync();
@@ -322,7 +328,7 @@ namespace bd.swth.web.Controllers.API
 
 
 
-        public Response EnviarMailDesdeCorreoTalentohumano(string correo, string dependenciaNombre)
+        public async Task<Response> EnviarMailDesdeCorreoTalentohumano(string correo, string dependenciaNombre)
         {
             try
             {
@@ -365,7 +371,7 @@ namespace bd.swth.web.Controllers.API
                 };
 
                 //execute the method Send Mail or SendMailAsync
-                var a = Emails.SendEmailAsync(mail);
+                var a = await Emails.SendEmailAsync(mail);
 
 
                 return new Response
