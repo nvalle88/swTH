@@ -225,10 +225,10 @@ namespace bd.swth.web.Controllers.API
                     .Include(i=> i.TipoNombramiento)
                     .Include(i => i.TipoNombramiento.RelacionLaboral)
                     .Where(w=>w.IdEmpleado == IdEmpleado)
-                    .OrderByDescending(o=>o.Fecha)
+                    .OrderByDescending(o=>o.IdIndiceOcupacionalModalidadPartida)
                     .FirstOrDefaultAsync();
 
-                var listaIOMPOcupados = await db.IndiceOcupacionalModalidadPartida
+                var listaIOMPOcupados= await db.IndiceOcupacionalModalidadPartida
                     .Include(i=>i.Empleado)
                     .Include(i => i.Empleado.Persona)
                     .Include(i => i.IndiceOcupacional)
@@ -241,11 +241,12 @@ namespace bd.swth.web.Controllers.API
                         w.IdEmpleado != null 
                         && w.Empleado.Activo == true
                     )
-                    .OrderByDescending(o=>o.Fecha)
+                    .OrderByDescending(o=>o.IdIndiceOcupacionalModalidadPartida)
                     .DistinctBy(d=>d.IdEmpleado)
                     .ToAsyncEnumerable()
                     .ToList();
-
+                
+                
 
                 var modeloListaIOMPOcupados = new List<IndiceOcupacionalModalidadPartida>();
 
@@ -309,7 +310,7 @@ namespace bd.swth.web.Controllers.API
                             CodigoContrato = item.CodigoContrato,
                             SalarioReal = item.SalarioReal,
 
-
+                            IdIndiceOcupacionalModalidadPartida = item.IdIndiceOcupacionalModalidadPartida,
 
                         }    
                     );
@@ -329,7 +330,7 @@ namespace bd.swth.web.Controllers.API
 
                 foreach (var item in listaPuestosVacios) {
 
-                    modeloListaIOMPOcupados.Add(new IndiceOcupacionalModalidadPartida
+                    var nuevoIOMP = new IndiceOcupacionalModalidadPartida
                     {
                         Empleado = null,
 
@@ -374,8 +375,9 @@ namespace bd.swth.web.Controllers.API
                                 Nombre = item.IndiceOcupacional.EscalaGrados.Nombre,
                             },
                         },
-                        
-                        FondoFinanciamiento = new FondoFinanciamiento {
+
+                        FondoFinanciamiento = new FondoFinanciamiento
+                        {
                             IdFondoFinanciamiento = item.FondoFinanciamiento.IdFondoFinanciamiento,
                             Nombre = item.FondoFinanciamiento.Nombre
                         },
@@ -384,9 +386,20 @@ namespace bd.swth.web.Controllers.API
                         CodigoContrato = item.CodigoContrato,
                         SalarioReal = item.SalarioReal,
 
+                        IdIndiceOcupacionalModalidadPartida = item.IdIndiceOcupacionalModalidadPartida,
 
+                    };
 
-                    });
+                    var existeEnLista = modeloListaIOMPOcupados
+                        .Where(w =>
+                            w.NumeroPartidaIndividual == item.NumeroPartidaIndividual
+                        ).FirstOrDefault();
+
+                    if (existeEnLista == null) {
+
+                        modeloListaIOMPOcupados.Add(nuevoIOMP);
+                    }
+                    
                 }
 
 
@@ -580,7 +593,7 @@ namespace bd.swth.web.Controllers.API
                     .Include(i => i.TipoNombramiento)
                     .Include(i => i.TipoNombramiento.RelacionLaboral)
                     .Where(w => w.IdEmpleado == accionPersonal.IdEmpleado)
-                    .OrderByDescending(o => o.Fecha)
+                    .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
                     .FirstOrDefaultAsync();
 
                 var listaIOMPOcupados = await db.IndiceOcupacionalModalidadPartida
@@ -596,10 +609,88 @@ namespace bd.swth.web.Controllers.API
                         w.IdEmpleado != null
                         && w.Empleado.Activo == true
                     )
-                    .OrderByDescending(o => o.Fecha)
+                    .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
                     .DistinctBy(d => d.IdEmpleado)
                     .ToAsyncEnumerable()
                     .ToList();
+
+
+                var modeloListaIOMPOcupados = new List<IndiceOcupacionalModalidadPartida>();
+
+                foreach (var item in listaIOMPOcupados)
+                {
+                    modeloListaIOMPOcupados.Add(
+
+                        new IndiceOcupacionalModalidadPartida
+                        {
+                            Empleado = new Empleado
+                            {
+                                Persona = new Persona
+                                {
+                                    Nombres = item.Empleado.Persona.Nombres,
+                                    Apellidos = item.Empleado.Persona.Apellidos,
+
+                                },
+                            },
+
+                            ModalidadPartida = new ModalidadPartida
+                            {
+                                IdModalidadPartida = (item.ModalidadPartida != null)
+                                    ? item.ModalidadPartida.IdModalidadPartida
+                                    : 0
+                                 ,
+                                Nombre = (item.ModalidadPartida != null)
+                                    ? item.ModalidadPartida.Nombre
+                                    : ""
+                                 ,
+                            },
+
+                            IndiceOcupacional = new IndiceOcupacional
+                            {
+
+                                IdIndiceOcupacional = item.IdIndiceOcupacional,
+                                IdManualPuesto = item.IndiceOcupacional.IdManualPuesto,
+                                IdDependencia = item.IndiceOcupacional.IdDependencia,
+                                IdRolPuesto = item.IndiceOcupacional.IdRolPuesto,
+
+                                Dependencia = new Dependencia
+                                {
+
+                                    IdDependencia = item.IndiceOcupacional.Dependencia.IdDependencia,
+                                    Nombre = item.IndiceOcupacional.Dependencia.Nombre,
+
+                                    Sucursal = new Sucursal
+                                    {
+
+                                        IdSucursal = item.IndiceOcupacional.Dependencia.Sucursal.IdSucursal,
+                                        Nombre = item.IndiceOcupacional.Dependencia.Sucursal.Nombre,
+                                    },
+                                },
+
+                                EscalaGrados = new EscalaGrados
+                                {
+                                    IdEscalaGrados = item.IndiceOcupacional.EscalaGrados.IdEscalaGrados,
+                                    Remuneracion = item.IndiceOcupacional.EscalaGrados.Remuneracion,
+                                    Nombre = item.IndiceOcupacional.EscalaGrados.Nombre,
+                                },
+                            },
+
+                            FondoFinanciamiento = new FondoFinanciamiento
+                            {
+                                IdFondoFinanciamiento = item.FondoFinanciamiento.IdFondoFinanciamiento,
+                                Nombre = item.FondoFinanciamiento.Nombre
+                            },
+
+                            NumeroPartidaIndividual = item.NumeroPartidaIndividual,
+                            CodigoContrato = item.CodigoContrato,
+                            SalarioReal = item.SalarioReal,
+
+                            IdIndiceOcupacionalModalidadPartida = item.IdIndiceOcupacionalModalidadPartida,
+
+                        }
+                    );
+                }
+
 
                 var listaPuestosVacios = await db.IndiceOcupacionalModalidadPartida
                     .Include(i => i.IndiceOcupacional)
@@ -615,7 +706,78 @@ namespace bd.swth.web.Controllers.API
 
                 foreach (var item in listaPuestosVacios)
                 {
-                    listaIOMPOcupados.Add(item);
+
+                    var nuevoIOMP = new IndiceOcupacionalModalidadPartida
+                    {
+                        Empleado = null,
+
+                        ModalidadPartida = new ModalidadPartida
+                        {
+                            IdModalidadPartida = (item.ModalidadPartida != null)
+                                    ? item.ModalidadPartida.IdModalidadPartida
+                                    : 0
+                                 ,
+                            Nombre = (item.ModalidadPartida != null)
+                                    ? item.ModalidadPartida.Nombre
+                                    : ""
+                                 ,
+                        },
+
+                        IndiceOcupacional = new IndiceOcupacional
+                        {
+
+                            IdIndiceOcupacional = item.IdIndiceOcupacional,
+                            IdManualPuesto = item.IndiceOcupacional.IdManualPuesto,
+                            IdDependencia = item.IndiceOcupacional.IdDependencia,
+                            IdRolPuesto = item.IndiceOcupacional.IdRolPuesto,
+
+                            Dependencia = new Dependencia
+                            {
+
+                                IdDependencia = item.IndiceOcupacional.Dependencia.IdDependencia,
+                                Nombre = item.IndiceOcupacional.Dependencia.Nombre,
+
+                                Sucursal = new Sucursal
+                                {
+
+                                    IdSucursal = item.IndiceOcupacional.Dependencia.Sucursal.IdSucursal,
+                                    Nombre = item.IndiceOcupacional.Dependencia.Sucursal.Nombre,
+                                },
+                            },
+
+                            EscalaGrados = new EscalaGrados
+                            {
+                                IdEscalaGrados = item.IndiceOcupacional.EscalaGrados.IdEscalaGrados,
+                                Remuneracion = item.IndiceOcupacional.EscalaGrados.Remuneracion,
+                                Nombre = item.IndiceOcupacional.EscalaGrados.Nombre,
+                            },
+                        },
+
+                        FondoFinanciamiento = new FondoFinanciamiento
+                        {
+                            IdFondoFinanciamiento = item.FondoFinanciamiento.IdFondoFinanciamiento,
+                            Nombre = item.FondoFinanciamiento.Nombre
+                        },
+
+                        NumeroPartidaIndividual = item.NumeroPartidaIndividual,
+                        CodigoContrato = item.CodigoContrato,
+                        SalarioReal = item.SalarioReal,
+
+                        IdIndiceOcupacionalModalidadPartida = item.IdIndiceOcupacionalModalidadPartida,
+
+                    };
+
+
+                    var existeEnLista = modeloListaIOMPOcupados
+                        .Where(w =>
+                            w.NumeroPartidaIndividual == item.NumeroPartidaIndividual
+                        ).FirstOrDefault();
+
+                    if (existeEnLista == null)
+                    {
+
+                        modeloListaIOMPOcupados.Add(nuevoIOMP);
+                    }
                 }
 
 
@@ -646,16 +808,222 @@ namespace bd.swth.web.Controllers.API
                 {
 
                     EmpleadoMovimiento = empleadoMovimiento != null?
-                    empleadoMovimiento
+                    new EmpleadoMovimiento {
+
+                        Empleado = new Empleado
+                        {
+
+                            IdEmpleado = empleado.IdEmpleado,
+
+                            Persona = new Persona
+                            {
+                                Nombres = empleado.Persona.Nombres,
+                                Apellidos = empleado.Persona.Apellidos,
+                                Identificacion = empleado.Persona.Identificacion,
+                            },
+
+                            Dependencia = new Dependencia
+                            {
+
+                                IdDependencia = empleado.Dependencia.IdDependencia,
+                                Nombre = empleado.Dependencia.Nombre,
+
+                                Sucursal = new Sucursal
+                                {
+                                    IdSucursal = empleado.Dependencia.Sucursal.IdSucursal,
+                                    Nombre = empleado.Dependencia.Sucursal.Nombre
+                                }
+                            }
+                        },
+
+                        IndiceOcupacionalModalidadPartidaDesde = new IndiceOcupacionalModalidadPartida
+                        {
+
+                            IdIndiceOcupacionalModalidadPartida = indiceOcupacionalModalidadPartida
+                             .IdIndiceOcupacionalModalidadPartida,
+
+                            SalarioReal = indiceOcupacionalModalidadPartida.SalarioReal,
+
+                            TipoNombramiento = new TipoNombramiento
+                            {
+
+                                IdTipoNombramiento = indiceOcupacionalModalidadPartida
+                                 .TipoNombramiento.IdTipoNombramiento,
+
+                                Nombre = indiceOcupacionalModalidadPartida
+                                    .TipoNombramiento.Nombre,
+
+                                RelacionLaboral = new RelacionLaboral
+                                {
+
+                                    IdRelacionLaboral = indiceOcupacionalModalidadPartida
+                                        .TipoNombramiento.RelacionLaboral
+                                            .IdRelacionLaboral,
+
+                                    Nombre = indiceOcupacionalModalidadPartida
+                                        .TipoNombramiento.RelacionLaboral
+                                            .Nombre,
+
+                                    IdRegimenLaboral = indiceOcupacionalModalidadPartida
+                                        .TipoNombramiento.RelacionLaboral
+                                        .IdRegimenLaboral,
+
+                                }
+                            },
+
+                            IndiceOcupacional = new IndiceOcupacional
+                            {
+                                IdIndiceOcupacional = indiceOcupacionalModalidadPartida
+                                    .IndiceOcupacional.IdIndiceOcupacional,
+
+                                IdDependencia = indiceOcupacionalModalidadPartida
+                                    .IndiceOcupacional.IdDependencia,
+
+                                IdManualPuesto = indiceOcupacionalModalidadPartida
+                                    .IndiceOcupacional.IdManualPuesto,
+
+                                IdRolPuesto = indiceOcupacionalModalidadPartida
+                                    .IndiceOcupacional.IdRolPuesto,
+
+                                EscalaGrados = new EscalaGrados
+                                {
+
+                                    IdEscalaGrados = indiceOcupacionalModalidadPartida
+                                        .IndiceOcupacional.EscalaGrados
+                                        .IdEscalaGrados,
+
+                                    Remuneracion = indiceOcupacionalModalidadPartida
+                                        .IndiceOcupacional.EscalaGrados
+                                        .Remuneracion,
+                                },
+
+                                ManualPuesto = new ManualPuesto
+                                {
+
+                                    IdManualPuesto = indiceOcupacionalModalidadPartida
+                                        .IndiceOcupacional.ManualPuesto
+                                        .IdManualPuesto,
+
+                                    Nombre = indiceOcupacionalModalidadPartida
+                                        .IndiceOcupacional.ManualPuesto
+                                        .Nombre,
+                                }
+                            },
+                        },
+
+                        IndiceOcupacionalModalidadPartidaHasta = null,
+
+                        NumeroPartidaIndividual = empleadoMovimiento.NumeroPartidaIndividual,
+                        CodigoContrato = empleadoMovimiento.CodigoContrato,
+                        SalarioReal = empleadoMovimiento.SalarioReal,
+                        EsJefe = empleadoMovimiento.EsJefe,
+                        IdModalidadPartida = empleadoMovimiento.IdModalidadPartida
+                    }
                     :
                     new EmpleadoMovimiento
                     {
-                        Empleado = empleado,
-                        IndiceOcupacionalModalidadPartidaDesde = indiceOcupacionalModalidadPartida,
-                        IdIndiceOcupacionalModalidadPartidaHasta = 0
+                        Empleado = new Empleado {
+
+                            IdEmpleado = empleado.IdEmpleado,
+
+                            Persona = new Persona {
+                                Nombres = empleado.Persona.Nombres,
+                                Apellidos = empleado.Persona.Apellidos,
+                                Identificacion = empleado.Persona.Identificacion,
+                            },
+                            
+                            Dependencia = new Dependencia {
+
+                                IdDependencia = empleado.Dependencia.IdDependencia,
+                                Nombre = empleado.Dependencia.Nombre,
+
+                                Sucursal = new Sucursal {
+                                    IdSucursal = empleado.Dependencia.Sucursal.IdSucursal,
+                                    Nombre = empleado.Dependencia.Sucursal.Nombre
+                                }
+                            }
+                        },
+
+                        IndiceOcupacionalModalidadPartidaDesde = new IndiceOcupacionalModalidadPartida
+                        {
+
+                            IdIndiceOcupacionalModalidadPartida = indiceOcupacionalModalidadPartida
+                             .IdIndiceOcupacionalModalidadPartida,
+
+                            SalarioReal = indiceOcupacionalModalidadPartida.SalarioReal,
+
+                            TipoNombramiento = new TipoNombramiento
+                            {
+
+                                IdTipoNombramiento = indiceOcupacionalModalidadPartida
+                                 .TipoNombramiento.IdTipoNombramiento,
+
+                                Nombre = indiceOcupacionalModalidadPartida
+                                    .TipoNombramiento.Nombre,
+
+                                RelacionLaboral = new RelacionLaboral
+                                {
+
+                                    IdRelacionLaboral = indiceOcupacionalModalidadPartida
+                                        .TipoNombramiento.RelacionLaboral
+                                            .IdRelacionLaboral,
+
+                                    Nombre = indiceOcupacionalModalidadPartida
+                                        .TipoNombramiento.RelacionLaboral
+                                            .Nombre,
+
+                                    IdRegimenLaboral = indiceOcupacionalModalidadPartida
+                                        .TipoNombramiento.RelacionLaboral
+                                        .IdRegimenLaboral,
+
+                                }
+                            },
+
+                            IndiceOcupacional = new IndiceOcupacional
+                            {
+                                IdIndiceOcupacional = indiceOcupacionalModalidadPartida
+                                    .IndiceOcupacional.IdIndiceOcupacional,
+
+                                IdDependencia = indiceOcupacionalModalidadPartida
+                                    .IndiceOcupacional.IdDependencia,
+
+                                IdManualPuesto = indiceOcupacionalModalidadPartida
+                                    .IndiceOcupacional.IdManualPuesto,
+
+                                IdRolPuesto = indiceOcupacionalModalidadPartida
+                                    .IndiceOcupacional.IdRolPuesto,
+
+                                EscalaGrados = new EscalaGrados
+                                {
+
+                                    IdEscalaGrados = indiceOcupacionalModalidadPartida
+                                        .IndiceOcupacional.EscalaGrados
+                                        .IdEscalaGrados,
+
+                                    Remuneracion = indiceOcupacionalModalidadPartida
+                                        .IndiceOcupacional.EscalaGrados
+                                        .Remuneracion,
+                                },
+
+                                ManualPuesto = new ManualPuesto
+                                {
+
+                                    IdManualPuesto = indiceOcupacionalModalidadPartida
+                                        .IndiceOcupacional.ManualPuesto
+                                        .IdManualPuesto,
+
+                                    Nombre = indiceOcupacionalModalidadPartida
+                                        .IndiceOcupacional.ManualPuesto
+                                        .Nombre,
+                                }
+                            },
+                        },
+
+                        IdIndiceOcupacionalModalidadPartidaHasta = 0,
+                        
                     },
 
-                    ListaPuestosOcupados = listaIOMPOcupados,
+                    ListaPuestosOcupados = modeloListaIOMPOcupados,
 
                     IdAccionPersonal = accionPersonal.IdAccionPersonal,
                     Solicitud = accionPersonal.Solicitud,
@@ -696,6 +1064,12 @@ namespace bd.swth.web.Controllers.API
                             .Where(w => w.IdIndiceOcupacional == (int)empleadoMovimiento.IdIndiceOcupacional)
                             .FirstOrDefaultAsync();
 
+                    var nombramientoHasta = await db.TipoNombramiento
+                            .Include(i => i.RelacionLaboral)
+                            .Include(i => i.RelacionLaboral.RegimenLaboral)
+                            .Where(w => w.IdTipoNombramiento == (int)empleadoMovimiento.IdTipoNombramiento).FirstOrDefaultAsync();
+
+
                     modelo.EmpleadoMovimiento.IndiceOcupacionalModalidadPartidaHasta =
                         new IndiceOcupacionalModalidadPartida
                         {
@@ -704,16 +1078,86 @@ namespace bd.swth.web.Controllers.API
                             IdTipoNombramiento = (int)empleadoMovimiento.IdTipoNombramiento,
                             SalarioReal = empleadoMovimiento.SalarioReal,
 
-                            TipoNombramiento = await db.TipoNombramiento
-                            .Include(i => i.RelacionLaboral)
-                            .Include(i => i.RelacionLaboral.RegimenLaboral)
-                            .Where(w => w.IdTipoNombramiento == (int)empleadoMovimiento.IdTipoNombramiento).FirstOrDefaultAsync(),
+                            TipoNombramiento = new TipoNombramiento {
 
-                            IndiceOcupacional = varIO,
+                                IdTipoNombramiento = nombramientoHasta.IdTipoNombramiento,
+                                Nombre = nombramientoHasta.Nombre,
+                                IdRelacionLaboral = nombramientoHasta.IdRelacionLaboral,
+
+                                RelacionLaboral = new RelacionLaboral {
+                                    IdRelacionLaboral = nombramientoHasta.RelacionLaboral.IdRelacionLaboral,
+                                    Nombre = nombramientoHasta.RelacionLaboral.Nombre,
+                                    IdRegimenLaboral = nombramientoHasta.RelacionLaboral.IdRegimenLaboral,
+
+                                    RegimenLaboral = new RegimenLaboral {
+
+                                        IdRegimenLaboral = nombramientoHasta.RelacionLaboral.RegimenLaboral
+                                            .IdRegimenLaboral,
+
+                                        Nombre = nombramientoHasta.RelacionLaboral.RegimenLaboral
+                                            .Nombre,
+                                    },
+
+                                },
+
+                            },
+
+                            IndiceOcupacional = new IndiceOcupacional
+                            {
+
+                                Dependencia = new Dependencia
+                                {
+                                    IdDependencia = varIO.Dependencia.IdDependencia,
+                                    Nombre = varIO.Dependencia.Nombre,
+
+                                    Sucursal = new Sucursal
+                                    {
+                                        IdSucursal = varIO.Dependencia.Sucursal.IdSucursal,
+                                        Nombre = varIO.Dependencia.Sucursal.Nombre,
+                                        IdCiudad = varIO.Dependencia.Sucursal.IdCiudad
+                                    },
+                                },
+
+                                ManualPuesto = new ManualPuesto
+                                {
+                                    IdManualPuesto = varIO.ManualPuesto.IdManualPuesto,
+                                    Nombre = varIO.ManualPuesto.Nombre
+                                },
+
+                                RolPuesto = new RolPuesto
+                                {
+                                    IdRolPuesto = varIO.RolPuesto.IdRolPuesto,
+                                    Nombre = varIO.RolPuesto.Nombre
+                                },
+
+                                EscalaGrados = new EscalaGrados {
+                                    IdEscalaGrados = varIO.EscalaGrados.IdEscalaGrados,
+                                    Nombre = varIO.EscalaGrados.Nombre,
+                                    Remuneracion = varIO.EscalaGrados.Remuneracion,
+                                },
+
+                                IdDependencia = empleadoMovimiento.IdIndiceOcupacional,
+                                IdRolPuesto = empleadoMovimiento.IndiceOcupacional.IdRolPuesto,
+                                IdManualPuesto = empleadoMovimiento.IndiceOcupacional.IdManualPuesto,
+                                IdEscalaGrados = empleadoMovimiento.IndiceOcupacional.IdEscalaGrados,
+
+                            },
 
                             IdDependencia = (int)varIO.IdDependencia,
-                            
+
+                            IdIndiceOcupacionalModalidadPartida = empleadoMovimiento
+                                .IdIndiceOcupacionalModalidadPartidaHasta != null
+                                ? (int) empleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta
+                                :0
+                                ,
+
                         };
+
+                    modelo.EmpleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta =
+                        empleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta;
+
+                    modelo.EmpleadoMovimiento.IdFondoFinanciamiento = empleadoMovimiento.IdFondoFinanciamiento;
+
                     
                 }
 
@@ -739,6 +1183,7 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+
 
 
         /// <summary>
@@ -769,71 +1214,15 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                
-
-                var indiceOcupacionalModalidadPartida = await db.IndiceOcupacionalModalidadPartida
-                    .Include(i=>i.Empleado)
-                    
-                    .Include(i => i.IndiceOcupacional)
-                    .Include(i => i.IndiceOcupacional.Dependencia)
-                    .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
-
-                    .Include(i => i.IndiceOcupacional.EscalaGrados)
-                    .Include(i => i.IndiceOcupacional.ManualPuesto)
-                    .Include(i => i.TipoNombramiento)
-                    .Include(i => i.TipoNombramiento.RelacionLaboral)
-                    .Where(w => 
-                        w.IdEmpleado == accionPersonal.IdEmpleado
-                        && w.Fecha <= accionPersonal.Fecha
-                    )
-                    .OrderByDescending(o => o.Fecha)
-                    .FirstOrDefaultAsync();
-
-                var listaIOMPOcupados = await db.IndiceOcupacionalModalidadPartida
-                    .Include(i => i.Empleado)
-                    .Include(i => i.Empleado.Persona)
-                    .Include(i => i.IndiceOcupacional)
-                    .Include(i => i.IndiceOcupacional.Dependencia)
-                    .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
-                    .Include(i => i.IndiceOcupacional.EscalaGrados)
-                    .Include(i => i.FondoFinanciamiento)
-                    .Include(i => i.ModalidadPartida)
-                    .Where(w =>
-                        w.IdEmpleado != null
-                        && w.Empleado.Activo == true
-                        && w.Fecha <= accionPersonal.Fecha
-                    )
-                    .OrderByDescending(o => o.Fecha)
-                    .DistinctBy(d => d.IdEmpleado)
-                    .ToAsyncEnumerable()
-                    .ToList();
-
-                var listaPuestosVacios = await db.IndiceOcupacionalModalidadPartida
-                    .Include(i => i.IndiceOcupacional)
-                    .Include(i => i.IndiceOcupacional.EscalaGrados)
-                    .Include(i => i.IndiceOcupacional.Dependencia)
-                    .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
-                    .Include(i => i.ModalidadPartida)
-                    .Include(i => i.FondoFinanciamiento)
-                    .Where(w =>
-                        w.IdEmpleado == null && w.NumeroPartidaIndividual != null
-                        && w.Fecha <= accionPersonal.Fecha
-                    ).ToListAsync();
-
-
-                foreach (var item in listaPuestosVacios)
-                {
-                    listaIOMPOcupados.Add(item);
-                }
-
                 var empleado = await db.Empleado
                     .Include(i => i.Persona)
+                    .Include(i => i.Dependencia)
+                    .Include(i => i.Dependencia.Sucursal)
                     .Where(w =>
                         w.IdEmpleado == accionPersonal.IdEmpleado
-                        //&& w.Activo == true
+                        && w.Activo == true
                     )
                     .FirstOrDefaultAsync();
-                
 
 
                 if (empleado == null)
@@ -847,15 +1236,17 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-
-
                 var empleadoMovimiento = await db.EmpleadoMovimiento
                     .Include(i => i.IndiceOcupacionalModalidadPartidaDesde)
                     .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.TipoNombramiento)
                     .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.TipoNombramiento.RelacionLaboral)
                     .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.TipoNombramiento.RelacionLaboral.RegimenLaboral)
                     .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional.Dependencia)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional.Dependencia.Sucursal)
                     .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional.ManualPuesto)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional.RolPuesto)
+                    .Include(i => i.IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional.EscalaGrados)
 
                     .Include(i => i.IndiceOcupacionalModalidadPartidaHasta)
                     .Include(i => i.IndiceOcupacionalModalidadPartidaHasta.TipoNombramiento)
@@ -871,21 +1262,511 @@ namespace bd.swth.web.Controllers.API
                     .FirstOrDefaultAsync();
 
 
+                /*
+                var listaPuestos = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i => i.Empleado)
+                    .Include(i => i.Empleado.Persona)
+                    .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacional.Dependencia)
+                    .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
+                    .Include(i => i.IndiceOcupacional.EscalaGrados)
+                    .Include(i => i.FondoFinanciamiento)
+                    .Include(i => i.ModalidadPartida)
+                    .Where(w =>
+                        w.IdEmpleado != null
+                        && w.Empleado.Activo == true
+                        && w.Fecha < accionPersonal.Fecha
+                    )
+                    .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
+                    .DistinctBy(d => d.IdEmpleado)
+                    .ToAsyncEnumerable()
+                    .ToList();
+                */
+                
+
+                var listaIOMPOcupados = new List<IndiceOcupacionalModalidadPartida>();
+                var listaPuestosVacios = new List<IndiceOcupacionalModalidadPartida>();
+
+
+                if (empleadoMovimiento != null)
+                {
+                    if (empleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta != null) {
+
+                        listaIOMPOcupados = await db.IndiceOcupacionalModalidadPartida
+                            .Include(i => i.Empleado)
+                            .Include(i => i.Empleado.Persona)
+                            .Include(i => i.IndiceOcupacional)
+                            .Include(i => i.IndiceOcupacional.Dependencia)
+                            .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
+                            .Include(i => i.IndiceOcupacional.EscalaGrados)
+                            .Include(i => i.FondoFinanciamiento)
+                            .Include(i => i.ModalidadPartida)
+                            .Where(w =>
+                                w.IdIndiceOcupacionalModalidadPartida ==
+                                empleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta
+                                && w.Empleado != null
+                            ).ToListAsync();
+
+
+                        listaPuestosVacios = await db.IndiceOcupacionalModalidadPartida
+                            .Include(i => i.IndiceOcupacional)
+                            .Include(i => i.IndiceOcupacional.EscalaGrados)
+                            .Include(i => i.IndiceOcupacional.Dependencia)
+                            .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
+                            .Include(i => i.ModalidadPartida)
+                            .Include(i => i.FondoFinanciamiento)
+                            .Where(w =>
+                                w.IdEmpleado == null && w.NumeroPartidaIndividual != null
+                                && w.IdIndiceOcupacionalModalidadPartida ==
+                                empleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta
+                            ).ToListAsync();
+
+                    }
+
+                }
+                
+
+
+
+                var modeloListaIOMPOcupados = new List<IndiceOcupacionalModalidadPartida>();
+
+                foreach (var item in listaIOMPOcupados)
+                {
+                    modeloListaIOMPOcupados.Add(
+
+                        new IndiceOcupacionalModalidadPartida
+                        {
+                            Empleado = new Empleado
+                            {
+                                Persona = new Persona
+                                {
+                                    Nombres = item.Empleado.Persona.Nombres,
+                                    Apellidos = item.Empleado.Persona.Apellidos,
+
+                                },
+                            },
+                            
+                            ModalidadPartida = new ModalidadPartida
+                            {
+                                IdModalidadPartida = (item.ModalidadPartida != null)
+                                    ? item.ModalidadPartida.IdModalidadPartida
+                                    : 0
+                                 ,
+                                Nombre = (item.ModalidadPartida != null)
+                                    ? item.ModalidadPartida.Nombre
+                                    : ""
+                                 ,
+                            },
+
+                            IndiceOcupacional = new IndiceOcupacional
+                            {
+
+                                IdIndiceOcupacional = item.IdIndiceOcupacional,
+                                IdManualPuesto = item.IndiceOcupacional.IdManualPuesto,
+                                IdDependencia = item.IndiceOcupacional.IdDependencia,
+                                IdRolPuesto = item.IndiceOcupacional.IdRolPuesto,
+
+                                Dependencia = new Dependencia
+                                {
+
+                                    IdDependencia = item.IndiceOcupacional.Dependencia.IdDependencia,
+                                    Nombre = item.IndiceOcupacional.Dependencia.Nombre,
+
+                                    Sucursal = new Sucursal
+                                    {
+
+                                        IdSucursal = item.IndiceOcupacional.Dependencia.Sucursal.IdSucursal,
+                                        Nombre = item.IndiceOcupacional.Dependencia.Sucursal.Nombre,
+                                    },
+                                },
+
+                                EscalaGrados = new EscalaGrados
+                                {
+                                    IdEscalaGrados = item.IndiceOcupacional.EscalaGrados.IdEscalaGrados,
+                                    Remuneracion = item.IndiceOcupacional.EscalaGrados.Remuneracion,
+                                    Nombre = item.IndiceOcupacional.EscalaGrados.Nombre,
+                                },
+                            },
+
+                            FondoFinanciamiento = new FondoFinanciamiento
+                            {
+                                IdFondoFinanciamiento = item.FondoFinanciamiento.IdFondoFinanciamiento,
+                                Nombre = item.FondoFinanciamiento.Nombre
+                            },
+
+                            NumeroPartidaIndividual = item.NumeroPartidaIndividual,
+                            CodigoContrato = item.CodigoContrato,
+                            SalarioReal = item.SalarioReal,
+                            
+                            IdIndiceOcupacionalModalidadPartida = item.IdIndiceOcupacionalModalidadPartida,
+                            
+                        }
+                    );
+                }
+
+                
+                foreach (var item in listaPuestosVacios)
+                {
+
+                    var nuevoIOMP = new IndiceOcupacionalModalidadPartida
+                    {
+                        Empleado = null,
+
+                        ModalidadPartida = new ModalidadPartida
+                        {
+                            IdModalidadPartida = (item.ModalidadPartida != null)
+                                    ? item.ModalidadPartida.IdModalidadPartida
+                                    : 0
+                                 ,
+                            Nombre = (item.ModalidadPartida != null)
+                                    ? item.ModalidadPartida.Nombre
+                                    : ""
+                                 ,
+                        },
+
+                        IndiceOcupacional = new IndiceOcupacional
+                        {
+
+                            IdIndiceOcupacional = item.IdIndiceOcupacional,
+                            IdManualPuesto = item.IndiceOcupacional.IdManualPuesto,
+                            IdDependencia = item.IndiceOcupacional.IdDependencia,
+                            IdRolPuesto = item.IndiceOcupacional.IdRolPuesto,
+
+                            Dependencia = new Dependencia
+                            {
+
+                                IdDependencia = item.IndiceOcupacional.Dependencia.IdDependencia,
+                                Nombre = item.IndiceOcupacional.Dependencia.Nombre,
+
+                                Sucursal = new Sucursal
+                                {
+
+                                    IdSucursal = item.IndiceOcupacional.Dependencia.Sucursal.IdSucursal,
+                                    Nombre = item.IndiceOcupacional.Dependencia.Sucursal.Nombre,
+                                },
+                            },
+
+                            EscalaGrados = new EscalaGrados
+                            {
+                                IdEscalaGrados = item.IndiceOcupacional.EscalaGrados.IdEscalaGrados,
+                                Remuneracion = item.IndiceOcupacional.EscalaGrados.Remuneracion,
+                                Nombre = item.IndiceOcupacional.EscalaGrados.Nombre,
+                            },
+                        },
+
+                        FondoFinanciamiento = new FondoFinanciamiento
+                        {
+                            IdFondoFinanciamiento = item.FondoFinanciamiento.IdFondoFinanciamiento,
+                            Nombre = item.FondoFinanciamiento.Nombre
+                        },
+
+                        NumeroPartidaIndividual = item.NumeroPartidaIndividual,
+                        CodigoContrato = item.CodigoContrato,
+                        SalarioReal = item.SalarioReal,
+
+                        IdIndiceOcupacionalModalidadPartida = item.IdIndiceOcupacionalModalidadPartida,
+
+                    };
+
+
+                    var existeEnLista = modeloListaIOMPOcupados
+                        .Where(w =>
+                            w.NumeroPartidaIndividual == item.NumeroPartidaIndividual
+                        ).FirstOrDefault();
+
+                    if (existeEnLista == null)
+                    {
+
+                        modeloListaIOMPOcupados.Add(nuevoIOMP);
+                    }
+                }
+                
 
                 var modelo = new AccionPersonalViewModel
                 {
 
                     EmpleadoMovimiento = empleadoMovimiento != null ?
-                    empleadoMovimiento
+                    new EmpleadoMovimiento
+                    {
+
+                        Empleado = new Empleado
+                        {
+
+                            IdEmpleado = empleado.IdEmpleado,
+
+                            Persona = new Persona
+                            {
+                                Nombres = empleado.Persona.Nombres,
+                                Apellidos = empleado.Persona.Apellidos,
+                                Identificacion = empleado.Persona.Identificacion,
+                            },
+
+                            Dependencia = new Dependencia
+                            {
+
+                                IdDependencia = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                .IndiceOcupacional.Dependencia
+                                .IdDependencia,
+
+                                Nombre = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                .IndiceOcupacional.Dependencia
+                                .Nombre,
+
+                                Sucursal = new Sucursal
+                                {
+                                    IdSucursal = empleadoMovimiento
+                                        .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.Dependencia
+                                        .Sucursal.IdSucursal,
+
+                                    Nombre = empleadoMovimiento
+                                        .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.Dependencia
+                                        .Sucursal.Nombre,
+                                }
+                            }
+                        },
+
+                        IndiceOcupacionalModalidadPartidaDesde = new IndiceOcupacionalModalidadPartida
+                        {
+
+                            IdIndiceOcupacionalModalidadPartida = empleadoMovimiento
+                             .IndiceOcupacionalModalidadPartidaDesde
+                             .IdIndiceOcupacionalModalidadPartida,
+
+                            SalarioReal = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                .SalarioReal,
+
+                            TipoNombramiento = new TipoNombramiento
+                            {
+
+                                IdTipoNombramiento = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                 .TipoNombramiento.IdTipoNombramiento,
+
+                                Nombre = empleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                    .TipoNombramiento.Nombre,
+
+                                RelacionLaboral = new RelacionLaboral
+                                {
+
+                                    IdRelacionLaboral = empleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                        .TipoNombramiento.RelacionLaboral
+                                            .IdRelacionLaboral,
+
+                                    Nombre = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                        .TipoNombramiento.RelacionLaboral
+                                            .Nombre,
+
+                                    IdRegimenLaboral = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                        .TipoNombramiento.RelacionLaboral
+                                        .IdRegimenLaboral,
+
+                                }
+                            },
+
+                            IndiceOcupacional = new IndiceOcupacional
+                            {
+                                IdIndiceOcupacional = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                    .IndiceOcupacional.IdIndiceOcupacional,
+
+                                IdDependencia = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                    .IndiceOcupacional.IdDependencia,
+
+                                IdManualPuesto = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                    .IndiceOcupacional.IdManualPuesto,
+
+                                IdRolPuesto = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                    .IndiceOcupacional.IdRolPuesto,
+
+                                EscalaGrados = new EscalaGrados
+                                {
+
+                                    IdEscalaGrados = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.EscalaGrados
+                                        .IdEscalaGrados,
+
+                                    Remuneracion = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.EscalaGrados
+                                        .Remuneracion,
+                                },
+
+                                ManualPuesto = new ManualPuesto
+                                {
+
+                                    IdManualPuesto = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.ManualPuesto
+                                        .IdManualPuesto,
+
+                                    Nombre = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.ManualPuesto
+                                        .Nombre,
+                                }
+                            },
+                        },
+
+                        IndiceOcupacionalModalidadPartidaHasta = null,
+
+                        NumeroPartidaIndividual = empleadoMovimiento.NumeroPartidaIndividual,
+                        CodigoContrato = empleadoMovimiento.CodigoContrato,
+                        SalarioReal = empleadoMovimiento.SalarioReal,
+                        EsJefe = empleadoMovimiento.EsJefe,
+                        IdModalidadPartida = empleadoMovimiento.IdModalidadPartida
+                    }
                     :
                     new EmpleadoMovimiento
                     {
-                        Empleado = empleado,
-                        IndiceOcupacionalModalidadPartidaDesde = indiceOcupacionalModalidadPartida,
-                        IdIndiceOcupacionalModalidadPartidaHasta = 0
+                        Empleado = new Empleado
+                        {
+
+                            IdEmpleado = empleado.IdEmpleado,
+
+                            Persona = new Persona
+                            {
+                                Nombres = empleado.Persona.Nombres,
+                                Apellidos = empleado.Persona.Apellidos,
+                                Identificacion = empleado.Persona.Identificacion,
+                            },
+
+                            Dependencia = new Dependencia
+                            {
+
+                                IdDependencia = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                .IndiceOcupacional.Dependencia
+                                .IdDependencia,
+
+                                Nombre = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                .IndiceOcupacional.Dependencia
+                                .Nombre,
+
+                                Sucursal = new Sucursal
+                                {
+                                    IdSucursal = empleadoMovimiento
+                                        .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.Dependencia
+                                        .Sucursal.IdSucursal,
+
+                                    Nombre = empleadoMovimiento
+                                        .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.Dependencia
+                                        .Sucursal.Nombre,
+                                }
+                            }
+                        },
+
+                        IndiceOcupacionalModalidadPartidaDesde = new IndiceOcupacionalModalidadPartida
+                        {
+
+                            IdIndiceOcupacionalModalidadPartida = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                .IdIndiceOcupacionalModalidadPartida,
+
+                            SalarioReal = empleadoMovimiento
+                                .IndiceOcupacionalModalidadPartidaDesde
+                                .SalarioReal,
+
+                            TipoNombramiento = new TipoNombramiento
+                            {
+
+                                IdTipoNombramiento = empleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                    .TipoNombramiento.IdTipoNombramiento,
+
+                                Nombre = empleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                    .TipoNombramiento.Nombre,
+
+                                RelacionLaboral = new RelacionLaboral
+                                {
+
+                                    IdRelacionLaboral = empleadoMovimiento
+                                        .IndiceOcupacionalModalidadPartidaDesde
+                                        .TipoNombramiento.RelacionLaboral
+                                            .IdRelacionLaboral,
+
+                                    Nombre = empleadoMovimiento
+                                        .IndiceOcupacionalModalidadPartidaDesde
+                                        .TipoNombramiento.RelacionLaboral
+                                            .Nombre,
+
+                                    IdRegimenLaboral = empleadoMovimiento
+                                        .IndiceOcupacionalModalidadPartidaDesde
+                                        .TipoNombramiento.RelacionLaboral
+                                        .IdRegimenLaboral,
+
+                                }
+                            },
+
+                            IndiceOcupacional = new IndiceOcupacional
+                            {
+                                IdIndiceOcupacional = empleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                    .IndiceOcupacional.IdIndiceOcupacional,
+
+                                IdDependencia = empleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                    .IndiceOcupacional.IdDependencia,
+
+                                IdManualPuesto = empleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                    .IndiceOcupacional.IdManualPuesto,
+
+                                IdRolPuesto = empleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                    .IndiceOcupacional.IdRolPuesto,
+
+                                EscalaGrados = new EscalaGrados
+                                {
+
+                                    IdEscalaGrados = empleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.EscalaGrados
+                                        .IdEscalaGrados,
+
+                                    Remuneracion = empleadoMovimiento
+                                        .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.EscalaGrados
+                                        .Remuneracion,
+                                },
+
+                                ManualPuesto = new ManualPuesto
+                                {
+
+                                    IdManualPuesto = empleadoMovimiento
+                                    .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.ManualPuesto
+                                        .IdManualPuesto,
+
+                                    Nombre = empleadoMovimiento
+                                        .IndiceOcupacionalModalidadPartidaDesde
+                                        .IndiceOcupacional.ManualPuesto
+                                        .Nombre,
+                                }
+                            },
+                        },
+
+                        IdIndiceOcupacionalModalidadPartidaHasta = 0,
+
                     },
 
-                    ListaPuestosOcupados = listaIOMPOcupados,
+                    ListaPuestosOcupados = modeloListaIOMPOcupados,
 
                     IdAccionPersonal = accionPersonal.IdAccionPersonal,
                     Solicitud = accionPersonal.Solicitud,
@@ -912,14 +1793,6 @@ namespace bd.swth.web.Controllers.API
 
                 };
 
-                modelo.EmpleadoMovimiento.Empleado.Dependencia = modelo.EmpleadoMovimiento
-                    .IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional.Dependencia;
-
-                modelo.EmpleadoMovimiento.Empleado.Dependencia.Sucursal = modelo.EmpleadoMovimiento
-                    .IndiceOcupacionalModalidadPartidaDesde.IndiceOcupacional.Dependencia.Sucursal;
-
-
-
                 if (
                     empleadoMovimiento != null
                     && modelo.EmpleadoMovimiento.IndiceOcupacionalModalidadPartidaHasta == null
@@ -935,6 +1808,12 @@ namespace bd.swth.web.Controllers.API
                             .Where(w => w.IdIndiceOcupacional == (int)empleadoMovimiento.IdIndiceOcupacional)
                             .FirstOrDefaultAsync();
 
+                    var nombramientoHasta = await db.TipoNombramiento
+                            .Include(i => i.RelacionLaboral)
+                            .Include(i => i.RelacionLaboral.RegimenLaboral)
+                            .Where(w => w.IdTipoNombramiento == (int)empleadoMovimiento.IdTipoNombramiento).FirstOrDefaultAsync();
+
+
                     modelo.EmpleadoMovimiento.IndiceOcupacionalModalidadPartidaHasta =
                         new IndiceOcupacionalModalidadPartida
                         {
@@ -943,16 +1822,90 @@ namespace bd.swth.web.Controllers.API
                             IdTipoNombramiento = (int)empleadoMovimiento.IdTipoNombramiento,
                             SalarioReal = empleadoMovimiento.SalarioReal,
 
-                            TipoNombramiento = await db.TipoNombramiento
-                            .Include(i => i.RelacionLaboral)
-                            .Include(i => i.RelacionLaboral.RegimenLaboral)
-                            .Where(w => w.IdTipoNombramiento == (int)empleadoMovimiento.IdTipoNombramiento).FirstOrDefaultAsync(),
+                            TipoNombramiento = new TipoNombramiento
+                            {
 
-                            IndiceOcupacional = varIO,
+                                IdTipoNombramiento = nombramientoHasta.IdTipoNombramiento,
+                                Nombre = nombramientoHasta.Nombre,
+                                IdRelacionLaboral = nombramientoHasta.IdRelacionLaboral,
+
+                                RelacionLaboral = new RelacionLaboral
+                                {
+                                    IdRelacionLaboral = nombramientoHasta.RelacionLaboral.IdRelacionLaboral,
+                                    Nombre = nombramientoHasta.RelacionLaboral.Nombre,
+                                    IdRegimenLaboral = nombramientoHasta.RelacionLaboral.IdRegimenLaboral,
+
+                                    RegimenLaboral = new RegimenLaboral
+                                    {
+
+                                        IdRegimenLaboral = nombramientoHasta.RelacionLaboral.RegimenLaboral
+                                            .IdRegimenLaboral,
+
+                                        Nombre = nombramientoHasta.RelacionLaboral.RegimenLaboral
+                                            .Nombre,
+                                    },
+
+                                },
+
+                            },
+
+                            IndiceOcupacional = new IndiceOcupacional
+                            {
+
+                                Dependencia = new Dependencia
+                                {
+                                    IdDependencia = varIO.Dependencia.IdDependencia,
+                                    Nombre = varIO.Dependencia.Nombre,
+
+                                    Sucursal = new Sucursal
+                                    {
+                                        IdSucursal = varIO.Dependencia.Sucursal.IdSucursal,
+                                        Nombre = varIO.Dependencia.Sucursal.Nombre,
+                                        IdCiudad = varIO.Dependencia.Sucursal.IdCiudad
+                                    },
+                                },
+
+                                ManualPuesto = new ManualPuesto
+                                {
+                                    IdManualPuesto = varIO.ManualPuesto.IdManualPuesto,
+                                    Nombre = varIO.ManualPuesto.Nombre
+                                },
+
+                                RolPuesto = new RolPuesto
+                                {
+                                    IdRolPuesto = varIO.RolPuesto.IdRolPuesto,
+                                    Nombre = varIO.RolPuesto.Nombre
+                                },
+
+                                EscalaGrados = new EscalaGrados
+                                {
+                                    IdEscalaGrados = varIO.EscalaGrados.IdEscalaGrados,
+                                    Nombre = varIO.EscalaGrados.Nombre,
+                                    Remuneracion = varIO.EscalaGrados.Remuneracion,
+                                },
+
+                                IdDependencia = empleadoMovimiento.IdIndiceOcupacional,
+                                IdRolPuesto = empleadoMovimiento.IndiceOcupacional.IdRolPuesto,
+                                IdManualPuesto = empleadoMovimiento.IndiceOcupacional.IdManualPuesto,
+                                IdEscalaGrados = empleadoMovimiento.IndiceOcupacional.IdEscalaGrados,
+
+                            },
 
                             IdDependencia = (int)varIO.IdDependencia,
 
+                            IdIndiceOcupacionalModalidadPartida = empleadoMovimiento
+                                .IdIndiceOcupacionalModalidadPartidaHasta != null
+                                ? (int)empleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta
+                                : 0
+                                ,
+
                         };
+
+                    modelo.EmpleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta =
+                        empleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta;
+
+                    modelo.EmpleadoMovimiento.IdFondoFinanciamiento = empleadoMovimiento.IdFondoFinanciamiento;
+
 
                 }
 
@@ -2578,7 +3531,7 @@ namespace bd.swth.web.Controllers.API
                         w.Empleado.NombreUsuario == accionPersonalViewModel.NombreUsuarioAprobador
                         && w.Empleado.Activo == true
                     )
-                    .OrderByDescending(o => o.Fecha)
+                    .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
                     .FirstOrDefaultAsync();
 
 
@@ -2878,7 +3831,7 @@ namespace bd.swth.web.Controllers.API
                     .Include(i=>i.TipoNombramiento)
                     .Include(i => i.TipoNombramiento.RelacionLaboral)
                     .Where(w => w.IdEmpleado == empleadoAfectado.IdEmpleado)
-                    .OrderByDescending(o=>o.Fecha)
+                    .OrderByDescending(o=>o.IdIndiceOcupacionalModalidadPartida)
                     .FirstOrDefaultAsync();
 
                 var modalidadPartidaVacante = await db.ModalidadPartida
@@ -2899,55 +3852,7 @@ namespace bd.swth.web.Controllers.API
                         accion.TipoAccionPersonal.DesactivarEmpleado == false
                     )
                     {
-                        var empleadoMovimiento = await db.EmpleadoMovimiento
-                            .Include(i=>i.IndiceOcupacional)
-                            .Include(i => i.IndiceOcupacional.Dependencia)
-                            .Where(w => w.IdAccionPersonal == accion.IdAccionPersonal)
-                            .FirstOrDefaultAsync();
-
-                        var modeloIOMP = new IndiceOcupacionalModalidadPartida {
-
-                            IdIndiceOcupacional = (int)empleadoMovimiento.IdIndiceOcupacional,
-                            IdEmpleado = (int)empleadoMovimiento.IdEmpleado,
-                            IdFondoFinanciamiento = (int) empleadoMovimiento.IdFondoFinanciamiento,
-                            IdTipoNombramiento = empleadoMovimiento.IdTipoNombramiento,
-                            Fecha = empleadoMovimiento.FechaDesde,
-                            SalarioReal = empleadoMovimiento.SalarioReal,
-                            CodigoContrato = empleadoMovimiento.CodigoContrato,
-                            NumeroPartidaIndividual = empleadoMovimiento.NumeroPartidaIndividual,
-                            IdModalidadPartida = empleadoMovimiento.IdModalidadPartida,
-                            FechaFin = empleadoMovimiento.FechaHasta
-
-                        };
-                        
-                        await db.IndiceOcupacionalModalidadPartida.AddAsync(modeloIOMP);
-
-                        var tipoRelacion = await db.TipoNombramiento
-                            .Include(i=>i.RelacionLaboral)
-                            .Where(w => w.IdTipoNombramiento == modeloIOMP.IdTipoNombramiento)
-                            .FirstOrDefaultAsync();
-
-                        empleadoAfectado.IdDependencia = empleadoMovimiento.IndiceOcupacional.IdDependencia;
-                        empleadoAfectado.TipoRelacion = tipoRelacion.RelacionLaboral.Nombre;
-
-                        db.Empleado.Update(empleadoAfectado);
-                        
-                        if (!String.IsNullOrEmpty(modeloIOMP.NumeroPartidaIndividual))
-                        {
-                            var puestoAnterior = await db.IndiceOcupacionalModalidadPartida
-                                .Where(w =>
-                                    w.IdIndiceOcupacionalModalidadPartida == empleadoMovimiento.IdIndiceOcupacionalModalidadPartidaDesde
-                                ).FirstOrDefaultAsync();
-
-                            var partidaVacante = await db.ModalidadPartida.
-                                Where(w => w.Nombre == Constantes.PartidaVacante)
-                                .FirstOrDefaultAsync();
-
-                            puestoAnterior.IdModalidadPartida = partidaVacante.IdModalidadPartida;
-
-                            db.IndiceOcupacionalModalidadPartida.Update(puestoAnterior);
-
-                        }
+                        await RealizarMovimientoPersonal(accion.IdAccionPersonal);
 
                     }
 
@@ -2958,7 +3863,7 @@ namespace bd.swth.web.Controllers.API
                                 w.IdEmpleado == empleadoAfectado.IdEmpleado
                                 && w.IdModalidadPartida != null
                             )
-                            .OrderByDescending(o=>o.Fecha)
+                            .OrderByDescending(o=>o.IdIndiceOcupacionalModalidadPartida)
                             .FirstOrDefaultAsync();
 
 
@@ -2987,9 +3892,6 @@ namespace bd.swth.web.Controllers.API
 
                     }
                 }
-
-                //hay que agregar un campo con estado activo, desactivado en el indiceOcupacional
-                //para el movimiento de supresion de partida o poner un estado de partida en indiceOcupacional
 
                 // calcula las vacaciones si es imputable a vacaiones 
                 //(en calcular se toma ya en cuenta los movimientos imputables a vacaciones)
@@ -3074,9 +3976,11 @@ namespace bd.swth.web.Controllers.API
                         modelo.NumeroPartidaIndividual = IOMPActual.NumeroPartidaIndividual;
                         modelo.IdModalidadPartida = modalidadPartidaVacante.IdModalidadPartida;
                         modelo.IdTipoNombramiento = IOMPActual.IdTipoNombramiento;
+
+                        db.IndiceOcupacionalModalidadPartida.Add(modelo);
                     }
 
-                    db.IndiceOcupacionalModalidadPartida.Add(modelo);
+                    
 
                     await db.SaveChangesAsync();
                     
@@ -3091,6 +3995,118 @@ namespace bd.swth.web.Controllers.API
                 
             }
         }
+
+        public async Task RealizarMovimientoPersonal(int idAccionPersonal)
+        {
+           
+            
+            var accion = await db.AccionPersonal
+                    .Include(i => i.TipoAccionPersonal)
+                    .Where(w => w.IdAccionPersonal == idAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+            if (accion.FechaRige <= DateTime.Now) {
+
+
+                var empleadoAfectado = await db.Empleado
+                .Where(w => w.IdEmpleado == accion.IdEmpleado)
+                .FirstOrDefaultAsync();
+
+
+                var modalidadPartidaVacante = await db.ModalidadPartida
+                            .Where(w => w.Nombre == Constantes.PartidaVacante)
+                            .FirstOrDefaultAsync();
+
+                var empleadoMovimiento = await db.EmpleadoMovimiento
+                                .Include(i => i.IndiceOcupacional)
+                                .Include(i => i.IndiceOcupacional.Dependencia)
+                                .Where(w => w.IdAccionPersonal == accion.IdAccionPersonal)
+                                .FirstOrDefaultAsync();
+
+                var modeloIOMP = new IndiceOcupacionalModalidadPartida
+                {
+
+                    IdIndiceOcupacional = (int)empleadoMovimiento.IdIndiceOcupacional,
+                    IdEmpleado = (int)empleadoMovimiento.IdEmpleado,
+                    IdFondoFinanciamiento = (int)empleadoMovimiento.IdFondoFinanciamiento,
+                    IdTipoNombramiento = empleadoMovimiento.IdTipoNombramiento,
+                    Fecha = empleadoMovimiento.FechaDesde,
+                    SalarioReal = empleadoMovimiento.SalarioReal,
+                    CodigoContrato = empleadoMovimiento.CodigoContrato,
+                    NumeroPartidaIndividual = empleadoMovimiento.NumeroPartidaIndividual,
+                    IdModalidadPartida = empleadoMovimiento.IdModalidadPartida,
+                    FechaFin = empleadoMovimiento.FechaHasta
+
+                };
+
+                await db.IndiceOcupacionalModalidadPartida.AddAsync(modeloIOMP);
+
+                var tipoRelacion = await db.TipoNombramiento
+                    .Include(i => i.RelacionLaboral)
+                    .Where(w => w.IdTipoNombramiento == modeloIOMP.IdTipoNombramiento)
+                    .FirstOrDefaultAsync();
+
+                empleadoAfectado.IdDependencia = empleadoMovimiento.IndiceOcupacional.IdDependencia;
+                empleadoAfectado.TipoRelacion = tipoRelacion.RelacionLaboral.Nombre;
+
+                db.Empleado.Update(empleadoAfectado);
+
+
+                if (!String.IsNullOrEmpty(modeloIOMP.NumeroPartidaIndividual))
+                {
+                    var puestoAnterior = await db.IndiceOcupacionalModalidadPartida
+                        .Where(w =>
+                            w.IdIndiceOcupacionalModalidadPartida == empleadoMovimiento
+                            .IdIndiceOcupacionalModalidadPartidaDesde
+                        ).FirstOrDefaultAsync();
+
+                    var partidaVacante = await db.ModalidadPartida.
+                        Where(w => w.Nombre == Constantes.PartidaVacante)
+                        .FirstOrDefaultAsync();
+
+
+                    //** Se crea un indice ocupacional modalidad partida vacío
+                    // para el historial
+                    var modelo = new IndiceOcupacionalModalidadPartida
+                    {
+                        IdIndiceOcupacional = puestoAnterior.IdIndiceOcupacional,
+                        IdEmpleado = null,
+                        IdFondoFinanciamiento = puestoAnterior.IdFondoFinanciamiento,
+                        IdTipoNombramiento = null,
+                        Fecha = DateTime.Now,
+                        SalarioReal = null,
+                        CodigoContrato = null,
+                        NumeroPartidaIndividual = null,
+                        IdModalidadPartida = null
+                    };
+
+                    // si es por nombramiento se mantiene el numero de partida, y la modalidad pasa a vacante
+                    if (
+                        puestoAnterior.TipoNombramiento.RelacionLaboral.Nombre.ToString().ToUpper()
+                        == ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
+                        )
+                    {
+                        modelo.NumeroPartidaIndividual = puestoAnterior.NumeroPartidaIndividual;
+                        modelo.IdModalidadPartida = modalidadPartidaVacante.IdModalidadPartida;
+                        modelo.IdTipoNombramiento = puestoAnterior.IdTipoNombramiento;
+
+                        db.IndiceOcupacionalModalidadPartida.Add(modelo);
+                    }
+
+
+                    await db.SaveChangesAsync();
+                    
+
+                }
+
+
+            }
+
+            
+        }
+
+
+
 
     }
 }

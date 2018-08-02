@@ -739,7 +739,7 @@ namespace bd.swth.web.Controllers.API
 
                 var lista = await db.IndiceOcupacionalModalidadPartida
                                     .Where(w => w.Empleado.Dependencia.IdSucursal == usuarioActual.Dependencia.IdSucursal)
-                                    .OrderByDescending(o => o.Fecha)
+                                    .OrderByDescending(o => new { o.Fecha ,o.IdIndiceOcupacionalModalidadPartida} )
                                     .Select(x => new ListaEmpleadoViewModel
                                     {
                                         IdEmpleado = (int)x.IdEmpleado,
@@ -793,7 +793,11 @@ namespace bd.swth.web.Controllers.API
 
                     .Include(i => i.IndiceOcupacional)
                     .Include(i => i.IndiceOcupacional.ManualPuesto)
-                    .Where(w => w.IdEmpleado != null)
+
+                    .Include(i=>i.Empleado)
+                    .Where(w => 
+                        w.IdEmpleado != null
+                    )
                     .OrderByDescending(o=>o.Fecha)
                     .ToListAsync();
 
@@ -816,10 +820,27 @@ namespace bd.swth.web.Controllers.API
                 foreach (var item in lista)
                 {
 
-                    if (listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault() != null)
+                    if (
+                        listaIOMP.Where(w => 
+                            w.IdEmpleado == item.IdEmpleado
+                            && w.Empleado.Activo == true
+                        )
+                        .FirstOrDefault() != null
+                    )
                     {
+                        // crear una lista para filtrar por si hay un despido y un reingreso el mismo día
+                        var fechaMax = listaIOMP
+                            .Where(w => w.IdEmpleado == item.IdEmpleado)
+                            .OrderByDescending(o => o.Fecha)
+                            .FirstOrDefault().Fecha;
 
-                        var itemIomp = listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault();
+                        var itemIomp = listaIOMP
+                            .Where(w => 
+                                w.IdEmpleado == item.IdEmpleado
+                                && w.Fecha == fechaMax
+                            )
+                            .OrderByDescending(o=> o.IdIndiceOcupacionalModalidadPartida)                            
+                            .FirstOrDefault();
 
                         item.IdRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.IdRelacionLaboral;
                         item.NombreRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.Nombre;
@@ -2774,7 +2795,7 @@ namespace bd.swth.web.Controllers.API
                             FondosReservas = false,
                             MesesImposiciones = 0,
                             DiasImposiciones = 0,
-                            FechaIngreso = DateTime.Now
+                            FechaIngreso = DateTime.Now,
                         };
                         var empleado = await db.Empleado.AddAsync(empleadoinsertado);
                         await db.SaveChangesAsync();
@@ -4055,7 +4076,7 @@ namespace bd.swth.web.Controllers.API
 
                     .Include(i => i.ModalidadPartida)
                     .Where(w => w.IdEmpleado == IdEmpleado)
-                    .OrderByDescending(o => o.Fecha)
+                    .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
                     .FirstOrDefaultAsync();
 
                 var primerIOMP = await db.IndiceOcupacionalModalidadPartida
@@ -4067,7 +4088,7 @@ namespace bd.swth.web.Controllers.API
                     .Include(i => i.IndiceOcupacional.EscalaGrados)
                     .Include(i => i.ModalidadPartida)
                     .Where(w => w.IdEmpleado == IdEmpleado)
-                    .OrderBy(o => o.Fecha)
+                    .OrderBy(o => o.IdIndiceOcupacionalModalidadPartida)
                     .FirstOrDefaultAsync();
 
                 var fechaPrimerIngreso = primerIOMP.Fecha;
@@ -4085,13 +4106,14 @@ namespace bd.swth.web.Controllers.API
                 .Where(w =>
                     w.TipoAccionPersonal.Definitivo == true
                     && w.TipoAccionPersonal.DesactivarEmpleado == true
-                    && w.FechaRigeHasta != null
                 )
-                .OrderByDescending(o => o.FechaRige);
+                .OrderByDescending(o => o.FechaRige)
+                .ToList();
 
                 //** Obtener si hay una desvinculación después de la última fecha de ingreso 
                 var desvinculacion = listaDesvinculacionesEmpleado
-                    .Where(w => w.FechaRige >= iomp.Fecha).FirstOrDefault();
+                    .Where(w => w.FechaRige >= iomp.Fecha)
+                    .FirstOrDefault();
 
                 // ** modelo para enviarse como respuesta
                 var modelo = new EmpleadoViewModel
@@ -4101,7 +4123,7 @@ namespace bd.swth.web.Controllers.API
                 };
 
 
-                if (desvinculacion == null)
+                if (Empleado.Activo == true)
                 {
 
                     modelo.IndiceOcupacionalModalidadPartida = iomp;
@@ -4116,11 +4138,13 @@ namespace bd.swth.web.Controllers.API
                     {
                         modelo.IndiceOcupacional.IdModalidadPartida = iomp.ModalidadPartida.IdModalidadPartida;
                     }
-
+                    modelo.FechaPrimerIngreso = primerIOMP.Fecha;
                 }
                 else
                 {
                     mensaje = Mensaje.RegistroNoEncontrado;
+
+                    modelo.FechaPrimerIngreso = primerIOMP.Fecha;
                 }
 
                 return new Response

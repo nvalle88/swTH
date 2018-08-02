@@ -142,6 +142,9 @@ namespace bd.swth.web
             PlanificacionCapacitacion.TipoEvento = Configuration.GetSection("TipoEvento").Value;
             PlanificacionCapacitacion.TipoEvaluacion = Configuration.GetSection("TipoEvaluacion").Value;
 
+            // Nombre dependencia desconcentrados
+            Constantes.NombreDesconcentrados = Configuration.GetSection("NombreDesconcentrados").Value;
+
             /// <summary>
             /// Se lee el fichero appsetting.json según las etiquetas expuestas en este.
             /// Ejemplo:IntervaloTemporizadorHoras Horas que tendra de vida la token.
