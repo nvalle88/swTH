@@ -240,6 +240,9 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
+                await db.Parroquia.AddAsync(pParroquia);
+                await db.SaveChangesAsync();
+
                 return new Response
                 {
                     IsSuccess = false,

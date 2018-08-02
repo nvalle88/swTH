@@ -685,6 +685,7 @@ namespace bd.swth.web.Controllers.API
                             .FirstOrDefaultAsync();
 
                         empleadoModelo.EsJefe = IndiceOcupacionalModalidadPartida.Empleado.EsJefe;
+                        empleadoModelo.Activo = true;
 
                         db.Empleado.Update(empleadoModelo);
 
