@@ -65,9 +65,10 @@ namespace bd.swth.web.Controllers.API
                 var Plan = await db.PlanCapacitacion.Where(x => x.IdPlanCapacitacion == viewModelEvaluacionDesempeno.IdPlanCapacitacion && x.Estado == ConstantesCapacitacion.EstadoTerminado).FirstOrDefaultAsync();
                 if (Plan != null)
                 {
+                    var evento =await db.GeneralCapacitacion.Where(x => x.IdGeneralCapacitacion == Plan.NombreEvento).FirstOrDefaultAsync();
                     var PreguntasEvaluacion = await db.PreguntaEvaluacionEvento.ToListAsync();
                     DatosBasicos.ListaPreguntaEvaluacionEvento = PreguntasEvaluacion;
-                    DatosBasicos.NombreEvento = Plan.IdNombreEvento.Nombre;
+                    DatosBasicos.NombreEvento = evento.Nombre;
                     DatosBasicos.Institucion = Plan.Institucion;
                     DatosBasicos.LugarFecha = Plan.Ubicacion + " del " + Plan.FechaInicio + " al " + Plan.FechaFin;
                 }
