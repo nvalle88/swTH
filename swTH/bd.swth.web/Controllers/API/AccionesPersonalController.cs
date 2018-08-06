@@ -1077,6 +1077,7 @@ namespace bd.swth.web.Controllers.API
                             IdFondoFinanciamiento = (int)empleadoMovimiento.IdFondoFinanciamiento,
                             IdTipoNombramiento = (int)empleadoMovimiento.IdTipoNombramiento,
                             SalarioReal = empleadoMovimiento.SalarioReal,
+                            
 
                             TipoNombramiento = new TipoNombramiento {
 
@@ -2105,8 +2106,86 @@ namespace bd.swth.web.Controllers.API
                     definitivo = tiempo indefinido                 
                  */
 
-            
                 if (
+                    tipoAccionPersonal.Nombre.ToString().ToUpper() == ConstantesAccionPersonal
+                    .TerminacionEncargo.ToString().ToUpper()
+                    )
+                {
+                    var encargoActual = await db.EmpleadoMovimiento
+                        .Where(w =>
+                            w.AccionPersonal.Ejecutado == true
+                            && w.AccionPersonal.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                            == ConstantesAccionPersonal.Encargo.ToString().ToUpper()
+                            && (w.FechaHasta != null && w.FechaHasta >= 
+                                new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day)
+                            )
+                        ).FirstOrDefaultAsync();
+
+                    if (encargoActual != null)
+                    {
+                        modelo.FechaRige = encargoActual.FechaDesde;
+                        modelo.FechaRigeHasta = (modelo.FechaRigeHasta <= encargoActual.FechaHasta)
+                            ? modelo.FechaRigeHasta
+                            : encargoActual.FechaHasta
+                        ;
+                        modelo.NoDias = ((DateTime)modelo.FechaRigeHasta - modelo.FechaRige).Days;
+                        modelo.Numero = ""+modelo.NoDias;
+                    }
+                    else {
+
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.ErrorFinEncargo,
+                            Resultado = accionPersonalViewModel.EmpleadoMovimiento.Empleado.Persona.Identificacion
+                        };
+                    }
+
+
+                }
+
+                if (
+                    tipoAccionPersonal.Nombre.ToString().ToUpper() == ConstantesAccionPersonal
+                    .TerminacionSubrogacion.ToString().ToUpper()
+                    )
+                {
+                    var encargoActual = await db.EmpleadoMovimiento
+                        .Where(w =>
+                            w.AccionPersonal.Ejecutado == true
+                            && w.AccionPersonal.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                            == ConstantesAccionPersonal.Subrogacion.ToString().ToUpper()
+                            && (w.FechaHasta != null && w.FechaHasta >= 
+                                new DateTime(DateTime.Now.Year,DateTime.Now.Month,DateTime.Now.Day)
+                            )
+                        ).FirstOrDefaultAsync();
+
+                    if (encargoActual != null)
+                    {
+                        modelo.FechaRige = encargoActual.FechaDesde;
+                        modelo.FechaRigeHasta = (modelo.FechaRigeHasta <= encargoActual.FechaHasta)
+                            ? modelo.FechaRigeHasta
+                            : encargoActual.FechaHasta
+                        ;
+
+                        modelo.NoDias = ((DateTime)modelo.FechaRigeHasta - modelo.FechaRige).Days;
+                        modelo.Numero = "" + modelo.NoDias;
+
+                    }
+                    else
+                    {
+
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = Mensaje.ErrorFinSubrogacion,
+                            Resultado = accionPersonalViewModel.EmpleadoMovimiento.Empleado.Persona.Identificacion
+                        };
+                    }
+
+
+                }
+
+                else if (
                     tipoAccionPersonal.ModificaDistributivo == true
                     //&& tipoAccionPersonal.ModalidadContratacion == true
                     && tipoAccionPersonal.DesactivarEmpleado == false
@@ -2256,7 +2335,7 @@ namespace bd.swth.web.Controllers.API
                                 IdEmpleado = modelo.IdEmpleado,
                                 FechaDesde = modelo.FechaRige,
                                 FechaHasta = modelo.FechaRigeHasta,
-                                
+
                                 IdIndiceOcupacionalModalidadPartidaDesde =
                                     accionPersonalViewModel.EmpleadoMovimiento
                                     .IndiceOcupacionalModalidadPartidaDesde
@@ -2298,191 +2377,7 @@ namespace bd.swth.web.Controllers.API
 
 
                 }
-            
-                /*
-                else if (
-                    tipoAccionPersonal.ModificaDistributivo == true
-                    && tipoAccionPersonal.ModalidadContratacion == false
-                    && tipoAccionPersonal.DesactivarEmpleado == false
-                )
-                {
-                    // se registra en MovimientoEmpleado, cambia el puesto, pero se mantienen los 
-                    // datos del iomp actual (fondoFinanciamiento, modalidadPartida,etc)
 
-                    using (var transaction = await db.Database.BeginTransactionAsync())
-                    {
-
-                        await db.AccionPersonal.AddAsync(modelo);
-
-                        var iompActual = await db.IndiceOcupacionalModalidadPartida
-                            .Where(w =>
-                                w.IdIndiceOcupacionalModalidadPartida ==
-                                accionPersonalViewModel.EmpleadoMovimiento
-                                .IndiceOcupacionalModalidadPartidaDesde
-                                .IdIndiceOcupacionalModalidadPartida
-                            ).FirstOrDefaultAsync();
-
-
-                        var modeloEmpleadoMovimiento = new EmpleadoMovimiento
-                        {
-                            IdEmpleado = modelo.IdEmpleado,
-                            FechaDesde = modelo.FechaRige,
-                            FechaHasta = modelo.FechaRigeHasta,
-
-                            IdIndiceOcupacionalModalidadPartidaDesde =
-                                        accionPersonalViewModel.EmpleadoMovimiento
-                                        .IndiceOcupacionalModalidadPartidaDesde
-                                        .IdIndiceOcupacionalModalidadPartida,
-
-                            IdAccionPersonal = modelo.IdAccionPersonal,
-                            
-                        };
-
-
-                        if (accionPersonalViewModel.ConfigurarPuesto == true)
-                        {
-                            modeloEmpleadoMovimiento.EsJefe = accionPersonalViewModel
-                                .EmpleadoMovimiento
-                                .EsJefe;
-
-                            modeloEmpleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta = null;
-
-                            modeloEmpleadoMovimiento.IdIndiceOcupacional =
-                                accionPersonalViewModel
-                                .EmpleadoMovimiento
-                                .IndiceOcupacionalModalidadPartidaHasta
-                                .IdIndiceOcupacional;
-
-                            modeloEmpleadoMovimiento.IdFondoFinanciamiento =
-                                accionPersonalViewModel
-                                .EmpleadoMovimiento
-                                .IdFondoFinanciamiento;
-
-                            modeloEmpleadoMovimiento.IdTipoNombramiento =
-                                accionPersonalViewModel
-                                .EmpleadoMovimiento
-                                .IdTipoNombramiento;
-
-                            modeloEmpleadoMovimiento.SalarioReal =
-                                accionPersonalViewModel
-                                .EmpleadoMovimiento
-                                .SalarioReal;
-
-
-                            var contratacion = tipoNombramiento
-                                .Where(w => w.IdTipoNombramiento == modeloEmpleadoMovimiento.IdTipoNombramiento)
-                                .FirstOrDefault().RelacionLaboral.Nombre;
-
-                            if (
-                                contratacion.ToString().ToUpper() ==
-                                ConstantesTipoRelacion.Contrato.ToString().ToUpper()
-                                )
-                            {
-                                modeloEmpleadoMovimiento.CodigoContrato =
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .NumeroPartidaIndividual;
-                            }
-
-                            else if (
-                                contratacion.ToString().ToUpper() ==
-                                ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
-                                )
-                            {
-                                modeloEmpleadoMovimiento.NumeroPartidaIndividual =
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .NumeroPartidaIndividual;
-
-                                modeloEmpleadoMovimiento.IdModalidadPartida =
-                                    accionPersonalViewModel
-                                    .EmpleadoMovimiento
-                                    .IdModalidadPartida;
-                            }
-
-
-
-                            await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
-
-                            await db.SaveChangesAsync();
-
-                            transaction.Commit();
-
-
-
-                        }
-                        else
-                        {
-
-                            var iompHasta = await db.IndiceOcupacionalModalidadPartida
-                                .Include(i=>i.Empleado)
-                                .Where(w =>
-                                    w.IdIndiceOcupacionalModalidadPartida ==
-                                    accionPersonalViewModel.EmpleadoMovimiento
-                                    .IdIndiceOcupacionalModalidadPartidaHasta
-                                ).FirstOrDefaultAsync();
-
-                            if (iompHasta.IdEmpleado != null)
-                            {
-                                modeloEmpleadoMovimiento.EsJefe = iompHasta.Empleado.EsJefe;
-                            }
-                            else {
-                                modeloEmpleadoMovimiento.EsJefe = accionPersonalViewModel.EmpleadoMovimiento.EsJefe;
-                            }
-
-                            modeloEmpleadoMovimiento.IdIndiceOcupacionalModalidadPartidaHasta =
-                                iompHasta.IdIndiceOcupacionalModalidadPartida;
-
-                            modeloEmpleadoMovimiento.IdIndiceOcupacional =
-                                iompHasta.IdIndiceOcupacional;
-
-                            modeloEmpleadoMovimiento.IdFondoFinanciamiento = iompActual.IdFondoFinanciamiento;
-
-                            modeloEmpleadoMovimiento.IdTipoNombramiento = iompActual.IdTipoNombramiento;
-
-                            modeloEmpleadoMovimiento.SalarioReal = iompActual.SalarioReal;
-
-
-
-                            var contratacion = tipoNombramiento
-                                .Where(w => w.IdTipoNombramiento == modeloEmpleadoMovimiento.IdTipoNombramiento)
-                                .FirstOrDefault().RelacionLaboral.Nombre;
-
-                            if (
-                                contratacion.ToString().ToUpper() ==
-                                ConstantesTipoRelacion.Contrato.ToString().ToUpper()
-                                )
-                            {
-                                modeloEmpleadoMovimiento.CodigoContrato =
-                                    iompActual.CodigoContrato;
-                            }
-
-                            else if (
-                                contratacion.ToString().ToUpper() ==
-                                ConstantesTipoRelacion.Nombramiento.ToString().ToUpper()
-                                )
-                            {
-                                modeloEmpleadoMovimiento.NumeroPartidaIndividual =
-                                    iompActual.NumeroPartidaIndividual;
-
-                                modeloEmpleadoMovimiento.IdModalidadPartida =
-                                    iompActual.IdModalidadPartida;
-                            }
-
-
-                            await db.EmpleadoMovimiento.AddAsync(modeloEmpleadoMovimiento);
-
-                            await db.SaveChangesAsync();
-
-                            transaction.Commit();
-
-                        }
-
-
-                    }
-
-                }
-                */
 
                 else if (
                     tipoAccionPersonal.ModificaDistributivo == true
@@ -2490,7 +2385,7 @@ namespace bd.swth.web.Controllers.API
                 )
                 {
                     // Esto es una desvinculación por tanto no se registra en empleado Movimiento
-                    
+
                     await db.AccionPersonal.AddAsync(modelo);
                     await db.SaveChangesAsync();
 
@@ -3300,16 +3195,20 @@ namespace bd.swth.web.Controllers.API
                 */
                 var empleadoLogueadoPuestoEncargado = await db.EmpleadoMovimiento
                     .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.AccionPersonal)
+                    .Include(i => i.AccionPersonal.TipoAccionPersonal)
                     .Where(w =>
                         w.AccionPersonal.Ejecutado == true
                         && w.FechaDesde <= DateTime.Now
                         && ( 
-                            (w.FechaHasta != null && w.FechaHasta >= DateTime.Now)
+                            (w.FechaHasta != null && w.FechaHasta >= 
+                            new DateTime (DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day)
+                            )
                             || w.FechaHasta == null
                         )
                         && w.IdEmpleado == empleadoLogueado.IdEmpleado
                     )
-                    .OrderByDescending(o => new { o.FechaDesde, o.FechaHasta })
+                    .OrderByDescending(o => o.IdEmpleadoMovimiento)
                     .FirstOrDefaultAsync();
 
 
@@ -3324,11 +3223,94 @@ namespace bd.swth.web.Controllers.API
 
                 if (empleadoLogueadoPuestoEncargado != null)
                 {
-                    IndiceOcupacionalUsuarioActual = empleadoLogueadoPuestoEncargado
-                        .IndiceOcupacional;
 
-                    empleadoLogueadoJefe = empleadoLogueadoPuestoEncargado
-                        .EsJefe;
+                    if (
+                        empleadoLogueadoPuestoEncargado.AccionPersonal.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                        == ConstantesAccionPersonal.Encargo.ToString().ToUpper()
+                        )
+                    {
+                        var finEncargo = await db.AccionPersonal
+                            .Where(w =>
+                                w.Ejecutado == true
+                                && w.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                                    == ConstantesAccionPersonal.TerminacionEncargo.ToString().ToUpper()
+                                && new DateTime(w.FechaRige.Year, w.FechaRige.Month, w.FechaRige.Day)
+                                    == new DateTime(
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Year,
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Month,
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Day
+                                        )
+
+                            ).FirstOrDefaultAsync();
+
+                        if (finEncargo != null)
+                        {
+
+                            IndiceOcupacionalUsuarioActual = empleadoLogueado.IndiceOcupacional;
+                            empleadoLogueadoJefe = empleadoLogueado.Empleado.EsJefe;
+
+                        }
+                        else
+                        {
+
+
+                            IndiceOcupacionalUsuarioActual = empleadoLogueadoPuestoEncargado
+                                .IndiceOcupacional;
+
+                            empleadoLogueadoJefe = empleadoLogueadoPuestoEncargado
+                                .EsJefe;
+
+                        }
+
+                    }
+
+                    else if (
+                        empleadoLogueadoPuestoEncargado.AccionPersonal.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                        == ConstantesAccionPersonal.Subrogacion.ToString().ToUpper()
+                        )
+                    {
+                        var finEncargo = await db.AccionPersonal
+                            .Where(w =>
+                                w.Ejecutado == true
+                                && w.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                                    == ConstantesAccionPersonal.TerminacionSubrogacion.ToString().ToUpper()
+                                && new DateTime(w.FechaRige.Year, w.FechaRige.Month, w.FechaRige.Day)
+                                    == new DateTime(
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Year,
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Month,
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Day
+                                        )
+
+                            ).FirstOrDefaultAsync();
+
+                        if (finEncargo != null)
+                        {
+
+                            IndiceOcupacionalUsuarioActual = empleadoLogueado.IndiceOcupacional;
+                            empleadoLogueadoJefe = empleadoLogueado.Empleado.EsJefe;
+
+                        }
+                        else
+                        {
+
+
+                            IndiceOcupacionalUsuarioActual = empleadoLogueadoPuestoEncargado
+                                .IndiceOcupacional;
+
+                            empleadoLogueadoJefe = empleadoLogueadoPuestoEncargado
+                                .EsJefe;
+
+                        }
+
+                    }
+                    else {
+                        IndiceOcupacionalUsuarioActual = empleadoLogueadoPuestoEncargado
+                                .IndiceOcupacional;
+
+                        empleadoLogueadoJefe = empleadoLogueadoPuestoEncargado
+                            .EsJefe;
+                    }
+
                 }
                 else
                 {
@@ -3526,7 +3508,7 @@ namespace bd.swth.web.Controllers.API
                         w.IdAccionPersonal == accionPersonalViewModel.IdAccionPersonal
                     )
                     .FirstOrDefaultAsync();
-                
+
 
                 var empleadoLogueado = await db.IndiceOcupacionalModalidadPartida
                     .Include(i => i.Empleado)
@@ -3537,9 +3519,8 @@ namespace bd.swth.web.Controllers.API
                         w.Empleado.NombreUsuario == accionPersonalViewModel.NombreUsuarioAprobador
                         && w.Empleado.Activo == true
                     )
-                    .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
+                    .OrderByDescending(o => o.Fecha)
                     .FirstOrDefaultAsync();
-
 
                 /* 
                  * Obtiene el último movimiento temporal del empleado logueado que esté vigente en esta fecha
@@ -3547,12 +3528,20 @@ namespace bd.swth.web.Controllers.API
                 */
                 var empleadoLogueadoPuestoEncargado = await db.EmpleadoMovimiento
                     .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.AccionPersonal)
+                    .Include(i => i.AccionPersonal.TipoAccionPersonal)
                     .Where(w =>
                         w.AccionPersonal.Ejecutado == true
                         && w.FechaDesde <= DateTime.Now
-                        && (w.FechaHasta != null && w.FechaHasta >= DateTime.Now)
+                        && (
+                            (w.FechaHasta != null && w.FechaHasta >=
+                            new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day)
+                            )
+                            || w.FechaHasta == null
+                        )
+                        && w.IdEmpleado == empleadoLogueado.IdEmpleado
                     )
-                    .OrderByDescending(o => new { o.FechaDesde, o.FechaHasta })
+                    .OrderByDescending(o => o.IdEmpleadoMovimiento)
                     .FirstOrDefaultAsync();
 
 
@@ -3567,11 +3556,96 @@ namespace bd.swth.web.Controllers.API
 
                 if (empleadoLogueadoPuestoEncargado != null)
                 {
-                    IndiceOcupacionalUsuarioActual = empleadoLogueadoPuestoEncargado
-                        .IndiceOcupacional;
 
-                    empleadoLogueadoJefe = empleadoLogueadoPuestoEncargado
-                        .EsJefe;
+                    if (
+                        empleadoLogueadoPuestoEncargado.AccionPersonal.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                        == ConstantesAccionPersonal.Encargo.ToString().ToUpper()
+                        )
+                    {
+                        var finEncargo = await db.AccionPersonal
+                            .Where(w =>
+                                w.Ejecutado == true
+                                && w.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                                    == ConstantesAccionPersonal.TerminacionEncargo.ToString().ToUpper()
+                                && new DateTime(w.FechaRige.Year, w.FechaRige.Month, w.FechaRige.Day)
+                                    == new DateTime(
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Year,
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Month,
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Day
+                                        )
+
+                            ).FirstOrDefaultAsync();
+
+                        if (finEncargo != null)
+                        {
+
+                            IndiceOcupacionalUsuarioActual = empleadoLogueado.IndiceOcupacional;
+                            empleadoLogueadoJefe = empleadoLogueado.Empleado.EsJefe;
+
+                        }
+                        else
+                        {
+
+
+                            IndiceOcupacionalUsuarioActual = empleadoLogueadoPuestoEncargado
+                                .IndiceOcupacional;
+
+                            empleadoLogueadoJefe = empleadoLogueadoPuestoEncargado
+                                .EsJefe;
+
+                        }
+
+                    }
+
+                    else if (
+                        empleadoLogueadoPuestoEncargado.AccionPersonal.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                        == ConstantesAccionPersonal.Subrogacion.ToString().ToUpper()
+                        )
+                    {
+                        var finEncargo = await db.AccionPersonal
+                            .Where(w =>
+                                w.Ejecutado == true
+                                && w.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                                    == ConstantesAccionPersonal.TerminacionSubrogacion.ToString().ToUpper()
+                                && new DateTime(w.FechaRige.Year, w.FechaRige.Month, w.FechaRige.Day)
+                                    == new DateTime(
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Year,
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Month,
+                                        empleadoLogueadoPuestoEncargado.FechaDesde.Day
+                                        )
+
+                            ).FirstOrDefaultAsync();
+
+                        if (finEncargo != null)
+                        {
+
+                            IndiceOcupacionalUsuarioActual = empleadoLogueado.IndiceOcupacional;
+                            empleadoLogueadoJefe = empleadoLogueado.Empleado.EsJefe;
+
+                        }
+                        else
+                        {
+
+
+                            IndiceOcupacionalUsuarioActual = empleadoLogueadoPuestoEncargado
+                                .IndiceOcupacional;
+
+                            empleadoLogueadoJefe = empleadoLogueadoPuestoEncargado
+                                .EsJefe;
+
+                        }
+
+                    }
+                    else
+                    {
+                        IndiceOcupacionalUsuarioActual = empleadoLogueadoPuestoEncargado
+                                .IndiceOcupacional;
+
+                        empleadoLogueadoJefe = empleadoLogueadoPuestoEncargado
+                            .EsJefe;
+                    }
+
+
                 }
                 else
                 {
@@ -3579,7 +3653,7 @@ namespace bd.swth.web.Controllers.API
                     empleadoLogueadoJefe = empleadoLogueado.Empleado.EsJefe;
                 }
 
-                
+
 
                 if (
                         accionPersonalActualizar != null

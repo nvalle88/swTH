@@ -98,4 +98,13 @@ namespace bd.swth.entidades.Constantes
         public static string Nombramiento;
     }
 
+    public static class ConstantesAccionPersonal
+    {
+        public static string TerminacionEncargo;
+        public static string TerminacionSubrogacion;
+
+        public static string Encargo;
+        public static string Subrogacion;
+    }
+
 }

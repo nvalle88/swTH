@@ -145,6 +145,13 @@ namespace bd.swth.web
             // Nombre dependencia desconcentrados
             Constantes.NombreDesconcentrados = Configuration.GetSection("NombreDesconcentrados").Value;
 
+            // constantesAccionPersonal
+            ConstantesAccionPersonal.TerminacionEncargo = Configuration.GetSection("TerminacionEncargo").Value;
+            ConstantesAccionPersonal.TerminacionSubrogacion = Configuration.GetSection("TerminacionSubrogacion").Value;
+            ConstantesAccionPersonal.Encargo = Configuration.GetSection("Encargo").Value;
+            ConstantesAccionPersonal.Subrogacion = Configuration.GetSection("Subrogacion").Value;
+
+
             /// <summary>
             /// Se lee el fichero appsetting.json según las etiquetas expuestas en este.
             /// Ejemplo:IntervaloTemporizadorHoras Horas que tendra de vida la token.

@@ -117,7 +117,8 @@ namespace bd.swth.web.Controllers.API
 
 
         /// <summary>
-        /// Solo toma los jefes que están activos
+        /// Solo toma los jefes de la dependencia que están activos
+        /// toma en cuenta los movimientos de subrogación, encargo y movimientos temporales
         /// </summary>
         /// <param name="idDependencia"></param>
         /// <returns></returns>
@@ -132,15 +133,148 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                empleado = await db.Empleado
-                    .Include(i => i.Dependencia)
-                    .Include(i => i.Persona)
+                var empleadoActualIOMP = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i => i.Empleado)
+                    .Include(i => i.Empleado.Dependencia)
+                    .Include(i => i.Empleado.Persona)
+                    .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacional.ManualPuesto)
                     .Where(w =>
-                       w.EsJefe == true
-                       && (w.IdDependencia == idDependencia)
-                       && w.Activo == true
+                        w.Empleado.IdDependencia == idDependencia
+                        && w.Empleado.Activo == true
+                        && w.Empleado.EsJefe == true
+                    )
+                    .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
+                    .FirstOrDefaultAsync();
 
-                    ).FirstOrDefaultAsync();
+                /* 
+                 * Obtiene el último movimiento temporal del empleado logueado que esté vigente en esta fecha
+                 * y asi saber si subroga un cargo o está encargado del puesto
+                */
+                var empleadoPuestoEncargado = await db.EmpleadoMovimiento
+                    .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.AccionPersonal)
+                    .Include(i => i.AccionPersonal.TipoAccionPersonal)
+                    .Include(i => i.Empleado)
+                    .Include(i => i.Empleado.Dependencia)
+                    .Include(i => i.Empleado.Persona)
+                    .Where(w =>
+                        w.AccionPersonal.Ejecutado == true
+                        && w.FechaDesde <= DateTime.Now
+                        && (
+                            (w.FechaHasta != null && w.FechaHasta >=
+                                new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day)
+                            )
+                            || w.FechaHasta == null
+                        )
+                        && w.IndiceOcupacional.IdDependencia == idDependencia
+                        && w.EsJefe == true
+                        && w.Empleado.Activo == true
+                    )
+                    .OrderByDescending(o => o.IdEmpleadoMovimiento)
+                    .FirstOrDefaultAsync();
+
+
+                // Este será el indice ocupacional actual del empleado logueado
+                // tomará los valores del puesto al que está subrogando o encargado si fuera el caso
+                var IndiceOcupacionalUsuarioActual = new IndiceOcupacional();
+                var empleadoJefe = false;
+
+
+
+                if (empleadoPuestoEncargado != null)
+                {
+
+                    if (
+                        empleadoPuestoEncargado.AccionPersonal.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                        == ConstantesAccionPersonal.Encargo.ToString().ToUpper()
+                        )
+                    {
+                        var finEncargo = await db.AccionPersonal
+                            .Where(w =>
+                                w.Ejecutado == true
+                                && w.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                                    == ConstantesAccionPersonal.TerminacionEncargo.ToString().ToUpper()
+                                && new DateTime(w.FechaRige.Year, w.FechaRige.Month, w.FechaRige.Day)
+                                    == new DateTime(
+                                        empleadoPuestoEncargado.FechaDesde.Year,
+                                        empleadoPuestoEncargado.FechaDesde.Month,
+                                        empleadoPuestoEncargado.FechaDesde.Day
+                                        )
+                            ).FirstOrDefaultAsync();
+
+                        if (finEncargo != null)
+                        {
+
+                            IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
+                            empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
+                            empleado = empleadoActualIOMP.Empleado;
+                        }
+                        else
+                        {
+
+
+                            IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
+                            empleadoJefe = empleadoPuestoEncargado.EsJefe;
+                            empleado = empleadoPuestoEncargado.Empleado;
+
+                        }
+
+                    }
+
+                    else if (
+                        empleadoPuestoEncargado.AccionPersonal.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                        == ConstantesAccionPersonal.Subrogacion.ToString().ToUpper()
+                        )
+                    {
+                        var finEncargo = await db.AccionPersonal
+                            .Where(w =>
+                                w.Ejecutado == true
+                                && w.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                                    == ConstantesAccionPersonal.TerminacionSubrogacion.ToString().ToUpper()
+                                && new DateTime(w.FechaRige.Year, w.FechaRige.Month, w.FechaRige.Day)
+                                    == new DateTime(
+                                        empleadoPuestoEncargado.FechaDesde.Year,
+                                        empleadoPuestoEncargado.FechaDesde.Month,
+                                        empleadoPuestoEncargado.FechaDesde.Day
+                                        )
+
+                            ).FirstOrDefaultAsync();
+
+                        if (finEncargo != null)
+                        {
+
+                            IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
+                            empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
+                            empleado = empleadoActualIOMP.Empleado;
+                        }
+                        else
+                        {
+
+
+                            IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
+                            empleadoJefe = empleadoPuestoEncargado.EsJefe;
+                            empleado = empleadoPuestoEncargado.Empleado;
+
+                        }
+
+                    }
+                    else
+                    {
+                        IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
+                        empleadoJefe = empleadoPuestoEncargado.EsJefe;
+                        empleado = empleadoPuestoEncargado.Empleado;
+                    }
+
+                }
+                else
+                {
+                    IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
+                    empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
+                    empleado = empleadoActualIOMP.Empleado;
+                }
+
+
 
                 return empleado;
             }
@@ -394,7 +528,7 @@ namespace bd.swth.web.Controllers.API
 
 
 
-        // MÉTODOS PRIVADOS
+        
 
         private async Task<List<ActivarPersonalTalentoHumano>> ListarActivarPersonalTalentoHumanoYearActual()
         {
