@@ -310,7 +310,6 @@ namespace bd.swth.datos
                 entity.HasOne(d => d.ManualPuesto)
                     .WithMany(p => p.FlujoAprobacion)
                     .HasForeignKey(d => d.IdManualPuesto)
-                    .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_FlujoAprobacion_ManualPuesto");
 
                 entity.HasOne(d => d.Sucursal)
@@ -843,7 +842,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdActividadesEsenciales)
                     .HasName("PK221");
 
-                entity.Property(e => e.Descripcion).HasMaxLength(255);
+                entity.Property(e => e.Descripcion).HasMaxLength(500);
             });
 
 
@@ -1091,7 +1090,7 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
-                    .HasMaxLength(20);
+                    .HasMaxLength(100);
             });
 
             modelBuilder.Entity<CapacitacionAreaConocimiento>(entity =>
@@ -1951,15 +1950,15 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdEmpleadoMovimiento)
                     .HasName("PK126");
 
-                entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("Ref15414");
-
-                entity.HasIndex(e => e.IdIndiceOcupacionalModalidadPartidaDesde)
-                    .HasName("Ref71195");
+                entity.Property(e => e.CodigoContrato).HasColumnType("varchar(50)");
 
                 entity.Property(e => e.FechaDesde).HasColumnType("date");
 
                 entity.Property(e => e.FechaHasta).HasColumnType("date");
+
+                entity.Property(e => e.NumeroPartidaIndividual).HasColumnType("varchar(50)");
+
+                entity.Property(e => e.SalarioReal).HasColumnType("decimal");
 
                 entity.HasOne(d => d.AccionPersonal)
                     .WithMany(p => p.EmpleadoMovimiento)
@@ -1973,6 +1972,16 @@ namespace bd.swth.datos
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_EmpleadoMovimiento_Empleado");
 
+                entity.HasOne(d => d.FondoFinanciamiento)
+                    .WithMany(p => p.EmpleadoMovimiento)
+                    .HasForeignKey(d => d.IdFondoFinanciamiento)
+                    .HasConstraintName("FK_EmpleadoMovimiento_FondoFinanciamiento");
+
+                entity.HasOne(d => d.IndiceOcupacional)
+                    .WithMany(p => p.EmpleadoMovimiento)
+                    .HasForeignKey(d => d.IdIndiceOcupacional)
+                    .HasConstraintName("FK_EmpleadoMovimiento_IndiceOcupacional");
+
                 entity.HasOne(d => d.IndiceOcupacionalModalidadPartidaDesde)
                     .WithMany(p => p.EmpleadoMovimientoIdIndiceOcupacionalModalidadPartidaDesde)
                     .HasForeignKey(d => d.IdIndiceOcupacionalModalidadPartidaDesde)
@@ -1982,6 +1991,16 @@ namespace bd.swth.datos
                     .WithMany(p => p.EmpleadoMovimientoIdIndiceOcupacionalModalidadPartidaHasta)
                     .HasForeignKey(d => d.IdIndiceOcupacionalModalidadPartidaHasta)
                     .HasConstraintName("FK_EmpleadoMovimiento_IndiceOcupacionalModalidadPartida");
+
+                entity.HasOne(d => d.ModalidadPartida)
+                    .WithMany(p => p.EmpleadoMovimiento)
+                    .HasForeignKey(d => d.IdModalidadPartida)
+                    .HasConstraintName("FK_EmpleadoMovimiento_ModalidadPartida");
+
+                entity.HasOne(d => d.TipoNombramiento)
+                    .WithMany(p => p.EmpleadoMovimiento)
+                    .HasForeignKey(d => d.IdTipoNombramiento)
+                    .HasConstraintName("FK_EmpleadoMovimiento_TipoNombramiento");
             });
 
             modelBuilder.Entity<EmpleadoNepotismo>(entity =>

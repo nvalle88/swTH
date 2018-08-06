@@ -370,23 +370,46 @@ namespace bd.swth.web.Controllers.API
                 var anio = DateTime.Now.Year;
                 var listaSalida2 = new List<DocumentoFAOViewModel>();
 
-                var EmpleadoEncontrado = await db.Empleado.OrderBy(x => x.FechaIngreso).Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario && x.Activo == true).FirstOrDefaultAsync();
+                var EmpleadoEncontrado = await db.Empleado
+                    .OrderBy(x => x.FechaIngreso)
+                    .Where(x => x.NombreUsuario == documentoFAOViewModel.NombreUsuario && x.Activo == true)
+                    .FirstOrDefaultAsync();
+
                 if (EmpleadoEncontrado != null)
                 {
-                    var modalidar = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaOcupada).FirstOrDefaultAsync();
-                    var EmpleadoDeJefe = await db.Empleado.Where(x => x.IdDependencia == EmpleadoEncontrado.IdDependencia).ToListAsync();
+                    //var modalidar = await db.ModalidadPartida
+                    //    .Where(x => x.Nombre == Constantes.PartidaOcupada)
+                    //    .FirstOrDefaultAsync();
+
+                    var EmpleadoDeJefe = await db.Empleado
+                        //.Where(x => x.IdDependencia == EmpleadoEncontrado.IdDependencia)
+                        .ToListAsync();
+
                     foreach (var item in EmpleadoDeJefe)
                     {
-                        var modalidadPartida = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdEmpleado == item.IdEmpleado && x.IdModalidadPartida == modalidar.IdModalidadPartida).Select(x => new DocumentoFAOViewModel
+                        var iompEmpleado = await db.IndiceOcupacionalModalidadPartida
+                            .Where(x =>
+                                x.IdEmpleado == item.IdEmpleado
+                                && x.Empleado.Activo == true
+                                //&& x.IdModalidadPartida == modalidar.IdModalidadPartida
+                            )
+                            .OrderByDescending(o => o.Fecha)
+                            .Select(x => new DocumentoFAOViewModel
+                            {
+                                //IdEmpleado =Convert.ToInt32( x.IdEmpleado),
+                                Modalidad = "",//x.ModalidadPartida.Nombre, NO SE QUE HACE ESTE CAMPO DESCOMENTAR AL VERIFICAR SU USO
+                                Puesto = x.IndiceOcupacional.ManualPuesto.Nombre
+                            })
+                            .FirstOrDefaultAsync();
+
+
+                        if (iompEmpleado != null)
                         {
-                            //IdEmpleado =Convert.ToInt32( x.IdEmpleado),
-                            Modalidad = x.ModalidadPartida.Nombre,
-                            Puesto = x.IndiceOcupacional.ManualPuesto.Nombre
-                        }).FirstOrDefaultAsync();
-                        if (modalidadPartida != null)
-                        {
-                            var a = await db.FormularioAnalisisOcupacional.Where(x => x.Anio == anio && x.IdEmpleado == item.IdEmpleado).FirstOrDefaultAsync();
-                            if (a == null)
+                            var formulario = await db.FormularioAnalisisOcupacional
+                                .Where(x => x.Anio == anio && x.IdEmpleado == item.IdEmpleado)
+                                .FirstOrDefaultAsync();
+
+                            if (formulario == null)
                             {
                                 var EmpleadoDeJefe1 = await db.Empleado.Where(x => x.IdEmpleado == item.IdEmpleado).Select(x => new DocumentoFAOViewModel
                                 {
@@ -400,9 +423,11 @@ namespace bd.swth.web.Controllers.API
                                     //Dependencia = x.Dependencia.DependenciaPadre.Nombre,
                                     UnidadAdministrativa = x.Dependencia.Nombre,
                                     TipoNombramiento = x.IndiceOcupacionalModalidadPartida.FirstOrDefault().TipoNombramiento.Nombre,
-                                    Modalidad = modalidadPartida.Modalidad,
-                                    Puesto = modalidadPartida.Puesto,
-                                }).FirstOrDefaultAsync();
+                                    Modalidad = iompEmpleado.Modalidad,
+                                    Puesto = iompEmpleado.Puesto,
+                                })
+                                .FirstOrDefaultAsync();
+
                                 listaSalida2.Add(new DocumentoFAOViewModel
                                 {
                                     IdEmpleado = EmpleadoDeJefe1.IdEmpleado,
@@ -424,26 +449,19 @@ namespace bd.swth.web.Controllers.API
 
                     }
 
-                }
+                    }
 
                 return listaSalida2;
 
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<DocumentoFAOViewModel>();
             }
         }
+
+
         [HttpPost]
         [Route("ListarEmpleadosConFAO")]
         public async Task<List<DocumentoFAOViewModel>> ListarEmpleadosConFAO([FromBody] DocumentoFAOViewModel documentoFAOViewModel)
@@ -619,54 +637,54 @@ namespace bd.swth.web.Controllers.API
         [Route("ListarEmpleadosActivos")]
         public async Task<List<ListaEmpleadoViewModel>> ListarEmpleadosActivos()
         {
-                try
+            try
+            {
+
+                var listaIOMP = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i => i.TipoNombramiento)
+                    .Include(i => i.TipoNombramiento.RelacionLaboral)
+
+                    .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacional.ManualPuesto)
+                    .Where(w => w.IdEmpleado != null)
+                    .ToListAsync();
+
+
+                var lista = await db.Empleado
+                                    .Where(w => w.Activo == true)
+                                    .Select(x => new ListaEmpleadoViewModel
+                                    {
+                                        IdEmpleado = x.IdEmpleado,
+                                        IdPersona = x.Persona.IdPersona,
+                                        NombreApellido = string.Format("{0} {1}", x.Persona.Nombres, x.Persona.Apellidos),
+                                        TelefonoPrivado = x.Persona.TelefonoPrivado,
+                                        CorreoPrivado = x.Persona.CorreoPrivado,
+                                        Dependencia = x.IdDependencia == null ? "No asignado" : x.Dependencia.Nombre,
+                                        Identificacion = x.Persona.Identificacion
+                                    })
+                                    .DistinctBy(d => d.IdEmpleado)
+                                    .ToAsyncEnumerable().ToList();
+
+                foreach (var item in lista)
                 {
 
-                    var listaIOMP = await db.IndiceOcupacionalModalidadPartida
-                        .Include(i => i.TipoNombramiento)
-                        .Include(i => i.TipoNombramiento.RelacionLaboral)
-
-                        .Include(i => i.IndiceOcupacional)
-                        .Include(i => i.IndiceOcupacional.ManualPuesto)
-                        .Where(w => w.IdEmpleado != null)
-                        .ToListAsync();
-
-
-                    var lista = await db.Empleado
-                                        .Where(w => w.Activo == true)
-                                        .Select(x => new ListaEmpleadoViewModel
-                                        {
-                                            IdEmpleado = x.IdEmpleado,
-                                            IdPersona = x.Persona.IdPersona,
-                                            NombreApellido = string.Format("{0} {1}", x.Persona.Nombres, x.Persona.Apellidos),
-                                            TelefonoPrivado = x.Persona.TelefonoPrivado,
-                                            CorreoPrivado = x.Persona.CorreoPrivado,
-                                            Dependencia = x.IdDependencia == null ? "No asignado" : x.Dependencia.Nombre,
-                                            Identificacion = x.Persona.Identificacion
-                                        })
-                                        .DistinctBy(d => d.IdEmpleado)
-                                        .ToAsyncEnumerable().ToList();
-
-                    foreach (var item in lista)
+                    if (listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault() != null)
                     {
 
-                        if (listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault() != null)
-                        {
+                        var itemIomp = listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault();
 
-                            var itemIomp = listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault();
-
-                            item.IdRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.IdRelacionLaboral;
-                            item.NombreRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.Nombre;
-                            item.ManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.Nombre;
-                            item.IdManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.IdManualPuesto;
-                            item.PartidaIndividual = itemIomp.NumeroPartidaIndividual + itemIomp.CodigoContrato;
-                        }
+                        item.IdRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.IdRelacionLaboral;
+                        item.NombreRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.Nombre;
+                        item.ManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.Nombre;
+                        item.IdManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.IdManualPuesto;
+                        item.PartidaIndividual = itemIomp.NumeroPartidaIndividual + itemIomp.CodigoContrato;
                     }
-
-
-                    return lista;
-
                 }
+
+
+                return lista;
+
+            }
             catch (Exception ex)
             {
                 return new List<ListaEmpleadoViewModel>();
@@ -721,7 +739,7 @@ namespace bd.swth.web.Controllers.API
 
                 var lista = await db.IndiceOcupacionalModalidadPartida
                                     .Where(w => w.Empleado.Dependencia.IdSucursal == usuarioActual.Dependencia.IdSucursal)
-                                    .OrderByDescending(o => o.Fecha)
+                                    .OrderByDescending(o => new { o.Fecha ,o.IdIndiceOcupacionalModalidadPartida} )
                                     .Select(x => new ListaEmpleadoViewModel
                                     {
                                         IdEmpleado = (int)x.IdEmpleado,
@@ -775,7 +793,12 @@ namespace bd.swth.web.Controllers.API
 
                     .Include(i => i.IndiceOcupacional)
                     .Include(i => i.IndiceOcupacional.ManualPuesto)
-                    .Where(w => w.IdEmpleado != null)
+
+                    .Include(i=>i.Empleado)
+                    .Where(w => 
+                        w.IdEmpleado != null
+                    )
+                    .OrderByDescending(o=>o.Fecha)
                     .ToListAsync();
 
 
@@ -797,11 +820,28 @@ namespace bd.swth.web.Controllers.API
                 foreach (var item in lista)
                 {
 
-                    if (listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault() != null)
+                    if (
+                        listaIOMP.Where(w => 
+                            w.IdEmpleado == item.IdEmpleado
+                            && w.Empleado.Activo == true
+                        )
+                        .FirstOrDefault() != null
+                    )
                     {
+                        // crear una lista para filtrar por si hay un despido y un reingreso el mismo día
+                        var fechaMax = listaIOMP
+                            .Where(w => w.IdEmpleado == item.IdEmpleado)
+                            .OrderByDescending(o => o.Fecha)
+                            .FirstOrDefault().Fecha;
 
-                        var itemIomp = listaIOMP.Where(w => w.IdEmpleado == item.IdEmpleado).FirstOrDefault();
-                       
+                        var itemIomp = listaIOMP
+                            .Where(w => 
+                                w.IdEmpleado == item.IdEmpleado
+                                && w.Fecha == fechaMax
+                            )
+                            .OrderByDescending(o=> o.IdIndiceOcupacionalModalidadPartida)                            
+                            .FirstOrDefault();
+
                         item.IdRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.IdRelacionLaboral;
                         item.NombreRelacionLaboral = itemIomp.TipoNombramiento.RelacionLaboral.Nombre;
                         item.ManualPuesto = itemIomp.IndiceOcupacional.ManualPuesto.Nombre;
@@ -829,7 +869,7 @@ namespace bd.swth.web.Controllers.API
                 var name = Constantes.PartidaVacante;
                 var listaIndiceOcupacional = db.IndiceOcupacional
                     .Include(x => x.ManualPuesto)
-                    .Include(x=>x.IndiceOcupacionalModalidadPartida)
+                    .Include(x => x.IndiceOcupacionalModalidadPartida)
                     .Where(x => x.IdDependencia == indiceocupacional.IdDependencia && x.IndiceOcupacionalModalidadPartida.FirstOrDefault().ModalidadPartida.Nombre.ToUpper() == Constantes.PartidaVacante.ToUpper())
                     .OrderBy(x => x.IdDependencia).DistinctBy(x => x.IdManualPuesto).ToList();
 
@@ -841,7 +881,7 @@ namespace bd.swth.web.Controllers.API
                 return new List<IndiceOcupacional>();
             }
         }
-       
+
 
 
         [HttpPost]
@@ -1149,6 +1189,8 @@ namespace bd.swth.web.Controllers.API
                                             .Where(wm => wm.Nombre.ToUpper() == Constantes.PartidaVacante.ToUpper())
                                             .FirstOrDefault()
                                             .IdModalidadPartida
+
+                                && w.IdIndiceOcupacional == modelo.IndiceOcupacionalViewModel.IdIndiceOcupacional
                             )
                         .OrderByDescending(o => o.Fecha)
                         .DistinctBy(d => d.IndiceOcupacional.ManualPuesto.Nombre)
@@ -1184,7 +1226,7 @@ namespace bd.swth.web.Controllers.API
 
 
 
-        
+
         [HttpPost]
         [Route("ListarEscalaGradosPorRolPuesto")]
         public async Task<List<IndiceOcupacional>> GetEscalaGradosPorRolPuesto([FromBody] IndiceOcupacional indiceocupacional)
@@ -1213,7 +1255,7 @@ namespace bd.swth.web.Controllers.API
                 return new List<IndiceOcupacional>();
             }
         }
-        
+
 
         [HttpPost]
         [Route("ListarModalidadesPartidaPorEscalaGrados")]
@@ -1243,7 +1285,7 @@ namespace bd.swth.web.Controllers.API
                 return new List<IndiceOcupacional>();
             }
         }
-        
+
 
 
 
@@ -1970,7 +2012,7 @@ namespace bd.swth.web.Controllers.API
 
         [HttpPost]
         [Route("ObtenerDatosCompletosEmpleado")]
-        public async Task<ListaEmpleadoViewModel> ObtenerDatosCompletosEmpleado([FromBody]Empleado empleado)
+        public async Task<Response> ObtenerDatosCompletosEmpleado([FromBody]Empleado empleado)
         {
             Empleado empleadoObtenido = new Empleado();
             ListaEmpleadoViewModel empleadoEnviar = new ListaEmpleadoViewModel();
@@ -2022,26 +2064,27 @@ namespace bd.swth.web.Controllers.API
 
                 };
                 empleadoEnviar = empleados;
-                //listaEmpleado.Add(empleados);
-
-
-
-
-
-                return empleadoEnviar;
-
-
-
+                return new Response
+                {
+                    Resultado = empleadoEnviar,
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio
+                };
             }
             catch (Exception ex)
             {
-                return new ListaEmpleadoViewModel();
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = ex.ToString(),
+                    Resultado = null
+                };
             }
         }
 
 
 
-        
+
 
         [HttpPost]
         [Route("ListarEmpleadosdeDependenciaSinCesacion")]
@@ -2613,20 +2656,20 @@ namespace bd.swth.web.Controllers.API
                         personaActual.IdNacionalidad = datosBasicosEmpleado.IdNacionalidad;
                         personaActual.IdTipoSangre = datosBasicosEmpleado.IdTipoSangre;
                         personaActual.IdEtnia = datosBasicosEmpleado.IdEtnia;
-                        personaActual.Identificacion = (datosBasicosEmpleado.Identificacion != null)?datosBasicosEmpleado.Identificacion.ToString().ToUpper():"";
-                        personaActual.Nombres = (datosBasicosEmpleado.Nombres != null) ? datosBasicosEmpleado.Nombres.ToString().ToUpper():"";
-                        personaActual.Apellidos = (datosBasicosEmpleado.Apellidos != null) ? datosBasicosEmpleado.Apellidos.ToString().ToUpper():"";
+                        personaActual.Identificacion = (datosBasicosEmpleado.Identificacion != null) ? datosBasicosEmpleado.Identificacion.ToString().ToUpper() : "";
+                        personaActual.Nombres = (datosBasicosEmpleado.Nombres != null) ? datosBasicosEmpleado.Nombres.ToString().ToUpper() : "";
+                        personaActual.Apellidos = (datosBasicosEmpleado.Apellidos != null) ? datosBasicosEmpleado.Apellidos.ToString().ToUpper() : "";
                         personaActual.TelefonoPrivado = datosBasicosEmpleado.TelefonoPrivado;
                         personaActual.TelefonoCasa = datosBasicosEmpleado.TelefonoCasa;
                         personaActual.CorreoPrivado = datosBasicosEmpleado.CorreoPrivado;
-                        personaActual.LugarTrabajo = (datosBasicosEmpleado.LugarTrabajo != null) ? datosBasicosEmpleado.LugarTrabajo.ToString().ToUpper():"";
+                        personaActual.LugarTrabajo = (datosBasicosEmpleado.LugarTrabajo != null) ? datosBasicosEmpleado.LugarTrabajo.ToString().ToUpper() : "";
                         personaActual.IdNacionalidadIndigena = datosBasicosEmpleado.IdNacionalidadIndigena;
-                        personaActual.CallePrincipal = (datosBasicosEmpleado.CallePrincipal != null) ? datosBasicosEmpleado.CallePrincipal.ToString().ToUpper():"";
-                        personaActual.CalleSecundaria = (datosBasicosEmpleado.CalleSecundaria != null) ? datosBasicosEmpleado.CalleSecundaria.ToString().ToUpper():"";
-                        personaActual.Referencia = (datosBasicosEmpleado.Referencia != null) ? datosBasicosEmpleado.Referencia.ToString().ToUpper():"";
-                        personaActual.Numero = (datosBasicosEmpleado.Numero != null) ? datosBasicosEmpleado.Numero.ToString().ToUpper():"";
+                        personaActual.CallePrincipal = (datosBasicosEmpleado.CallePrincipal != null) ? datosBasicosEmpleado.CallePrincipal.ToString().ToUpper() : "";
+                        personaActual.CalleSecundaria = (datosBasicosEmpleado.CalleSecundaria != null) ? datosBasicosEmpleado.CalleSecundaria.ToString().ToUpper() : "";
+                        personaActual.Referencia = (datosBasicosEmpleado.Referencia != null) ? datosBasicosEmpleado.Referencia.ToString().ToUpper() : "";
+                        personaActual.Numero = (datosBasicosEmpleado.Numero != null) ? datosBasicosEmpleado.Numero.ToString().ToUpper() : "";
                         personaActual.IdParroquia = datosBasicosEmpleado.IdParroquia;
-                        personaActual.Ocupacion = (datosBasicosEmpleado.Ocupacion != null) ? datosBasicosEmpleado.Ocupacion.ToString().ToUpper():"";
+                        personaActual.Ocupacion = (datosBasicosEmpleado.Ocupacion != null) ? datosBasicosEmpleado.Ocupacion.ToString().ToUpper() : "";
                         //1. Actualizar Persona Persona 
                         var personaInsertarda = db.Persona.Update(personaActual);
 
@@ -2640,7 +2683,7 @@ namespace bd.swth.web.Controllers.API
                         empleadoActual.EsJefe = datosBasicosEmpleado.EsJefe;
                         empleadoActual.TrabajoSuperintendenciaBanco = datosBasicosEmpleado.TrabajoSuperintendenciaBanco;
                         empleadoActual.DeclaracionJurada = datosBasicosEmpleado.DeclaracionJurada;
-                        empleadoActual.IngresosOtraActividad = (datosBasicosEmpleado.IngresosOtraActividad != null) ? datosBasicosEmpleado.IngresosOtraActividad.ToString().ToUpper():"";
+                        empleadoActual.IngresosOtraActividad = (datosBasicosEmpleado.IngresosOtraActividad != null) ? datosBasicosEmpleado.IngresosOtraActividad.ToString().ToUpper() : "";
                         empleadoActual.MesesImposiciones = datosBasicosEmpleado.MesesImposiciones;
                         empleadoActual.DiasImposiciones = datosBasicosEmpleado.DiasImposiciones;
                         empleadoActual.FondosReservas = datosBasicosEmpleado.FondosReservas;
@@ -2649,10 +2692,10 @@ namespace bd.swth.web.Controllers.API
                         empleadoActual.Extension = datosBasicosEmpleado.ExtencionTelefonica;
                         empleadoActual.Nepotismo = datosBasicosEmpleado.Nepotismo;
                         empleadoActual.OtrosIngresos = datosBasicosEmpleado.OtrosIngresos;
-                        empleadoActual.Detalle = (datosBasicosEmpleado.Detalle != null) ? datosBasicosEmpleado.Detalle.ToString().ToUpper():"";
-                        empleadoActual.RelacionSuperintendencia = (datosBasicosEmpleado.RelacionSuperintendencia != null) ? datosBasicosEmpleado.RelacionSuperintendencia.ToString().ToUpper():"";
+                        empleadoActual.Detalle = (datosBasicosEmpleado.Detalle != null) ? datosBasicosEmpleado.Detalle.ToString().ToUpper() : "";
+                        empleadoActual.RelacionSuperintendencia = (datosBasicosEmpleado.RelacionSuperintendencia != null) ? datosBasicosEmpleado.RelacionSuperintendencia.ToString().ToUpper() : "";
                         empleadoActual.AnoDesvinculacion = datosBasicosEmpleado.AnoDesvinculacion;
-                        empleadoActual.TipoRelacion = (datosBasicosEmpleado.TipoRelacion != null) ? datosBasicosEmpleado.TipoRelacion.ToString().ToUpper():"";
+                        empleadoActual.TipoRelacion = (datosBasicosEmpleado.TipoRelacion != null) ? datosBasicosEmpleado.TipoRelacion.ToString().ToUpper() : "";
                         empleadoActual.IdBrigadaSSORol = datosBasicosEmpleado.IdBrigadaSSORol;
 
                         var empleado = db.Empleado.Update(empleadoActual);
@@ -2683,7 +2726,7 @@ namespace bd.swth.web.Controllers.API
                 {
 
                     transaction.Rollback();
-                    
+
                     return new Response
                     {
                         IsSuccess = false,
@@ -2722,19 +2765,19 @@ namespace bd.swth.web.Controllers.API
                             IdTipoSangre = datosBasicosEmpleado.IdTipoSangre,
                             IdEtnia = datosBasicosEmpleado.IdEtnia,
                             Identificacion = datosBasicosEmpleado.Identificacion.ToString().ToUpper(),
-                            Nombres = (datosBasicosEmpleado.Nombres != null)?datosBasicosEmpleado.Nombres.ToString().ToUpper():"",
-                            Apellidos = (datosBasicosEmpleado.Apellidos != null)?datosBasicosEmpleado.Apellidos.ToString().ToUpper():"",
+                            Nombres = (datosBasicosEmpleado.Nombres != null) ? datosBasicosEmpleado.Nombres.ToString().ToUpper() : "",
+                            Apellidos = (datosBasicosEmpleado.Apellidos != null) ? datosBasicosEmpleado.Apellidos.ToString().ToUpper() : "",
                             TelefonoPrivado = datosBasicosEmpleado.TelefonoPrivado,
                             TelefonoCasa = datosBasicosEmpleado.TelefonoCasa,
                             CorreoPrivado = datosBasicosEmpleado.CorreoPrivado,
                             LugarTrabajo = datosBasicosEmpleado.LugarTrabajo,
                             IdNacionalidadIndigena = datosBasicosEmpleado.IdNacionalidadIndigena,
-                            CallePrincipal = (datosBasicosEmpleado.CallePrincipal != null)?datosBasicosEmpleado.CallePrincipal.ToString().ToUpper():"",
-                            CalleSecundaria = (datosBasicosEmpleado.CalleSecundaria != null)?datosBasicosEmpleado.CalleSecundaria.ToString().ToUpper():"",
-                            Referencia = (datosBasicosEmpleado.Referencia != null)?datosBasicosEmpleado.Referencia.ToString().ToUpper():"",
-                            Numero = (datosBasicosEmpleado.Numero != null)?datosBasicosEmpleado.Numero.ToString().ToUpper():"",
+                            CallePrincipal = (datosBasicosEmpleado.CallePrincipal != null) ? datosBasicosEmpleado.CallePrincipal.ToString().ToUpper() : "",
+                            CalleSecundaria = (datosBasicosEmpleado.CalleSecundaria != null) ? datosBasicosEmpleado.CalleSecundaria.ToString().ToUpper() : "",
+                            Referencia = (datosBasicosEmpleado.Referencia != null) ? datosBasicosEmpleado.Referencia.ToString().ToUpper() : "",
+                            Numero = (datosBasicosEmpleado.Numero != null) ? datosBasicosEmpleado.Numero.ToString().ToUpper() : "",
                             IdParroquia = datosBasicosEmpleado.IdParroquia,
-                            Ocupacion = (datosBasicosEmpleado.Ocupacion != null) ?datosBasicosEmpleado.Ocupacion.ToString().ToUpper():"",
+                            Ocupacion = (datosBasicosEmpleado.Ocupacion != null) ? datosBasicosEmpleado.Ocupacion.ToString().ToUpper() : "",
 
 
 
@@ -2752,6 +2795,7 @@ namespace bd.swth.web.Controllers.API
                             FondosReservas = false,
                             MesesImposiciones = 0,
                             DiasImposiciones = 0,
+                            FechaIngreso = DateTime.Now,
                         };
                         var empleado = await db.Empleado.AddAsync(empleadoinsertado);
                         await db.SaveChangesAsync();
@@ -2778,7 +2822,7 @@ namespace bd.swth.web.Controllers.API
                 {
 
                     transaction.Rollback();
-                    
+
                     return new Response
                     {
                         IsSuccess = false,
@@ -3281,7 +3325,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                
+
                 return new Response
                 {
                     IsSuccess = false,
@@ -3670,7 +3714,7 @@ namespace bd.swth.web.Controllers.API
 
         #endregion
 
-        
+
         #region Historico fao
         [HttpPost]
         [Route("ListarEmpleadosHistoricoFao")]
@@ -3759,7 +3803,7 @@ namespace bd.swth.web.Controllers.API
         }
 
         #endregion
-        
+
 
         /// <summary>
         /// Requiere IdEmpleado
@@ -4023,11 +4067,16 @@ namespace bd.swth.web.Controllers.API
 
                 var iomp = await db.IndiceOcupacionalModalidadPartida
                     .Include(i => i.TipoNombramiento.RelacionLaboral)
+                    
                     .Include(i => i.IndiceOcupacional)
                     .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
+                    .Include(i => i.IndiceOcupacional.ManualPuesto)
+                    .Include(i => i.IndiceOcupacional.RolPuesto)
+                    .Include(i => i.IndiceOcupacional.EscalaGrados)
+
                     .Include(i => i.ModalidadPartida)
                     .Where(w => w.IdEmpleado == IdEmpleado)
-                    .OrderByDescending(o => o.Fecha)
+                    .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
                     .FirstOrDefaultAsync();
 
                 var primerIOMP = await db.IndiceOcupacionalModalidadPartida
@@ -4039,7 +4088,7 @@ namespace bd.swth.web.Controllers.API
                     .Include(i => i.IndiceOcupacional.EscalaGrados)
                     .Include(i => i.ModalidadPartida)
                     .Where(w => w.IdEmpleado == IdEmpleado)
-                    .OrderBy(o => o.Fecha)
+                    .OrderBy(o => o.IdIndiceOcupacionalModalidadPartida)
                     .FirstOrDefaultAsync();
 
                 var fechaPrimerIngreso = primerIOMP.Fecha;
@@ -4058,11 +4107,13 @@ namespace bd.swth.web.Controllers.API
                     w.TipoAccionPersonal.Definitivo == true
                     && w.TipoAccionPersonal.DesactivarEmpleado == true
                 )
-                .OrderByDescending(o => o.FechaRige);
+                .OrderByDescending(o => o.FechaRige)
+                .ToList();
 
                 //** Obtener si hay una desvinculación después de la última fecha de ingreso 
                 var desvinculacion = listaDesvinculacionesEmpleado
-                    .Where(w => w.FechaRige >= iomp.Fecha).FirstOrDefault();
+                    .Where(w => w.FechaRige >= iomp.Fecha)
+                    .FirstOrDefault();
 
                 // ** modelo para enviarse como respuesta
                 var modelo = new EmpleadoViewModel
@@ -4072,7 +4123,7 @@ namespace bd.swth.web.Controllers.API
                 };
 
 
-                if (desvinculacion == null)
+                if (Empleado.Activo == true)
                 {
 
                     modelo.IndiceOcupacionalModalidadPartida = iomp;
@@ -4081,16 +4132,19 @@ namespace bd.swth.web.Controllers.API
                     modelo.IndiceOcupacional = iomp.IndiceOcupacional;
                     modelo.IndiceOcupacionalModalidadPartida.NumeroPartidaIndividual = iomp.NumeroPartidaIndividual
                         + iomp.CodigoContrato;
+                    modelo.SalarioReal = iomp.SalarioReal != null && iomp.SalarioReal > 0?true:false;
 
                     if (iomp.ModalidadPartida != null)
                     {
                         modelo.IndiceOcupacional.IdModalidadPartida = iomp.ModalidadPartida.IdModalidadPartida;
                     }
-
+                    modelo.FechaPrimerIngreso = primerIOMP.Fecha;
                 }
                 else
                 {
                     mensaje = Mensaje.RegistroNoEncontrado;
+
+                    modelo.FechaPrimerIngreso = primerIOMP.Fecha;
                 }
 
                 return new Response

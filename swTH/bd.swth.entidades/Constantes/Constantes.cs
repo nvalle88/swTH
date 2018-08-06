@@ -17,11 +17,13 @@ namespace bd.swth.entidades.Constantes
 
         public static string PartidaVacante { get; set; }
         public static string PartidaOcupada { get; set; }
-
+        public static string PartidaSuprimida { get; set; }
 
         public static string EscapeConstantes { get { return "#"; } }
         public static string EscapeFunciones { get { return "@"; } }
         public static string EscapeConjuntos { get { return "&"; } }
+
+        public static string NombreDesconcentrados { get; set; }
     }
 
     public static class ConstantesGrupoOcupacional
@@ -94,6 +96,15 @@ namespace bd.swth.entidades.Constantes
     {
         public static string Contrato;
         public static string Nombramiento;
+    }
+
+    public static class ConstantesAccionPersonal
+    {
+        public static string TerminacionEncargo;
+        public static string TerminacionSubrogacion;
+
+        public static string Encargo;
+        public static string Subrogacion;
     }
 
 }

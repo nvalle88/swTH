@@ -41,7 +41,7 @@ namespace bd.swth.web.Controllers.API
         // POST: api/ActivacionesPersonalTalentoHumano
         [HttpPost]
         [Route("GetListDependenciasByFiscalYearActual")]
-        public async Task<List<ActivarPersonalTalentoHumanoViewModel>> GetListDependenciasByFiscalYearActual(UsuarioViewModel usuario)
+        public async Task<List<ActivarPersonalTalentoHumanoViewModel>> GetListDependenciasByFiscalYearActual([FromBody]UsuarioViewModel usuario)
         {
 
             List<ActivarPersonalTalentoHumanoViewModel> listaResultado = new List<ActivarPersonalTalentoHumanoViewModel>();
@@ -49,13 +49,15 @@ namespace bd.swth.web.Controllers.API
             try
             {
 
-                var empleadoActual = db.Empleado.Include(d => d.Dependencia)
+                var empleadoActual = db.Empleado
+                    .Include(d => d.Dependencia)
                     .Where(x => x.NombreUsuario == usuario.NombreUsuarioActual)
                     .FirstOrDefault()
                 ;
 
 
                 var listaDependencias = await db.Dependencia
+                    .Include(i=>i.Sucursal)
                     .Where(w => w.IdSucursal == empleadoActual.Dependencia.IdSucursal)
                     .OrderBy(x => x.IdDependencia).ToListAsync();
 
@@ -74,7 +76,8 @@ namespace bd.swth.web.Controllers.API
                     model.Fecha = DateTime.Now;
                     model.Estado = false;
                     model.Nombre = listaDependencias.ElementAt(i).Nombre;
-
+                    model.IdSucursal = listaDependencias.ElementAt(i).Sucursal.IdSucursal;
+                    model.SucursalNombre = listaDependencias.ElementAt(i).Sucursal.Nombre;
 
                     // Validación de estado para los checkBox
                     for (int j = 0; j < listaDependenciasEnviadasCorreoThisYear.Count; j++)
@@ -114,27 +117,164 @@ namespace bd.swth.web.Controllers.API
 
 
         /// <summary>
-        /// Solo toma los jefes que están activos
+        /// Solo toma los jefes de la dependencia que están activos
+        /// toma en cuenta los movimientos de subrogación, encargo y movimientos temporales
         /// </summary>
         /// <param name="idDependencia"></param>
         /// <returns></returns>
         // GET: api/ActivacionesPersonalTalentoHumano
         [HttpGet]
         [Route("GetJefePorDependencia")]
-        public Empleado GetJefePorDependencia(int idDependencia)
+        public async Task<Empleado> GetJefePorDependencia(int idDependencia)
         {
 
             Empleado empleado = new Empleado();
-
-
+            
             try
             {
 
-                empleado = db.Empleado.Include(x => x.Dependencia).Include(x => x.Persona).Where(x =>
-                       x.EsJefe == true
-                       && x.Dependencia.IdDependencia == idDependencia
-                       && x.Activo == true
-                    ).FirstOrDefault();
+                var empleadoActualIOMP = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i => i.Empleado)
+                    .Include(i => i.Empleado.Dependencia)
+                    .Include(i => i.Empleado.Persona)
+                    .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacional.ManualPuesto)
+                    .Where(w =>
+                        w.Empleado.IdDependencia == idDependencia
+                        && w.Empleado.Activo == true
+                        && w.Empleado.EsJefe == true
+                    )
+                    .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
+                    .FirstOrDefaultAsync();
+
+                /* 
+                 * Obtiene el último movimiento temporal del empleado logueado que esté vigente en esta fecha
+                 * y asi saber si subroga un cargo o está encargado del puesto
+                */
+                var empleadoPuestoEncargado = await db.EmpleadoMovimiento
+                    .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.AccionPersonal)
+                    .Include(i => i.AccionPersonal.TipoAccionPersonal)
+                    .Include(i => i.Empleado)
+                    .Include(i => i.Empleado.Dependencia)
+                    .Include(i => i.Empleado.Persona)
+                    .Where(w =>
+                        w.AccionPersonal.Ejecutado == true
+                        && w.FechaDesde <= DateTime.Now
+                        && (
+                            (w.FechaHasta != null && w.FechaHasta >=
+                                new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day)
+                            )
+                            || w.FechaHasta == null
+                        )
+                        && w.IndiceOcupacional.IdDependencia == idDependencia
+                        && w.EsJefe == true
+                        && w.Empleado.Activo == true
+                    )
+                    .OrderByDescending(o => o.IdEmpleadoMovimiento)
+                    .FirstOrDefaultAsync();
+
+
+                // Este será el indice ocupacional actual del empleado logueado
+                // tomará los valores del puesto al que está subrogando o encargado si fuera el caso
+                var IndiceOcupacionalUsuarioActual = new IndiceOcupacional();
+                var empleadoJefe = false;
+
+
+
+                if (empleadoPuestoEncargado != null)
+                {
+
+                    if (
+                        empleadoPuestoEncargado.AccionPersonal.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                        == ConstantesAccionPersonal.Encargo.ToString().ToUpper()
+                        )
+                    {
+                        var finEncargo = await db.AccionPersonal
+                            .Where(w =>
+                                w.Ejecutado == true
+                                && w.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                                    == ConstantesAccionPersonal.TerminacionEncargo.ToString().ToUpper()
+                                && new DateTime(w.FechaRige.Year, w.FechaRige.Month, w.FechaRige.Day)
+                                    == new DateTime(
+                                        empleadoPuestoEncargado.FechaDesde.Year,
+                                        empleadoPuestoEncargado.FechaDesde.Month,
+                                        empleadoPuestoEncargado.FechaDesde.Day
+                                        )
+                            ).FirstOrDefaultAsync();
+
+                        if (finEncargo != null)
+                        {
+
+                            IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
+                            empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
+                            empleado = empleadoActualIOMP.Empleado;
+                        }
+                        else
+                        {
+
+
+                            IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
+                            empleadoJefe = empleadoPuestoEncargado.EsJefe;
+                            empleado = empleadoPuestoEncargado.Empleado;
+
+                        }
+
+                    }
+
+                    else if (
+                        empleadoPuestoEncargado.AccionPersonal.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                        == ConstantesAccionPersonal.Subrogacion.ToString().ToUpper()
+                        )
+                    {
+                        var finEncargo = await db.AccionPersonal
+                            .Where(w =>
+                                w.Ejecutado == true
+                                && w.TipoAccionPersonal.Nombre.ToString().ToUpper()
+                                    == ConstantesAccionPersonal.TerminacionSubrogacion.ToString().ToUpper()
+                                && new DateTime(w.FechaRige.Year, w.FechaRige.Month, w.FechaRige.Day)
+                                    == new DateTime(
+                                        empleadoPuestoEncargado.FechaDesde.Year,
+                                        empleadoPuestoEncargado.FechaDesde.Month,
+                                        empleadoPuestoEncargado.FechaDesde.Day
+                                        )
+
+                            ).FirstOrDefaultAsync();
+
+                        if (finEncargo != null)
+                        {
+
+                            IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
+                            empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
+                            empleado = empleadoActualIOMP.Empleado;
+                        }
+                        else
+                        {
+
+
+                            IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
+                            empleadoJefe = empleadoPuestoEncargado.EsJefe;
+                            empleado = empleadoPuestoEncargado.Empleado;
+
+                        }
+
+                    }
+                    else
+                    {
+                        IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
+                        empleadoJefe = empleadoPuestoEncargado.EsJefe;
+                        empleado = empleadoPuestoEncargado.Empleado;
+                    }
+
+                }
+                else
+                {
+                    IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
+                    empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
+                    empleado = empleadoActualIOMP.Empleado;
+                }
+
+
 
                 return empleado;
             }
@@ -205,12 +345,12 @@ namespace bd.swth.web.Controllers.API
 
                             if (!response.IsSuccess && estado == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado))
                             {
-                                var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
+                                var empleado = await GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
 
                                 if (empleado != null && empleado.IdEmpleado > 0)
                                 {
                                     var correo = empleado.Persona.CorreoPrivado;
-                                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo, empleado.Dependencia.Nombre));
+                                    correoResponse.Add( await EnviarMailDesdeCorreoTalentohumano(correo, empleado.Dependencia.Nombre));
 
                                     db.ActivarPersonalTalentoHumano.Add(activarPersonalTalentoHumano);
                                     await db.SaveChangesAsync();
@@ -244,14 +384,14 @@ namespace bd.swth.web.Controllers.API
                                 {
                                     actualizar.Estado = Convert.ToInt32(Constantes.ActivacionPersonalValorActivado);
 
-                                    var empleado = GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
+                                    var empleado = await GetJefePorDependencia(activarPersonalTalentoHumano.IdDependencia);
 
 
                                     if (empleado != null && empleado.IdEmpleado > 0)
                                     {
 
                                         var correo = empleado.Persona.CorreoPrivado;
-                                        correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo, empleado.Dependencia.Nombre));
+                                        correoResponse.Add(await EnviarMailDesdeCorreoTalentohumano(correo, empleado.Dependencia.Nombre));
 
                                         db.ActivarPersonalTalentoHumano.Update(actualizar);
                                         await db.SaveChangesAsync();
@@ -322,7 +462,7 @@ namespace bd.swth.web.Controllers.API
 
 
 
-        public Response EnviarMailDesdeCorreoTalentohumano(string correo, string dependenciaNombre)
+        public async Task<Response> EnviarMailDesdeCorreoTalentohumano(string correo, string dependenciaNombre)
         {
             try
             {
@@ -365,7 +505,7 @@ namespace bd.swth.web.Controllers.API
                 };
 
                 //execute the method Send Mail or SendMailAsync
-                var a = Emails.SendEmailAsync(mail);
+                var a = await Emails.SendEmailAsync(mail);
 
 
                 return new Response
@@ -388,7 +528,7 @@ namespace bd.swth.web.Controllers.API
 
 
 
-        // MÉTODOS PRIVADOS
+        
 
         private async Task<List<ActivarPersonalTalentoHumano>> ListarActivarPersonalTalentoHumanoYearActual()
         {

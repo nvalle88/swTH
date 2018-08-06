@@ -132,7 +132,11 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.ModeloInvalido
                     };
                 }
-                
+
+                ManualPuesto.Nombre = ManualPuesto.Nombre.ToString().ToUpper();
+                ManualPuesto.Mision = ManualPuesto.Mision.ToString().ToUpper();
+                ManualPuesto.Descripcion = ManualPuesto.Descripcion.ToString().ToUpper();
+
                 var existe = Existe(ManualPuesto);
                 var ManualPuestoActualizar = (ManualPuesto)existe.Resultado;
 
@@ -142,20 +146,12 @@ namespace bd.swth.web.Controllers.API
 
                     if (ManualPuestoActualizar.IdManualPuesto == ManualPuesto.IdManualPuesto)
                     {
-                        if (ManualPuesto.Nombre == ManualPuestoActualizar.Nombre &&
-                        ManualPuesto.Descripcion == ManualPuestoActualizar.Descripcion)
-                        {
-                            return new Response
-                            {
-                                IsSuccess = true,
-                            };
-                        }
-
+                        
                         await Actualizar(ManualPuesto);
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
+                            Message = Mensaje.GuardadoSatisfactorio,
                         };
                     }
                     return new Response
@@ -165,30 +161,21 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+
                 await Actualizar(ManualPuesto);
+
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.GuardadoSatisfactorio,
                 };
             }
             catch (Exception ex)
             {
 
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
                 return new Response
                 {
-                    IsSuccess = true,
+                    IsSuccess = false,
                     Message = Mensaje.Excepcion,
                 };
             }
@@ -205,12 +192,16 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(ManualPuesto);
                 if (!respuesta.IsSuccess)
                 {
+                    ManualPuesto.Nombre = ManualPuesto.Nombre.ToString().ToUpper();
+                    ManualPuesto.Mision = ManualPuesto.Mision.ToString().ToUpper();
+                    ManualPuesto.Descripcion = ManualPuesto.Descripcion.ToString().ToUpper();
+
                     db.ManualPuesto.Add(ManualPuesto);
                     await db.SaveChangesAsync();
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = Mensaje.GuardadoSatisfactorio
                     };
                 }
 
@@ -219,7 +210,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = ""
+                        Message = Mensaje.ModeloInvalido
                     };
                 }
 
@@ -232,16 +223,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -280,25 +262,16 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.BorradoSatisfactorio,
                 };
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+               
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.BorradoNoSatisfactorio,
                 };
             }
         }
@@ -309,14 +282,23 @@ namespace bd.swth.web.Controllers.API
             var bdd1 = ManualPuesto.Descripcion;
             var bdd2 = ManualPuesto.Mision;
             var bdd3 = ManualPuesto.IdRelacionesInternasExternas;
-            var ManualPuestorespuesta = db.ManualPuesto.Where(p => p.Nombre == bdd && p.Descripcion ==bdd1 && p.Mision == bdd2 && p.IdRelacionesInternasExternas == bdd3 ).FirstOrDefault();
+
+            var ManualPuestorespuesta = db.ManualPuesto
+                .Where(p => 
+                    p.Nombre.ToString().ToUpper() == bdd.ToString().ToUpper()
+                    && p.Descripcion.ToString().ToUpper() == bdd1.ToString().ToUpper()
+                    && p.Mision.ToString().ToUpper() == bdd2.ToString().ToUpper()
+                    && p.IdRelacionesInternasExternas == bdd3 )
+                    .FirstOrDefault();
+
+
             if (ManualPuestorespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                   // Resultado = ManualPuestorespuesta,
+                    Resultado = ManualPuestorespuesta,
                 };
 
             }

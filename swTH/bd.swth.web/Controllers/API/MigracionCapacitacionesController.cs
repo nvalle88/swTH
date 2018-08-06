@@ -486,8 +486,31 @@ namespace bd.swth.web.Controllers.API
                 return new List<PlanCapacitacion>();
             }
         }
+        [HttpPost]
+        [Route("ListarReportadosucursal")]
+        public async Task<List<PlanCapacitacion>> ListarReportadosucursal([FromBody] GestionPlanCapacitacion gestionPlanCapacitacion)
+        {
+            try
+            {
+                var empleado = await db.Empleado.Where(a => a.NombreUsuario == gestionPlanCapacitacion.NombreUsuario).FirstOrDefaultAsync();
+                if (empleado != null)
+                {
+                    var ciudadDatos = db.Dependencia.Where(a => a.IdDependencia == empleado.IdDependencia).Select(y => new Dependencia
+                    {
+                        Nombre = y.Sucursal.Ciudad.Nombre
+                    }
+                    ).FirstOrDefault();
+                    var lista = await db.PlanCapacitacion.Where(x => x.NombreCiudad == ciudadDatos.Nombre && x.IdGestionPlanCapacitacion == gestionPlanCapacitacion.IdGestionPlanCapacitacion).ToListAsync();
+                    return lista;
+                }
+                return new List<PlanCapacitacion>();
+            }
+            catch (Exception ex)
+            {
+                return new List<PlanCapacitacion>();
+            }
+        }
 
-        
 
         // DELETE: api/BasesDatos/5
         [HttpPost]

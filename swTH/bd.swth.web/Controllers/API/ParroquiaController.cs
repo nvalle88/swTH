@@ -149,22 +149,30 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
+                pParroquia.Nombre = pParroquia.Nombre.ToString().ToUpper();
+
                 var existe = Existe(pParroquia);
-                if (existe.IsSuccess)
+
+                var modelo = (Parroquia)existe.Resultado;
+
+                if (existe.IsSuccess && modelo.IdParroquia != id)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe una parroquia con ese nombre asignada a esa ciudad",
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
                 
 
-                var pParroquiaActualizar = await db.Parroquia.Where(x => x.IdParroquia == id).FirstOrDefaultAsync();
+                var pParroquiaActualizar = await db.Parroquia
+                    .Where(x => x.IdParroquia == id)
+                    .FirstOrDefaultAsync();
+
+
                 if (pParroquiaActualizar != null)
                 {
-                    try
-                    {
+                   
                         pParroquiaActualizar.Nombre = pParroquia.Nombre;
                         pParroquiaActualizar.IdCiudad = pParroquia.IdCiudad;
 
@@ -174,34 +182,18 @@ namespace bd.swrm.web.Controllers.API
                         return new Response
                         {
                             IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
+                            Message = Mensaje.GuardadoSatisfactorio,
                         };
 
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
                 }
+
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.RegistroNoEncontrado,
                 };
+
+
             }
             catch (Exception)
             {
@@ -229,6 +221,7 @@ namespace bd.swrm.web.Controllers.API
                     };
                 }
 
+                pParroquia.Nombre = pParroquia.Nombre.ToString().ToUpper();
                
                 var existe = Existe(pParroquia);
                 if (existe.IsSuccess)
@@ -236,33 +229,27 @@ namespace bd.swrm.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Existe una parroquia con ese nombre asignada a esa ciudad",
+                        Message = Mensaje.ExisteRegistro,
                     };
                 }
 
+                await db.Parroquia.AddAsync(pParroquia);
+                await db.SaveChangesAsync();
+
                 return new Response
                 {
-                    IsSuccess = false,
-                    Message = Mensaje.Satisfactorio
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio
                 };
 
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
@@ -300,21 +287,12 @@ namespace bd.swrm.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.BorradoSatisfactorio,
                 };
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+               
                 return new Response
                 {
                     IsSuccess = false,
@@ -322,6 +300,7 @@ namespace bd.swrm.web.Controllers.API
                 };
             }
         }
+
 
         private bool ParroquiaExists(string nombre)
         {
@@ -345,7 +324,7 @@ namespace bd.swrm.web.Controllers.API
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = loglevelrespuesta,
                 };
 
             }

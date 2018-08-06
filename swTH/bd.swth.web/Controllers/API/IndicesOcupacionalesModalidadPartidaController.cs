@@ -662,6 +662,7 @@ namespace bd.swth.web.Controllers.API
                         empleado.TipoRelacion = nombramiento.RelacionLaboral.Nombre.ToUpper();
                         empleado.IdDependencia = IndiceOcupacionalModalidadPartida.IdDependencia;
                         empleado.Activo = true;
+                        empleado.EsJefe = IndiceOcupacionalModalidadPartida.Empleado.EsJefe;
 
                         db.Empleado.Update(empleado);
                         await db.SaveChangesAsync();
@@ -679,6 +680,17 @@ namespace bd.swth.web.Controllers.API
                     {
                         // En caso de existir un registro se edita
 
+                        var empleadoModelo = await db.Empleado
+                            .Where(w => w.IdEmpleado == modelo.IdEmpleado)
+                            .FirstOrDefaultAsync();
+
+                        empleadoModelo.EsJefe = IndiceOcupacionalModalidadPartida.Empleado.EsJefe;
+                        empleadoModelo.Activo = true;
+
+                        db.Empleado.Update(empleadoModelo);
+
+
+
                         var actualizar = await db.IndiceOcupacionalModalidadPartida
                             .Where(w => w.IdIndiceOcupacionalModalidadPartida == IndiceOcupacionalModalidadPartida.IdIndiceOcupacionalModalidadPartida)
                             .FirstOrDefaultAsync();
@@ -695,6 +707,7 @@ namespace bd.swth.web.Controllers.API
                         actualizar.FechaFin = modelo.FechaFin;
         
                         db.IndiceOcupacionalModalidadPartida.Update(actualizar);
+                        
                         await db.SaveChangesAsync();
 
                         transaction.Commit();
