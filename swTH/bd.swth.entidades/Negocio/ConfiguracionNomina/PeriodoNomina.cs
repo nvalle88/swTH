@@ -16,9 +16,5 @@ namespace bd.swth.entidades.Negocio
         public string Estado { get; set; }
         public int Mes { get; set; }
         public int Ano { get; set; }
-
-        public virtual ICollection<CalculoNomina> CalculoNomina { get; set; }
-
-
     }
 }

@@ -12,6 +12,8 @@ namespace bd.swth.entidades.Negocio
         public bool EmpleadoActivo { get; set; }
         public string Descripcion { get; set; }
 
+        public DateTime? FechaNomina { get; set; }
+
         public DateTime? FechaInicioDecimoTercero { get; set; }
 
         public DateTime? FechaFinDecimoTercero { get; set; }
@@ -23,9 +25,8 @@ namespace bd.swth.entidades.Negocio
         public bool DecimoTercerSueldo { get; set; }
         public string DecimoCuartoSueldo { get; set; }
         
-        public int IdPeriodo { get; set; }
-        public virtual PeriodoNomina PeriodoNomina { get; set; }
-
+        public int? Estado { get; set; }
+       
         public int IdProceso { get; set; }
         public virtual ProcesoNomina ProcesoNomina { get; set; }
 
