@@ -860,6 +860,75 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+
+        [HttpPost]
+        [Route("ListarDistributivo")]
+        public async Task<List<ListaEmpleadoViewModel>> ListarDistributivo([FromBody] string NombreUsuario)
+        {
+            try
+            {
+                var lista = new List<ListaEmpleadoViewModel>();
+
+                var listaDistributivo = await db.IndiceOcupacionalModalidadPartida
+                    .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
+                    .Select(s => new ListaEmpleadoViewModel
+                    {
+                        IdEmpleado = (s.IdEmpleado!= null)
+                            ?(s.Empleado.IdEmpleado)
+                            :0,
+
+                        IdPersona = (s.IdEmpleado != null && s.Empleado.IdPersona > 0)
+                            ? (s.Empleado.IdPersona)
+                            :0,
+
+                        NombreApellido = (s.IdEmpleado != null && s.Empleado.IdPersona > 0)
+                            ?string.Format("{0} {1}", s.Empleado.Persona.Nombres, s.Empleado.Persona.Apellidos)
+                            :"",
+
+                        TelefonoPrivado = (s.IdEmpleado != null && s.Empleado.IdPersona > 0)
+                            ?s.Empleado.Persona.TelefonoPrivado
+                            :"",
+
+                        CorreoPrivado = (s.IdEmpleado != null && s.Empleado.IdPersona > 0)
+                            ? s.Empleado.Persona.CorreoPrivado
+                            :"",
+
+                        Dependencia = s.IndiceOcupacional.Dependencia.Nombre,
+
+                        Identificacion = (s.IdEmpleado != null && s.Empleado.IdPersona > 0)
+                            ? s.Empleado.Persona.Identificacion
+                            : "",
+
+                        PartidaIndividual = (s.NumeroPartidaIndividual + s.CodigoContrato),
+
+                        NombreRelacionLaboral = (s.IdTipoNombramiento != null)
+                            ? s.TipoNombramiento.Nombre
+                            :"",
+
+                        ManualPuesto = s.IndiceOcupacional.ManualPuesto.Nombre
+
+                    })
+                    .DistinctBy(d=>d.PartidaIndividual)
+                    .ToAsyncEnumerable()
+                    .Where(w=> !String.IsNullOrEmpty(w.PartidaIndividual))
+                    .ToList();
+
+                
+
+                
+
+
+                return listaDistributivo;
+
+            }
+            catch (Exception ex)
+            {
+                return new List<ListaEmpleadoViewModel>();
+            }
+        }
+
+
         [HttpPost]
         [Route("ListarManualPuestoporDependencia")]
         public async Task<List<IndiceOcupacional>> GetManualPuestobyDependency([FromBody] IndiceOcupacional indiceocupacional)
