@@ -15,7 +15,7 @@ namespace bd.swth.entidades.ViewModels
         public int IdPartidaFase { get; set; }
         public int estado { get; set; }
         public int Vacantes { get; set; }
-        public int VacantesCredo { get; set; }
+        public int VacantesCreadas { get; set; }
         public DateTime fecha { get; set; }
 
     }

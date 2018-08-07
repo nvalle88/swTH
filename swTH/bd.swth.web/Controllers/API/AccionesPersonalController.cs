@@ -2966,6 +2966,7 @@ namespace bd.swth.web.Controllers.API
                         {
 
                             var iompHasta = await db.IndiceOcupacionalModalidadPartida
+                                .Include(i=>i.Empleado)
                                 .Where(w =>
                                     w.IdIndiceOcupacionalModalidadPartida ==
                                     accionPersonalViewModel.EmpleadoMovimiento

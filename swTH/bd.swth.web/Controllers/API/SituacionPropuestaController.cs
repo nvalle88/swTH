@@ -755,6 +755,7 @@ namespace bd.swth.web.Controllers.API
                     */
                     var empleadoPuestoEncargado = await db.EmpleadoMovimiento
                         .Include(i => i.IndiceOcupacional)
+                        .Include(i => i.IndiceOcupacional.Dependencia)
                         .Include(i => i.AccionPersonal)
                         .Include(i => i.AccionPersonal.TipoAccionPersonal)
                         .Include(i => i.Empleado)
@@ -809,7 +810,7 @@ namespace bd.swth.web.Controllers.API
 
                                 IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
                                 empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
-                                dependencia = empleadoActualIOMP.Empleado.Dependencia;
+                                dependencia = empleadoActualIOMP.IndiceOcupacional.Dependencia;
                             }
                             else
                             {
@@ -817,7 +818,7 @@ namespace bd.swth.web.Controllers.API
 
                                 IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
                                 empleadoJefe = empleadoPuestoEncargado.EsJefe;
-                                dependencia = empleadoPuestoEncargado.Empleado.Dependencia;
+                                dependencia = empleadoPuestoEncargado.IndiceOcupacional.Dependencia;
 
                             }
 
@@ -847,7 +848,7 @@ namespace bd.swth.web.Controllers.API
 
                                 IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
                                 empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
-                                dependencia = empleadoActualIOMP.Empleado.Dependencia;
+                                dependencia = empleadoActualIOMP.IndiceOcupacional.Dependencia;
                             }
                             else
                             {
@@ -855,7 +856,7 @@ namespace bd.swth.web.Controllers.API
 
                                 IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
                                 empleadoJefe = empleadoPuestoEncargado.EsJefe;
-                                dependencia = empleadoPuestoEncargado.Empleado.Dependencia;
+                                dependencia = empleadoPuestoEncargado.IndiceOcupacional.Dependencia;
 
                             }
 
@@ -864,7 +865,7 @@ namespace bd.swth.web.Controllers.API
                         {
                             IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
                             empleadoJefe = empleadoPuestoEncargado.EsJefe;
-                            dependencia = empleadoPuestoEncargado.Empleado.Dependencia;
+                            dependencia = empleadoPuestoEncargado.IndiceOcupacional.Dependencia;
                         }
 
                     }
@@ -872,7 +873,7 @@ namespace bd.swth.web.Controllers.API
                     {
                         IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
                         empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
-                        dependencia = empleadoActualIOMP.Empleado.Dependencia;
+                        dependencia = empleadoActualIOMP.IndiceOcupacional.Dependencia;
                     }
 
 
@@ -942,6 +943,7 @@ namespace bd.swth.web.Controllers.API
                 */
                 var empleadoPuestoEncargado = await db.EmpleadoMovimiento
                     .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacional.Dependencia)
                     .Include(i => i.AccionPersonal)
                     .Include(i => i.AccionPersonal.TipoAccionPersonal)
                     .Include(i => i.Empleado)
@@ -996,7 +998,7 @@ namespace bd.swth.web.Controllers.API
 
                             IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
                             empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
-                            dependencia = empleadoActualIOMP.Empleado.Dependencia;
+                            dependencia = empleadoActualIOMP.IndiceOcupacional.Dependencia;
                         }
                         else
                         {
@@ -1004,7 +1006,7 @@ namespace bd.swth.web.Controllers.API
 
                             IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
                             empleadoJefe = empleadoPuestoEncargado.EsJefe;
-                            dependencia = empleadoPuestoEncargado.Empleado.Dependencia;
+                            dependencia = empleadoPuestoEncargado.IndiceOcupacional.Dependencia;
 
                         }
 
@@ -1034,7 +1036,7 @@ namespace bd.swth.web.Controllers.API
 
                             IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
                             empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
-                            dependencia = empleadoActualIOMP.Empleado.Dependencia;
+                            dependencia = empleadoActualIOMP.IndiceOcupacional.Dependencia;
                         }
                         else
                         {
@@ -1042,7 +1044,7 @@ namespace bd.swth.web.Controllers.API
 
                             IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
                             empleadoJefe = empleadoPuestoEncargado.EsJefe;
-                            dependencia = empleadoPuestoEncargado.Empleado.Dependencia;
+                            dependencia = empleadoPuestoEncargado.IndiceOcupacional.Dependencia;
 
                         }
 
@@ -1051,7 +1053,7 @@ namespace bd.swth.web.Controllers.API
                     {
                         IndiceOcupacionalUsuarioActual = empleadoPuestoEncargado.IndiceOcupacional;
                         empleadoJefe = empleadoPuestoEncargado.EsJefe;
-                        dependencia = empleadoPuestoEncargado.Empleado.Dependencia;
+                        dependencia = empleadoPuestoEncargado.IndiceOcupacional.Dependencia;
                     }
 
                 }
@@ -1059,7 +1061,7 @@ namespace bd.swth.web.Controllers.API
                 {
                     IndiceOcupacionalUsuarioActual = empleadoActualIOMP.IndiceOcupacional;
                     empleadoJefe = empleadoActualIOMP.Empleado.EsJefe;
-                    dependencia = empleadoActualIOMP.Empleado.Dependencia;
+                    dependencia = empleadoActualIOMP.IndiceOcupacional.Dependencia;
                 }
 
 
