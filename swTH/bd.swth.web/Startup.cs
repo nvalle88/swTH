@@ -13,6 +13,8 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using bd.swth.entidades.ViewModels;
+using EnviarCorreo;
+using SendMails.methods;
 
 namespace bd.swth.web
 {
@@ -48,6 +50,19 @@ namespace bd.swth.web
             Constantes.PartidaVacante = Configuration.GetSection("PartidaVacante").Value;
             Constantes.PartidaOcupada = Configuration.GetSection("PartidaOcupada").Value;
             Constantes.PartidaSuprimida = Configuration.GetSection("PartidaSuprimida").Value;
+
+
+            //Configuración del correo
+
+            MailConfig.HostUri = Configuration.GetSection("Smtp").Value;
+            MailConfig.PrimaryPort = Convert.ToInt32(Configuration.GetSection("PrimaryPort").Value);
+            MailConfig.SecureSocketOptions = Convert.ToInt32(Configuration.GetSection("SecureSocketOptions").Value);
+            MailConfig.RequireAuthentication = Convert.ToBoolean(Configuration.GetSection("RequireAuthentication").Value);
+            MailConfig.UserName = Configuration.GetSection("UsuarioCorreo").Value;
+            MailConfig.Password = Configuration.GetSection("PasswordCorreo").Value;
+
+            MailConfig.EmailFrom = Configuration.GetSection("EmailFrom").Value;
+            MailConfig.NameFrom = Configuration.GetSection("NameFrom").Value;
 
             // Constantes de correo
             ConstantesCorreo.Smtp = Configuration.GetSection("Smtp").Value;
