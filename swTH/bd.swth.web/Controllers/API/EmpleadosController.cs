@@ -16,6 +16,7 @@ using bd.swth.entidades.ObjectTransfer;
 using bd.swth.entidades.ViewModels;
 using MoreLinq;
 using bd.swth.entidades.Constantes;
+using System.Linq.Expressions;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -29,6 +30,133 @@ namespace bd.swth.web.Controllers.API
         public EmpleadosController(SwTHDbContext db)
         {
             this.db = db;
+        }
+
+
+        private IQueryable<DatosBasicosEmpleadoViewModel> ListaDatosBasicosEmpleado()
+        {
+
+            try
+            {
+                var query = db.Empleado.Select(x => new DatosBasicosEmpleadoViewModel
+                {
+                    Identificacion = x.Persona.Identificacion,
+                    Nombres = x.Persona.Nombres,
+                    Apellidos = x.Persona.Apellidos,
+                    IdEmpleado = x.IdEmpleado,
+                    Activo = x.Activo,
+                    AcumulaDecimos = x.AcumulaDecimos,
+                    FondosReservas = x.FondosReservas,
+                });
+
+                return query;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        private IQueryable<Empleado> Empleados()
+        {
+
+            try
+            {
+                var query = db.Empleado;
+                return query;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        [HttpPost]
+        [Route("ListaEmpleadosPorEstado")]
+        public async Task<List<DatosBasicosEmpleadoViewModel>> ListaEmpleadosPorEstado([FromBody] Empleado empleado)
+        {
+
+            if (empleado.Activo == true)
+            {
+                var listaResultado = await ListarEmpleadoDatosBasicos(activo: x => x.Activo==true);
+                return listaResultado;
+            }
+            else
+            {
+                var listaResultado = await ListarEmpleadoDatosBasicos(activo: x => x.Activo.Equals(false));
+                return listaResultado;
+            }
+           
+        }
+
+
+        [HttpPost]
+        [Route("CambiarEstadoFondosReservas")]
+        public async Task<Response> CambiarEstadoFondosReservas([FromBody] Empleado empleado)
+        {
+
+            try
+            {
+                var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado);
+                empleadoActualizar.FondosReservas = empleado.FondosReservas;
+                await db.SaveChangesAsync();
+                return new Response { IsSuccess = true };
+            }
+            catch (Exception)
+            {
+                return new Response { IsSuccess = false };
+            }
+        }
+
+
+        [HttpPost]
+        [Route("CambiarEstadoAcumulaDecimos")]
+        public async Task<Response> CambiarEstadoAcumulaDecimos([FromBody] Empleado empleado)
+        {
+
+            try
+            {
+                var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado);
+
+                empleadoActualizar.AcumulaDecimos = empleado.AcumulaDecimos;
+                await db.SaveChangesAsync();
+
+                return new Response { IsSuccess = true };
+            }
+            catch (Exception)
+            {
+                return new Response { IsSuccess = false };
+            }
+        }
+
+        private async Task<Empleado> ObtenerEmpleadoFiltro(Expression<Func<Empleado, bool>> filtro = null)
+        {
+            try
+            {
+                var empleado = (await (filtro != null ? Empleados().Where(filtro).FirstOrDefaultAsync() : Empleados().FirstOrDefaultAsync()));
+                return empleado;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        private async Task<List<DatosBasicosEmpleadoViewModel>> ListarEmpleadoDatosBasicos(Expression<Func<DatosBasicosEmpleadoViewModel, bool>> activo = null)
+        {
+            try
+            {
+                var lista = (await (activo != null ? ListaDatosBasicosEmpleado().Where(activo).ToListAsync() : ListaDatosBasicosEmpleado().ToListAsync()));
+                return lista;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
 
@@ -1971,7 +2099,7 @@ namespace bd.swth.web.Controllers.API
                                        EsJefe = x.EsJefe,
                                        ExtencionTelefonica = x.Extension,
                                        FechaIngresoSectorPublico = x.FechaIngresoSectorPublico,
-                                       FondosReservas = x.FondosReservas,
+                                       FondosReservas = x.FondosReservas != null ? x.FondosReservas :false,
                                        IdBrigadaSSORol = x.IdBrigadaSSORol == null ? 0 : x.IdBrigadaSSORol,
                                        IdBrigadaSSO = x.BrigadaSSORol.BrigadaSSO.IdBrigadaSSO == null ? 0 : x.BrigadaSSORol.BrigadaSSO.IdBrigadaSSO,
                                        IdPersona = x.IdPersona,
