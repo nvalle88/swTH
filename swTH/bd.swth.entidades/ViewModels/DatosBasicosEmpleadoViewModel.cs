@@ -22,7 +22,13 @@ namespace bd.swth.entidades.ViewModels
         public int IdPaisLugarPersona { get; set; }
         public int IdCiudadLugarPersona { get; set; }
         public int IdProvinciaLugarPersona { get; set; }
-        
+
+        public bool FondosReservas { get; set; }
+        public bool AcumulaDecimos { get; set; }
+
+
+        public string Dependencia { get; set; }
+        public string Cargo { get; set; }
 
         public int IdEstadoCivil { get; set; }
         public int IdTipoSangre { get; set; }
@@ -42,5 +48,7 @@ namespace bd.swth.entidades.ViewModels
         public string TelefonoPrivado { get; set; }
         public string TelefonoCasa { get; set; }
         public string Ocupacion { get; set; }
+
+        public bool Activo { get; set; }
     }
 }

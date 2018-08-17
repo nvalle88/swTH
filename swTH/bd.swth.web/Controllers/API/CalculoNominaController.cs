@@ -36,7 +36,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.CalculoNomina.Include(x => x.PeriodoNomina).Include(x => x.ProcesoNomina).ToListAsync();
+                return await db.CalculoNomina.Include(x => x.ProcesoNomina).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -56,7 +56,7 @@ namespace bd.swth.web.Controllers.API
 
         private async Task<CalculoNomina> ObtenerCalculoNominaDetalle(CalculoNomina calculoNomina)
         {
-            var calculoNominaRequest = await db.CalculoNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).Include(x => x.PeriodoNomina).Include(y => y.ProcesoNomina).ThenInclude(y => y.ConceptoNomina).FirstOrDefaultAsync();
+            var calculoNominaRequest = await db.CalculoNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).Include(y => y.ProcesoNomina).ThenInclude(y => y.ConceptoNomina).FirstOrDefaultAsync();
             return calculoNominaRequest;
         }
 
@@ -293,11 +293,12 @@ namespace bd.swth.web.Controllers.API
 
                 }
                 CalculoNominaActualizar.Descripcion = CalculoNomina.Descripcion;
+                CalculoNominaActualizar.FechaNomina = CalculoNomina.FechaNomina;
                 CalculoNominaActualizar.FechaFinDecimoCuarto = CalculoNomina.FechaFinDecimoCuarto;
                 CalculoNominaActualizar.FechaFinDecimoTercero = CalculoNomina.FechaFinDecimoTercero;
                 CalculoNominaActualizar.FechaInicioDecimoCuarto = CalculoNomina.FechaInicioDecimoCuarto;
                 CalculoNominaActualizar.FechaInicioDecimoTercero = CalculoNomina.FechaInicioDecimoTercero;
-                CalculoNominaActualizar.IdPeriodo = CalculoNomina.IdPeriodo;
+                CalculoNominaActualizar.Estado = CalculoNomina.Estado;
                 CalculoNominaActualizar.IdProceso = CalculoNomina.IdProceso;
                 CalculoNominaActualizar.DecimoTercerSueldo = CalculoNomina.DecimoTercerSueldo;
                 CalculoNominaActualizar.DecimoCuartoSueldo = CalculoNomina.DecimoCuartoSueldo;
@@ -474,9 +475,9 @@ namespace bd.swth.web.Controllers.API
 
         private async Task<bool> Existe(CalculoNomina CalculoNomina)
         {
-            var periodo = CalculoNomina.IdPeriodo;
+           
             var proceso = CalculoNomina.IdProceso;
-            var CalculoNominarespuesta = await db.CalculoNomina.Where(p => p.IdProceso == proceso && p.IdPeriodo == periodo).FirstOrDefaultAsync();
+            var CalculoNominarespuesta = await db.CalculoNomina.Where(p => p.IdProceso == proceso && p.Descripcion==CalculoNomina.Descripcion).FirstOrDefaultAsync();
 
             if (CalculoNominarespuesta == null || CalculoNominarespuesta.IdCalculoNomina == CalculoNomina.IdCalculoNomina)
             {

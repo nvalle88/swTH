@@ -16,6 +16,7 @@ using bd.swth.entidades.ObjectTransfer;
 using bd.swth.entidades.ViewModels;
 using MoreLinq;
 using bd.swth.entidades.Constantes;
+using System.Linq.Expressions;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -29,6 +30,133 @@ namespace bd.swth.web.Controllers.API
         public EmpleadosController(SwTHDbContext db)
         {
             this.db = db;
+        }
+
+
+        private IQueryable<DatosBasicosEmpleadoViewModel> ListaDatosBasicosEmpleado()
+        {
+
+            try
+            {
+                var query = db.Empleado.Select(x => new DatosBasicosEmpleadoViewModel
+                {
+                    Identificacion = x.Persona.Identificacion,
+                    Nombres = x.Persona.Nombres,
+                    Apellidos = x.Persona.Apellidos,
+                    IdEmpleado = x.IdEmpleado,
+                    Activo = x.Activo,
+                    AcumulaDecimos = x.AcumulaDecimos,
+                    FondosReservas = x.FondosReservas,
+                });
+
+                return query;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        private IQueryable<Empleado> Empleados()
+        {
+
+            try
+            {
+                var query = db.Empleado;
+                return query;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        [HttpPost]
+        [Route("ListaEmpleadosPorEstado")]
+        public async Task<List<DatosBasicosEmpleadoViewModel>> ListaEmpleadosPorEstado([FromBody] Empleado empleado)
+        {
+
+            if (empleado.Activo == true)
+            {
+                var listaResultado = await ListarEmpleadoDatosBasicos(filtro: x => x.Activo == true).ToListAsync();
+                return listaResultado;
+            }
+            else
+            {
+                var listaResultado = await ListarEmpleadoDatosBasicos(filtro: x => x.Activo.Equals(false)).ToListAsync();
+                return listaResultado;
+            }
+
+        }
+
+
+        [HttpPost]
+        [Route("CambiarEstadoFondosReservas")]
+        public async Task<Response> CambiarEstadoFondosReservas([FromBody] Empleado empleado)
+        {
+
+            try
+            {
+                var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
+                empleadoActualizar.FondosReservas = empleado.FondosReservas;
+                await db.SaveChangesAsync();
+                return new Response { IsSuccess = true };
+            }
+            catch (Exception)
+            {
+                return new Response { IsSuccess = false };
+            }
+        }
+
+
+        [HttpPost]
+        [Route("CambiarEstadoAcumulaDecimos")]
+        public async Task<Response> CambiarEstadoAcumulaDecimos([FromBody] Empleado empleado)
+        {
+
+            try
+            {
+                var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
+
+                empleadoActualizar.AcumulaDecimos = empleado.AcumulaDecimos;
+                await db.SaveChangesAsync();
+
+                return new Response { IsSuccess = true };
+            }
+            catch (Exception)
+            {
+                return new Response { IsSuccess = false };
+            }
+        }
+
+        private IQueryable<Empleado> ObtenerEmpleadoFiltro(Expression<Func<Empleado, bool>> filtro = null)
+        {
+            try
+            {
+                var empleado = ((filtro != null ? Empleados().Where(filtro) : Empleados()));
+                return empleado;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        private IQueryable<DatosBasicosEmpleadoViewModel> ListarEmpleadoDatosBasicos(Expression<Func<DatosBasicosEmpleadoViewModel, bool>> filtro = null)
+        {
+            try
+            {
+                var lista = ((filtro != null ? ListaDatosBasicosEmpleado().Where(filtro) : ListaDatosBasicosEmpleado()));
+                return lista;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
 
@@ -391,7 +519,7 @@ namespace bd.swth.web.Controllers.API
                             .Where(x =>
                                 x.IdEmpleado == item.IdEmpleado
                                 && x.Empleado.Activo == true
-                                //&& x.IdModalidadPartida == modalidar.IdModalidadPartida
+                            //&& x.IdModalidadPartida == modalidar.IdModalidadPartida
                             )
                             .OrderByDescending(o => o.Fecha)
                             .Select(x => new DocumentoFAOViewModel
@@ -449,14 +577,14 @@ namespace bd.swth.web.Controllers.API
 
                     }
 
-                    }
+                }
 
                 return listaSalida2;
 
             }
             catch (Exception ex)
             {
-                
+
                 return new List<DocumentoFAOViewModel>();
             }
         }
@@ -797,7 +925,7 @@ namespace bd.swth.web.Controllers.API
 
                 var lista = await db.IndiceOcupacionalModalidadPartida
                                     .Where(w => w.Empleado.Dependencia.IdSucursal == usuarioActual.Dependencia.IdSucursal)
-                                    .OrderByDescending(o => new { o.Fecha ,o.IdIndiceOcupacionalModalidadPartida} )
+                                    .OrderByDescending(o => new { o.Fecha, o.IdIndiceOcupacionalModalidadPartida })
                                     .Select(x => new ListaEmpleadoViewModel
                                     {
                                         IdEmpleado = (int)x.IdEmpleado,
@@ -826,8 +954,6 @@ namespace bd.swth.web.Controllers.API
                 return new List<ListaEmpleadoViewModel>();
             }
         }
-
-
 
         /// <summary>
         /// Devuelve una lista de empleadosViewModel activos y no activos, con los datos de la modalidad pardida 
@@ -2029,7 +2155,7 @@ namespace bd.swth.web.Controllers.API
                                        EsJefe = x.EsJefe,
                                        ExtencionTelefonica = x.Extension,
                                        FechaIngresoSectorPublico = x.FechaIngresoSectorPublico,
-                                       FondosReservas = x.FondosReservas,
+                                       FondosReservas = x.FondosReservas != null ? x.FondosReservas :false,
                                        IdBrigadaSSORol = x.IdBrigadaSSORol == null ? 0 : x.IdBrigadaSSORol,
                                        IdBrigadaSSO = x.BrigadaSSORol.BrigadaSSO.IdBrigadaSSO == null ? 0 : x.BrigadaSSORol.BrigadaSSO.IdBrigadaSSO,
                                        IdPersona = x.IdPersona,

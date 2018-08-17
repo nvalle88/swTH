@@ -598,15 +598,9 @@ namespace bd.swth.web.Controllers.API
                 //Class for submit the email 
                 Mail mail = new Mail
                 {
-                    Password = ConstantesCorreo.PasswordCorreo
-                                     ,
                     Body = mensaje
                                      ,
-                    EmailFrom = ConstantesCorreo.CorreoTTHH
-                                     ,
                     EmailTo = correo
-                                     ,
-                    NameFrom = ConstantesCorreo.NameFrom
                                      ,
                     NameTo = "Name To"
                                      ,
