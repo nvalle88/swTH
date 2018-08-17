@@ -80,12 +80,12 @@ namespace bd.swth.web.Controllers.API
 
             if (empleado.Activo == true)
             {
-                var listaResultado = await ListarEmpleadoDatosBasicos(activo: x => x.Activo==true);
+                var listaResultado = await ListarEmpleadoDatosBasicos(filtro: x => x.Activo==true).ToListAsync();
                 return listaResultado;
             }
             else
             {
-                var listaResultado = await ListarEmpleadoDatosBasicos(activo: x => x.Activo.Equals(false));
+                var listaResultado = await ListarEmpleadoDatosBasicos(filtro: x => x.Activo.Equals(false)).ToListAsync();
                 return listaResultado;
             }
            
@@ -99,7 +99,7 @@ namespace bd.swth.web.Controllers.API
 
             try
             {
-                var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado);
+                var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
                 empleadoActualizar.FondosReservas = empleado.FondosReservas;
                 await db.SaveChangesAsync();
                 return new Response { IsSuccess = true };
@@ -118,7 +118,7 @@ namespace bd.swth.web.Controllers.API
 
             try
             {
-                var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado);
+                var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
 
                 empleadoActualizar.AcumulaDecimos = empleado.AcumulaDecimos;
                 await db.SaveChangesAsync();
@@ -131,11 +131,11 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private async Task<Empleado> ObtenerEmpleadoFiltro(Expression<Func<Empleado, bool>> filtro = null)
+        private  IQueryable<Empleado> ObtenerEmpleadoFiltro(Expression<Func<Empleado, bool>> filtro = null)
         {
             try
             {
-                var empleado = (await (filtro != null ? Empleados().Where(filtro).FirstOrDefaultAsync() : Empleados().FirstOrDefaultAsync()));
+                var empleado = ((filtro != null ? Empleados().Where(filtro) : Empleados()));
                 return empleado;
             }
             catch (Exception ex)
@@ -145,11 +145,11 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private async Task<List<DatosBasicosEmpleadoViewModel>> ListarEmpleadoDatosBasicos(Expression<Func<DatosBasicosEmpleadoViewModel, bool>> activo = null)
+        private  IQueryable<DatosBasicosEmpleadoViewModel> ListarEmpleadoDatosBasicos(Expression<Func<DatosBasicosEmpleadoViewModel, bool>> filtro = null)
         {
             try
             {
-                var lista = (await (activo != null ? ListaDatosBasicosEmpleado().Where(activo).ToListAsync() : ListaDatosBasicosEmpleado().ToListAsync()));
+                var lista = ( (filtro != null ? ListaDatosBasicosEmpleado().Where(filtro) : ListaDatosBasicosEmpleado()));
                 return lista;
             }
             catch (Exception ex)
