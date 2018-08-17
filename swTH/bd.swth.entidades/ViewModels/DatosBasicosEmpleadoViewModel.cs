@@ -26,6 +26,10 @@ namespace bd.swth.entidades.ViewModels
         public bool FondosReservas { get; set; }
         public bool AcumulaDecimos { get; set; }
 
+
+        public string Dependencia { get; set; }
+        public string Cargo { get; set; }
+
         public int IdEstadoCivil { get; set; }
         public int IdTipoSangre { get; set; }
         public int IdNacionalidad { get; set; }

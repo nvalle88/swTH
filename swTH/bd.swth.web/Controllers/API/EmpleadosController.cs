@@ -80,7 +80,7 @@ namespace bd.swth.web.Controllers.API
 
             if (empleado.Activo == true)
             {
-                var listaResultado = await ListarEmpleadoDatosBasicos(filtro: x => x.Activo==true).ToListAsync();
+                var listaResultado = await ListarEmpleadoDatosBasicos(filtro: x => x.Activo == true).ToListAsync();
                 return listaResultado;
             }
             else
@@ -88,7 +88,7 @@ namespace bd.swth.web.Controllers.API
                 var listaResultado = await ListarEmpleadoDatosBasicos(filtro: x => x.Activo.Equals(false)).ToListAsync();
                 return listaResultado;
             }
-           
+
         }
 
 
@@ -131,7 +131,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private  IQueryable<Empleado> ObtenerEmpleadoFiltro(Expression<Func<Empleado, bool>> filtro = null)
+        private IQueryable<Empleado> ObtenerEmpleadoFiltro(Expression<Func<Empleado, bool>> filtro = null)
         {
             try
             {
@@ -145,11 +145,11 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        private  IQueryable<DatosBasicosEmpleadoViewModel> ListarEmpleadoDatosBasicos(Expression<Func<DatosBasicosEmpleadoViewModel, bool>> filtro = null)
+        private IQueryable<DatosBasicosEmpleadoViewModel> ListarEmpleadoDatosBasicos(Expression<Func<DatosBasicosEmpleadoViewModel, bool>> filtro = null)
         {
             try
             {
-                var lista = ( (filtro != null ? ListaDatosBasicosEmpleado().Where(filtro) : ListaDatosBasicosEmpleado()));
+                var lista = ((filtro != null ? ListaDatosBasicosEmpleado().Where(filtro) : ListaDatosBasicosEmpleado()));
                 return lista;
             }
             catch (Exception ex)
@@ -519,7 +519,7 @@ namespace bd.swth.web.Controllers.API
                             .Where(x =>
                                 x.IdEmpleado == item.IdEmpleado
                                 && x.Empleado.Activo == true
-                                //&& x.IdModalidadPartida == modalidar.IdModalidadPartida
+                            //&& x.IdModalidadPartida == modalidar.IdModalidadPartida
                             )
                             .OrderByDescending(o => o.Fecha)
                             .Select(x => new DocumentoFAOViewModel
@@ -577,14 +577,14 @@ namespace bd.swth.web.Controllers.API
 
                     }
 
-                    }
+                }
 
                 return listaSalida2;
 
             }
             catch (Exception ex)
             {
-                
+
                 return new List<DocumentoFAOViewModel>();
             }
         }
@@ -867,7 +867,7 @@ namespace bd.swth.web.Controllers.API
 
                 var lista = await db.IndiceOcupacionalModalidadPartida
                                     .Where(w => w.Empleado.Dependencia.IdSucursal == usuarioActual.Dependencia.IdSucursal)
-                                    .OrderByDescending(o => new { o.Fecha ,o.IdIndiceOcupacionalModalidadPartida} )
+                                    .OrderByDescending(o => new { o.Fecha, o.IdIndiceOcupacionalModalidadPartida })
                                     .Select(x => new ListaEmpleadoViewModel
                                     {
                                         IdEmpleado = (int)x.IdEmpleado,
@@ -896,8 +896,6 @@ namespace bd.swth.web.Controllers.API
                 return new List<ListaEmpleadoViewModel>();
             }
         }
-
-
 
         /// <summary>
         /// Devuelve una lista de empleadosViewModel activos y no activos, con los datos de la modalidad pardida 
