@@ -15,7 +15,7 @@ namespace bd.swth.entidades.Negocio
         [Display(Name = "Código de examen complementario")]
         public int IdTipoExamenComplementario { get; set; }
 
-        [DisplayName("Nombre")]
+        [Display(Name ="Nombre")]
         public string Nombre { get; set; }
 
         public virtual ICollection<ExamenComplementario> ExamenComplementario { get; set; }
