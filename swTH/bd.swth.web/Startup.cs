@@ -166,6 +166,9 @@ namespace bd.swth.web
             ConstantesAccionPersonal.Encargo = Configuration.GetSection("Encargo").Value;
             ConstantesAccionPersonal.Subrogacion = Configuration.GetSection("Subrogacion").Value;
 
+            // constante nivel jerárquico superior
+            Constantes.NombreNivelJerarquicoSuperior = Configuration.GetSection("NombreNivelJerarquicoSuperior").Value;
+
 
             /// <summary>
             /// Se lee el fichero appsetting.json según las etiquetas expuestas en este.
