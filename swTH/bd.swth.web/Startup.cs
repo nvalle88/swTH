@@ -119,7 +119,7 @@ namespace bd.swth.web
             ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno = JsonConvert.DeserializeObject<List<AprobacionMovimientoInternoViewModel>>(Configuration.GetSection("ListaEstadosAprobacionMovimientoInterno").Value);
 
             // Configuración Estados Vacaciones
-            ConstantesEstadosVacaciones.ListaEstadosVacaciones = JsonConvert.DeserializeObject<List<EstadoVacacionesViewModel>>(Configuration.GetSection("ListaEstadosVacaciones").Value);
+           ConstantesEstadosVacaciones.ListaEstadosVacaciones = JsonConvert.DeserializeObject<List<EstadoVacacionesViewModel>>(Configuration.GetSection("ListaEstadosVacaciones").Value);
 
 
             // Configuración Estados Capacitaciones Ingresado

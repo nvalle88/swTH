@@ -14,10 +14,7 @@ namespace bd.swth.entidades.Negocio
         [DisplayFormat(DataFormatString = "{0:dd-MM-yyyy}", ApplyFormatInEditMode = true)]
         public DateTime? FechaGraduado { get; set; }
 
-        [Required(ErrorMessage = "Debe introducir {0}")]
-        [Display(Name = "Observaciones:")]
-        [DataType(DataType.MultilineText)]
-        [StringLength(500, MinimumLength = 2, ErrorMessage = "El {0} no puede tener más de {1} y menos de {2}")]
+        
         public string Observaciones { get; set; }
 
         public string NoSenescyt { get; set; }
@@ -33,6 +30,8 @@ namespace bd.swth.entidades.Negocio
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0} ")]
         public int IdPersona { get; set; }
         public virtual Persona Persona { get; set; }
+
+        public string Institucion { get; set; }
 
 
     }

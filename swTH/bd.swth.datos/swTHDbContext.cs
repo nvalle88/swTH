@@ -3254,7 +3254,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdOtroIngreso)
                     .HasName("PK_OtroIngreso");
 
-                entity.Property(e => e.DescripcionOtros).HasColumnType("nvarchar(250)");
+                entity.Property(e => e.DescripcionOtros).HasMaxLength(1000);
 
                 entity.Property(e => e.IngresoArriendos).HasColumnType("decimal");
 
@@ -3264,11 +3264,13 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.IngresoRentasFinancieras).HasColumnType("decimal");
 
+                entity.Property(e => e.Observaciones).HasMaxLength(1000);
+
                 entity.Property(e => e.OtrosIngresos).HasColumnType("decimal");
 
                 entity.Property(e => e.Total).HasColumnType("decimal");
 
-                entity.HasOne(d => d.IdDeclaracionPatrimonioPersonalNavigation)
+                entity.HasOne(d => d.DeclaracionPatrimonioPersonal)
                     .WithMany(p => p.OtroIngreso)
                     .HasForeignKey(d => d.IdDeclaracionPatrimonioPersonal)
                     .OnDelete(DeleteBehavior.Restrict)
@@ -3546,31 +3548,21 @@ namespace bd.swth.datos
             modelBuilder.Entity<PersonaEstudio>(entity =>
             {
                 entity.HasKey(e => e.IdPersonaEstudio)
-                    .HasName("PK_PersonaEstudio");
+                    .HasName("PK147");
 
-                entity.HasIndex(e => e.IdPersona)
-                    .HasName("IX_PersonaEstudio_IdPersona");
+                entity.Property(e => e.FechaGraduado).HasColumnType("date");
 
-                entity.HasIndex(e => e.IdTitulo)
-                    .HasName("IX_PersonaEstudio_IdTitulo");
+                entity.Property(e => e.Institucion).HasColumnType("varchar(150)");
 
-                entity.Property(e => e.Observaciones)
-                    .IsRequired()
-                    .HasMaxLength(500);
+                entity.Property(e => e.NoSenescyt).HasColumnType("varchar(50)");
 
-                entity.Property(e => e.NoSenescyt)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                entity.Property(e => e.Observaciones).HasColumnType("varchar(300)");
 
                 entity.HasOne(d => d.Persona)
                     .WithMany(p => p.PersonaEstudio)
                     .HasForeignKey(d => d.IdPersona)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                //entity.HasOne(d => d.Titulo)
-                //    .WithMany(p => p.PersonaEstudio)
-                //    .HasForeignKey(d => d.IdTitulo)
-                //    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("RefPersona335");
             });
 
             modelBuilder.Entity<PersonaPaquetesInformaticos>(entity =>

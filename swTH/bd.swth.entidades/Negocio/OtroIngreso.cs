@@ -14,7 +14,8 @@ namespace bd.swth.entidades.Negocio
         public decimal? OtrosIngresos { get; set; }
         public string DescripcionOtros { get; set; }
         public decimal Total { get; set; }
+        public string Observaciones { get; set; }
 
-        public virtual DeclaracionPatrimonioPersonal IdDeclaracionPatrimonioPersonalNavigation { get; set; }
+        public virtual DeclaracionPatrimonioPersonal DeclaracionPatrimonioPersonal { get; set; }
     }
 }

@@ -44,7 +44,7 @@ namespace bd.swth.web.Controllers.API
                 var lista = await db.SolicitudPermiso.
                     Where(w=>
                         w.Empleado.IdDependencia == dependencia.IdDependencia
-                        && w.Empleado.EsJefe == false
+                        //&& w.Empleado.EsJefe == false
                     )
                     .Select(s => new SolicitudPermisoViewModel
                     {
