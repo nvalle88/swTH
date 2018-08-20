@@ -3696,16 +3696,7 @@ namespace bd.swth.web.Controllers.API
                     }
                     catch (Exception ex)
                     {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
+                        
                         return new Response
                         {
                             IsSuccess = false,
@@ -3809,16 +3800,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<DocumentoFAOViewModel>();
             }
         }
@@ -4468,6 +4450,70 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        
+        [HttpPost]
+        [Route("EliminarEmpleadoSinDistributivo")]
+        public async Task<Response> EliminarEmpleadoSinDistributivo([FromBody] int IdEmpleado) {
+
+            try {
+
+                var modeloEmpleado = await db.Empleado
+                    .Where(w => w.IdEmpleado == IdEmpleado)
+                    .FirstOrDefaultAsync();
+
+                if (modeloEmpleado == null) {
+                    return new Response {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado
+                    };
+                }
+
+                var iomp = await db.IndiceOcupacionalModalidadPartida
+                    .Where(w => w.IdEmpleado == modeloEmpleado.IdEmpleado)
+                    .FirstOrDefaultAsync();
+
+                if (iomp != null) {
+
+                    using (var transaction = await db.Database.BeginTransactionAsync())
+                    {
+
+                        db.Empleado.Remove(modeloEmpleado);
+                        await db.SaveChangesAsync();
+
+                        var modeloPersona = await db.Persona
+                            .Where(w => w.IdPersona == modeloEmpleado.IdPersona)
+                            .FirstOrDefaultAsync();
+
+                        db.Persona.Remove(modeloPersona);
+
+                        await db.SaveChangesAsync();
+
+                        transaction.Commit();
+
+                    }
+
+                    
+                    return new Response {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio
+                    };
+                }
+
+                return new Response {
+                    IsSuccess = false,
+                    Message = Mensaje.ErrorBorrarEmpleadoIOMP
+                };
+
+            } catch (Exception ex)
+            {
+                return new Response {
+                    IsSuccess = false,
+                    Message = Mensaje.BorradoNoSatisfactorio
+                };
+            }
+        }
+        
 
 
     }
