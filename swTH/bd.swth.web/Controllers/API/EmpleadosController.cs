@@ -4519,7 +4519,8 @@ namespace bd.swth.web.Controllers.API
         
         [HttpPost]
         [Route("EliminarEmpleadoSinDistributivo")]
-        public async Task<Response> EliminarEmpleadoSinDistributivo([FromBody] int IdEmpleado) {
+        public async Task<Response> EliminarEmpleadoSinDistributivo([FromBody] int IdEmpleado)
+        {
 
             try {
 
@@ -4538,7 +4539,7 @@ namespace bd.swth.web.Controllers.API
                     .Where(w => w.IdEmpleado == modeloEmpleado.IdEmpleado)
                     .FirstOrDefaultAsync();
 
-                if (iomp != null) {
+                if (iomp == null) {
 
                     using (var transaction = await db.Database.BeginTransactionAsync())
                     {
