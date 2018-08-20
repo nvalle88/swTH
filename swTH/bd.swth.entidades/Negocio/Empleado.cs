@@ -18,7 +18,9 @@ namespace bd.swth.entidades.Negocio
 
         public bool FondosReservas { get; set; }
 
-        public bool AcumulaDecimos { get; set; }
+        public bool AcumulaDecimoTercero { get; set; }
+
+        public bool AcumulaDecimoCuarto { get; set; }
 
         public bool DeclaracionJurada { get; set; }
 
@@ -29,6 +31,8 @@ namespace bd.swth.entidades.Negocio
         public int DiasImposiciones { get; set; }
 
         public string NombreUsuario { get; set; }
+
+        public bool DerechoFondoReserva { get; set; }
 
         public bool EsJefe { get; set; }
 

@@ -45,8 +45,13 @@ namespace bd.swth.web.Controllers.API
                     Apellidos = x.Persona.Apellidos,
                     IdEmpleado = x.IdEmpleado,
                     Activo = x.Activo,
-                    AcumulaDecimos = x.AcumulaDecimos,
+                    AcumulaDecimoCuarto = x.AcumulaDecimoCuarto,
+                    AcumulaDecimoTercero=x.AcumulaDecimoTercero,
                     FondosReservas = x.FondosReservas,
+                    IdBrigadaSSoRol=x.IdBrigadaSSORol==null ? 0 :x.IdBrigadaSSORol,
+                    IdBrigadaSSO=x.BrigadaSSORol.IdBrigadaSSO,
+                    DerechoFondoReserva=x.DerechoFondoReserva,
+                    
                 });
 
                 return query;
@@ -92,6 +97,26 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+
+        [HttpPost]
+        [Route("CambiarEstadoDerechoFondosReservas")]
+        public async Task<Response> CambiarEstadoDerechoFondosReservas([FromBody] Empleado empleado)
+        {
+
+            try
+            {
+                var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
+                empleadoActualizar.DerechoFondoReserva = empleado.DerechoFondoReserva;
+                await db.SaveChangesAsync();
+                return new Response { IsSuccess = true };
+            }
+            catch (Exception)
+            {
+                return new Response { IsSuccess = false };
+            }
+        }
+
+
         [HttpPost]
         [Route("CambiarEstadoFondosReservas")]
         public async Task<Response> CambiarEstadoFondosReservas([FromBody] Empleado empleado)
@@ -111,16 +136,56 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+
         [HttpPost]
-        [Route("CambiarEstadoAcumulaDecimos")]
-        public async Task<Response> CambiarEstadoAcumulaDecimos([FromBody] Empleado empleado)
+        [Route("ActualizarBridadaSSORol")]
+        public async Task<Response> ActualizarBridadaSSORol([FromBody] Empleado empleado)
         {
 
             try
             {
                 var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
 
-                empleadoActualizar.AcumulaDecimos = empleado.AcumulaDecimos;
+                empleadoActualizar.IdBrigadaSSORol = empleado.IdBrigadaSSORol;
+                await db.SaveChangesAsync();
+
+                return new Response { IsSuccess = true };
+            }
+            catch (Exception)
+            {
+                return new Response { IsSuccess = false };
+            }
+        }
+
+        [HttpPost]
+        [Route("CambiarEstadoDecimoTercero")]
+        public async Task<Response> CambiarEstadoDecimoTercero([FromBody] Empleado empleado)
+        {
+
+            try
+            {
+                var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
+
+                empleadoActualizar.AcumulaDecimoTercero = empleado.AcumulaDecimoTercero;
+                await db.SaveChangesAsync();
+
+                return new Response { IsSuccess = true };
+            }
+            catch (Exception)
+            {
+                return new Response { IsSuccess = false };
+            }
+        }
+
+        [HttpPost]
+        [Route("CambiarEstadoDecimoCuarto")]
+        public async Task<Response> CambiarEstadoDecimoCuarto([FromBody] Empleado empleado)
+        {
+
+            try
+            {
+                var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
+                empleadoActualizar.AcumulaDecimoCuarto = empleado.AcumulaDecimoCuarto;
                 await db.SaveChangesAsync();
 
                 return new Response { IsSuccess = true };

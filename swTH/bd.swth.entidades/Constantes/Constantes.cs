@@ -57,6 +57,18 @@ namespace bd.swth.entidades.Constantes
 
     }
 
+
+    public static class ConstantesFondosReserva
+    {
+        public static int DiasMinimoDerechoFondoReserva;
+        public static int IntervaloTemporizadorHorasFondoReserva;
+        public static int IntervaloTemporizadorMinutosFondoReserva;
+        public static int IntervaloTemporizadorSegundosFondoReserva;
+        public static int inicioCicloHorasFondoReserva;
+        public static int inicioCicloMinutosFondoReserva;
+        public static int inicioCicloSegundosFondoReserva;
+    }
+
     //Valores viaticos
     public static class ConstantesViaticos
     {
