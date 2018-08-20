@@ -24,7 +24,7 @@ namespace bd.swth.entidades.ViewModels
         public string Rol { get; set; }
         public decimal? Remuneracion { get; set; }
         public int OpcionMenu { get; set; }
-
+        public int IdCandidatoConcurso { get; set; }
 
 
 

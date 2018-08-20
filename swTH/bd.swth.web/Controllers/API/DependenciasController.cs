@@ -129,8 +129,9 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 var listaDependencias = await db.Dependencia
-                    .Include(i=>i.DependenciaPadre)
+                    .Include(i => i.DependenciaPadre)
                     .Include(i => i.DependenciaPadre.Sucursal)
+                    .Include(i => i.Dependencia1)
                     .Where(x => x.IdSucursal == sucursal.IdSucursal)
                     .OrderBy(x => x.Nombre).ToListAsync();
 
@@ -152,6 +153,8 @@ namespace bd.swth.web.Controllers.API
                             IdDependenciaPadre = s.IdDependenciaPadre,
                             IdProceso = s.IdProceso,
                             Nombre = s.Nombre,
+
+                            Dependencia1 = s.Dependencia1
                             
                         })
                         .ToList();
@@ -181,7 +184,7 @@ namespace bd.swth.web.Controllers.API
                     }
 
                     // ** Cada item se convierte en padre y se buscan sus hijos (así se llenan todos los padres)
-                    foreach (var item in listaDependencias)
+                    foreach (var item in listaDependencias.OrderByDescending(o => o.Codigo))
                     {
 
                         if (
@@ -200,13 +203,17 @@ namespace bd.swth.web.Controllers.API
                                 Nombre = s.Nombre,
 
                                 Dependencia1 = s.Dependencia1
-
                             })
                             .ToList();
 
-                            item.Dependencia1 = new List<Dependencia>(listaHijos);
+                            if (listaHijos.Count > 0) {
+                                item.Dependencia1 = new List<Dependencia>(listaHijos);
+                            }
+
+                            
                         }
                         else {
+                            
                             item.Dependencia1 = new List<Dependencia>(hijosDesconcentrado);
                         }
                         
@@ -237,9 +244,10 @@ namespace bd.swth.web.Controllers.API
                     // ** Cada item se convierte en padre y se buscan sus hijos (así se llenan todos los padres)
                     foreach (var item in listaDependencias)
                     {
+                        var nombre = item.Nombre + item.IdDependencia;
 
                         if (
-                            item.DependenciaPadre != null
+                            item.IdDependenciaPadre > 0
                             && item.DependenciaPadre.IdSucursal != sucursal.IdSucursal
                             )
                         {
@@ -248,10 +256,16 @@ namespace bd.swth.web.Controllers.API
                                 IdSucursal = item.IdSucursal,
                                 Nombre = item.Nombre,
                                 IdDependenciaPadre = 0,
+                                
+                                Dependencia1 = item.Dependencia1
+
                             });
+
+
+
                         }
                         
-                        else if(item.DependenciaPadre !=  null)
+                        else if(item.IdDependenciaPadre > 0 )
                         {
 
                             var listaHijos = listaDependencias
@@ -263,11 +277,12 @@ namespace bd.swth.web.Controllers.API
                                 IdDependenciaPadre = s.IdDependenciaPadre,
                                 IdProceso = s.IdProceso,
                                 Nombre = s.Nombre,
-                                Dependencia1 = new List<Dependencia>()
+                                Dependencia1 = s.Dependencia1
                             })
                             .ToList();
                             
                             item.Dependencia1 = new List<Dependencia>(listaHijos);
+                            
                         }
                         
                         

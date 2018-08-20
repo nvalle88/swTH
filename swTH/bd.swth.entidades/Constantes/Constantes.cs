@@ -24,6 +24,9 @@ namespace bd.swth.entidades.Constantes
         public static string EscapeConjuntos { get { return "&"; } }
 
         public static string NombreDesconcentrados { get; set; }
+
+        public static string NombreNivelJerarquicoSuperior { get; set; }
+
     }
 
     public static class ConstantesGrupoOcupacional

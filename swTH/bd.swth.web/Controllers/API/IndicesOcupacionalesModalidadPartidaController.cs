@@ -684,8 +684,10 @@ namespace bd.swth.web.Controllers.API
                             .Where(w => w.IdEmpleado == modelo.IdEmpleado)
                             .FirstOrDefaultAsync();
 
+                        empleadoModelo.TipoRelacion = nombramiento.RelacionLaboral.Nombre.ToUpper();
                         empleadoModelo.EsJefe = IndiceOcupacionalModalidadPartida.Empleado.EsJefe;
                         empleadoModelo.Activo = true;
+                        empleadoModelo.IdDependencia = IndiceOcupacionalModalidadPartida.IdDependencia;
 
                         db.Empleado.Update(empleadoModelo);
 

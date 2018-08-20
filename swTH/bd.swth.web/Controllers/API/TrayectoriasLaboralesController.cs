@@ -336,11 +336,15 @@ namespace bd.swth.web.Controllers.API
                 TrayectoriaLaboral.FechaFin = trayectoriaLaboral.FechaFin;
                 TrayectoriaLaboral.Empresa = trayectoriaLaboral.Empresa.ToString().ToUpper();
                 TrayectoriaLaboral.PuestoTrabajo = trayectoriaLaboral.PuestoTrabajo.ToString().ToUpper();
-                TrayectoriaLaboral.DescripcionFunciones = trayectoriaLaboral.DescripcionFunciones.ToString().ToUpper();
+
+                TrayectoriaLaboral.DescripcionFunciones = trayectoriaLaboral.DescripcionFunciones!= null?
+                    trayectoriaLaboral.DescripcionFunciones.ToString().ToUpper():null;
 
                 TrayectoriaLaboral.AreaAsignada = trayectoriaLaboral.AreaAsignada.ToString().ToUpper();
                 TrayectoriaLaboral.FormaIngreso = trayectoriaLaboral.FormaIngreso.ToString().ToUpper();
-                TrayectoriaLaboral.MotivoSalida = trayectoriaLaboral.MotivoSalida.ToString().ToUpper();
+
+                TrayectoriaLaboral.MotivoSalida = (trayectoriaLaboral.MotivoSalida != null)?trayectoriaLaboral.MotivoSalida.ToString().ToUpper():null;
+
                 TrayectoriaLaboral.TipoInstitucion = trayectoriaLaboral.TipoInstitucion.ToString().ToUpper();
                 await db.SaveChangesAsync();
 
@@ -387,8 +391,13 @@ namespace bd.swth.web.Controllers.API
                     TrayectoriaLaboral.PuestoTrabajo = TrayectoriaLaboral.PuestoTrabajo.ToString().ToUpper();
                     TrayectoriaLaboral.AreaAsignada = TrayectoriaLaboral.AreaAsignada.ToString().ToUpper();
                     TrayectoriaLaboral.FormaIngreso = TrayectoriaLaboral.FormaIngreso.ToString().ToUpper();
-                    TrayectoriaLaboral.MotivoSalida = TrayectoriaLaboral.MotivoSalida.ToString().ToUpper();
-                    TrayectoriaLaboral.DescripcionFunciones = TrayectoriaLaboral.ToString().ToUpper();
+
+                    TrayectoriaLaboral.MotivoSalida = (TrayectoriaLaboral.MotivoSalida != null)
+                        ?TrayectoriaLaboral.MotivoSalida.ToString().ToUpper():null;
+
+                    TrayectoriaLaboral.DescripcionFunciones = (TrayectoriaLaboral.DescripcionFunciones != null)
+                        ?TrayectoriaLaboral.DescripcionFunciones.ToString().ToUpper():null;
+
                     TrayectoriaLaboral.TipoInstitucion = TrayectoriaLaboral.TipoInstitucion.ToString().ToUpper();
 
                     db.TrayectoriaLaboral.Add(TrayectoriaLaboral);
@@ -453,16 +462,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -477,11 +476,15 @@ namespace bd.swth.web.Controllers.API
             var fechaFin = TrayectoriaLaboral.FechaFin;
             var Empresa = TrayectoriaLaboral.Empresa;
             var PuestoTrabajo = TrayectoriaLaboral.PuestoTrabajo.ToString().ToUpper();
-            var DescripcionFunciones = TrayectoriaLaboral.DescripcionFunciones.ToString().ToUpper();
+            var DescripcionFunciones = (TrayectoriaLaboral.DescripcionFunciones != null)?
+                TrayectoriaLaboral.DescripcionFunciones.ToString().ToUpper():null;
+
             var tipoInstitucion = TrayectoriaLaboral.TipoInstitucion.ToString().ToUpper();
             var areaAsignada = TrayectoriaLaboral.AreaAsignada.ToString().ToUpper();
             var formaIngreso = TrayectoriaLaboral.FormaIngreso.ToString().ToUpper();
-            var motivoSalida = TrayectoriaLaboral.MotivoSalida.ToString().ToUpper();
+
+            var motivoSalida = (TrayectoriaLaboral.MotivoSalida != null)?
+                TrayectoriaLaboral.MotivoSalida.ToString().ToUpper():null;
 
             var TrayectoriaLaboralrespuesta = db.TrayectoriaLaboral
                 .Where(p => 
@@ -492,8 +495,7 @@ namespace bd.swth.web.Controllers.API
                 && p.TipoInstitucion == tipoInstitucion.ToString().ToUpper()
                 && p.AreaAsignada == areaAsignada.ToString().ToUpper()
                 && p.FormaIngreso == formaIngreso.ToString().ToUpper()
-                && p.MotivoSalida == motivoSalida.ToString().ToUpper()
-                && p.DescripcionFunciones == DescripcionFunciones.ToString().ToUpper()
+                
                 ).FirstOrDefault();
 
             if (TrayectoriaLaboralrespuesta != null)

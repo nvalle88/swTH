@@ -77,7 +77,8 @@ namespace bd.swth.web.Controllers.API
         /// </summary>
         /// <param name="idEmpleado"></param>
         /// <returns></returns>
-        public async Task CalcularYRegistrarVacacionesPorEmpleado(int idEmpleado) {
+        public async Task CalcularYRegistrarVacacionesPorEmpleado(int idEmpleado)
+        {
 
             // ********* Creación de varibles para usar en los posteriores cálculos ************************
             //----------------------------------------------------------------------------------------------
@@ -98,6 +99,8 @@ namespace bd.swth.web.Controllers.API
             // ** Historial de registros en IOMP por empleado
             var listaRegistrosIOMP = await db.IndiceOcupacionalModalidadPartida
                 .Include(i => i.TipoNombramiento)
+                .Include(i => i.TipoNombramiento.RelacionLaboral)
+                .Include(i => i.TipoNombramiento.RelacionLaboral.RegimenLaboral)
                 .Where(w => w.IdEmpleado == idEmpleado)
                 .OrderBy(o => o.Fecha)
                 .ToListAsync();
@@ -193,7 +196,7 @@ namespace bd.swth.web.Controllers.API
                  );
             }
             else
-            {
+             {
 
                 Double diasPorPeriodo = 0;
                 var Fecha1 = FechaInicioFunciones;
@@ -567,7 +570,7 @@ namespace bd.swth.web.Controllers.API
                     .OrderByDescending(o=>o.Fecha)
                     .FirstOrDefaultAsync();
 
-
+                await CalcularYRegistrarVacacionesPorEmpleado(usuario.IdEmpleado);
                 var vacacionesAcumuladas = 0;
 
                 var vacaciones = await db.VacacionesEmpleado
@@ -862,7 +865,9 @@ namespace bd.swth.web.Controllers.API
                 var estado = ConstantesEstadosVacaciones.ListaEstadosVacaciones;
 
                 var vacacionesAcumuladas = 0;
+
                 
+
                 var modelo = await db.SolicitudPlanificacionVacaciones
                     .Where(w => w.IdSolicitudPlanificacionVacaciones == idSolicitud)
                     .Select(s =>  new SolicitudPlanificacionVacacionesViewModel
@@ -893,6 +898,8 @@ namespace bd.swth.web.Controllers.API
                         }
                     )
                     .FirstOrDefaultAsync();
+
+                await CalcularYRegistrarVacacionesPorEmpleado(modelo.DatosBasicosEmpleadoViewModel.IdEmpleado);
 
                 var numeroEstado = estado.Where(w => w.ValorEstado == modelo.Estado).FirstOrDefault();
 

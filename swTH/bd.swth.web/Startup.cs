@@ -134,7 +134,7 @@ namespace bd.swth.web
             ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno = JsonConvert.DeserializeObject<List<AprobacionMovimientoInternoViewModel>>(Configuration.GetSection("ListaEstadosAprobacionMovimientoInterno").Value);
 
             // Configuración Estados Vacaciones
-            ConstantesEstadosVacaciones.ListaEstadosVacaciones = JsonConvert.DeserializeObject<List<EstadoVacacionesViewModel>>(Configuration.GetSection("ListaEstadosVacaciones").Value);
+           ConstantesEstadosVacaciones.ListaEstadosVacaciones = JsonConvert.DeserializeObject<List<EstadoVacacionesViewModel>>(Configuration.GetSection("ListaEstadosVacaciones").Value);
 
 
             // Configuración constantes Fondo reserva Ingresado
@@ -179,6 +179,9 @@ namespace bd.swth.web
             ConstantesAccionPersonal.TerminacionSubrogacion = Configuration.GetSection("TerminacionSubrogacion").Value;
             ConstantesAccionPersonal.Encargo = Configuration.GetSection("Encargo").Value;
             ConstantesAccionPersonal.Subrogacion = Configuration.GetSection("Subrogacion").Value;
+
+            // constante nivel jerárquico superior
+            Constantes.NombreNivelJerarquicoSuperior = Configuration.GetSection("NombreNivelJerarquicoSuperior").Value;
 
 
             /// <summary>
