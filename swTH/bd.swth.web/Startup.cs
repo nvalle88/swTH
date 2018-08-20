@@ -137,6 +137,20 @@ namespace bd.swth.web
            ConstantesEstadosVacaciones.ListaEstadosVacaciones = JsonConvert.DeserializeObject<List<EstadoVacacionesViewModel>>(Configuration.GetSection("ListaEstadosVacaciones").Value);
 
 
+            // Configuración constantes Fondo reserva Ingresado
+            ConstantesFondosReserva.DiasMinimoDerechoFondoReserva = Convert.ToInt32(Configuration.GetSection("DiasMinimoDerechoFondoReserva").Value);
+            ConstantesFondosReserva.IntervaloTemporizadorHorasFondoReserva = Convert.ToInt32(Configuration.GetSection("IntervaloTemporizadorHorasFondoReserva").Value);
+            ConstantesFondosReserva.IntervaloTemporizadorMinutosFondoReserva = Convert.ToInt32(Configuration.GetSection("IntervaloTemporizadorMinutosFondoReserva").Value);
+            ConstantesFondosReserva.IntervaloTemporizadorSegundosFondoReserva = Convert.ToInt32(Configuration.GetSection("IntervaloTemporizadorSegundosFondoReserva").Value);
+
+
+            ConstantesFondosReserva.inicioCicloHorasFondoReserva = Convert.ToInt32(Configuration.GetSection("inicioCicloHorasFondoReserva").Value);
+            ConstantesFondosReserva.inicioCicloMinutosFondoReserva = Convert.ToInt32(Configuration.GetSection("inicioCicloMinutosFondoReserva").Value);
+            ConstantesFondosReserva.inicioCicloSegundosFondoReserva = Convert.ToInt32(Configuration.GetSection("inicioCicloSegundosFondoReserva").Value);
+
+
+
+
             // Configuración Estados Capacitaciones Ingresado
             ConstantesCapacitacion.EstadoIngresado = Convert.ToInt32(Configuration.GetSection("Ingresado").Value);
             ConstantesCapacitacion.EstadoTerminado = Convert.ToInt32(Configuration.GetSection("Finalizado").Value);
@@ -207,6 +221,21 @@ namespace bd.swth.web
                         Convert.ToInt32(IntervaloCicloSegundos)
                         )
                 );
+
+
+            Temporizador.TemporizadorFondoReserva.InicializarRelojR0
+               (
+                 new TimeSpan(
+                      ConstantesFondosReserva.inicioCicloHorasFondoReserva,
+                      ConstantesFondosReserva.inicioCicloMinutosFondoReserva,
+                      ConstantesFondosReserva.inicioCicloSegundosFondoReserva
+                       )
+               , new TimeSpan(
+                      ConstantesFondosReserva.IntervaloTemporizadorHorasFondoReserva,
+                       ConstantesFondosReserva.IntervaloTemporizadorMinutosFondoReserva,
+                       ConstantesFondosReserva.IntervaloTemporizadorSegundosFondoReserva
+                       )
+               );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

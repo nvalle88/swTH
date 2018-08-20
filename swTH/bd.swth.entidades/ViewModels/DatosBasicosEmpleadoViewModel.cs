@@ -24,7 +24,10 @@ namespace bd.swth.entidades.ViewModels
         public int IdProvinciaLugarPersona { get; set; }
 
         public bool FondosReservas { get; set; }
-        public bool AcumulaDecimos { get; set; }
+        public bool DerechoFondoReserva { get; set; }
+        public bool AcumulaDecimoTercero { get; set; }
+        public bool AcumulaDecimoCuarto { get; set; }
+        
 
 
         public string Dependencia { get; set; }
@@ -39,6 +42,8 @@ namespace bd.swth.entidades.ViewModels
         public DateTime FechaNacimiento { get; set; }
         public string LugarTrabajo { get; set; }
         public int IdCiudadLugarNacimiento { get; set; }
+        public int? IdBrigadaSSoRol { get; set; }
+        public int? IdBrigadaSSO { get; set; }
         public int IdProvinciaLugarSufragio { get; set; }
         public int IdParroquia { get; set; }
         public string CallePrincipal { get; set; }
