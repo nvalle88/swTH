@@ -223,19 +223,19 @@ namespace bd.swth.web
                 );
 
 
-            Temporizador.TemporizadorFondoReserva.InicializarRelojR0
-               (
-                 new TimeSpan(
-                      ConstantesFondosReserva.inicioCicloHorasFondoReserva,
-                      ConstantesFondosReserva.inicioCicloMinutosFondoReserva,
-                      ConstantesFondosReserva.inicioCicloSegundosFondoReserva
-                       )
-               , new TimeSpan(
-                      ConstantesFondosReserva.IntervaloTemporizadorHorasFondoReserva,
-                       ConstantesFondosReserva.IntervaloTemporizadorMinutosFondoReserva,
-                       ConstantesFondosReserva.IntervaloTemporizadorSegundosFondoReserva
-                       )
-               );
+            //Temporizador.TemporizadorFondoReserva.InicializarRelojR0
+            //   (
+            //     new TimeSpan(
+            //          ConstantesFondosReserva.inicioCicloHorasFondoReserva,
+            //          ConstantesFondosReserva.inicioCicloMinutosFondoReserva,
+            //          ConstantesFondosReserva.inicioCicloSegundosFondoReserva
+            //           )
+            //   , new TimeSpan(
+            //          ConstantesFondosReserva.IntervaloTemporizadorHorasFondoReserva,
+            //           ConstantesFondosReserva.IntervaloTemporizadorMinutosFondoReserva,
+            //           ConstantesFondosReserva.IntervaloTemporizadorSegundosFondoReserva
+            //           )
+            //   );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

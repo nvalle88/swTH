@@ -62,14 +62,7 @@ namespace bd.swth.web.Temporizador
         {
             try
             {
-                var horaActual = DateTime.Now.Hour;
-
-                var horaControlDiarioMin = 0;//0
-                var horaControlDiarioMax = 3;//3
-
-                if (horaActual>horaControlDiarioMin && horaActual<horaControlDiarioMax) {
-
-                    var listaEmpleados =await db.Empleado.Where(x => x.Activo == true && x.DerechoFondoReserva==false).Select(x => new Empleado { IdEmpleado = x.IdEmpleado, FechaIngreso = x.FechaIngreso, Activo = x.Activo }).ToListAsync();
+                    var listaEmpleados =await db.Empleado.Where(x => x.Activo == true && x.DerechoFondoReserva==false).Select(x => new Empleado { IdEmpleado = x.IdEmpleado, FechaIngreso = x.FechaIngreso}).ToListAsync();
                     foreach (var item in listaEmpleados)
                     {
                         var fechaIngresoActual = Convert.ToDateTime(item.FechaIngreso == null ? DateTime.Today : item.FechaIngreso);
@@ -78,14 +71,14 @@ namespace bd.swth.web.Temporizador
                         if (diasDiferencia>= ConstantesFondosReserva.DiasMinimoDerechoFondoReserva)
                         {
                             var empleadoActualizar = await db.Empleado.Where(x=>x.IdEmpleado==item.IdEmpleado).FirstOrDefaultAsync();
-                            empleadoActualizar.FondosReservas = true;
+                            empleadoActualizar.DerechoFondoReserva = true;
+                            db.Empleado.Update(empleadoActualizar);
                             await db.SaveChangesAsync();
 
                         }
 
 
                     }
-                }
             
             }
             catch (Exception)
@@ -93,10 +86,6 @@ namespace bd.swth.web.Temporizador
                 throw;
             }
         }
-
-        
-
-        
 
         public static void InicializarRelojR0(TimeSpan inicioCiclo,TimeSpan intervaloCiclo)
         {
