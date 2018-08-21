@@ -59,5 +59,7 @@ namespace bd.swth.entidades.Utils
         public static string ErrorFinEncargo { get { return "No hay encargos que puedan finalizarse"; } }
 
         public static string ErrorFinSubrogacion { get { return "No hay subrogaciones que puedan finalizarse"; } }
+
+        public static string ErrorBorrarEmpleadoIOMP { get { return "No es posible eliminar el empleado porque ya ha sido asignado a un distributivo"; } }
     }
 }
