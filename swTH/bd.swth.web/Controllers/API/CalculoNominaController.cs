@@ -56,7 +56,7 @@ namespace bd.swth.web.Controllers.API
 
         private async Task<CalculoNomina> ObtenerCalculoNominaDetalle(CalculoNomina calculoNomina)
         {
-            var calculoNominaRequest = await db.CalculoNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).Include(y => y.ProcesoNomina).ThenInclude(y => y.ConceptoNomina).FirstOrDefaultAsync();
+            var calculoNominaRequest = await db.CalculoNomina.Where(x => x.IdCalculoNomina == calculoNomina.IdCalculoNomina).Include(y => y.ProcesoNomina).FirstOrDefaultAsync();
             return calculoNominaRequest;
         }
 

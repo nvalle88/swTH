@@ -31,7 +31,7 @@ namespace bd.swth.web.Controllers.API
             try
             {
                 var relacionEmpleado =await db.Empleado.Where(e => e.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
-                var lista= await db.ConceptoNomina.Where(x => x.Estatus =="Activo" && (x.RelacionLaboral==relacionEmpleado.TipoRelacion || x.RelacionLaboral=="AMBOS")).ToListAsync();
+                var lista = new List<ConceptoNomina>();//await db.ConceptoNomina.Where(x => x.Estatus =="Activo" && (x.RelacionLaboral==relacionEmpleado.TipoRelacion || x.RelacionLaboral=="AMBOS")).ToListAsync();
                 return lista;
             }
             catch (Exception ex)
@@ -67,7 +67,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ConceptoNomina.Include(x => x.ProcesoNomina).ToListAsync();
+                return null;// await db.ConceptoNomina.Include(x => x.ProcesoNomina).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -403,7 +403,7 @@ namespace bd.swth.web.Controllers.API
                         item.MensajeError = Mensaje.EmpleadoNoExiste;
                     }
 
-                    var concepto =await db.ConceptoNomina.Where(x => x.IdProceso == proceso && x.Codigo == item.CodigoConcepto).FirstOrDefaultAsync();
+                    var concepto = await db.ConceptoNomina.FirstOrDefaultAsync();
                     if (concepto==null)
                     {
                         item.Valido = false;
@@ -444,7 +444,7 @@ namespace bd.swth.web.Controllers.API
 
                 }
 
-                ConceptoNominaActualizar.FormulaCalculo = ConceptoNomina.FormulaCalculo;
+               // ConceptoNominaActualizar.FormulaCalculo = ConceptoNomina.FormulaCalculo;
                 db.ConceptoNomina.Update(ConceptoNominaActualizar);
                 await db.SaveChangesAsync();
 
@@ -490,14 +490,14 @@ namespace bd.swth.web.Controllers.API
 
                 }
 
-                ConceptoNominaActualizar.IdProceso = ConceptoNomina.IdProceso;
-                ConceptoNominaActualizar.Codigo = ConceptoNomina.Codigo;
-                ConceptoNominaActualizar.Descripcion = ConceptoNomina.Descripcion;
-                ConceptoNominaActualizar.TipoConcepto = ConceptoNomina.TipoConcepto;
-                ConceptoNominaActualizar.RelacionLaboral = ConceptoNomina.RelacionLaboral;
-                ConceptoNominaActualizar.Estatus = ConceptoNomina.Estatus;
-                ConceptoNominaActualizar.Abreviatura = ConceptoNomina.Abreviatura;
-                ConceptoNominaActualizar.Prioridad = ConceptoNomina.Prioridad;
+               // ConceptoNominaActualizar.IdProceso = ConceptoNomina.IdProceso;
+               // ConceptoNominaActualizar.Codigo = ConceptoNomina.Codigo;
+               // ConceptoNominaActualizar.Descripcion = ConceptoNomina.Descripcion;
+              //  ConceptoNominaActualizar.TipoConcepto = ConceptoNomina.TipoConcepto;
+              //  ConceptoNominaActualizar.RelacionLaboral = ConceptoNomina.RelacionLaboral;
+              //  ConceptoNominaActualizar.Estatus = ConceptoNomina.Estatus;
+              //  ConceptoNominaActualizar.Abreviatura = ConceptoNomina.Abreviatura;
+               // ConceptoNominaActualizar.Prioridad = ConceptoNomina.Prioridad;
 
                 db.ConceptoNomina.Update(ConceptoNominaActualizar);
                 await db.SaveChangesAsync();

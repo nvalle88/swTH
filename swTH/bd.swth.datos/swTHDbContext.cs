@@ -18,13 +18,14 @@ namespace bd.swth.datos
         /// Db Set de Configuración de la nómina
         /// </summary>
         /// 
-        public virtual DbSet<ConceptoConjuntoNomina> ConceptoConjuntoNomina { get; set; }
-        public virtual DbSet<ConceptoNomina> ConceptoNomina { get; set; }
-        public virtual DbSet<ConjuntoNomina> ConjuntoNomina { get; set; }
-        public virtual DbSet<ProcesoNomina> ProcesoNomina { get; set; }
-        public virtual DbSet<TeconceptoNomina> TeconceptoNomina { get; set; }
-        public virtual DbSet<TipoConjuntoNomina> TipoConjuntoNomina { get; set; }
-        public virtual DbSet<PeriodoNomina> PeriodoNomina { get; set; }
+
+
+        public virtual DbSet<bd.swth.entidades.Negocio.ProcesoNomina> ProcesoNomina { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ConceptoProcesoNomina> ConceptoProcesoNomina { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.ConceptoNomina> ConceptoNomina { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.FormulaNomina> FormulaNomina { get; set; }
+
+
         public virtual DbSet<SriNomina> SriNomina { get; set; }
         public virtual DbSet<SriDetalle> SriDetalle { get; set; }
         public virtual DbSet<TipoDeGastoPersonal> TipoDeGastoPersonal { get; set; }
@@ -276,6 +277,86 @@ namespace bd.swth.datos
             //    entity.Property(e => e.FechaInicioDecimoTercero).HasColumnType("datetime");
             //});
 
+            //ProcesoNomina
+
+
+            modelBuilder.Entity<FormulaNomina>(entity =>
+            {
+                entity.HasKey(e => new { e.IdRegimenLaboral, e.IdConceptoNomina })
+                    .HasName("PK_FormulaNomina");
+
+                entity.Property(e => e.Formula).HasColumnType("varchar(500)");
+
+                entity.HasOne(d => d.ConceptoNomina)
+                    .WithMany(p => p.FormulaNomina)
+                    .HasForeignKey(d => d.IdConceptoNomina)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_FormulaNomina_ConceptoNomina");
+
+                entity.HasOne(d => d.RegimenLaboral)
+                    .WithMany(p => p.FormulaNomina)
+                    .HasForeignKey(d => d.IdRegimenLaboral)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_FormulaNomina_RegimenLaboral");
+            });
+
+            modelBuilder.Entity<ConceptoNomina>(entity =>
+            {
+                entity.HasKey(e => e.IdConcepto)
+                    .HasName("PK2");
+
+                entity.Property(e => e.Codigo)
+                    .IsRequired()
+                    .HasColumnType("varchar(10)");
+
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.Property(e => e.Estatus)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.Property(e => e.TipoConcepto)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+            });
+
+            modelBuilder.Entity<ConceptoProcesoNomina>(entity =>
+            {
+                entity.HasKey(e => new { e.IdProcesoNomina, e.IdConceptoNomina })
+                    .HasName("PK_ConceptoProcesoNomina");
+
+                entity.Property(e => e.IdProcesoNomina).ValueGeneratedOnAdd();
+
+                entity.HasOne(d => d.ConceptoNomina)
+                    .WithMany(p => p.ConceptoProcesoNomina)
+                    .HasForeignKey(d => d.IdConceptoNomina)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ConceptoProcesoNomina_ConceptoNomina");
+
+                entity.HasOne(d => d.ProcesoNomina)
+                    .WithMany(p => p.ConceptoProcesoNomina)
+                    .HasForeignKey(d => d.IdProcesoNomina)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ConceptoProcesoNomina_Proceso");
+            });
+
+            modelBuilder.Entity<ProcesoNomina>(entity =>
+            {
+                entity.HasKey(e => e.IdProceso)
+                    .HasName("PK1");
+
+                entity.Property(e => e.Codigo)
+                    .IsRequired()
+                    .HasColumnType("varchar(10)");
+
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+            });
+
+
             modelBuilder.Entity<AprobacionAccionPersonal>(entity =>
             {
                 entity.HasKey(e => e.IdAprobacionAccionPersonal)
@@ -411,152 +492,12 @@ namespace bd.swth.datos
                     .HasConstraintName("FK_Empleado_Provincia_ProvinciaSufragioIdProvincia");
             });
 
-            modelBuilder.Entity<TipoConjuntoNomina>(entity =>
-            {
-                entity.HasKey(e => e.IdTipoConjunto)
-                    .HasName("PK6");
+           
 
-                entity.Property(e => e.Codigo)
-                    .IsRequired()
-                    .HasColumnType("varchar(10)");
+            
 
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasColumnType("varchar(100)");
-            });
+           
 
-            modelBuilder.Entity<TeconceptoNomina>(entity =>
-            {
-                entity.HasKey(e => e.IdTeconcepto)
-                    .HasName("PK5");
-
-                entity.ToTable("TEConceptoNomina");
-
-                entity.HasIndex(e => e.IdConcepto)
-                    .HasName("Ref210");
-
-                entity.Property(e => e.IdTeconcepto).HasColumnName("IdTEConcepto");
-
-                entity.HasOne(d => d.ConceptoNomina)
-                    .WithMany(p => p.TeconceptoNomina)
-                    .HasForeignKey(d => d.IdConcepto)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("RefConceptoNomina10");
-            });
-
-            modelBuilder.Entity<ConjuntoNomina>(entity =>
-            {
-                entity.HasKey(e => e.IdConjunto)
-                    .HasName("PK3");
-
-                entity.HasIndex(e => e.IdTipoConjunto)
-                    .HasName("Ref65");
-
-                entity.Property(e => e.Codigo)
-                    .IsRequired()
-                    .HasColumnType("varchar(10)");
-
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasColumnType("varchar(100)");
-
-                entity.HasOne(d => d.TipoConjuntoNomina)
-                    .WithMany(p => p.ConjuntoNomina)
-                    .HasForeignKey(d => d.IdTipoConjunto)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("RefTipoConjuntoNomina5");
-            });
-
-            modelBuilder.Entity<ProcesoNomina>(entity =>
-            {
-                entity.HasKey(e => e.IdProceso)
-                    .HasName("PK1");
-
-                entity.Property(e => e.Codigo)
-                    .IsRequired()
-                    .HasColumnType("varchar(10)");
-
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasColumnType("varchar(100)");
-            });
-
-            modelBuilder.Entity<ConceptoConjuntoNomina>(entity =>
-            {
-                entity.HasKey(e => e.IdConceptoConjunto)
-                    .HasName("PK4");
-
-                entity.HasIndex(e => e.IdConcepto)
-                    .HasName("Ref27");
-
-                entity.HasIndex(e => e.IdConjunto)
-                    .HasName("Ref36");
-
-                entity.HasOne(d => d.ConceptoNomina)
-                    .WithMany(p => p.ConceptoConjuntoNomina)
-                    .HasForeignKey(d => d.IdConcepto)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("RefConceptoNomina7");
-
-                entity.HasOne(d => d.ConjuntoNomina)
-                    .WithMany(p => p.ConceptoConjuntoNomina)
-                    .HasForeignKey(d => d.IdConjunto)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("RefConjuntoNomina6");
-            });
-
-            modelBuilder.Entity<ConceptoNomina>(entity =>
-            {
-                entity.HasKey(e => e.IdConcepto)
-                    .HasName("PK2");
-
-                entity.HasIndex(e => e.IdProceso)
-                    .HasName("Ref18");
-
-                entity.Property(e => e.Abreviatura)
-                    .IsRequired()
-                    .HasColumnType("varchar(10)");
-
-                entity.Property(e => e.Codigo)
-                    .IsRequired()
-                    .HasColumnType("varchar(10)");
-
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasColumnType("varchar(100)");
-
-                entity.Property(e => e.Estatus)
-                    .IsRequired()
-                    .HasColumnType("varchar(100)");
-
-                entity.Property(e => e.FormulaCalculo).HasColumnType("varchar(500)");
-
-              
-
-                entity.Property(e => e.RelacionLaboral)
-                    .IsRequired()
-                    .HasColumnType("varchar(100)");
-
-                entity.Property(e => e.TipoConcepto)
-                    .IsRequired()
-                    .HasColumnType("varchar(100)");
-
-                entity.HasOne(d => d.ProcesoNomina)
-                    .WithMany(p => p.ConceptoNomina)
-                    .HasForeignKey(d => d.IdProceso)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("RefProcesoNomina8");
-            });
-
-            modelBuilder.Entity<LavadoActivoItem>(entity =>
-            {
-                entity.HasKey(e => e.IdLavadoActivoItem)
-                    .HasName("PK_LavadoActivoItem");
-
-                entity.Property(e => e.Descripcion)
-                    .IsRequired()
-                    .HasColumnType("varchar(700)");
-            });
 
             modelBuilder.Entity<ActivarPersonalTalentoHumano>(entity =>
             {
