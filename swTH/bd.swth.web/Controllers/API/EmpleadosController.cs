@@ -107,6 +107,7 @@ namespace bd.swth.web.Controllers.API
             {
                 var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
                 empleadoActualizar.DerechoFondoReserva = empleado.DerechoFondoReserva;
+                db.Empleado.Update(empleadoActualizar);
                 await db.SaveChangesAsync();
                 return new Response { IsSuccess = true };
             }
@@ -126,6 +127,7 @@ namespace bd.swth.web.Controllers.API
             {
                 var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
                 empleadoActualizar.FondosReservas = empleado.FondosReservas;
+                db.Empleado.Update(empleadoActualizar);
                 await db.SaveChangesAsync();
                 return new Response { IsSuccess = true };
             }
@@ -167,6 +169,7 @@ namespace bd.swth.web.Controllers.API
                 var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
 
                 empleadoActualizar.AcumulaDecimoTercero = empleado.AcumulaDecimoTercero;
+                db.Empleado.Update(empleadoActualizar);
                 await db.SaveChangesAsync();
 
                 return new Response { IsSuccess = true };
@@ -186,6 +189,7 @@ namespace bd.swth.web.Controllers.API
             {
                 var empleadoActualizar = await ObtenerEmpleadoFiltro(filtro: x => x.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
                 empleadoActualizar.AcumulaDecimoCuarto = empleado.AcumulaDecimoCuarto;
+                db.Empleado.Update(empleadoActualizar);
                 await db.SaveChangesAsync();
 
                 return new Response { IsSuccess = true };
