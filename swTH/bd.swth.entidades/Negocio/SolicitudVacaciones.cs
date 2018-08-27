@@ -22,7 +22,7 @@ namespace bd.swth.entidades.Negocio
         public int? IdEmpleadoReemplazo { get; set; }
 
         [NotMapped]
-        public int DiasVacaciones { get; set; }
+        public decimal DiasVacaciones { get; set; }
         
         public virtual Empleado Empleado { get; set; }
         

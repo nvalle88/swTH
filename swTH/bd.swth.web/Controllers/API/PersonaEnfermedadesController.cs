@@ -162,7 +162,11 @@ namespace bd.swth.web.Controllers.API
 
                 PersonaEnfermedadAct.IdTipoEnfermedad = PersonaEnfermedad.IdTipoEnfermedad;
                 PersonaEnfermedadAct.IdPersona = PersonaEnfermedad.IdPersona;
-                PersonaEnfermedadAct.InstitucionEmite = PersonaEnfermedad.InstitucionEmite.ToString().ToUpper();
+
+                if (!String.IsNullOrEmpty(PersonaEnfermedad.InstitucionEmite)) {
+                    PersonaEnfermedadAct.InstitucionEmite = PersonaEnfermedad.InstitucionEmite.ToString().ToUpper();
+                }
+                
 
                 await db.SaveChangesAsync();
 
@@ -204,7 +208,11 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(PersonaEnfermedad);
                 if (!respuesta.IsSuccess)
                 {
-                    PersonaEnfermedad.InstitucionEmite = PersonaEnfermedad.InstitucionEmite.ToString().ToUpper();
+
+                    if (!string.IsNullOrEmpty(PersonaEnfermedad.InstitucionEmite))
+                    {
+                        PersonaEnfermedad.InstitucionEmite = PersonaEnfermedad.InstitucionEmite.ToString().ToUpper();
+                    }
 
                     db.PersonaEnfermedad.Add(PersonaEnfermedad);
                     await db.SaveChangesAsync();

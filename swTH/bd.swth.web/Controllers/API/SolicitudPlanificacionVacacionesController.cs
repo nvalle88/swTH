@@ -80,6 +80,12 @@ namespace bd.swth.web.Controllers.API
         public async Task CalcularYRegistrarVacacionesPorEmpleado(int idEmpleado)
         {
 
+            if (idEmpleado == 4)
+            {
+
+            }
+
+
             // ********* Creación de varibles para usar en los posteriores cálculos ************************
             //----------------------------------------------------------------------------------------------
 
@@ -93,7 +99,7 @@ namespace bd.swth.web.Controllers.API
 
 
             // ** Variable para guardar el total de vacaciones
-            int totalDiasVacacionesEstePeriodoFiscal = 0;
+            decimal totalDiasVacacionesEstePeriodoFiscal = 0;
 
 
             // ** Historial de registros en IOMP por empleado
@@ -105,7 +111,7 @@ namespace bd.swth.web.Controllers.API
                 .OrderBy(o => o.Fecha)
                 .ToListAsync();
 
-            // obtener registros IOMP de este año
+            // Obtener registros IOMP de este año
             var listaRegistrosIOMPPeriodoFiscalActual = listaRegistrosIOMP
                 .Where(w => w.Fecha.Year == DateTime.Now.Year)
                 .ToList();
@@ -128,7 +134,8 @@ namespace bd.swth.web.Controllers.API
                     w.TipoAccionPersonal.Definitivo == true
                     && w.TipoAccionPersonal.DesactivarEmpleado == true
                 )
-                .OrderByDescending(o => o.FechaRige);
+                .OrderByDescending(o => o.FechaRige)
+                .ToList();
 
 
 
@@ -185,11 +192,12 @@ namespace bd.swth.web.Controllers.API
 
                 var IOMPActual = listaRegistrosIOMP
                     .OrderByDescending(o => o.Fecha)
+                    .OrderByDescending(o=>o.IdIndiceOcupacionalModalidadPartida)
                     .FirstOrDefault();
 
                 // Obtiene el total de vacaciones desde la fecha de ingreso hasta la fecha actual según
                 // el tipo de relacion laboral actual
-                totalDiasVacacionesEstePeriodoFiscal = (int)await CalcularVacacionesPorFechas(
+                totalDiasVacacionesEstePeriodoFiscal = (Decimal)await CalcularVacacionesPorFechas(
                     Convert.ToInt32(IOMPActual.TipoNombramiento.RelacionLaboral.IdRegimenLaboral),
                     FechaInicioFunciones,
                     DateTime.Now
@@ -220,11 +228,18 @@ namespace bd.swth.web.Controllers.API
                         Fecha2 = DateTime.Now;
                     }
 
-                    diasPorPeriodo = diasPorPeriodo + await CalcularVacacionesPorFechas(
+                    double vacacionesASumar = 0;
+
+                    var obtenido = await CalcularVacacionesPorFechas(
                             Convert.ToInt32(listaRegistrosIOMPPeriodoFiscalActual.ElementAt(i).TipoNombramiento.RelacionLaboral.IdRegimenLaboral),
                             Fecha1,
                             Fecha2
                         );
+
+                    // Tomar solo dos valores del cálculo obtenido
+                    vacacionesASumar = ((double)((int)(obtenido * 100.0))) / 100.0;
+
+                    diasPorPeriodo = diasPorPeriodo + vacacionesASumar;
 
                     if ((i + 1) < listaRegistrosIOMPPeriodoFiscalActual.Count())
                     {
@@ -233,7 +248,7 @@ namespace bd.swth.web.Controllers.API
                     }
                 }
 
-                totalDiasVacacionesEstePeriodoFiscal = (int)diasPorPeriodo;
+                totalDiasVacacionesEstePeriodoFiscal = (Decimal)diasPorPeriodo;
 
             }
 
@@ -327,7 +342,6 @@ namespace bd.swth.web.Controllers.API
         private async Task<Double> CalcularVacacionesPorFechas(int IdRegimenLaboral,DateTime FechaInicio,DateTime FechaFin)
         {
 
-
             // Obtención del tiempo trabajado en años
             var WorkingTimeInYears = FechaFin.Year - FechaInicio.Year;
 
@@ -384,6 +398,7 @@ namespace bd.swth.web.Controllers.API
                 }
                 else if (WorkingTimeInYears < 1)
                 {
+                    
 
                     diasVacacionesPorMes = (Double)reglas.MinAcumulacionDias / (Double)12;
                     var mesActual = FechaFin.Month;
@@ -391,14 +406,104 @@ namespace bd.swth.web.Controllers.API
                     // Obtención del tiempo trabajado en Meses, +1 porque cuenta el més de ingreso
                     var workingTimeInMonths = mesActual - FechaInicio.Month + 1;
 
-                    // Obtención de los dias que tiene el mes de ingreso
+                    // Obtención de los dias que tiene el mes de ingreso (no se añade +1 )
                     var totalDiasMesIngreso = DateTime.DaysInMonth(FechaInicio.Year, FechaInicio.Month);
 
-                    // Obtención del tiempo trabajado en días
-                    var workingTimeInDays = 0;
+                    // Obtencion de los días del ultimo mes (no se añade +1 )
+                    var totalDiasUltimoMes = DateTime.DaysInMonth(FechaFin.Year, FechaFin.Month);
+
+
+
+                    // Obtención del tiempo TOTAL trabajado en días
+                    double workingTimeInDays = 0;
+
+
+
+                    if (workingTimeInMonths == 1)
+                    {
+                        // Quiere decir que es en el mismo mes de ingreso
+                        var valorPorDiasMesActual = totalDiasUltimoMes / diasVacacionesPorMes;
+
+                        // Se suma (+1) porque debe contar también el día de inicio
+                        workingTimeInDays = (FechaFin.Day - FechaInicio.Day) + 1;
+                        
+                        totalDiasVacaciones = workingTimeInDays * valorPorDiasMesActual;
+
+                    }
+                    else if (workingTimeInMonths > 1)
+                    {
+                        // Quiere decir que si es válido pero contempla mas de un mes
+
+                        /*  1) calcular cuantos dias tiene de vacaciones por el mes de ingreso
+                            2) restar a la totalidad de los meses (-1) porque se calcula el mes de ingreso
+                            3) calcular cuantos dias tiene de vacaciones por el mes actual
+                            4) restar a la totalidad de los meses (-1) porque se calcula el mes actual
+                            5) se multiplican los meses restantes (entre las fechas de ingreso y actuales)
+                            6) se suman los 3 valores
+                        */
+
+
+                        // 1)
+                        var valorPorDiaMesIngreso = diasVacacionesPorMes / totalDiasMesIngreso;
+
+                        // Se suma (+1) porque también cuenta el día de ingreso
+                        var diasVacacionesDelMesdeIngreso = totalDiasMesIngreso - FechaInicio.Day +1;
+                        var valorPorDiasVacacionesDelMesDeIngreso = diasVacacionesDelMesdeIngreso * valorPorDiaMesIngreso;
+
+
+                        // 2)
+
+                        // Resto un mes porque ya cuento con el mes de ingreso
+                        workingTimeInMonths = workingTimeInMonths - 1;
+
+
+                        // 3)
+                        var valorPorDiaMesFinal = diasVacacionesPorMes / totalDiasUltimoMes;
+
+                        // No se suma mas uno porque al no ser resta, ya tiene considerado el primer día
+                        var diasVacacionesDelUltimoMes = FechaFin.Day;
+                        var valorPorDiasVacacionesDelUltimoMes = diasVacacionesDelUltimoMes * valorPorDiaMesIngreso;
+
+                        // 4)
+                        // Resto un mes porque ya cuento con el mes final
+                        workingTimeInMonths = workingTimeInMonths - 1;
+
+
+                        // 5)
+
+                        double valorPorDiasVacacionesMesesIntermedios = 0;
+
+                        if (workingTimeInMonths > 0)
+                        {
+                            valorPorDiasVacacionesMesesIntermedios = workingTimeInMonths * diasVacacionesPorMes;
+
+                        }
+
+
+                        // 6)
+
+                        totalDiasVacaciones = valorPorDiasVacacionesDelMesDeIngreso
+                            + valorPorDiasVacacionesDelUltimoMes
+                            + valorPorDiasVacacionesMesesIntermedios;
+
+
+                        
+                    }
+                    else {
+                        // No es válido, se debe hacer que devuelva 0 !!!
+
+                        totalDiasVacaciones = 0;
+                    }
+
+
+                    /*
+                    --hasta aqui estoy haciendo
+
+
 
                     // ** Si estamos en el mismo mes del ingreso, se calcula a partir de la fecha
                     // actual, en lugar de todo el mes
+
                     if (workingTimeInMonths > 1)
                     {
                         // +1 porque cuenta el día de ingreso como día trabajado
@@ -422,7 +527,6 @@ namespace bd.swth.web.Controllers.API
                     var diasVacacionesMesIngreso = (workingTimeInDays * diasVacacionesPorMes)
                             / totalDiasMesIngreso;
 
-
                     // Se resta un mes porque ya se tiene el valor de los días de vacaciones del 
                     // mes de ingreso
                     if (workingTimeInMonths > 0)
@@ -430,14 +534,33 @@ namespace bd.swth.web.Controllers.API
                         workingTimeInMonths = workingTimeInMonths - 1;
                     }
 
+                    // Cálculo de los días de vacaciones, por los días trabajados el último mes 
+                    var diasVacacionesU
 
-                    // suma de los dias de vacaciones del mes de ingreso mas los dias de vacaciones de los
+                    
+
+
+                    
+                    //****DESDE AQUI HASTA EL ELSE HAY QUE ARREGLAR PORQUE FALTA VER LOS DIAS DEL MES ACTUAL, ACTUALMENTE
+                    //    NO ME ESTÁ CALCULANDO ESO, Y COMO SE AGREGÓ UN MES ME SUMA EL 2,5 O 1,25 DEL TOTAL DE ESE MES!!
+                    
+
+
+                    var diasUltimoMes = FechaFin.Day;
+                    1) calcular cuantos dias tiene de vacaciones por el mes actual
+                    2) restar al mes actual -1 porque se calcula el mes actual
+                    3) se multiplican los meses restantes (entre las fechas de ingreso y actuales)
+                    4) se suman los 3 valores
+
+
+                    // Suma de los días de vacaciones del mes de ingreso mas los dias de vacaciones de los
                     // otros meses
                     var diasVacacionesAcumulados = ((Double)diasVacacionesMesIngreso + (Double)(workingTimeInMonths * diasVacacionesPorMes));
 
                     // El total de días de vacaciones es igual a la parte entera del acumulado total
                     totalDiasVacaciones = diasVacacionesAcumulados;
 
+                    */
 
                     return totalDiasVacaciones;
 
@@ -502,7 +625,7 @@ namespace bd.swth.web.Controllers.API
                     .Where(w => w.IdEmpleado == usuario.IdEmpleado)
                     .ToListAsync();
 
-                var vacacionesAcumuladas = 0;
+                decimal vacacionesAcumuladas = 0;
 
                 foreach (var item in vacaciones) {
                     vacacionesAcumuladas = vacacionesAcumuladas + item.VacacionesNoGozadas-item.VacacionesGozadas;
@@ -571,7 +694,7 @@ namespace bd.swth.web.Controllers.API
                     .FirstOrDefaultAsync();
 
                 await CalcularYRegistrarVacacionesPorEmpleado(usuario.IdEmpleado);
-                var vacacionesAcumuladas = 0;
+                decimal vacacionesAcumuladas = 0;
 
                 var vacaciones = await db.VacacionesEmpleado
                     .Where(w => w.IdEmpleado == usuario.IdEmpleado)
@@ -864,7 +987,7 @@ namespace bd.swth.web.Controllers.API
 
                 var estado = ConstantesEstadosVacaciones.ListaEstadosVacaciones;
 
-                var vacacionesAcumuladas = 0;
+                decimal vacacionesAcumuladas = 0;
 
                 
 
@@ -1080,7 +1203,7 @@ namespace bd.swth.web.Controllers.API
                         .Where(w => w.IdEmpleado == idFiltrosViewModel.IdEmpleado)
                         .ToListAsync();
 
-                    var vacacionesAcumuladas = 0;
+                    decimal vacacionesAcumuladas = 0;
 
                     foreach (var item in vacaciones)
                     {

@@ -344,6 +344,10 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdVacaciones)
                     .HasName("PK_VacacionesEmpleado");
 
+                entity.Property(e => e.VacacionesGozadas).HasColumnType("decimal");
+
+                entity.Property(e => e.VacacionesNoGozadas).HasColumnType("decimal");
+
                 entity.HasOne(d => d.Empleado)
                     .WithMany(p => p.VacacionesEmpleado)
                     .HasForeignKey(d => d.IdEmpleado)
@@ -1841,6 +1845,7 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdTipoEnfermedad)
                     .HasConstraintName("FK_EnfermedadSustituto_TipoEnfermedad");
             });
+
             modelBuilder.Entity<DetallePresupuesto>(entity =>
             {
                 entity.HasKey(e => e.IdDetallePresupuesto)
@@ -3524,25 +3529,21 @@ namespace bd.swth.datos
             modelBuilder.Entity<PersonaEnfermedad>(entity =>
             {
                 entity.HasKey(e => e.IdPersonaEnfermedad)
-                    .HasName("PK_PersonaEnfermedad");
-
-                entity.HasIndex(e => e.IdPersona)
-                    .HasName("IX_PersonaEnfermedad_IdPersona");
-
-                entity.HasIndex(e => e.IdTipoEnfermedad)
-                    .HasName("IX_PersonaEnfermedad_IdTipoEnfermedad");
+                    .HasName("PK21");
 
                 entity.Property(e => e.InstitucionEmite)
                     .IsRequired()
-                    .HasMaxLength(20);
+                    .HasColumnType("varchar(50)");
 
                 entity.HasOne(d => d.Persona)
                     .WithMany(p => p.PersonaEnfermedad)
-                    .HasForeignKey(d => d.IdPersona);
+                    .HasForeignKey(d => d.IdPersona)
+                    .HasConstraintName("RefPersona185");
 
                 entity.HasOne(d => d.TipoEnfermedad)
                     .WithMany(p => p.PersonaEnfermedad)
-                    .HasForeignKey(d => d.IdTipoEnfermedad);
+                    .HasForeignKey(d => d.IdTipoEnfermedad)
+                    .HasConstraintName("RefTipoEnfermedad31");
             });
 
             modelBuilder.Entity<PersonaEstudio>(entity =>
@@ -4322,9 +4323,6 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdSolicitudPermiso)
                     .HasName("PK76");
 
-                entity.HasIndex(e => e.IdEmpleado)
-                    .HasName("Ref15113");
-
                 entity.Property(e => e.Estado).HasDefaultValueSql("0");
 
                 entity.Property(e => e.FechaAprobado).HasColumnType("datetime");
@@ -4335,12 +4333,9 @@ namespace bd.swth.datos
 
                 entity.Property(e => e.FechaSolicitud).HasColumnType("date");
 
+                entity.Property(e => e.Motivo).HasColumnType("varchar(1000)");
 
-                entity.HasOne(d => d.Empleado)
-                    .WithMany(p => p.SolicitudPermiso)
-                    .HasForeignKey(d => d.IdEmpleado)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("FK_SolicitudPermiso_Empleado");
+                entity.Property(e => e.Observacion).HasColumnType("text");
 
                 entity.HasOne(d => d.TipoPermiso)
                     .WithMany(p => p.SolicitudPermiso)

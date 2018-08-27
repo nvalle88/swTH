@@ -8,8 +8,8 @@ namespace bd.swth.entidades.Negocio
         public int IdVacaciones { get; set; }
         public int PeriodoFiscal { get; set; }
         public int IdEmpleado { get; set; }
-        public int VacacionesGozadas { get; set; }
-        public int VacacionesNoGozadas { get; set; }
+        public decimal VacacionesGozadas { get; set; }
+        public decimal VacacionesNoGozadas { get; set; }
 
         public virtual Empleado Empleado{ get; set; }
     }

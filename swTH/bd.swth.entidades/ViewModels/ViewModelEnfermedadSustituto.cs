@@ -16,6 +16,8 @@ namespace bd.swth.entidades.ViewModels
 
         public string InstitucionEmite { get; set; }
 
+        public bool PresentaCertificado { get; set; }
+
         public List<ViewModelEnfermedadSustituto> ListaEnfermedadesSustitutos { get; set; }
     }
 
