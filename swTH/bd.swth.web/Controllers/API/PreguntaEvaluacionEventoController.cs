@@ -17,24 +17,24 @@ using bd.swth.entidades.Constantes;
 namespace bd.swrm.web.Controllers.API
 {
     [Produces("application/json")]
-    [Route("api/GeneralCapacitacion")]
-    public class GeneralCapacitacionController : Controller
+    [Route("api/PreguntaEvaluacionEvento")]
+    public class PreguntaEvaluacionEventoController : Controller
     {
         private readonly SwTHDbContext db;
 
-        public GeneralCapacitacionController(SwTHDbContext db)
+        public PreguntaEvaluacionEventoController(SwTHDbContext db)
         {
             this.db = db;
         }
 
         // GET: api/Pais
         [HttpGet]
-        [Route("ListarGeneralCapacitacionTipoCapacitacion")]
-        public async Task<List<GeneralCapacitacion>> ListarGeneralCapacitacionTipoCapacitacion()
+        [Route("ListarFacilitador")]
+        public async Task<List<PreguntaEvaluacionEvento>> ListarFacilitador()
         {
             try
             {
-                var lista = await db.GeneralCapacitacion.Where(x=>x.Tipo== PlanificacionCapacitacion.TipoCapacitacion).OrderBy(x => x.Nombre).ToListAsync();
+                var lista = await db.PreguntaEvaluacionEvento.Where(x=>x.Facilitador== true).OrderBy(x => x.Descripcion).ToListAsync();
                 return lista;
             }
             catch (Exception ex)
@@ -49,17 +49,17 @@ namespace bd.swrm.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<GeneralCapacitacion>();
+                return new List<PreguntaEvaluacionEvento>();
             }
         }
 
         [HttpGet]
-        [Route("ListarGeneralCapacitacionEstadoEvento")]
-        public async Task<List<GeneralCapacitacion>> ListarGeneralCapacitacionEstadoEvento()
+        [Route("ListarOrganizador")]
+        public async Task<List<PreguntaEvaluacionEvento>> ListarOrganizador()
         {
             try
             {
-                return await db.GeneralCapacitacion.Where(x => x.Tipo == PlanificacionCapacitacion.EstadoEvento).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.PreguntaEvaluacionEvento.Where(x => x.Organizador == true).OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -73,16 +73,16 @@ namespace bd.swrm.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<GeneralCapacitacion>();
+                return new List<PreguntaEvaluacionEvento>();
             }
         }
         [HttpGet]
-        [Route("ListarGeneralCapacitacionAmbitoCapacitacion")]
-        public async Task<List<GeneralCapacitacion>> ListarGeneralCapacitacionAmbitoCapacitacion()
+        [Route("ListarConocimiento")]
+        public async Task<List<PreguntaEvaluacionEvento>> ListarConocimiento()
         {
             try
             {
-                return await db.GeneralCapacitacion.Where(x => x.Tipo == PlanificacionCapacitacion.Ambitovento).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.PreguntaEvaluacionEvento.Where(x => x.ConocimientoObtenidos == true).OrderBy(x => x.Descripcion).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -96,95 +96,17 @@ namespace bd.swrm.web.Controllers.API
                     UserName = "",
 
                 });
-                return new List<GeneralCapacitacion>();
-            }
-        }
-        [HttpGet]
-        [Route("ListarGeneralCapacitacionNombreEvento")]
-        public async Task<List<GeneralCapacitacion>> ListarGeneralCapacitacionNombreEvento()
-        {
-            try
-            {
-                return await db.GeneralCapacitacion.Where(x => x.Tipo == PlanificacionCapacitacion.NombreEvento).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<GeneralCapacitacion>();
-            }
-        }
-        [HttpGet]
-        [Route("ListarGeneralCapacitacionTipoEvento")]
-        public async Task<List<GeneralCapacitacion>> ListarGeneralCapacitacionTipoEvento()
-        {
-            try
-            {
-                var lista =await db.GeneralCapacitacion.Where(x => x.Tipo == PlanificacionCapacitacion.TipoEvento).OrderBy(x => x.Nombre).ToListAsync();
-                return lista;
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<GeneralCapacitacion>();
-            }
-        }
-        [HttpGet]
-        [Route("ListarGeneralCapacitacionTipoEvaluacion")]
-        public async Task<List<GeneralCapacitacion>> ListarGeneralCapacitacionTipoEvaluacion()
-        {
-            try
-            {
-                return await db.GeneralCapacitacion.Where(x => x.Tipo == PlanificacionCapacitacion.TipoEvaluacion).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<GeneralCapacitacion>();
+                return new List<PreguntaEvaluacionEvento>();
             }
         }
         // GET: api/Pais/5
         [HttpGet("{id}")]
-        public async Task<Response> GetGeneralCapacitacion([FromRoute] int id)
+        public async Task<Response> GetPreguntaEvaluacionEvento([FromRoute] int id)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
-
-                var pais = await db.GeneralCapacitacion.SingleOrDefaultAsync(m => m.IdGeneralCapacitacion == id);
+                
+                var pais = await db.PreguntaEvaluacionEvento.SingleOrDefaultAsync(m => m.IdPreguntaEvaluacionEvento == id);
 
                 if (pais == null)
                 {
@@ -224,20 +146,23 @@ namespace bd.swrm.web.Controllers.API
 
         // PUT: api/Pais/5
         [HttpPut("{id}")]
-        public async Task<Response> PutGeneralCapacitacion([FromRoute] int id, [FromBody] GeneralCapacitacion generalCapacitacion)
+        public async Task<Response> PutPreguntaEvaluacionEvento([FromRoute] int id, [FromBody] PreguntaEvaluacionEvento preguntaEvaluacionEvento)
         {
             try
             {
-                var generalCapacitacionsActualizar = await db.GeneralCapacitacion.Where(x => x.IdGeneralCapacitacion == id).FirstOrDefaultAsync();
+                var generalCapacitacionsActualizar = await db.PreguntaEvaluacionEvento.Where(x => x.IdPreguntaEvaluacionEvento == id).FirstOrDefaultAsync();
                 if (generalCapacitacionsActualizar != null)
                 {
                     try
                     {
-                        var  respuesta = Existe(generalCapacitacion);
+                        var  respuesta = Existe(preguntaEvaluacionEvento);
                         if (!respuesta.IsSuccess)
                         {
-                            generalCapacitacionsActualizar.Nombre = generalCapacitacion.Nombre;
-                            db.GeneralCapacitacion.Update(generalCapacitacionsActualizar);
+                            generalCapacitacionsActualizar.Descripcion = preguntaEvaluacionEvento.Descripcion;
+                            generalCapacitacionsActualizar.Facilitador = preguntaEvaluacionEvento.Facilitador;
+                            generalCapacitacionsActualizar.Organizador = preguntaEvaluacionEvento.Organizador;
+                            generalCapacitacionsActualizar.ConocimientoObtenidos = preguntaEvaluacionEvento.ConocimientoObtenidos;
+                            db.PreguntaEvaluacionEvento.Update(generalCapacitacionsActualizar);
                             await db.SaveChangesAsync();
 
                             return new Response
@@ -291,15 +216,15 @@ namespace bd.swrm.web.Controllers.API
 
         // POST: api/Pais
         [HttpPost]
-        [Route("InsertarGeneralCapacitacion")]
-        public async Task<Response> PostGeneralCapacitacion([FromBody] GeneralCapacitacion generalCapacitacion)
+        [Route("InsertarPreguntas")]
+        public async Task<Response> PostGeneralCapacitacion([FromBody] PreguntaEvaluacionEvento preguntaEvaluacionEvento)
         {
             try
             {
-                var respuesta = Existe(generalCapacitacion);
+                var respuesta = Existe(preguntaEvaluacionEvento);
                 if (!respuesta.IsSuccess)
                 {
-                    db.GeneralCapacitacion.Add(generalCapacitacion);
+                    db.PreguntaEvaluacionEvento.Add(preguntaEvaluacionEvento);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -342,7 +267,7 @@ namespace bd.swrm.web.Controllers.API
             try
             {
                 
-                var respuesta = await db.GeneralCapacitacion.SingleOrDefaultAsync(m => m.IdGeneralCapacitacion == id);
+                var respuesta = await db.PreguntaEvaluacionEvento.SingleOrDefaultAsync(m => m.IdPreguntaEvaluacionEvento == id);
                 if (respuesta == null)
                 {
                     return new Response
@@ -351,7 +276,7 @@ namespace bd.swrm.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.GeneralCapacitacion.Remove(respuesta);
+                db.PreguntaEvaluacionEvento.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -385,12 +310,14 @@ namespace bd.swrm.web.Controllers.API
             return db.Pais.Any(e => e.Nombre == nombre);
         }
 
-        public Response Existe(GeneralCapacitacion generalCapacitacion)
+        public Response Existe(PreguntaEvaluacionEvento generalCapacitacion)
         {
-            var bdd = generalCapacitacion.IdGeneralCapacitacion;
-            var bdd1 = generalCapacitacion.Nombre.ToUpper().TrimEnd().TrimStart();
-            var bdd2= generalCapacitacion.Tipo.ToUpper().TrimEnd().TrimStart();
-            var loglevelrespuesta = db.GeneralCapacitacion.Where(p => p.Nombre == bdd2 && p.Tipo == bdd1).FirstOrDefault();
+            var bdd = generalCapacitacion.IdPreguntaEvaluacionEvento;
+            var bdd1 = generalCapacitacion.Descripcion.ToUpper().TrimEnd().TrimStart();
+            var bdd2= generalCapacitacion.Facilitador;
+            var bdd3 = generalCapacitacion.Organizador;
+            var bdd4 = generalCapacitacion.ConocimientoObtenidos;
+            var loglevelrespuesta = db.PreguntaEvaluacionEvento.Where(p => p.Descripcion == bdd1 && p.Facilitador == bdd2 && p.Organizador == bdd3 && p.ConocimientoObtenidos == bdd4).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
