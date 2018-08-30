@@ -293,10 +293,11 @@ namespace bd.swth.web.Controllers.API
                         return new Response { IsSuccess = false, Message = Mensaje.RegistroNoEncontrado };
                     }
 
-                    PersonaActual.Nombres = contactoEmergenciaViewModel.Nombre;
-                    PersonaActual.Apellidos = contactoEmergenciaViewModel.Apellido;
+                    PersonaActual.Nombres = contactoEmergenciaViewModel.Nombre.ToString().ToUpper();
+                    PersonaActual.Apellidos = contactoEmergenciaViewModel.Apellido.ToString().ToUpper();
                     PersonaActual.TelefonoCasa = contactoEmergenciaViewModel.TelefonoCasa;
                     PersonaActual.TelefonoPrivado = contactoEmergenciaViewModel.TelefonoPrivado;
+
                     var contactoEmergencia = await db.EmpleadoContactoEmergencia.Where(x => x.IdPersona == contactoEmergenciaViewModel.IdPersona).FirstOrDefaultAsync();
 
                     if (contactoEmergencia == null)
@@ -334,8 +335,8 @@ namespace bd.swth.web.Controllers.API
                 {
                         var persona = new Persona()
                         {
-                            Nombres = contactoEmergenciaViewModel.Nombre,
-                            Apellidos = contactoEmergenciaViewModel.Apellido,
+                            Nombres = contactoEmergenciaViewModel.Nombre.ToString().ToUpper(),
+                            Apellidos = contactoEmergenciaViewModel.Apellido.ToString().ToUpper(),
                             TelefonoPrivado = contactoEmergenciaViewModel.TelefonoPrivado,
                             TelefonoCasa = contactoEmergenciaViewModel.TelefonoCasa,
                         };

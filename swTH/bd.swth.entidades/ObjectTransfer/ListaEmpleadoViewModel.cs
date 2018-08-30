@@ -33,6 +33,8 @@ namespace bd.swth.entidades.ObjectTransfer
         public string NombreSucursal { get; set; }
 
         public string CodigoEmpleado { get; set; }
+        
+        public decimal? RMU { get; set; }
 
     }
 }
