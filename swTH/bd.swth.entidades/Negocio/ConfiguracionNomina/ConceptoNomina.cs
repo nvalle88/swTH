@@ -14,10 +14,11 @@ namespace bd.swth.entidades.Negocio
         public int IdConcepto { get; set; }
         public string Codigo { get; set; }
         public string Descripcion { get; set; }
-        public string TipoConcepto { get; set; }
+        public int IdTipoConcepto { get; set; }
         public string Estatus { get; set; }
 
         public virtual ICollection<ConceptoProcesoNomina> ConceptoProcesoNomina { get; set; }
         public virtual ICollection<FormulaNomina> FormulaNomina { get; set; }
+        public virtual TipoConceptoNomina TipoConceptoNomina { get; set; }
     }
 }

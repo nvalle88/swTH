@@ -19,11 +19,11 @@ namespace bd.swth.datos
         /// </summary>
         /// 
 
-
         public virtual DbSet<bd.swth.entidades.Negocio.ProcesoNomina> ProcesoNomina { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ConceptoProcesoNomina> ConceptoProcesoNomina { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.ConceptoNomina> ConceptoNomina { get; set; }
         public virtual DbSet<bd.swth.entidades.Negocio.FormulaNomina> FormulaNomina { get; set; }
+        public virtual DbSet<bd.swth.entidades.Negocio.TipoConceptoNomina> TipoConceptoNomina { get; set; }
 
 
         public virtual DbSet<SriNomina> SriNomina { get; set; }
@@ -278,7 +278,17 @@ namespace bd.swth.datos
             //});
 
             //ProcesoNomina
+            modelBuilder.Entity<TipoConceptoNomina>(entity =>
+            {
+                entity.HasKey(e => e.IdTipoConcepto)
+                    .HasName("PK_TipoConcepto");
 
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("varchar(200)");
+
+                entity.Property(e => e.Signo).HasDefaultValueSql("1");
+            });
 
             modelBuilder.Entity<FormulaNomina>(entity =>
             {
@@ -317,9 +327,11 @@ namespace bd.swth.datos
                     .IsRequired()
                     .HasColumnType("varchar(100)");
 
-                entity.Property(e => e.TipoConcepto)
-                    .IsRequired()
-                    .HasColumnType("varchar(100)");
+                entity.HasOne(d => d.TipoConceptoNomina)
+                     .WithMany(p => p.ConceptoNomina)
+                     .HasForeignKey(d => d.IdTipoConcepto)
+                     .OnDelete(DeleteBehavior.Restrict)
+                     .HasConstraintName("FK_ConceptoNomina_ConceptoNomina");
             });
 
             modelBuilder.Entity<ConceptoProcesoNomina>(entity =>
