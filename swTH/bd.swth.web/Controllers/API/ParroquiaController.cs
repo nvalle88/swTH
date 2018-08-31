@@ -62,20 +62,18 @@ namespace bd.swrm.web.Controllers.API
                 {
                     return new List<Parroquia>();
                 }
-                return await db.Parroquia.Where(x => x.IdCiudad == ciudad.IdCiudad).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.Parroquia
+                    .Where(x => x.IdCiudad == ciudad.IdCiudad)
+                    .Select(s=> new Parroquia {
+                        IdParroquia = s.IdParroquia,
+                        Nombre = s.Nombre,
+                        IdCiudad = s.IdCiudad
+                    })
+                    .OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+              
                 return new List<Parroquia>();
             }
         }

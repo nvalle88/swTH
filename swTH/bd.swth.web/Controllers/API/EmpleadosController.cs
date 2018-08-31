@@ -899,6 +899,7 @@ namespace bd.swth.web.Controllers.API
                     .Include(i => i.TipoNombramiento.RelacionLaboral)
                     .Include(i => i.IndiceOcupacional.Dependencia)
                     .Include(i => i.IndiceOcupacional.Dependencia.Sucursal)
+                    .Include(i => i.IndiceOcupacional.EscalaGrados)
 
                     .Include(i => i.IndiceOcupacional)
                     .Include(i => i.IndiceOcupacional.ManualPuesto)
@@ -913,12 +914,13 @@ namespace bd.swth.web.Controllers.API
 
                 var lista = await db.Empleado
                                     //.Where(w => w.Dependencia.IdSucursal == usuarioActual.Dependencia.IdSucursal)
+                                    
                                     .Select(x => new ListaEmpleadoViewModel
                                     {
                                         IdEmpleado = x.IdEmpleado,
                                         IdPersona = x.Persona.IdPersona,
-                                        NombreApellido = string.Format("{0} {1}", x.Persona.Nombres,
-                                        x.Persona.Apellidos),
+                                        NombreApellido = string.Format("{0} {1}", x.Persona.Apellidos,
+                                        x.Persona.Nombres),
                                         TelefonoPrivado = x.Persona.TelefonoPrivado,
                                         CorreoPrivado = x.Persona.CorreoPrivado,
                                         Dependencia = x.IdDependencia == null ? "" : x.Dependencia.Nombre,
@@ -959,7 +961,9 @@ namespace bd.swth.web.Controllers.API
                         item.PartidaIndividual = itemIomp.NumeroPartidaIndividual + itemIomp.CodigoContrato;
                         item.NombreSucursal = itemIomp.IndiceOcupacional.Dependencia.Sucursal.Nombre;
                         item.CodigoEmpleado = itemIomp.NumeroPartidaIndividual + itemIomp.CodigoContrato;
-                        
+                        item.RMU = (itemIomp.SalarioReal != null && itemIomp.SalarioReal > 0)
+                            ? itemIomp.SalarioReal
+                            : itemIomp.IndiceOcupacional.EscalaGrados.Remuneracion;
                     }
                 }
 

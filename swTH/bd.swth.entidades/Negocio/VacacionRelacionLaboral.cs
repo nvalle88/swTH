@@ -11,6 +11,7 @@ namespace bd.swth.entidades.Negocio
         public int MaxAcumulacionDias { get; set; }
         public int IncrementoDiasPorPeriodoFiscal { get; set; }
         public int IncrementoApartirPeriodoFiscal { get; set; }
+        public int? LimiteAcumulacion { get; set; }
 
         public virtual RegimenLaboral RegimenLaboral { get; set; }
     }

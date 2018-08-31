@@ -249,10 +249,15 @@ namespace bd.swth.web.Controllers.API
                 {
                     enfermedadActualizar.IdTipoEnfermedad = viewModel.IdTipoEnfermedad;
                     enfermedadActualizar.InstitucionEmite = viewModel.InstitucionEmite;
+                    enfermedadActualizar.PresentaCertificado = viewModel.PresentaCertificado;
 
 
                     //convertir a mayúsculas 
-                    enfermedadActualizar.InstitucionEmite = enfermedadActualizar.InstitucionEmite.ToString().ToUpper();
+                    if (!String.IsNullOrEmpty(enfermedadActualizar.InstitucionEmite)) {
+
+                        enfermedadActualizar.InstitucionEmite = enfermedadActualizar.InstitucionEmite.ToString().ToUpper();
+                    }
+                    
 
                     db.EnfermedadSustituto.Update(enfermedadActualizar);
                     await db.SaveChangesAsync();
@@ -338,11 +343,15 @@ namespace bd.swth.web.Controllers.API
                     IdPersonaSustituto=viewModel.IdPersonaSustituto,
                     IdTipoEnfermedad=viewModel.IdTipoEnfermedad,
                     InstitucionEmite=viewModel.InstitucionEmite,
+                    PresentaCertificado = viewModel.PresentaCertificado,
                 };
 
                 // convertir a mayúsculas
-                enfermedadSustituto.InstitucionEmite = enfermedadSustituto.InstitucionEmite.ToString().ToUpper();
+                if (!string.IsNullOrEmpty(enfermedadSustituto.InstitucionEmite)) {
 
+                    enfermedadSustituto.InstitucionEmite = enfermedadSustituto.InstitucionEmite.ToString().ToUpper();
+                }
+                
 
                 await db.EnfermedadSustituto.AddAsync(enfermedadSustituto);
                 await db.SaveChangesAsync();

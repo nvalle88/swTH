@@ -168,8 +168,8 @@ namespace bd.swth.web.Controllers.API
                     existe.IncrementoDiasPorPeriodoFiscal = vacacionRelacionLaboral.IncrementoDiasPorPeriodoFiscal;
                     existe.MaxAcumulacionDias = vacacionRelacionLaboral.MaxAcumulacionDias;
                     existe.MinAcumulacionDias = vacacionRelacionLaboral.MinAcumulacionDias;
-                    existe.IdRegimenLaboral = existe.IdRegimenLaboral;
-
+                    existe.IdRegimenLaboral = vacacionRelacionLaboral.IdRegimenLaboral;
+                    existe.LimiteAcumulacion = vacacionRelacionLaboral.LimiteAcumulacion;
 
                     db.VacacionRelacionLaboral.Update(existe);
                     await db.SaveChangesAsync();
