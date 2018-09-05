@@ -47,6 +47,8 @@
         public int? Estado { get; set; }
         [NotMapped]
         public string Correo { get; set; }
+        [NotMapped]
+        public string NombreEstado { get; set; }
 
         public virtual ICollection<EvaluacionEvento> EvaluacionEvento { get; set; }
         public virtual GeneralCapacitacion IdAmbitoCapacitacion { get; set; }

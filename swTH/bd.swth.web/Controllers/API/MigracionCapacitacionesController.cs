@@ -349,7 +349,7 @@ namespace bd.swth.web.Controllers.API
                     Ubicacion = planCapacitacion.Ubicacion,
                     Observacion = planCapacitacion.Observacion,
                     Estado = ConstantesCapacitacion.EstadoTerminado
-            };
+                };
 
                 db.PlanCapacitacion.Add(plan);
                 await db.SaveChangesAsync();
@@ -391,7 +391,7 @@ namespace bd.swth.web.Controllers.API
                         Provincia = y.IndiceOcupacional.Dependencia.Sucursal.Ciudad.Provincia.Nombre,
                         NombreCiudad = y.IndiceOcupacional.Dependencia.Sucursal.Ciudad.Nombre,
                         Cedula = y.Empleado.Persona.Identificacion,
-                        Correo= y.Empleado.Persona.CorreoPrivado,
+                        Correo = y.Empleado.Persona.CorreoPrivado,
                         ApellidoNombre = y.Empleado.Persona.Nombres + " " + y.Empleado.Persona.Apellidos,
                         Sexo = y.Empleado.Persona.Sexo.Nombre,
                         GrupoOcupacional = y.IndiceOcupacional.EscalaGrados.GrupoOcupacional.TipoEscala,
@@ -399,7 +399,7 @@ namespace bd.swth.web.Controllers.API
                         RegimenLaboral = y.TipoNombramiento.RelacionLaboral.Nombre,
                         DenominacionPuesto = y.IndiceOcupacional.ManualPuesto.Nombre,
                         UnidadAdministrativa = y.IndiceOcupacional.Dependencia.Nombre,
-                        
+
                     }).FirstOrDefaultAsync();
 
                     planCapacitacionActualizar.IdGestionPlanCapacitacion = planCapacitacion.IdGestionPlanCapacitacion;
@@ -448,7 +448,7 @@ namespace bd.swth.web.Controllers.API
                     db.PlanCapacitacion.Update(planCapacitacionActualizar);
                     await db.SaveChangesAsync();
                     var correo = datos2.Correo;
-                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo));                                     
+                    correoResponse.Add(EnviarMailDesdeCorreoTalentohumano(correo));
 
                     return new Response
                     {
@@ -478,8 +478,52 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var lista = await db.PlanCapacitacion.Where(x => x.IdGestionPlanCapacitacion == gestionPlanCapacitacion.IdGestionPlanCapacitacion).ToListAsync();
-                return lista;
+                var lista = db.PlanCapacitacion.Where(x => x.IdGestionPlanCapacitacion == gestionPlanCapacitacion.IdGestionPlanCapacitacion).Select(y => new PlanCapacitacion
+                {
+                    IdPlanCapacitacion = y.IdPlanCapacitacion,
+                    IdGestionPlanCapacitacion = y.IdGestionPlanCapacitacion,
+                    NumeroPartidaPresupuestaria = y.NumeroPartidaPresupuestaria,
+                    Institucion = y.Institucion,
+                    Pais = y.Pais,
+                    Provincia = y.Provincia,
+                    NombreCiudad = y.NombreCiudad,
+                    NivelDesconcentracion = y.NivelDesconcentracion,
+                    UnidadAdministrativa = y.UnidadAdministrativa,
+                    Cedula = y.Cedula,
+                    ApellidoNombre = y.ApellidoNombre,
+                    Sexo = y.Sexo,
+                    GrupoOcupacional = y.GrupoOcupacional,
+                    DenominacionPuesto = y.DenominacionPuesto,
+                    RegimenLaboral = y.RegimenLaboral,
+                    ModalidadLaboral = y.ModalidadLaboral,
+                    TemaCapacitacion = y.TemaCapacitacion,
+                    ClasificacionTema = y.ClasificacionTema,
+                    ProductoFinal = y.ProductoFinal,
+                    Modalidad = y.ProductoFinal,
+                    Duracion = y.Duracion,
+                    PresupuestoIndividual = y.PresupuestoIndividual,
+                    FechaCapacitacionPlanificada = y.FechaCapacitacionPlanificada,
+                    TipoCapacitacion = y.TipoCapacitacion,
+                    EstadoEvento = y.TipoEvento,
+                    AmbitoCapacitacion = y.AmbitoCapacitacion,
+                    NombreEvento = y.NombreEvento,
+                    TipoEvento = y.TipoEvento,
+                    IdProveedorCapacitaciones = y.IdProveedorCapacitaciones,
+                    DuracionEvento = y.DuracionEvento,
+                    Anio = y.Anio,
+                    FechaInicio = y.FechaFin,
+                    FechaFin = y.FechaFin,
+                    ValorReal = y.ValorReal,
+                    IdCiudad = y.IdCiudad,
+                    TipoEvaluacion = y.TipoEvaluacion,
+                    Ubicacion = y.Ubicacion,
+                    Observacion = y.Observacion,
+                    Estado = y.Estado,
+                    NombreEstado = db.GeneralCapacitacion.Where(a => a.IdGeneralCapacitacion == y.IdGestionPlanCapacitacion).FirstOrDefault().Nombre
+                }
+                    ).ToListAsync();
+                //var lista = await db.PlanCapacitacion.Where(x => x.IdGestionPlanCapacitacion == gestionPlanCapacitacion.IdGestionPlanCapacitacion).ToListAsync();
+                return await lista;
             }
             catch (Exception)
             {
@@ -500,8 +544,52 @@ namespace bd.swth.web.Controllers.API
                         Nombre = y.Sucursal.Ciudad.Nombre
                     }
                     ).FirstOrDefault();
-                    var lista = await db.PlanCapacitacion.Where(x => x.NombreCiudad == ciudadDatos.Nombre && x.IdGestionPlanCapacitacion == gestionPlanCapacitacion.IdGestionPlanCapacitacion).ToListAsync();
-                    return lista;
+                    var lista = db.PlanCapacitacion.Where(x => x.NombreCiudad == ciudadDatos.Nombre && x.IdGestionPlanCapacitacion == gestionPlanCapacitacion.IdGestionPlanCapacitacion).Select(y => new PlanCapacitacion
+                    {
+                        IdPlanCapacitacion = y.IdPlanCapacitacion,
+                        IdGestionPlanCapacitacion = y.IdGestionPlanCapacitacion,
+                        NumeroPartidaPresupuestaria = y.NumeroPartidaPresupuestaria,
+                        Institucion = y.Institucion,
+                        Pais = y.Pais,
+                        Provincia = y.Provincia,
+                        NombreCiudad = y.NombreCiudad,
+                        NivelDesconcentracion = y.NivelDesconcentracion,
+                        UnidadAdministrativa = y.UnidadAdministrativa,
+                        Cedula = y.Cedula,
+                        ApellidoNombre = y.ApellidoNombre,
+                        Sexo = y.Sexo,
+                        GrupoOcupacional = y.GrupoOcupacional,
+                        DenominacionPuesto = y.DenominacionPuesto,
+                        RegimenLaboral = y.RegimenLaboral,
+                        ModalidadLaboral = y.ModalidadLaboral,
+                        TemaCapacitacion = y.TemaCapacitacion,
+                        ClasificacionTema = y.ClasificacionTema,
+                        ProductoFinal = y.ProductoFinal,
+                        Modalidad = y.ProductoFinal,
+                        Duracion = y.Duracion,
+                        PresupuestoIndividual = y.PresupuestoIndividual,
+                        FechaCapacitacionPlanificada = y.FechaCapacitacionPlanificada,
+                        TipoCapacitacion = y.TipoCapacitacion,
+                        EstadoEvento = y.TipoEvento,
+                        AmbitoCapacitacion = y.AmbitoCapacitacion,
+                        NombreEvento = y.NombreEvento,
+                        TipoEvento = y.TipoEvento,
+                        IdProveedorCapacitaciones = y.IdProveedorCapacitaciones,
+                        DuracionEvento = y.DuracionEvento,
+                        Anio = y.Anio,
+                        FechaInicio = y.FechaFin,
+                        FechaFin = y.FechaFin,
+                        ValorReal = y.ValorReal,
+                        IdCiudad = y.IdCiudad,
+                        TipoEvaluacion = y.TipoEvaluacion,
+                        Ubicacion = y.Ubicacion,
+                        Observacion = y.Observacion,
+                        Estado = y.Estado,
+                        NombreEstado = db.GeneralCapacitacion.Where(a => a.IdGeneralCapacitacion == y.IdGestionPlanCapacitacion).FirstOrDefault().Nombre
+                    }
+                    ).ToListAsync();
+                    //var lista = await db.PlanCapacitacion.Where(x => x.NombreCiudad == ciudadDatos.Nombre && x.IdGestionPlanCapacitacion == gestionPlanCapacitacion.IdGestionPlanCapacitacion).ToListAsync();
+                    return await lista;
                 }
                 return new List<PlanCapacitacion>();
             }
@@ -548,7 +636,7 @@ namespace bd.swth.web.Controllers.API
 
             }
         }
-        
+
         private async Task<bool> ExitePresupuesto(string ciudadresive, decimal? valorresive)
         {
             var datosenvia = new Presupuesto();
@@ -589,7 +677,7 @@ namespace bd.swth.web.Controllers.API
                 if (ConstantesCorreo.MensajeCorreoDependencia == "true")
                 {
                     mensaje = mensaje + "Talento Humano" + "\n \n";
-                }                
+                }
                 mensaje = mensaje +
                 ConstantesCorreo.CorreoCabecera +
                 ConstantesCorreo.CorreoEnlace +
@@ -614,8 +702,9 @@ namespace bd.swth.web.Controllers.API
                 };
 
                 //execute the method Send Mail or SendMailAsync
-                var a = Emails.SendEmailAsync(mail);               
-                if (a.Result == Convert.ToString(true)) {
+                var a = Emails.SendEmailAsync(mail);
+                if (a.Result == Convert.ToString(true))
+                {
                     return new Response
                     {
                         IsSuccess = true,
