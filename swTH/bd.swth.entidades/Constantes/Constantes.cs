@@ -22,6 +22,11 @@ namespace bd.swth.entidades.Constantes
         public static string EscapeConstantes { get { return "#"; } }
         public static string EscapeFunciones { get { return "@"; } }
         public static string EscapeConjuntos { get { return "&"; } }
+
+        public static string NombreDesconcentrados { get; set; }
+
+        public static string NombreNivelJerarquicoSuperior { get; set; }
+
     }
 
     public static class ConstantesGrupoOcupacional
@@ -53,6 +58,18 @@ namespace bd.swth.entidades.Constantes
         public static string CorreoEnlace;
         public static string CorreoPie;
 
+    }
+
+
+    public static class ConstantesFondosReserva
+    {
+        public static int DiasMinimoDerechoFondoReserva;
+        public static int IntervaloTemporizadorHorasFondoReserva;
+        public static int IntervaloTemporizadorMinutosFondoReserva;
+        public static int IntervaloTemporizadorSegundosFondoReserva;
+        public static int inicioCicloHorasFondoReserva;
+        public static int inicioCicloMinutosFondoReserva;
+        public static int inicioCicloSegundosFondoReserva;
     }
 
     //Valores viaticos
@@ -94,6 +111,15 @@ namespace bd.swth.entidades.Constantes
     {
         public static string Contrato;
         public static string Nombramiento;
+    }
+
+    public static class ConstantesAccionPersonal
+    {
+        public static string TerminacionEncargo;
+        public static string TerminacionSubrogacion;
+
+        public static string Encargo;
+        public static string Subrogacion;
     }
 
 }

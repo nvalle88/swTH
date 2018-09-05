@@ -75,39 +75,64 @@ namespace bd.swth.web.Controllers.API
                 return new List<ViewModelPartidaFase>();
             }
         }
+
+
+        /// <summary>
+        /// Este método trae todos los vacantes por nombramiento
+        /// </summary>
+        /// <returns></returns>
         [Route("ListarConcursosVacantes")]
         public async Task<List<ViewModelPartidaFase>> ListarConcursosVacantes()
         {
             try
             {
                 var DatosBasicosIndiceOcupacional = new List<ViewModelPartidaFase>();
-                var ModalidadPartida = await db.ModalidadPartida.Where(x => x.Nombre == Constantes.PartidaVacante).FirstOrDefaultAsync();
-                var modalidad = await db.IndiceOcupacionalModalidadPartida.Where(x => x.IdModalidadPartida == ModalidadPartida.IdModalidadPartida).ToListAsync();
-                foreach (var item in modalidad)
-                {
-                    DatosBasicosIndiceOcupacional = await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == item.IdIndiceOcupacional)
-                   .GroupBy(n => new { grupoOcupacional = n.IdManualPuesto, PuestoInstitucional = n.IdEscalaGrados })
-                   .Select(x => new ViewModelPartidaFase
-                   {
-                       Idindiceocupacional = x.FirstOrDefault().IdIndiceOcupacional,
-                       PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == x.FirstOrDefault().IdManualPuesto).FirstOrDefault().Nombre,
-                       grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Nombre,
-                       Vacantes = x.Count()
-                   })
-                      .ToListAsync();
-                }
+
+                var partidaVacante = await db.ModalidadPartida
+                    .Where(x => x.Nombre == Constantes.PartidaVacante)
+                    .FirstOrDefaultAsync();
+
+                var listaiomp = await db.IndiceOcupacionalModalidadPartida
+                    .Include(i => i.IndiceOcupacional)
+                    .Include(i => i.IndiceOcupacional.ManualPuesto)
+                    .Include(i => i.IndiceOcupacional.EscalaGrados)
+                    .Where(x =>
+                        x.NumeroPartidaIndividual != null
+                        && x.IdModalidadPartida == partidaVacante.IdModalidadPartida
+                    )
+                    .ToListAsync();
+
+
+                DatosBasicosIndiceOcupacional = listaiomp
+                    .GroupBy(g => g.IdIndiceOcupacional)
+                    .Select(x => new ViewModelPartidaFase
+                    {
+                        Idindiceocupacional = x.FirstOrDefault().IdIndiceOcupacional,
+                        PuestoInstitucional = x.FirstOrDefault().IndiceOcupacional.ManualPuesto.Nombre,
+                        grupoOcupacional = x.FirstOrDefault().IndiceOcupacional.EscalaGrados.Nombre,
+                        Vacantes = x.Count()
+                    })
+                    .ToList();
+
+
+
                 foreach (var item in DatosBasicosIndiceOcupacional)
                 { 
-                    var estado = db.PartidasFase.Where(s => s.IdIndiceOcupacional == item.Idindiceocupacional && s.Contrato==false).ToList();
+                    var estado = db.PartidasFase
+                        .Where(s => 
+                            s.IdIndiceOcupacional == item.Idindiceocupacional 
+                            && s.Contrato==false
+                        )
+                        .ToList();
+
                     foreach (var item1 in estado)
                     {
                         if (item.Idindiceocupacional == item1.IdIndiceOcupacional)
                         {
                             item.IdPartidaFase = item1.IdPartidasFase;
                             item.estado = item1.Estado;
-                            item.VacantesCredo = item1.Vacantes;
-
-
+                            item.VacantesCreadas = item1.Vacantes;
+                            
                         }
                     }
                 }
@@ -119,12 +144,15 @@ namespace bd.swth.web.Controllers.API
 
             }
         }
+
+
+
+
         /// <summary>
-        ///   metodos para consurso por contrato
+        ///   método para concurso por contrato
         /// </summary>
         /// <param name="viewModelPartidaFase"></param>
         /// <returns></returns>
-
         [Route("ListarPuestoVacantesContrato")]
         public async Task<List<ViewModelPartidaFase>> ListarPuestoVacantesContrato()
         {
@@ -153,6 +181,7 @@ namespace bd.swth.web.Controllers.API
                 return new List<ViewModelPartidaFase>();
             }
         }
+
         [Route("ListarConcursosVacantesContrato")]
         public async Task<List<ViewModelPartidaFase>> ListarConcursosVacantesContrato()
         {
@@ -160,25 +189,33 @@ namespace bd.swth.web.Controllers.API
             {
 
                 var DatosBasicosIndiceOcupacional = await db.IndiceOcupacional
-                 .GroupBy(n => new { grupoOcupacional = n.IdManualPuesto, PuestoInstitucional = n.IdEscalaGrados })
+                 //.GroupBy(n => new { grupoOcupacional = n.IdManualPuesto, PuestoInstitucional = n.IdEscalaGrados })
                  .Select(x => new ViewModelPartidaFase
                  {
-                     Idindiceocupacional = x.FirstOrDefault().IdIndiceOcupacional,
-                     PuestoInstitucional = db.ManualPuesto.Where(s => s.IdManualPuesto == x.FirstOrDefault().IdManualPuesto).FirstOrDefault().Nombre,
-                     grupoOcupacional = db.EscalaGrados.Where(s => s.IdEscalaGrados == x.FirstOrDefault().IdEscalaGrados).FirstOrDefault().Nombre,
-                     Vacantes = x.Count()
+                     Idindiceocupacional = x.IdIndiceOcupacional,
+
+                     PuestoInstitucional = x.ManualPuesto.Nombre,
+
+                     grupoOcupacional = x.EscalaGrados.Nombre,
+
+                     Vacantes = 1
+
                  }).ToListAsync();
+                
 
                 foreach (var item in DatosBasicosIndiceOcupacional)
                 {
-                    var estado = db.PartidasFase.Where(x => x.IdIndiceOcupacional == item.Idindiceocupacional && x.Contrato==true).ToList();
+                    var estado = db.PartidasFase
+                        .Where(x => x.IdIndiceOcupacional == item.Idindiceocupacional && x.Contrato==true)
+                        .ToList();
+                    
                     foreach (var item1 in estado) 
                     {
                         if (item.Idindiceocupacional == item1.IdIndiceOcupacional)
                         {
                             item.IdPartidaFase = item1.IdPartidasFase;
                             item.estado = item1.Estado;
-                            item.VacantesCredo = item1.Vacantes;
+                            item.VacantesCreadas = item1.Vacantes;
 
 
                         }
@@ -192,27 +229,32 @@ namespace bd.swth.web.Controllers.API
 
             }
         }
+
+
+
         [HttpPost]
         [Route("Edit")]
         public async Task<Response> Edit([FromBody] ViewModelPartidaFase viewModelPartidaFase)
         {
             try
             {
-                var vacantes = await db.PartidasFase.Where(x => x.IdPartidasFase == viewModelPartidaFase.IdPartidaFase)
+                var vacantes = await db.PartidasFase
+                    .Where(x => x.IdPartidasFase == viewModelPartidaFase.IdPartidaFase)
                    .Select(d => new ViewModelPartidaFase
                    {
                        IdTipoConcurso = Convert.ToInt32(d.IdTipoConcurso),
-                       VacantesCredo = d.Vacantes,
-                       IdPartidaFase = d.IdPartidasFase
+                       VacantesCreadas = d.Vacantes,
+                       IdPartidaFase = d.IdPartidasFase,
+                       Vacantes = viewModelPartidaFase.Vacantes
 
                    })
                 .FirstOrDefaultAsync();
+
                 return new Response
                 {
                     IsSuccess = true,
                     Resultado = vacantes
                 };
-                //return vacantes;
             }
             catch (Exception ex)
             {
@@ -223,42 +265,63 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+
+
         [HttpPost]
         [Route("Editar")]
-        public async Task<Response> Editar([FromBody] ViewModelPartidaFase viewModelPartidaFase)
+        public async Task<Response> Editar([FromBody] PartidasFase partidasFase)
         {
-            var a = await db.PartidasFase.Where(x => x.IdPartidasFase == viewModelPartidaFase.IdPartidaFase).FirstOrDefaultAsync();
             try
             {
-                a.IdTipoConcurso = viewModelPartidaFase.IdTipoConcurso;
-                a.Vacantes = viewModelPartidaFase.VacantesCredo;
-                db.PartidasFase.Update(a);
-                await db.SaveChangesAsync();
-                return new Response { IsSuccess = true };
+                var modelo = await db.PartidasFase
+                .Where(w => w.IdPartidasFase == partidasFase.IdPartidasFase)
+                .FirstOrDefaultAsync();
 
-                //return vacantes;
+                if (modelo == null) {
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado
+                    };
+                }
+
+                modelo.Fecha = DateTime.Now;
+                modelo.IdTipoConcurso = null;
+                modelo.Vacantes = partidasFase.Vacantes;
+
+                db.PartidasFase.Update(modelo);
+                await db.SaveChangesAsync();
+
+                return new Response{
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio
+                };
             }
             catch (Exception ex)
             {
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
 
         [HttpPost]
-        [Route("InsertarHabilitarConsurso")]
-        public async Task<Response> InsertarHabilitarConsurso([FromBody] PartidasFase partidasFase)
+        [Route("InsertarHabilitarConcurso")]
+        public async Task<Response> InsertarHabilitarConcurso([FromBody] PartidasFase partidasFase)
         {
             try
             {
                 var respuesta = Existe(partidasFase);
+
                 if (!respuesta.IsSuccess)
                 {
                     partidasFase.Fecha = DateTime.Now;
                     partidasFase.Estado = 1;
+                    partidasFase.IdTipoConcurso = null;
+
                     db.PartidasFase.Add(partidasFase);
                     await db.SaveChangesAsync();
                     return new Response
@@ -280,30 +343,37 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
+
+
         public Response Existe(PartidasFase partidasFase)
         {
             var bdd = partidasFase.IdIndiceOcupacional;
             var bdd2 = partidasFase.IdTipoConcurso;
             var bdd3 = partidasFase.Contrato;
-            var loglevelrespuesta = db.PartidasFase.Where(p => p.IdIndiceOcupacional == bdd && p.IdTipoConcurso == bdd2 && p.Contrato == bdd3).FirstOrDefault();
-            if (loglevelrespuesta != null)
+
+            var modelo = db.PartidasFase
+                .Where(p => p.IdIndiceOcupacional == bdd 
+                && p.IdTipoConcurso == bdd2 
+                && p.Contrato == bdd3)
+                .FirstOrDefault();
+
+            if (modelo != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.ExisteRegistro,
-                    Resultado = null,
+                    Resultado = modelo,
                 };
 
             }
             return new Response
             {
                 IsSuccess = false,
-                Resultado = loglevelrespuesta,
             };
         }
 

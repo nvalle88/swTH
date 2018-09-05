@@ -39,16 +39,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+               
                 return new List<PersonaEstudio>();
             }
         }
@@ -64,16 +55,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<PersonaEstudio>();
             }
         }
@@ -113,16 +95,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -146,9 +119,31 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = Existe(personaEstudio);
-                var PersonaEstudioActualizar = (PersonaEstudio)existe.Resultado;
-                if (existe.IsSuccess)
+                if (!String.IsNullOrEmpty(personaEstudio.Observaciones))
+                {
+                    personaEstudio.Observaciones = personaEstudio.Observaciones.ToString().ToUpper();
+                }
+
+                if (!String.IsNullOrEmpty(personaEstudio.Institucion))
+                {
+                    personaEstudio.Institucion = personaEstudio.Institucion.ToString().ToUpper();
+                }
+
+
+                var PersonaEstudioActualizar = await db.PersonaEstudio
+                    .Where(w=>
+                        w.IdPersona == personaEstudio.IdPersona
+                        && w.IdTitulo == personaEstudio.IdTitulo
+                        && w.NoSenescyt == personaEstudio.NoSenescyt
+                        && w.FechaGraduado == personaEstudio.FechaGraduado
+                    )
+                    .FirstOrDefaultAsync();
+                
+
+                if (
+                    PersonaEstudioActualizar != null 
+                    && PersonaEstudioActualizar.IdPersonaEstudio != personaEstudio.IdPersonaEstudio
+                    )
                 {
                     return new Response
                     {
@@ -163,28 +158,20 @@ namespace bd.swth.web.Controllers.API
                 PersonaEstudio.IdTitulo = personaEstudio.IdTitulo;
                 PersonaEstudio.IdPersona = personaEstudio.IdPersona;
                 PersonaEstudio.NoSenescyt = personaEstudio.NoSenescyt;
+                PersonaEstudio.Institucion = personaEstudio.Institucion;
+
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.GuardadoSatisfactorio,
                 };
 
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-
+                
                 return new Response
                 {
                     IsSuccess = true,
@@ -210,6 +197,16 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                if ( !String.IsNullOrEmpty(PersonaEstudio.Observaciones) )
+                {
+                    PersonaEstudio.Observaciones = PersonaEstudio.Observaciones.ToString().ToUpper();
+                }
+
+                if (!String.IsNullOrEmpty(PersonaEstudio.Institucion))
+                {
+                    PersonaEstudio.Institucion = PersonaEstudio.Institucion.ToString().ToUpper();
+                }
+
                 var respuesta = Existe(PersonaEstudio);
                 if (!respuesta.IsSuccess)
                 {
@@ -231,16 +228,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -284,16 +272,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -308,7 +287,6 @@ namespace bd.swth.web.Controllers.API
             var PersonaEstudiorespuesta = db.PersonaEstudio.Where(p => p.FechaGraduado == fechaGraduado 
             && p.IdPersona == PersonaEstudio.IdPersona 
             && p.IdTitulo == PersonaEstudio.IdTitulo
-            && p.Observaciones == PersonaEstudio.Observaciones
             && p.NoSenescyt == PersonaEstudio.NoSenescyt).FirstOrDefault();
             if (PersonaEstudiorespuesta != null)
             {

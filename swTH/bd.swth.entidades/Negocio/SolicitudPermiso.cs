@@ -19,6 +19,7 @@ namespace bd.swth.entidades.Negocio
         public int? Estado { get; set; }
         public int? IdTipoPermiso { get; set; }
         public DateTime? FechaAprobado { get; set; }
+        public bool CargoVacaciones { get; set; }
 
         public virtual Empleado Empleado { get; set; }
         public virtual TipoPermiso TipoPermiso { get; set; }

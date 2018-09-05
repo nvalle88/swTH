@@ -13,6 +13,8 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using bd.swth.entidades.ViewModels;
+using EnviarCorreo;
+using SendMails.methods;
 
 namespace bd.swth.web
 {
@@ -48,6 +50,19 @@ namespace bd.swth.web
             Constantes.PartidaVacante = Configuration.GetSection("PartidaVacante").Value;
             Constantes.PartidaOcupada = Configuration.GetSection("PartidaOcupada").Value;
             Constantes.PartidaSuprimida = Configuration.GetSection("PartidaSuprimida").Value;
+
+
+            //Configuración del correo
+
+            MailConfig.HostUri = Configuration.GetSection("Smtp").Value;
+            MailConfig.PrimaryPort = Convert.ToInt32(Configuration.GetSection("PrimaryPort").Value);
+            MailConfig.SecureSocketOptions = Convert.ToInt32(Configuration.GetSection("SecureSocketOptions").Value);
+            MailConfig.RequireAuthentication = Convert.ToBoolean(Configuration.GetSection("RequireAuthentication").Value);
+            MailConfig.UserName = Configuration.GetSection("UsuarioCorreo").Value;
+            MailConfig.Password = Configuration.GetSection("PasswordCorreo").Value;
+
+            MailConfig.EmailFrom = Configuration.GetSection("EmailFrom").Value;
+            MailConfig.NameFrom = Configuration.GetSection("NameFrom").Value;
 
             // Constantes de correo
             ConstantesCorreo.Smtp = Configuration.GetSection("Smtp").Value;
@@ -119,7 +134,21 @@ namespace bd.swth.web
             ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno = JsonConvert.DeserializeObject<List<AprobacionMovimientoInternoViewModel>>(Configuration.GetSection("ListaEstadosAprobacionMovimientoInterno").Value);
 
             // Configuración Estados Vacaciones
-            ConstantesEstadosVacaciones.ListaEstadosVacaciones = JsonConvert.DeserializeObject<List<EstadoVacacionesViewModel>>(Configuration.GetSection("ListaEstadosVacaciones").Value);
+           ConstantesEstadosVacaciones.ListaEstadosVacaciones = JsonConvert.DeserializeObject<List<EstadoVacacionesViewModel>>(Configuration.GetSection("ListaEstadosVacaciones").Value);
+
+
+            // Configuración constantes Fondo reserva Ingresado
+            ConstantesFondosReserva.DiasMinimoDerechoFondoReserva = Convert.ToInt32(Configuration.GetSection("DiasMinimoDerechoFondoReserva").Value);
+            ConstantesFondosReserva.IntervaloTemporizadorHorasFondoReserva = Convert.ToInt32(Configuration.GetSection("IntervaloTemporizadorHorasFondoReserva").Value);
+            ConstantesFondosReserva.IntervaloTemporizadorMinutosFondoReserva = Convert.ToInt32(Configuration.GetSection("IntervaloTemporizadorMinutosFondoReserva").Value);
+            ConstantesFondosReserva.IntervaloTemporizadorSegundosFondoReserva = Convert.ToInt32(Configuration.GetSection("IntervaloTemporizadorSegundosFondoReserva").Value);
+
+
+            ConstantesFondosReserva.inicioCicloHorasFondoReserva = Convert.ToInt32(Configuration.GetSection("inicioCicloHorasFondoReserva").Value);
+            ConstantesFondosReserva.inicioCicloMinutosFondoReserva = Convert.ToInt32(Configuration.GetSection("inicioCicloMinutosFondoReserva").Value);
+            ConstantesFondosReserva.inicioCicloSegundosFondoReserva = Convert.ToInt32(Configuration.GetSection("inicioCicloSegundosFondoReserva").Value);
+
+
 
 
             // Configuración Estados Capacitaciones Ingresado
@@ -141,6 +170,19 @@ namespace bd.swth.web
             PlanificacionCapacitacion.NombreEvento = Configuration.GetSection("NombreEvento").Value;
             PlanificacionCapacitacion.TipoEvento = Configuration.GetSection("TipoEvento").Value;
             PlanificacionCapacitacion.TipoEvaluacion = Configuration.GetSection("TipoEvaluacion").Value;
+
+            // Nombre dependencia desconcentrados
+            Constantes.NombreDesconcentrados = Configuration.GetSection("NombreDesconcentrados").Value;
+
+            // constantesAccionPersonal
+            ConstantesAccionPersonal.TerminacionEncargo = Configuration.GetSection("TerminacionEncargo").Value;
+            ConstantesAccionPersonal.TerminacionSubrogacion = Configuration.GetSection("TerminacionSubrogacion").Value;
+            ConstantesAccionPersonal.Encargo = Configuration.GetSection("Encargo").Value;
+            ConstantesAccionPersonal.Subrogacion = Configuration.GetSection("Subrogacion").Value;
+
+            // constante nivel jerárquico superior
+            Constantes.NombreNivelJerarquicoSuperior = Configuration.GetSection("NombreNivelJerarquicoSuperior").Value;
+
 
             /// <summary>
             /// Se lee el fichero appsetting.json según las etiquetas expuestas en este.
@@ -179,6 +221,21 @@ namespace bd.swth.web
                         Convert.ToInt32(IntervaloCicloSegundos)
                         )
                 );
+
+
+            Temporizador.TemporizadorFondoReserva.InicializarRelojR0
+               (
+                 new TimeSpan(
+                      ConstantesFondosReserva.inicioCicloHorasFondoReserva,
+                      ConstantesFondosReserva.inicioCicloMinutosFondoReserva,
+                      ConstantesFondosReserva.inicioCicloSegundosFondoReserva
+                       )
+               , new TimeSpan(
+                      ConstantesFondosReserva.IntervaloTemporizadorHorasFondoReserva,
+                       ConstantesFondosReserva.IntervaloTemporizadorMinutosFondoReserva,
+                       ConstantesFondosReserva.IntervaloTemporizadorSegundosFondoReserva
+                       )
+               );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

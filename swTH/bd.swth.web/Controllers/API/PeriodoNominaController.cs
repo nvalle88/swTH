@@ -28,7 +28,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.PeriodoNomina.ToListAsync();
+                return null;// await db.PeriodoNomina.ToListAsync();
             }
             catch (Exception ex)
             {
@@ -43,7 +43,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var periodoNomina = await db.PeriodoNomina.SingleOrDefaultAsync(m => m.IdPeriodo == PeriodoNomina.IdPeriodo);
+                var periodoNomina = new PeriodoNomina();// await db.PeriodoNomina.SingleOrDefaultAsync(m => m.IdPeriodo == PeriodoNomina.IdPeriodo);
 
                 if (periodoNomina == null)
                 {
@@ -88,7 +88,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var PeriodoNominaActualizar = await db.PeriodoNomina.Where(x => x.IdPeriodo == PeriodoNomina.IdPeriodo).FirstOrDefaultAsync();
+                var PeriodoNominaActualizar = new PeriodoNomina();// await db.PeriodoNomina.Where(x => x.IdPeriodo == PeriodoNomina.IdPeriodo).FirstOrDefaultAsync();
                 if (PeriodoNominaActualizar == null)
                 {
                     return new Response
@@ -105,7 +105,7 @@ namespace bd.swth.web.Controllers.API
                 PeriodoNominaActualizar.FechaFin = PeriodoNomina.FechaFin;
                 PeriodoNominaActualizar.Descripcion = PeriodoNomina.Descripcion;
                 PeriodoNominaActualizar.Abierto = PeriodoNomina.Abierto;
-                db.PeriodoNomina.Update(PeriodoNominaActualizar);
+              //  db.PeriodoNomina.Update(PeriodoNominaActualizar);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -134,7 +134,7 @@ namespace bd.swth.web.Controllers.API
 
                 if (!await Existe(PeriodoNomina))
                 {
-                    db.PeriodoNomina.Add(PeriodoNomina);
+                    //db.PeriodoNomina.Add(PeriodoNomina);
                     await db.SaveChangesAsync();
                     return new Response
                     {
@@ -168,7 +168,7 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var respuesta = await db.PeriodoNomina.Where(m => m.IdPeriodo == PeriodoNomina.IdPeriodo).FirstOrDefaultAsync();
+                var respuesta = new PeriodoNomina(); ;//await db.PeriodoNomina.Where(m => m.IdPeriodo == PeriodoNomina.IdPeriodo).FirstOrDefaultAsync();
                 if (respuesta == null)
                 {
                     return new Response
@@ -177,7 +177,7 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.RegistroNoEncontrado,
                     };
                 }
-                db.PeriodoNomina.Remove(respuesta);
+                //db.PeriodoNomina.Remove(respuesta);
                 await db.SaveChangesAsync();
 
                 return new Response
@@ -211,7 +211,7 @@ namespace bd.swth.web.Controllers.API
         private async Task<bool> Existe(PeriodoNomina PeriodoNomina)
         {
             var descripcion = PeriodoNomina.Descripcion;
-            var PeriodoNominarespuesta = await db.PeriodoNomina.Where(p => p.Descripcion == descripcion).FirstOrDefaultAsync();
+            var PeriodoNominarespuesta = new PeriodoNomina();// await db.PeriodoNomina.Where(p => p.Descripcion == descripcion).FirstOrDefaultAsync();
 
             if (PeriodoNominarespuesta == null || PeriodoNominarespuesta.IdPeriodo == PeriodoNomina.IdPeriodo)
             {

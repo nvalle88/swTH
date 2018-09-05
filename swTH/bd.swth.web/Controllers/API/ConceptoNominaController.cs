@@ -25,6 +25,44 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+        [HttpPost]
+        [Route("EditarEstado")]
+        public async Task<Response> ListarConceptoNominaPorTipoRelacionDelEmpleado([FromBody] ConceptoNomina conceptoNomina)
+        {
+            try
+            {
+                var conceptoActualizar = await db.ConceptoNomina.Where(e => e.IdConcepto ==conceptoNomina.IdConcepto).FirstOrDefaultAsync();
+                if (conceptoActualizar!=null)
+                {
+                    conceptoActualizar.Estatus = conceptoNomina.Estatus;
+                    db.ConceptoNomina.Update(conceptoActualizar);
+                    await db.SaveChangesAsync();
+                    return new Response { IsSuccess = true };
+                }
+
+                return new Response { IsSuccess = false };
+            }
+            catch (Exception ex)
+            {
+                return new Response {IsSuccess=false };
+            }
+        }
+
+        [HttpPost]
+        [Route("ListarConceptoNominaPorTipoRelacionDelEmpleado")]
+        public async Task<List<ConceptoNomina>> ListarConceptoNominaPorTipoRelacionDelEmpleado([FromBody] Empleado empleado)
+        {
+            try
+            {
+                var relacionEmpleado =await db.Empleado.Where(e => e.IdEmpleado == empleado.IdEmpleado).FirstOrDefaultAsync();
+                var lista = new List<ConceptoNomina>();//await db.ConceptoNomina.Where(x => x.Estatus =="Activo" && (x.RelacionLaboral==relacionEmpleado.TipoRelacion || x.RelacionLaboral=="AMBOS")).ToListAsync();
+                return lista;
+            }
+            catch (Exception ex)
+            {
+                return new List<ConceptoNomina>();
+            }
+        }
 
         [HttpPost]
         [Route("ListarConceptoNomina")]
@@ -46,6 +84,82 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+
+        [HttpGet]
+        [Route("ListarTipoConcepto")]
+        public async Task<List<TipoConceptoNomina>> ListarTipoConcepto()
+        {
+            try
+            {
+                var listaTiposConceptos = await db.TipoConceptoNomina
+                .Select(x =>
+                new TipoConceptoNomina
+                {
+                  Descripcion=x.Descripcion,
+                  IdTipoConcepto=x.IdTipoConcepto,
+                  Signo=x.Signo
+                }
+                ).ToListAsync();
+                return listaTiposConceptos;
+            }
+            catch (Exception ex)
+            {
+                return new List<TipoConceptoNomina>();
+            }
+        }
+
+
+        [HttpPost]
+        [Route("ExisteFormula")]
+        public async Task<Response> ExisteFormula([FromBody] FormulaNomina formulaNomina )
+        {
+            try
+            {
+                var existeFormula = await db.FormulaNomina.
+                    Where(x => x.IdRegimenLaboral == formulaNomina.IdRegimenLaboral && x.IdConceptoNomina == formulaNomina.IdConceptoNomina).FirstOrDefaultAsync();
+
+                if (existeFormula != null)
+                {
+                    return new Response { IsSuccess = true };
+
+                }
+                return new Response { IsSuccess = false };
+            }
+            catch (Exception ex)
+            {
+                return new Response { IsSuccess = false };
+            }
+        }
+
+
+
+        [HttpPost]
+        [HttpPost("ObtenerConceptoNomina")]
+        public async Task<Response> ObtenerConceptoNomina([FromBody] ConceptoNomina ConceptoNomina)
+        {
+
+                try
+                {
+                    var conceptoSeleccionado = await db.ConceptoNomina.Where(x=>x.IdConcepto==ConceptoNomina.IdConcepto)
+                    .Select(x =>
+                    new ConceptoNomina
+                    {
+                        Codigo = x.Codigo,
+                        Descripcion = x.Descripcion,
+                        Estatus = x.Estatus,
+                        IdConcepto = x.IdConcepto,
+                        TipoConceptoNomina = x.TipoConceptoNomina,
+                        FormulaNomina = x.FormulaNomina.Select(h => new FormulaNomina { Formula = h.Formula, IdConceptoNomina = h.IdConceptoNomina, IdRegimenLaboral = h.IdRegimenLaboral, RegimenLaboral = new RegimenLaboral { Nombre = h.RegimenLaboral.Nombre } }).ToList(),
+                        ConceptoProcesoNomina = x.ConceptoProcesoNomina.Select(y => new ConceptoProcesoNomina { IdConceptoNomina = y.IdConceptoNomina, IdProcesoNomina = y.IdProcesoNomina, ProcesoNomina = new ProcesoNomina { Descripcion = y.ProcesoNomina.Descripcion } }).ToList(),
+                    }
+                    ).FirstOrDefaultAsync();
+                    return new Response{IsSuccess=true,Resultado= conceptoSeleccionado };
+                }
+                catch (Exception ex)
+                {
+                    return new Response { IsSuccess = false, Message = Mensaje.Error };
+                }
+        }
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarConceptoNomina")]
@@ -53,7 +167,20 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.ConceptoNomina.Include(x => x.ProcesoNomina).ToListAsync();
+                var listaConceptos = await db.ConceptoNomina
+                .Select(x =>
+                new ConceptoNomina
+                {
+                    Codigo = x.Codigo,
+                    Descripcion = x.Descripcion,
+                    Estatus = x.Estatus,
+                    IdConcepto = x.IdConcepto,
+                    TipoConceptoNomina = x.TipoConceptoNomina,
+                    FormulaNomina = x.FormulaNomina.Select(h => new FormulaNomina { Formula = h.Formula, IdConceptoNomina = h.IdConceptoNomina, IdRegimenLaboral = h.IdRegimenLaboral, RegimenLaboral = new RegimenLaboral { Nombre = h.RegimenLaboral.Nombre } }).ToList(),
+                    ConceptoProcesoNomina =x.ConceptoProcesoNomina.Select(y => new ConceptoProcesoNomina { IdConceptoNomina = y.IdConceptoNomina, IdProcesoNomina = y.IdProcesoNomina, ProcesoNomina = new ProcesoNomina { Descripcion = y.ProcesoNomina.Descripcion } }).ToList(),
+                }
+                ).ToListAsync();
+                return listaConceptos;
             }
             catch (Exception ex)
             {
@@ -62,39 +189,7 @@ namespace bd.swth.web.Controllers.API
         }
 
         // GET: api/BasesDatos/5
-        [HttpGet]
-        [HttpPost("ObtenerConceptoNomina")]
-        public async Task<Response> ObtenerConceptoNomina([FromBody] ConceptoNomina ConceptoNomina)
-        {
-            try
-            {
-                var conceptoNomina = await db.ConceptoNomina.SingleOrDefaultAsync(m => m.IdConcepto == ConceptoNomina.IdConcepto);
-
-                if (conceptoNomina == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = conceptoNomina,
-                };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
+       
 
 
         [HttpPost]
@@ -120,6 +215,32 @@ namespace bd.swth.web.Controllers.API
                 await db.ReportadoNomina.AddAsync(reportadoNomina);
                 await db.SaveChangesAsync();
 
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
+
+        [HttpPost]
+        [Route("InsertarDiasLaboradosNomina")]
+        public async Task<Response> InsertarDiasLaboradosNomina([FromBody] List<DiasLaboradosNomina> listaSalvar)
+        {
+            try
+            {
+                var ListaDiasReportadosEliminar =await db.DiasLaboradosNomina.Where(x => x.IdCalculoNomina == listaSalvar.FirstOrDefault().IdCalculoNomina).ToListAsync();
+                db.DiasLaboradosNomina.RemoveRange(ListaDiasReportadosEliminar);
+                await db.SaveChangesAsync();
+                await db.DiasLaboradosNomina.AddRangeAsync(listaSalvar);
+                await db.SaveChangesAsync();
                 return new Response
                 {
                     IsSuccess = true,
@@ -206,6 +327,29 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("EliminarDiasLaborados")]
+        public async Task<Response> EliminarDiasLaborados([FromBody] DiasLaboradosNomina diasLaboradosNomina)
+        {
+            try
+            {
+                var diasLaboradosEliminar = await db.DiasLaboradosNomina.Where(x => x.IdDiasLaboradosNomina == diasLaboradosNomina.IdDiasLaboradosNomina).FirstOrDefaultAsync();
+                db.DiasLaboradosNomina.Remove(diasLaboradosEliminar);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                };
+            }
+        }
+
 
         [HttpPost]
         [Route("EliminarHoraExtra")]
@@ -260,6 +404,37 @@ namespace bd.swth.web.Controllers.API
 
 
         [HttpPost]
+        [Route("VerificarExcelDiasLaborados")]
+        public async Task<List<DiasLaboradosNomina>> VerificarExcelDiasLaborados([FromBody] List<DiasLaboradosNomina> lista)
+        {
+            try
+            {
+
+                foreach (var item in lista)
+                {
+                    var empleado = await db.Empleado.Where(x => x.Activo == true && x.Persona.Identificacion == item.IdentificacionEmpleado).FirstOrDefaultAsync();
+
+                    if (empleado == null)
+                    {
+                        item.Valido = false;
+                        item.MensajeError = Mensaje.EmpleadoNoExiste;
+                    }
+                    else
+                    {
+                        item.Valido = true;
+                        item.IdEmpleado = empleado.IdEmpleado;
+                    }
+                }
+                return lista;
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        [HttpPost]
         [Route("VerificarExcelHorasExtras")]
         public async Task<List<HorasExtrasNomina>> VerificarExcelHorasExtras([FromBody] List<HorasExtrasNomina> lista)
         {
@@ -309,7 +484,7 @@ namespace bd.swth.web.Controllers.API
                         item.MensajeError = Mensaje.EmpleadoNoExiste;
                     }
 
-                    var concepto =await db.ConceptoNomina.Where(x => x.IdProceso == proceso && x.Codigo == item.CodigoConcepto).FirstOrDefaultAsync();
+                    var concepto = await db.ConceptoNomina.FirstOrDefaultAsync();
                     if (concepto==null)
                     {
                         item.Valido = false;
@@ -350,7 +525,7 @@ namespace bd.swth.web.Controllers.API
 
                 }
 
-                ConceptoNominaActualizar.FormulaCalculo = ConceptoNomina.FormulaCalculo;
+               // ConceptoNominaActualizar.FormulaCalculo = ConceptoNomina.FormulaCalculo;
                 db.ConceptoNomina.Update(ConceptoNominaActualizar);
                 await db.SaveChangesAsync();
 
@@ -396,14 +571,14 @@ namespace bd.swth.web.Controllers.API
 
                 }
 
-                ConceptoNominaActualizar.IdProceso = ConceptoNomina.IdProceso;
-                ConceptoNominaActualizar.Codigo = ConceptoNomina.Codigo;
-                ConceptoNominaActualizar.Descripcion = ConceptoNomina.Descripcion;
-                ConceptoNominaActualizar.TipoConcepto = ConceptoNomina.TipoConcepto;
-                ConceptoNominaActualizar.RelacionLaboral = ConceptoNomina.RelacionLaboral;
-                ConceptoNominaActualizar.Estatus = ConceptoNomina.Estatus;
-                ConceptoNominaActualizar.Abreviatura = ConceptoNomina.Abreviatura;
-                ConceptoNominaActualizar.Prioridad = ConceptoNomina.Prioridad;
+               // ConceptoNominaActualizar.IdProceso = ConceptoNomina.IdProceso;
+               // ConceptoNominaActualizar.Codigo = ConceptoNomina.Codigo;
+               // ConceptoNominaActualizar.Descripcion = ConceptoNomina.Descripcion;
+              //  ConceptoNominaActualizar.TipoConcepto = ConceptoNomina.TipoConcepto;
+              //  ConceptoNominaActualizar.RelacionLaboral = ConceptoNomina.RelacionLaboral;
+              //  ConceptoNominaActualizar.Estatus = ConceptoNomina.Estatus;
+              //  ConceptoNominaActualizar.Abreviatura = ConceptoNomina.Abreviatura;
+               // ConceptoNominaActualizar.Prioridad = ConceptoNomina.Prioridad;
 
                 db.ConceptoNomina.Update(ConceptoNominaActualizar);
                 await db.SaveChangesAsync();
@@ -429,36 +604,47 @@ namespace bd.swth.web.Controllers.API
         [Route("InsertarConceptoNomina")]
         public async Task<Response> PostConceptoNomina([FromBody] ConceptoNomina ConceptoNomina)
         {
-            try
-            {
-
                 if (!await Existe(ConceptoNomina))
                 {
-                    db.ConceptoNomina.Add(ConceptoNomina);
-                    await db.SaveChangesAsync();
-                    return new Response
+                    using (var transaction = await db.Database.BeginTransactionAsync())
                     {
-                        IsSuccess = true,
-                        Message = Mensaje.Satisfactorio,
-                        Resultado = ConceptoNomina,
-                    };
+                        try
+                        {
+                            db.ConceptoNomina.Add(ConceptoNomina);
+                            await db.SaveChangesAsync();
+                            
+                            foreach (var item in ConceptoNomina.ConceptoProcesoNomina)
+                            {
+                                item.IdConceptoNomina = ConceptoNomina.IdConcepto;
+                                db.Update(item);
+                                await db.SaveChangesAsync();
+                            }
+
+                            transaction.Commit();
+                            return new Response
+                            {
+                                IsSuccess = true,
+                                Message = Mensaje.Satisfactorio,
+                                Resultado = ConceptoNomina,
+                            };
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Commit();
+                            return new Response
+                            {
+                                IsSuccess = false,
+                                Message="No se ha podido realizar la acción solicitada..."
+                            };
+
+                        }
+                    }
                 }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
-                };
-
-            }
-            catch (Exception)
+            return new Response
             {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
+                IsSuccess = false,
+                Message = Mensaje.ExisteRegistro,
+            };
         }
 
         // DELETE: api/BasesDatos/5
@@ -511,7 +697,7 @@ namespace bd.swth.web.Controllers.API
         private async Task<bool> Existe(ConceptoNomina ConceptoNomina)
         {
             var codigo = ConceptoNomina.Codigo;
-            var ConceptoNominarespuesta = await db.ConceptoNomina.Where(p => p.Codigo == codigo).FirstOrDefaultAsync();
+            var ConceptoNominarespuesta = await db.ConceptoNomina.Where(p => p.Codigo == codigo || p.Descripcion==ConceptoNomina.Descripcion).FirstOrDefaultAsync();
 
             if (ConceptoNominarespuesta == null || ConceptoNominarespuesta.IdConcepto == ConceptoNomina.IdConcepto)
             {

@@ -44,7 +44,7 @@ namespace bd.swth.web.Controllers.API
                 var lista = await db.SolicitudPermiso.
                     Where(w=>
                         w.Empleado.IdDependencia == dependencia.IdDependencia
-                        && w.Empleado.EsJefe == false
+                        //&& w.Empleado.EsJefe == false
                     )
                     .Select(s => new SolicitudPermisoViewModel
                     {
@@ -305,13 +305,15 @@ namespace bd.swth.web.Controllers.API
                 SolicitudPermiso.Estado = solicitudPermiso.Estado;
                 SolicitudPermiso.FechaAprobado = DateTime.Now;
                 SolicitudPermiso.Observacion = solicitudPermiso.Observacion;
+                SolicitudPermiso.CargoVacaciones = solicitudPermiso.CargoVacaciones;
+
                 db.SolicitudPermiso.Update(SolicitudPermiso);
                 await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
+                    Message = Mensaje.GuardadoSatisfactorio,
                     Resultado= SolicitudPermiso
                 };
 
@@ -351,7 +353,7 @@ namespace bd.swth.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = true,
-                        Message = Mensaje.Satisfactorio
+                        Message = Mensaje.GuardadoSatisfactorio
                     };
                 }
 
@@ -624,5 +626,43 @@ namespace bd.swth.web.Controllers.API
                 return new List<SolicitudPermisoViewModel>();
             }
         }
+
+
+        // POST: api/SolicitudesPermisos
+        [HttpPost]
+        [Route("BorrarSolicitudPorId")]
+        public async Task<Response> BorrarSolicitudPorId([FromBody]int id)
+        {
+            try
+            {
+                var modelo = await db.SolicitudPermiso
+                    .Where(w => w.IdSolicitudPermiso == id)
+                    .FirstOrDefaultAsync();
+
+                if (modelo == null)
+                {
+                    return new Response {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado
+                    };
+                }
+
+                db.SolicitudPermiso.Remove(modelo);
+                await db.SaveChangesAsync();
+
+                return new Response {
+                    IsSuccess = true,
+                    Message = Mensaje.BorradoSatisfactorio
+                };
+
+            }catch (Exception ex) {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.BorradoNoSatisfactorio
+                };
+            }
+        }
+
     }
 }

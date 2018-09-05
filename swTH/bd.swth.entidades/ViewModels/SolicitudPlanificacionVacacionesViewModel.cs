@@ -20,7 +20,7 @@ namespace bd.swth.entidades.ViewModels
 
         public string Observaciones { get; set; }
 
-        public int VacacionesAcumuladas { get; set; }
+        public decimal VacacionesAcumuladas { get; set; }
         
     }
 }

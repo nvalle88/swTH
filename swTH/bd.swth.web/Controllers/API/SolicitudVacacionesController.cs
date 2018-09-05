@@ -69,7 +69,7 @@ namespace bd.swth.web.Controllers.API
                 var SolicitudVacaciones = await db.SolicitudVacaciones.SingleOrDefaultAsync(m => m.IdSolicitudVacaciones == id);
 
 
-                var vacacionesAcumuladas = 0;
+                decimal vacacionesAcumuladas = 0;
 
                 var vacaciones = await db.VacacionesEmpleado
                     .Where(w => w.IdEmpleado == SolicitudVacaciones.IdEmpleado)
@@ -351,7 +351,7 @@ namespace bd.swth.web.Controllers.API
                     .FirstOrDefaultAsync();
 
 
-                var vacacionesAcumuladas = 0;
+                decimal vacacionesAcumuladas = 0;
 
                 var vacaciones = await db.VacacionesEmpleado
                     .Where(w => w.IdEmpleado == usuario.IdEmpleado)
@@ -446,7 +446,7 @@ namespace bd.swth.web.Controllers.API
                     .Where(w => w.IdEmpleado == usuario.IdEmpleado)
                     .ToListAsync();
 
-                var vacacionesAcumuladas = 0;
+                decimal vacacionesAcumuladas = 0;
 
                 foreach (var item in vacaciones)
                 {
@@ -516,7 +516,7 @@ namespace bd.swth.web.Controllers.API
 
                 var estado = ConstantesEstadosVacaciones.ListaEstadosVacaciones.ToList();
 
-                var vacacionesAcumuladas = 0;
+                decimal vacacionesAcumuladas = 0;
 
 
                 var modelo = await db.SolicitudVacaciones

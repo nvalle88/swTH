@@ -327,7 +327,11 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var respuesta = await db.TipoAccionPersonal.SingleOrDefaultAsync(m => m.IdTipoAccionPersonal == id);
+                var respuesta = await db.TipoAccionPersonal
+                    .Where(w => w.IdTipoAccionPersonal == id)
+                    .FirstOrDefaultAsync();
+
+
                 if (respuesta == null)
                 {
                     return new Response
@@ -351,7 +355,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.BorradoNoSatisfactorio,
                 };
             }
         }

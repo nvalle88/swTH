@@ -7,23 +7,18 @@ namespace bd.swth.entidades.Negocio
     {
         public ConceptoNomina()
         {
-            ConceptoConjuntoNomina = new HashSet<ConceptoConjuntoNomina>();
-            TeconceptoNomina = new HashSet<TeconceptoNomina>();
+            ConceptoProcesoNomina = new HashSet<ConceptoProcesoNomina>();
+            FormulaNomina = new HashSet<FormulaNomina>();
         }
 
         public int IdConcepto { get; set; }
-        public int IdProceso { get; set; }
         public string Codigo { get; set; }
         public string Descripcion { get; set; }
-        public string TipoConcepto { get; set; }
-        public string RelacionLaboral { get; set; }
+        public int IdTipoConcepto { get; set; }
         public string Estatus { get; set; }
-        public string Abreviatura { get; set; }
-        public string FormulaCalculo { get; set; }
-        public int Prioridad { get; set; }
 
-        public virtual ICollection<ConceptoConjuntoNomina> ConceptoConjuntoNomina { get; set; }
-        public virtual ICollection<TeconceptoNomina> TeconceptoNomina { get; set; }
-        public virtual ProcesoNomina ProcesoNomina { get; set; }
+        public virtual ICollection<ConceptoProcesoNomina> ConceptoProcesoNomina { get; set; }
+        public virtual ICollection<FormulaNomina> FormulaNomina { get; set; }
+        public virtual TipoConceptoNomina TipoConceptoNomina { get; set; }
     }
 }

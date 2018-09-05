@@ -116,8 +116,8 @@ namespace bd.swth.web.Controllers.API
 
                 var documentoInstitucional = new MaterialInduccion
                 {
-                    Titulo = documentoInstitucionalTransfer.Nombre,
-                    Descripcion = documentoInstitucionalTransfer.Descripcion
+                    Titulo = documentoInstitucionalTransfer.Nombre.ToString().ToUpper(),
+                    Descripcion = documentoInstitucionalTransfer.Descripcion.ToString().ToUpper()
                 };
 
                 var respuesta = ExisteMaterialInduccion(documentoInstitucional);
@@ -185,6 +185,8 @@ namespace bd.swth.web.Controllers.API
         // POST: api/BasesDatos
         private async Task<MaterialInduccion> InsertarMaterialInduccion(MaterialInduccion MaterialInduccion)
         {
+            MaterialInduccion.Descripcion.ToString().ToUpper();
+            MaterialInduccion.Titulo.ToString().ToUpper();
 
             db.MaterialInduccion.Add(MaterialInduccion);
             await db.SaveChangesAsync();
@@ -359,8 +361,15 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var existe = ExisteMaterialInduccion(documentoInformacionInstitucional);
-                if (existe.IsSuccess)
+                var existe = await db.MaterialInduccion
+                .Where(p =>
+                   p.Titulo.ToUpper().TrimStart().TrimEnd() == 
+                   documentoInformacionInstitucional.Titulo.ToUpper().TrimStart().TrimEnd() 
+                   && p.Descripcion.ToUpper().TrimStart().TrimEnd() == 
+                   documentoInformacionInstitucional.Descripcion.ToUpper().TrimStart().TrimEnd()
+               ).FirstOrDefaultAsync();
+
+                if (existe != null && existe.IdMaterialInduccion != documentoInformacionInstitucional.IdMaterialInduccion)
                 {
                     return new Response
                     {
@@ -375,8 +384,11 @@ namespace bd.swth.web.Controllers.API
                 {
                     try
                     {
-                        documentoInformacionInstitucionalActualizar.Titulo = documentoInformacionInstitucional.Titulo;
-                        documentoInformacionInstitucionalActualizar.Descripcion = documentoInformacionInstitucional.Descripcion;
+                        documentoInformacionInstitucionalActualizar.Titulo = documentoInformacionInstitucional.Titulo
+                            .ToString().ToUpper();
+                        documentoInformacionInstitucionalActualizar.Descripcion = documentoInformacionInstitucional.Descripcion
+                            .ToString().ToUpper();
+
                         await db.SaveChangesAsync();
 
                         return new Response
@@ -439,7 +451,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                DeleteFile(respuesta);
+                await DeleteFile(respuesta);
                 
                 db.MaterialInduccion.Remove(respuesta);
                 await db.SaveChangesAsync();

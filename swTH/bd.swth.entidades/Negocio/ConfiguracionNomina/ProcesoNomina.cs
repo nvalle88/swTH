@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace bd.swth.entidades.Negocio
 {
@@ -6,14 +7,15 @@ namespace bd.swth.entidades.Negocio
     {
         public ProcesoNomina()
         {
-            ConceptoNomina = new HashSet<ConceptoNomina>();
+            CalculoNomina = new HashSet<CalculoNomina>();
+            ConceptoProcesoNomina = new HashSet<ConceptoProcesoNomina>();
         }
 
         public int IdProceso { get; set; }
         public string Codigo { get; set; }
         public string Descripcion { get; set; }
 
-        public virtual ICollection<ConceptoNomina> ConceptoNomina { get; set; }
         public virtual ICollection<CalculoNomina> CalculoNomina { get; set; }
+        public virtual ICollection<ConceptoProcesoNomina> ConceptoProcesoNomina { get; set; }
     }
 }

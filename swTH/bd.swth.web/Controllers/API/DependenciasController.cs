@@ -13,6 +13,7 @@ using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.log.guardar.Enumeradores;
 using bd.swth.entidades.ViewModels;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -127,18 +128,170 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                var listaDependencias = await db.Dependencia.Where(x => x.IdSucursal == sucursal.IdSucursal).OrderBy(x => x.Nombre).ToListAsync();
+                var listaDependencias = await db.Dependencia
+                    .Include(i => i.DependenciaPadre)
+                    .Include(i => i.DependenciaPadre.Sucursal)
+                    .Include(i => i.Dependencia1)
+                    .Where(x => x.IdSucursal == sucursal.IdSucursal)
+                    .OrderBy(x => x.Nombre).ToListAsync();
 
                 // ** Buscar dependencia padre
                 var padre = listaDependencias.Where(w => w.IdDependenciaPadre == 0).FirstOrDefault();
+                var creadoDesconcentrado = false;
 
-                // ** Cada item se convierte en padre y se buscan sus hijos (así se llenan todos los padres)
-                foreach (var item in listaDependencias)
+                if (padre != null) {
+
+                    var hijosDesconcentrado = listaDependencias
+                        .Where(w =>
+                            w.DependenciaPadre != null
+                            && w.DependenciaPadre.IdSucursal != sucursal.IdSucursal
+                        )
+                        .Select(s => new Dependencia
+                        {
+                            IdDependencia = s.IdDependencia,
+                            IdSucursal = s.IdSucursal,
+                            IdDependenciaPadre = s.IdDependenciaPadre,
+                            IdProceso = s.IdProceso,
+                            Nombre = s.Nombre,
+
+                            Dependencia1 = s.Dependencia1
+                            
+                        })
+                        .ToList();
+
+                    if (hijosDesconcentrado.Count()>0) {
+
+                        if (creadoDesconcentrado == false)
+                        {
+                            creadoDesconcentrado = true;
+
+                            var dependenciaDesconcentrado = new Dependencia
+                            {
+                                IdDependencia = 0,
+                                IdSucursal = sucursal.IdSucursal,
+                                Nombre = Constantes.NombreDesconcentrados.ToString().ToUpper(),
+                                IdDependenciaPadre = padre.IdDependencia,
+
+                                Dependencia1 = new List<Dependencia>()
+                            };
+
+
+
+                            dependenciaDesconcentrado.Dependencia1 = new List<Dependencia>(hijosDesconcentrado);
+
+                            listaDependencias.Add(dependenciaDesconcentrado);
+                        }
+                    }
+
+                    // ** Cada item se convierte en padre y se buscan sus hijos (así se llenan todos los padres)
+                    foreach (var item in listaDependencias.OrderByDescending(o => o.Codigo))
+                    {
+
+                        if (
+                            item.Nombre.ToString().ToUpper() !=
+                            Constantes.NombreDesconcentrados.ToString().ToUpper()
+                            )
+                        {
+                            var listaHijos = listaDependencias
+                            .Where(w => w.IdDependenciaPadre == item.IdDependencia)
+                            .Select(s => new Dependencia
+                            {
+                                IdDependencia = s.IdDependencia,
+                                IdSucursal = s.IdSucursal,
+                                IdDependenciaPadre = s.IdDependenciaPadre,
+                                IdProceso = s.IdProceso,
+                                Nombre = s.Nombre,
+
+                                Dependencia1 = s.Dependencia1
+                            })
+                            .ToList();
+
+                            if (listaHijos.Count > 0) {
+                                item.Dependencia1 = new List<Dependencia>(listaHijos);
+                            }
+
+                            
+                        }
+                        else {
+                            
+                            item.Dependencia1 = new List<Dependencia>(hijosDesconcentrado);
+                        }
+                        
+                    }
+                    
+                }
+                
+
+                else if (padre == null && listaDependencias.Count()>0)
                 {
 
-                    var listaHijos = listaDependencias.Where(w => w.IdDependenciaPadre == item.IdDependencia).ToList();
-                    item.Dependencia1 = new List<Dependencia>(listaHijos);
+                    padre = new Dependencia
+                    {
+                        IdDependencia = 0,
+                        Nombre = Constantes.NombreDesconcentrados.ToString().ToUpper(),
+                        IdSucursal = sucursal.IdSucursal,
+                        IdDependenciaPadre = 0,
+
+                        Sucursal = new Sucursal {
+                            IdSucursal = sucursal.IdSucursal
+                        }
+                    };
+
+                    listaDependencias.Add(padre);
+
+                    var listaConcentrados = new List<Dependencia>();
+
+                    // ** Cada item se convierte en padre y se buscan sus hijos (así se llenan todos los padres)
+                    foreach (var item in listaDependencias)
+                    {
+                        var nombre = item.Nombre + item.IdDependencia;
+
+                        if (
+                            item.IdDependenciaPadre > 0
+                            && item.DependenciaPadre.IdSucursal != sucursal.IdSucursal
+                            )
+                        {
+                            listaConcentrados.Add(new Dependencia {
+                                IdDependencia = item.IdDependencia,
+                                IdSucursal = item.IdSucursal,
+                                Nombre = item.Nombre,
+                                IdDependenciaPadre = 0,
+                                
+                                Dependencia1 = item.Dependencia1
+
+                            });
+
+
+
+                        }
+                        
+                        else if(item.IdDependenciaPadre > 0 )
+                        {
+
+                            var listaHijos = listaDependencias
+                            .Where(w => w.IdDependenciaPadre == item.IdDependencia)
+                            .Select(s => new Dependencia
+                            {
+                                IdDependencia = s.IdDependencia,
+                                IdSucursal = s.IdSucursal,
+                                IdDependenciaPadre = s.IdDependenciaPadre,
+                                IdProceso = s.IdProceso,
+                                Nombre = s.Nombre,
+                                Dependencia1 = s.Dependencia1
+                            })
+                            .ToList();
+                            
+                            item.Dependencia1 = new List<Dependencia>(listaHijos);
+                            
+                        }
+                        
+                        
+                    }
+
+                    padre.Dependencia1 = new List<Dependencia>(listaConcentrados);
                 }
+
+                
 
                 // ** árbol de dependencias **
 
@@ -226,15 +379,20 @@ namespace bd.swth.web.Controllers.API
                 var dependencia = new Dependencia
                 {
                     IdDependencia = dependenciaViewModel.IdDependencia,
-                    Nombre = dependenciaViewModel.NombreDependencia,
+                    Nombre = dependenciaViewModel.NombreDependencia.ToString().ToUpper(),
                     IdSucursal = dependenciaViewModel.IdSucursal,
                     IdDependenciaPadre = dependenciaViewModel.IdDependenciaPadre,
                     IdProceso = dependenciaViewModel.IdProceso,
                     Codigo = dependenciaViewModel.Codigo
                 };
 
-                var existe = Existe(dependencia);
-                if (existe.IsSuccess)
+                var existe = await db.Dependencia
+                    .Where(w =>
+                        w.Nombre.ToString().ToUpper() == dependencia.Nombre.ToString().ToUpper()
+                    ).FirstOrDefaultAsync();
+
+
+                if (existe != null && existe.IdDependencia != dependencia.IdDependencia)
                 {
                     return new Response
                     {
@@ -243,12 +401,13 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                var dependenciaActualizar = await db.Dependencia.Where(x => x.IdDependencia == id).FirstOrDefaultAsync();
+                var dependenciaActualizar = await db.Dependencia
+                    .Where(x => x.IdDependencia == id)
+                    .FirstOrDefaultAsync();
 
                 if (dependenciaActualizar != null)
                 {
-                    try
-                    {
+                    
                         if (dependencia.Nombre != dependenciaActualizar.Nombre
                             || dependencia.IdSucursal != dependenciaActualizar.IdSucursal
                             || dependencia.IdDependenciaPadre != dependenciaActualizar.IdDependenciaPadre
@@ -265,40 +424,19 @@ namespace bd.swth.web.Controllers.API
                             return new Response
                             {
                                 IsSuccess = true,
-                                Message = Mensaje.Satisfactorio,
+                                Message = Mensaje.GuardadoSatisfactorio,
                             };
                         }
 
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
+                        
                 }
-
-
-
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.RegistroNoEncontrado
                 };
+
             }
             catch (Exception)
             {
@@ -355,7 +493,7 @@ namespace bd.swth.web.Controllers.API
 
                 var dependencia = new Dependencia()
                 {
-                    Nombre = dependenciaViewModel.NombreDependencia,
+                    Nombre = dependenciaViewModel.NombreDependencia.ToString().ToUpper(),
                     IdSucursal = dependenciaViewModel.IdSucursal,
                     IdDependenciaPadre = dependenciaViewModel.IdDependenciaPadre,
                     IdProceso = dependenciaViewModel.IdProceso,
@@ -384,20 +522,10 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
