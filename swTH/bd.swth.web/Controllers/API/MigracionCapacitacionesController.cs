@@ -26,6 +26,8 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        /*
+
         [HttpPost]
         [Route("VerificarExcel")]
         public async Task<List<PlanCapacitacion>> VerificarExcel([FromBody] List<PlanCapacitacion> lista)
@@ -633,5 +635,10 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+
+
+    */
+
+
     }
 }

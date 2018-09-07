@@ -15,10 +15,10 @@ namespace bd.swth.entidades.Negocio
         public string Nombre { get; set; }
         
         public int? IdGrupoOcupacional { get; set; }
-        public virtual GrupoOcupacional GrupoOcupacional { get; set; }
 
         public virtual ICollection<IndiceOcupacional> IndiceOcupacional { get; set; }
+        public virtual ICollection<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
+        public virtual GrupoOcupacional GrupoOcupacional { get; set; }
 
-       
     }
 }

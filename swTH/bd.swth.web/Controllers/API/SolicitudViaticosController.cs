@@ -28,6 +28,8 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        /*
+
         [HttpPost]
         [Route("ObtenerSolicitudesViaticosporId")]
 
@@ -569,5 +571,7 @@ namespace bd.swth.web.Controllers.API
                 IsSuccess = false,
             };
         }
+
+    */
     }
 }

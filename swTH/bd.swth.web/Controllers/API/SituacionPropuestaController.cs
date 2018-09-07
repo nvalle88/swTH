@@ -34,6 +34,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        /*
 
 
         /// <summary>
@@ -379,7 +380,7 @@ namespace bd.swth.web.Controllers.API
                     {
                         if (procesoDatos.Estado == Convert.ToInt32(Constantes.ActivacionPersonalValorActivado))
                         {
-                            /* Ingresa a este proceso cuando existe un documento y está habilitado*/
+                            // Ingresa a este proceso cuando existe un documento y está habilitado
 
                             // Obtención de los datos actuales por dependencia
 
@@ -749,10 +750,10 @@ namespace bd.swth.web.Controllers.API
                     .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
                     .FirstOrDefaultAsync();
 
-                    /* 
-                     * Obtiene el último movimiento temporal del empleado logueado que esté vigente en esta fecha
-                     * y asi saber si subroga un cargo o está encargado del puesto
-                    */
+                     
+                    //Obtiene el último movimiento temporal del empleado logueado que esté vigente en esta fecha
+                    //y asi saber si subroga un cargo o está encargado del puesto
+                    
                     var empleadoPuestoEncargado = await db.EmpleadoMovimiento
                         .Include(i => i.IndiceOcupacional)
                         .Include(i => i.IndiceOcupacional.Dependencia)
@@ -937,10 +938,10 @@ namespace bd.swth.web.Controllers.API
                     .OrderByDescending(o => o.IdIndiceOcupacionalModalidadPartida)
                     .FirstOrDefaultAsync();
 
-                /* 
-                 * Obtiene el último movimiento temporal del empleado logueado que esté vigente en esta fecha
-                 * y asi saber si subroga un cargo o está encargado del puesto
-                */
+                 
+                //Obtiene el último movimiento temporal del empleado logueado que esté vigente en esta fecha
+                //y asi saber si subroga un cargo o está encargado del puesto
+                
                 var empleadoPuestoEncargado = await db.EmpleadoMovimiento
                     .Include(i => i.IndiceOcupacional)
                     .Include(i => i.IndiceOcupacional.Dependencia)
@@ -1161,6 +1162,6 @@ namespace bd.swth.web.Controllers.API
 
             }
         }
-
+        */
     }
 }

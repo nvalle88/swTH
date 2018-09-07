@@ -27,6 +27,8 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
+
+        /*
         
         [HttpPost]
         [Route("ListarSolicitudVacaciones")]
@@ -727,5 +729,8 @@ namespace bd.swth.web.Controllers.API
             }
         }
         
+
+    */    
+
     }
 }

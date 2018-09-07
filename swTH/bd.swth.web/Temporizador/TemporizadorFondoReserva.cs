@@ -62,7 +62,12 @@ namespace bd.swth.web.Temporizador
         {
             try
             {
-                    var listaEmpleados =await db.Empleado.Where(x => x.Activo == true && x.DerechoFondoReserva==false).Select(x => new Empleado { IdEmpleado = x.IdEmpleado, FechaIngreso = x.FechaIngreso}).ToListAsync();
+                    var listaEmpleados =await db.Empleado
+                    .Where(x => 
+                        x.Activo == true 
+                        && x.DerechoFondoReserva==false
+                    ).Select(x => new Empleado { IdEmpleado = x.IdEmpleado, FechaIngreso = x.FechaIngreso}).ToListAsync();
+
                     foreach (var item in listaEmpleados)
                     {
                         var fechaIngresoActual = Convert.ToDateTime(item.FechaIngreso == null ? DateTime.Today : item.FechaIngreso);
@@ -81,7 +86,7 @@ namespace bd.swth.web.Temporizador
                     }
             
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw;
             }

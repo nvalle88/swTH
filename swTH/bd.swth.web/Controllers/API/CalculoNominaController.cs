@@ -29,6 +29,8 @@ namespace bd.swth.web.Controllers.API
             this.db_1 = db_1;
         }
 
+        /*
+
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarCalculoNomina")]
@@ -489,5 +491,8 @@ namespace bd.swth.web.Controllers.API
             }
 
         }
+
+    */
+
     }
 }

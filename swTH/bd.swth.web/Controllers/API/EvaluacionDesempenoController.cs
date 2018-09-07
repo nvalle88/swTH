@@ -27,6 +27,9 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
+
+        /*
+
         [HttpPost]
         [Route("ListarEmpleadosJefes")]
         public async Task<List<ViewModelEvaluacionDesempeno>> ListarEmpleadosPorJefes([FromBody] ViewModelEvaluacionDesempeno viewModelEvaluacionDesempeno)
@@ -985,6 +988,7 @@ namespace bd.swth.web.Controllers.API
             }
 
         }
+        */
 
     }
 }

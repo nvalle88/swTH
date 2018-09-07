@@ -29,7 +29,7 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        
+        /*
 
         /// <summary>
         /// Este método crea automáticamente registros de vacaciones para los empleados por período fiscal
@@ -56,7 +56,7 @@ namespace bd.swth.web.Controllers.API
                     .ToList();
 
                 
-
+                
 
                 //**** Realizar las acciones por cada empleado ****
                 foreach (var item2 in empleados) {
@@ -434,13 +434,13 @@ namespace bd.swth.web.Controllers.API
                     {
                         // Quiere decir que si es válido pero contempla mas de un mes
 
-                        /*  1) calcular cuantos dias tiene de vacaciones por el mes de ingreso
-                            2) restar a la totalidad de los meses (-1) porque se calcula el mes de ingreso
-                            3) calcular cuantos dias tiene de vacaciones por el mes actual
-                            4) restar a la totalidad de los meses (-1) porque se calcula el mes actual
-                            5) se multiplican los meses restantes (entre las fechas de ingreso y actuales)
-                            6) se suman los 3 valores
-                        */
+                        //  1) calcular cuantos dias tiene de vacaciones por el mes de ingreso
+                        //    2) restar a la totalidad de los meses (-1) porque se calcula el mes de ingreso
+                        //    3) calcular cuantos dias tiene de vacaciones por el mes actual
+                        //    4) restar a la totalidad de los meses (-1) porque se calcula el mes actual
+                        //    5) se multiplican los meses restantes (entre las fechas de ingreso y actuales)
+                        //    6) se suman los 3 valores
+                        
 
 
                         // 1)
@@ -496,71 +496,71 @@ namespace bd.swth.web.Controllers.API
                     }
 
 
-                    /*
-                    --hasta aqui estoy haciendo
+                    
+                    //--hasta aquí, (Revisar si se puede borrar lo comentado aquí abajo)
 
 
 
-                    // ** Si estamos en el mismo mes del ingreso, se calcula a partir de la fecha
-                    // actual, en lugar de todo el mes
+                    //// ** Si estamos en el mismo mes del ingreso, se calcula a partir de la fecha
+                    //// actual, en lugar de todo el mes
 
-                    if (workingTimeInMonths > 1)
-                    {
-                        // +1 porque cuenta el día de ingreso como día trabajado
-                        workingTimeInDays = totalDiasMesIngreso - (FechaInicio.Day) + 1;
-                    }
-                    else
-                    {
-                        // +1 porque cuenta el día de ingreso como día trabajado
-                        workingTimeInDays = FechaFin.Day - FechaInicio.Day + 1;
+                    //if (workingTimeInMonths > 1)
+                    //{
+                    //    // +1 porque cuenta el día de ingreso como día trabajado
+                    //    workingTimeInDays = totalDiasMesIngreso - (FechaInicio.Day) + 1;
+                    //}
+                    //else
+                    //{
+                    //    // +1 porque cuenta el día de ingreso como día trabajado
+                    //    workingTimeInDays = FechaFin.Day - FechaInicio.Day + 1;
 
-                        // Validación si hay números negativos por errores de fecha:
-                        //Ejemplo: alguien ingresa una fecha de ingreso mayor a la fecha actual
-                        if (workingTimeInDays < 0)
-                        {
-                            workingTimeInDays = 0;
-                        }
-                    }
+                    //    // Validación si hay números negativos por errores de fecha:
+                    //    //Ejemplo: alguien ingresa una fecha de ingreso mayor a la fecha actual
+                    //    if (workingTimeInDays < 0)
+                    //    {
+                    //        workingTimeInDays = 0;
+                    //    }
+                    //}
 
 
-                    // Cálculo de los días de vacaciones, por los días trabajados el mes de ingreso
-                    var diasVacacionesMesIngreso = (workingTimeInDays * diasVacacionesPorMes)
-                            / totalDiasMesIngreso;
+                    //// Cálculo de los días de vacaciones, por los días trabajados el mes de ingreso
+                    //var diasVacacionesMesIngreso = (workingTimeInDays * diasVacacionesPorMes)
+                    //        / totalDiasMesIngreso;
 
-                    // Se resta un mes porque ya se tiene el valor de los días de vacaciones del 
-                    // mes de ingreso
-                    if (workingTimeInMonths > 0)
-                    {
-                        workingTimeInMonths = workingTimeInMonths - 1;
-                    }
+                    //// Se resta un mes porque ya se tiene el valor de los días de vacaciones del 
+                    //// mes de ingreso
+                    //if (workingTimeInMonths > 0)
+                    //{
+                    //    workingTimeInMonths = workingTimeInMonths - 1;
+                    //}
 
-                    // Cálculo de los días de vacaciones, por los días trabajados el último mes 
-                    var diasVacacionesU
+                    //// Cálculo de los días de vacaciones, por los días trabajados el último mes 
+                    //var diasVacacionesU
 
                     
 
 
                     
-                    //****DESDE AQUI HASTA EL ELSE HAY QUE ARREGLAR PORQUE FALTA VER LOS DIAS DEL MES ACTUAL, ACTUALMENTE
-                    //    NO ME ESTÁ CALCULANDO ESO, Y COMO SE AGREGÓ UN MES ME SUMA EL 2,5 O 1,25 DEL TOTAL DE ESE MES!!
+                    ////****DESDE AQUI HASTA EL ELSE HAY QUE ARREGLAR PORQUE FALTA VER LOS DIAS DEL MES ACTUAL, ACTUALMENTE
+                    ////    NO ME ESTÁ CALCULANDO ESO, Y COMO SE AGREGÓ UN MES ME SUMA EL 2,5 O 1,25 DEL TOTAL DE ESE MES!!
                     
 
 
-                    var diasUltimoMes = FechaFin.Day;
-                    1) calcular cuantos dias tiene de vacaciones por el mes actual
-                    2) restar al mes actual -1 porque se calcula el mes actual
-                    3) se multiplican los meses restantes (entre las fechas de ingreso y actuales)
-                    4) se suman los 3 valores
+                    //var diasUltimoMes = FechaFin.Day;
+                    //1) calcular cuantos dias tiene de vacaciones por el mes actual
+                    //2) restar al mes actual -1 porque se calcula el mes actual
+                    //3) se multiplican los meses restantes (entre las fechas de ingreso y actuales)
+                    //4) se suman los 3 valores
 
 
-                    // Suma de los días de vacaciones del mes de ingreso mas los dias de vacaciones de los
-                    // otros meses
-                    var diasVacacionesAcumulados = ((Double)diasVacacionesMesIngreso + (Double)(workingTimeInMonths * diasVacacionesPorMes));
+                    //// Suma de los días de vacaciones del mes de ingreso mas los dias de vacaciones de los
+                    //// otros meses
+                    //var diasVacacionesAcumulados = ((Double)diasVacacionesMesIngreso + (Double)(workingTimeInMonths * diasVacacionesPorMes));
 
-                    // El total de días de vacaciones es igual a la parte entera del acumulado total
-                    totalDiasVacaciones = diasVacacionesAcumulados;
+                    //// El total de días de vacaciones es igual a la parte entera del acumulado total
+                    //totalDiasVacaciones = diasVacacionesAcumulados;
 
-                    */
+                    
 
                     return totalDiasVacaciones;
 
@@ -1280,6 +1280,7 @@ namespace bd.swth.web.Controllers.API
             return listaEstados;
         }
 
+        */
     
     }
 }

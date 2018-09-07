@@ -34,6 +34,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        /*
 
         // Get: api/Induccion
         [HttpPost]
@@ -51,28 +52,28 @@ namespace bd.swth.web.Controllers.API
 
                
                         
-                /*
-                lista = await db.Empleado.Include(ei=>ei.Dependencia)
-                    .Where(w=>w.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal)
-                    .Select(x => new InduccionViewModel
-                        {
-                            IdEmpleado = x.IdEmpleado,
-                            Nombres = x.Persona.Nombres + " " + x.Persona.Apellidos,
-                            FechaIngreso = x.FechaIngreso.Date,
+                
+                //lista = await db.Empleado.Include(ei=>ei.Dependencia)
+                //    .Where(w=>w.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal)
+                //    .Select(x => new InduccionViewModel
+                //        {
+                //            IdEmpleado = x.IdEmpleado,
+                //            Nombres = x.Persona.Nombres + " " + x.Persona.Apellidos,
+                //            FechaIngreso = x.FechaIngreso.Date,
 
-                            EstadoInduccion = (db.Induccion.Any(w=>w.IdEmpleado == x.IdEmpleado))
-                                ? ConstantesEstadoInduccion.InduccionFinalizada 
-                                : ConstantesEstadoInduccion.InduccionNoFinalizada
-                            ,
+                //            EstadoInduccion = (db.Induccion.Any(w=>w.IdEmpleado == x.IdEmpleado))
+                //                ? ConstantesEstadoInduccion.InduccionFinalizada 
+                //                : ConstantesEstadoInduccion.InduccionNoFinalizada
+                //            ,
 
-                            ValorCompletado = ConstantesEstadoInduccion.InduccionFinalizada,
+                //            ValorCompletado = ConstantesEstadoInduccion.InduccionFinalizada,
 
-                            NombreDependencia = x.Dependencia.Nombre,
-                            NombreRol = (iomp)
-                    } 
-                    )
-                    .ToListAsync();
-                */
+                //            NombreDependencia = x.Dependencia.Nombre,
+                //            NombreRol = (iomp)
+                //    } 
+                //    )
+                //    .ToListAsync();
+                
                 lista = await db.IndiceOcupacionalModalidadPartida
                     .Where(w=>
                         w.Empleado.Activo == true
@@ -105,7 +106,7 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        
+        */
 
 
     }

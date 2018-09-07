@@ -32,6 +32,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        /*
 
         private IQueryable<DatosBasicosEmpleadoViewModel> ListaDatosBasicosEmpleado()
         {
@@ -4588,7 +4589,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
         
-
+    */
 
     }
 }

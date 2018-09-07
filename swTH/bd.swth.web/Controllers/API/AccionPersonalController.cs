@@ -24,7 +24,7 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
-
+        /*
         [HttpGet]
         [Route("ListarAccionPersonal")]
         public async Task<List<AccionPersonal>> ListarAccionPersonal()
@@ -61,5 +61,7 @@ namespace bd.swth.web.Controllers.API
                 return new Response { IsSuccess = false };
             }
         }
+
+    */
     }
 }

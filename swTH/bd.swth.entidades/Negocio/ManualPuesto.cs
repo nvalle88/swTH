@@ -20,13 +20,13 @@ namespace bd.swth.entidades.Negocio
         public string Mision { get; set; }
         public int? IdRelacionesInternasExternas { get; set; }
 
-        public virtual ICollection<IndiceOcupacional> IndiceOcupacional { get; set; }
+        //public virtual ICollection<IndiceOcupacional> IndiceOcupacional { get; set; }
         public virtual ICollection<InformeUATH> InformeUATH { get; set; }
 
         public virtual ICollection<InformeUATH> InformeUATH1 { get; set; }
 
         public virtual RelacionesInternasExternas RelacionesInternasExternas { get; set; }
-        public virtual ICollection<FlujoAprobacion> FlujoAprobacion { get; set; }
+        //public virtual ICollection<FlujoAprobacion> FlujoAprobacion { get; set; }
 
         [NotMapped]
         public string Partida { get; set; }

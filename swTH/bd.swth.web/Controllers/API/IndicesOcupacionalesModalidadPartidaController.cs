@@ -29,6 +29,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        /*
 
         // GET: api/IndicesOcupacionalesModalidadPartida
         [HttpGet]
@@ -815,7 +816,7 @@ namespace bd.swth.web.Controllers.API
 
 
 
-
+        */
         
 
     }

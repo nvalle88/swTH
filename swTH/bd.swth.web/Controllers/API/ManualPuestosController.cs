@@ -28,6 +28,8 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        /*
+
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarManualPuestos")]
@@ -366,6 +368,6 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
+    */
     }
 }

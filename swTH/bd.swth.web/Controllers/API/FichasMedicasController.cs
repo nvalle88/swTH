@@ -27,7 +27,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-
+        /*
 
 
         [HttpPost]
@@ -84,7 +84,7 @@ namespace bd.swth.web.Controllers.API
                 Empleado empleadoVar = db.Empleado.Where(x => x.IdPersona == personaVar.IdPersona).FirstOrDefault();
 
 
-                /* INICIALIZACIÓN DE OBJETOS CON VALORES NULOS */
+                // INICIALIZACIÓN DE OBJETOS CON VALORES NULOS
 
                 Titulo tituloVar = new Titulo();
                 Estudio estudioVar = new Estudio();
@@ -99,7 +99,7 @@ namespace bd.swth.web.Controllers.API
                 IndiceOcupacional inOcupVar = new IndiceOcupacional();
                 ManualPuesto manPuestoVar = new ManualPuesto();
 
-                /* INICIALIZACIÓN DE VARIABLES NULAS*/
+                // INICIALIZACIÓN DE VARIABLES NULAS
 
                 var datoConadis = "";
                 var datoPorcentaje = "";
@@ -177,7 +177,7 @@ namespace bd.swth.web.Controllers.API
 
 
 
-                /* Validación obtencion de dato nulo */
+                // Validación obtencion de dato nulo
 
 
                 if (discapacidadVar != null && discapacidadVar.IdTipoDiscapacidad > 0)
@@ -604,89 +604,89 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        /*
-        // PUT: api/FichasMedicas/5
-        [HttpPut("{id}")]
-        public async Task<Response> PutEstado([FromRoute] int id, [FromBody] FichaMedica FichaMedica)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
+        
+        //// PUT: api/FichasMedicas/5
+        //[HttpPut("{id}")]
+        //public async Task<Response> PutEstado([FromRoute] int id, [FromBody] FichaMedica FichaMedica)
+        //{
+        //    try
+        //    {
+        //        if (!ModelState.IsValid)
+        //        {
+        //            return new Response
+        //            {
+        //                IsSuccess = false,
+        //                Message = Mensaje.ModeloInvalido
+        //            };
+        //        }
 
-                var Respuesta1 = new FichaMedica();
-
-
-                Respuesta1 = db.FichaMedica.Where(x => x.IdFichaMedica == FichaMedica.IdFichaMedica).FirstOrDefault(); 
+        //        var Respuesta1 = new FichaMedica();
 
 
+        //        Respuesta1 = db.FichaMedica.Where(x => x.IdFichaMedica == FichaMedica.IdFichaMedica).FirstOrDefault(); 
 
-                if (Respuesta1 == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
 
-                var Actualizar = await db.FichaMedica.Where(x => x.IdFichaMedica == id).FirstOrDefaultAsync();
-                if (Actualizar != null)
-                {
-                    try
-                    {
+
+        //        if (Respuesta1 == null)
+        //        {
+        //            return new Response
+        //            {
+        //                IsSuccess = false,
+        //                Message = Mensaje.RegistroNoEncontrado,
+        //            };
+        //        }
+
+        //        var Actualizar = await db.FichaMedica.Where(x => x.IdFichaMedica == id).FirstOrDefaultAsync();
+        //        if (Actualizar != null)
+        //        {
+        //            try
+        //            {
                         
-                        Actualizar.Estado = FichaMedica.Estado;
+        //                Actualizar.Estado = FichaMedica.Estado;
 
-                        db.FichaMedica.Update(Actualizar);
+        //                db.FichaMedica.Update(Actualizar);
 
-                        await db.SaveChangesAsync();
+        //                await db.SaveChangesAsync();
 
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
+        //                return new Response
+        //                {
+        //                    IsSuccess = true,
+        //                    Message = Mensaje.Satisfactorio,
+        //                };
 
-                    }
-                    catch (Exception ex)
-                    {
+        //            }
+        //            catch (Exception ex)
+        //            {
 
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro,
-                };
+        //                return new Response
+        //                {
+        //                    IsSuccess = false,
+        //                    Message = Mensaje.Error,
+        //                };
+        //            }
+        //        }
 
 
-            }
-            catch (Exception ex)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Excepcion
-                };
-            }
+        //        return new Response
+        //        {
+        //            IsSuccess = false,
+        //            Message = Mensaje.ExisteRegistro,
+        //        };
 
-        }
 
-        */
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new Response
+        //        {
+        //            IsSuccess = false,
+        //            Message = Mensaje.Excepcion
+        //        };
+        //    }
+
+        //}
+
+        
 
 
         // POST: api/FichasMedicas
@@ -716,13 +716,13 @@ namespace bd.swth.web.Controllers.API
                         Message = Mensaje.Satisfactorio
                     };
                 //}
-                /*
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
-                };
-                */
+                
+                //return new Response
+                //{
+                //    IsSuccess = false,
+                //    Message = Mensaje.ExisteRegistro
+                //};
+                
 
             }
             catch (Exception ex)
@@ -795,134 +795,134 @@ namespace bd.swth.web.Controllers.API
 
 
 
-            /*
-            var Respuesta = db.FichaMedica.Where(
+            
+            //var Respuesta = db.FichaMedica.Where(
 
-                        p => p.IdPersona == FichaMedica.IdPersona
-                        && p.FechaFichaMedica == FichaMedica.FechaFichaMedica
+            //            p => p.IdPersona == FichaMedica.IdPersona
+            //            && p.FechaFichaMedica == FichaMedica.FechaFichaMedica
                         
                         
-                        && p.AntecedenteMedico.ToUpper().TrimEnd().TrimStart() == FichaMedica.AntecedenteMedico.ToUpper().TrimEnd().TrimStart()
-                        /*
-                        && p.AntecedenteQuirurgico.ToUpper().TrimEnd().TrimStart() == FichaMedica.AntecedenteQuirurgico.ToUpper().TrimEnd().TrimStart()
-                        /*
-                        && p.Alergias.ToUpper().TrimEnd().TrimStart() == FichaMedica.Alergias.ToUpper().TrimEnd().TrimStart()
-                        && p.UsoMedicinaDiaria.ToUpper().TrimEnd().TrimStart() == FichaMedica.UsoMedicinaDiaria.ToUpper().TrimEnd().TrimStart()
-                        && p.Vacunas.ToUpper().TrimEnd().TrimStart() == FichaMedica.Vacunas.ToUpper().TrimEnd().TrimStart()
-                        && p.AntecedenteMedico.ToUpper().TrimEnd().TrimStart() == FichaMedica.AntecedenteMedico.ToUpper().TrimEnd().TrimStart()
-                        && p.FechaUltimaDosis == FichaMedica.FechaUltimaDosis
+            //            && p.AntecedenteMedico.ToUpper().TrimEnd().TrimStart() == FichaMedica.AntecedenteMedico.ToUpper().TrimEnd().TrimStart()
+                        
+            //            && p.AntecedenteQuirurgico.ToUpper().TrimEnd().TrimStart() == FichaMedica.AntecedenteQuirurgico.ToUpper().TrimEnd().TrimStart()
+            //            
+            //            && p.Alergias.ToUpper().TrimEnd().TrimStart() == FichaMedica.Alergias.ToUpper().TrimEnd().TrimStart()
+            //            && p.UsoMedicinaDiaria.ToUpper().TrimEnd().TrimStart() == FichaMedica.UsoMedicinaDiaria.ToUpper().TrimEnd().TrimStart()
+            //            && p.Vacunas.ToUpper().TrimEnd().TrimStart() == FichaMedica.Vacunas.ToUpper().TrimEnd().TrimStart()
+            //            && p.AntecedenteMedico.ToUpper().TrimEnd().TrimStart() == FichaMedica.AntecedenteMedico.ToUpper().TrimEnd().TrimStart()
+            //            && p.FechaUltimaDosis == FichaMedica.FechaUltimaDosis
 
-                        /*
-                        && p.PrimeraMenstruacion == FichaMedica.PrimeraMenstruacion
-                        && p.UltimaMenstruacion == FichaMedica.UltimaMenstruacion
-                        && p.CicloMenstrual.ToUpper().TrimEnd().TrimStart() == FichaMedica.CicloMenstrual.ToUpper().TrimEnd().TrimStart()
-                        && p.Gestas == FichaMedica.Gestas
-                        && p.Partos == FichaMedica.Partos
-                        && p.Cesarias == FichaMedica.Cesarias
-                        && p.Abortos == FichaMedica.Abortos
-                        && p.HijosVivos == FichaMedica.HijosVivos
-                        && p.UltimoPapTest == FichaMedica.UltimoPapTest
-                        && p.UltimaMamografia == FichaMedica.UltimaMamografia
-                        && p.Anticoncepcion == FichaMedica.Anticoncepcion
+            //            
+            //            && p.PrimeraMenstruacion == FichaMedica.PrimeraMenstruacion
+            //            && p.UltimaMenstruacion == FichaMedica.UltimaMenstruacion
+            //            && p.CicloMenstrual.ToUpper().TrimEnd().TrimStart() == FichaMedica.CicloMenstrual.ToUpper().TrimEnd().TrimStart()
+            //            && p.Gestas == FichaMedica.Gestas
+            //            && p.Partos == FichaMedica.Partos
+            //            && p.Cesarias == FichaMedica.Cesarias
+            //            && p.Abortos == FichaMedica.Abortos
+            //            && p.HijosVivos == FichaMedica.HijosVivos
+            //            && p.UltimoPapTest == FichaMedica.UltimoPapTest
+            //            && p.UltimaMamografia == FichaMedica.UltimaMamografia
+            //            && p.Anticoncepcion == FichaMedica.Anticoncepcion
 
-                        /*
+            //            
 
-                        && p.Cigarrillo == p.Cigarrillo
-                        && p.FrecuenciaCigarrillo.ToUpper().TrimEnd().TrimStart() == FichaMedica.FrecuenciaCigarrillo.ToUpper().TrimEnd().TrimStart()
-                        && p.CigarrilloDesde.ToUpper().TrimEnd().TrimStart() == FichaMedica.CigarrilloDesde.ToUpper().TrimEnd().TrimStart()
-                        && p.CigarrilloHasta.ToUpper().TrimEnd().TrimStart() == FichaMedica.CigarrilloHasta.ToUpper().TrimEnd().TrimStart()
+            //            && p.Cigarrillo == p.Cigarrillo
+            //            && p.FrecuenciaCigarrillo.ToUpper().TrimEnd().TrimStart() == FichaMedica.FrecuenciaCigarrillo.ToUpper().TrimEnd().TrimStart()
+            //            && p.CigarrilloDesde.ToUpper().TrimEnd().TrimStart() == FichaMedica.CigarrilloDesde.ToUpper().TrimEnd().TrimStart()
+            //            && p.CigarrilloHasta.ToUpper().TrimEnd().TrimStart() == FichaMedica.CigarrilloHasta.ToUpper().TrimEnd().TrimStart()
 
-                        && p.Licor == p.Licor
-                        && p.LicorFrecuencia.ToUpper().TrimEnd().TrimStart() == FichaMedica.LicorFrecuencia.ToUpper().TrimEnd().TrimStart()
-                        && p.LicorDesde.ToUpper().TrimEnd().TrimStart() == FichaMedica.LicorDesde.ToUpper().TrimEnd().TrimStart()
-                        && p.LicorHasta.ToUpper().TrimEnd().TrimStart() == FichaMedica.LicorHasta.ToUpper().TrimEnd().TrimStart()
+            //            && p.Licor == p.Licor
+            //            && p.LicorFrecuencia.ToUpper().TrimEnd().TrimStart() == FichaMedica.LicorFrecuencia.ToUpper().TrimEnd().TrimStart()
+            //            && p.LicorDesde.ToUpper().TrimEnd().TrimStart() == FichaMedica.LicorDesde.ToUpper().TrimEnd().TrimStart()
+            //            && p.LicorHasta.ToUpper().TrimEnd().TrimStart() == FichaMedica.LicorHasta.ToUpper().TrimEnd().TrimStart()
 
-                        && p.Drogas == p.Drogas
-                        && p.FrecuenciaDrogas.ToUpper().TrimEnd().TrimStart() == FichaMedica.FrecuenciaDrogas.ToUpper().TrimEnd().TrimStart()
-                        && p.DrogasDesde.ToUpper().TrimEnd().TrimStart() == FichaMedica.DrogasDesde.ToUpper().TrimEnd().TrimStart()
-                        && p.DrogasHasta.ToUpper().TrimEnd().TrimStart() == FichaMedica.DrogasHasta.ToUpper().TrimEnd().TrimStart()
+            //            && p.Drogas == p.Drogas
+            //            && p.FrecuenciaDrogas.ToUpper().TrimEnd().TrimStart() == FichaMedica.FrecuenciaDrogas.ToUpper().TrimEnd().TrimStart()
+            //            && p.DrogasDesde.ToUpper().TrimEnd().TrimStart() == FichaMedica.DrogasDesde.ToUpper().TrimEnd().TrimStart()
+            //            && p.DrogasHasta.ToUpper().TrimEnd().TrimStart() == FichaMedica.DrogasHasta.ToUpper().TrimEnd().TrimStart()
 
-                        && p.Ejercicios == p.Ejercicios
-                        && p.EjerciciosFrecuencia.ToUpper().TrimEnd().TrimStart() == FichaMedica.EjerciciosFrecuencia.ToUpper().TrimEnd().TrimStart()
-                        && p.EjerciciosTipo.ToUpper().TrimEnd().TrimStart() == FichaMedica.EjerciciosTipo.ToUpper().TrimEnd().TrimStart()
+            //            && p.Ejercicios == p.Ejercicios
+            //            && p.EjerciciosFrecuencia.ToUpper().TrimEnd().TrimStart() == FichaMedica.EjerciciosFrecuencia.ToUpper().TrimEnd().TrimStart()
+            //            && p.EjerciciosTipo.ToUpper().TrimEnd().TrimStart() == FichaMedica.EjerciciosTipo.ToUpper().TrimEnd().TrimStart()
 
 
                         
-                        && p.TensionArterial.ToUpper().TrimEnd().TrimStart() == FichaMedica.TensionArterial.ToUpper().TrimEnd().TrimStart()
-                        && p.FrecuenciaCardiaca.ToUpper().TrimEnd().TrimStart() == FichaMedica.FrecuenciaCardiaca.ToUpper().TrimEnd().TrimStart()
-                        && p.FrecuenciaRespiratoria.ToUpper().TrimEnd().TrimStart() == FichaMedica.FrecuenciaRespiratoria.ToUpper().TrimEnd().TrimStart()
-                        && p.Talla.ToUpper().TrimEnd().TrimStart() == FichaMedica.Talla.ToUpper().TrimEnd().TrimStart()
-                        && p.Peso.ToUpper().TrimEnd().TrimStart() == FichaMedica.Peso.ToUpper().TrimEnd().TrimStart()
-                        && p.LateralidadDominante == FichaMedica.LateralidadDominante
-                        && p.Interpretacion == FichaMedica.Interpretacion
+            //            && p.TensionArterial.ToUpper().TrimEnd().TrimStart() == FichaMedica.TensionArterial.ToUpper().TrimEnd().TrimStart()
+            //            && p.FrecuenciaCardiaca.ToUpper().TrimEnd().TrimStart() == FichaMedica.FrecuenciaCardiaca.ToUpper().TrimEnd().TrimStart()
+            //            && p.FrecuenciaRespiratoria.ToUpper().TrimEnd().TrimStart() == FichaMedica.FrecuenciaRespiratoria.ToUpper().TrimEnd().TrimStart()
+            //            && p.Talla.ToUpper().TrimEnd().TrimStart() == FichaMedica.Talla.ToUpper().TrimEnd().TrimStart()
+            //            && p.Peso.ToUpper().TrimEnd().TrimStart() == FichaMedica.Peso.ToUpper().TrimEnd().TrimStart()
+            //            && p.LateralidadDominante == FichaMedica.LateralidadDominante
+            //            && p.Interpretacion == FichaMedica.Interpretacion
 
                     
-                        && p.Cabeza == FichaMedica.Cabeza
-                        && p.Ojos == FichaMedica.Ojos
-                        && p.Oidos == FichaMedica.Oidos
-                        && p.Nariz == FichaMedica.Nariz
-                        && p.Boca == FichaMedica.Boca
-                        && p.FaringeAmigdalas == FichaMedica.FaringeAmigdalas
-                        && p.Cuello == FichaMedica.Cuello
-                        && p.Corazon == FichaMedica.Corazon
-                        && p.Pulmones == FichaMedica.Pulmones
-                        && p.Abdomen == FichaMedica.Abdomen
-                        && p.Hernias == FichaMedica.Hernias
-                        && p.Genitales == FichaMedica.Genitales
-                        && p.ExtremidadesSuperiores == FichaMedica.ExtremidadesSuperiores
-                        && p.ExtremidadesInferiores == FichaMedica.ExtremidadesInferiores
-                        && p.Varices == FichaMedica.Varices
-                        && p.SistemaNerviosoCentral == FichaMedica.SistemaNerviosoCentral
-                        && p.Piel == FichaMedica.Piel
+            //            && p.Cabeza == FichaMedica.Cabeza
+            //            && p.Ojos == FichaMedica.Ojos
+            //            && p.Oidos == FichaMedica.Oidos
+            //            && p.Nariz == FichaMedica.Nariz
+            //            && p.Boca == FichaMedica.Boca
+            //            && p.FaringeAmigdalas == FichaMedica.FaringeAmigdalas
+            //            && p.Cuello == FichaMedica.Cuello
+            //            && p.Corazon == FichaMedica.Corazon
+            //            && p.Pulmones == FichaMedica.Pulmones
+            //            && p.Abdomen == FichaMedica.Abdomen
+            //            && p.Hernias == FichaMedica.Hernias
+            //            && p.Genitales == FichaMedica.Genitales
+            //            && p.ExtremidadesSuperiores == FichaMedica.ExtremidadesSuperiores
+            //            && p.ExtremidadesInferiores == FichaMedica.ExtremidadesInferiores
+            //            && p.Varices == FichaMedica.Varices
+            //            && p.SistemaNerviosoCentral == FichaMedica.SistemaNerviosoCentral
+            //            && p.Piel == FichaMedica.Piel
 
                         
-                        && p.Diagnostico.ToUpper().TrimEnd().TrimStart() == FichaMedica.Diagnostico.ToUpper().TrimEnd().TrimStart()
+            //            && p.Diagnostico.ToUpper().TrimEnd().TrimStart() == FichaMedica.Diagnostico.ToUpper().TrimEnd().TrimStart()
 
 
-                        && p.SospechaEnfermedadLaboral == FichaMedica.SospechaEnfermedadLaboral
-                        && p.DetalleEnfermedad.ToUpper().TrimEnd().TrimStart() == FichaMedica.DetalleEnfermedad.ToUpper().TrimEnd().TrimStart()
+            //            && p.SospechaEnfermedadLaboral == FichaMedica.SospechaEnfermedadLaboral
+            //            && p.DetalleEnfermedad.ToUpper().TrimEnd().TrimStart() == FichaMedica.DetalleEnfermedad.ToUpper().TrimEnd().TrimStart()
 
-                        && p.AptoCargo == FichaMedica.AptoCargo
-                        && p.Recomendaciones.ToUpper().TrimEnd().TrimStart() == FichaMedica.Recomendaciones.ToUpper().TrimEnd().TrimStart()
-
-
-                        && p.AccidenteTrabajo == FichaMedica.AccidenteTrabajo
-                        && p.FechaAccidente == FichaMedica.FechaAccidente
-                        && p.EmpresaAccidente.ToUpper().TrimEnd().TrimStart() == FichaMedica.EmpresaAccidente.ToUpper().TrimEnd().TrimStart()
+            //            && p.AptoCargo == FichaMedica.AptoCargo
+            //            && p.Recomendaciones.ToUpper().TrimEnd().TrimStart() == FichaMedica.Recomendaciones.ToUpper().TrimEnd().TrimStart()
 
 
-                        && p.EnfermedadProfesional == FichaMedica.EnfermedadProfesional
-                        && p.FechaDiagnostico == FichaMedica.FechaDiagnostico
-                        && p.EmpresaEnfermedad.ToUpper().TrimEnd().TrimStart() == FichaMedica.EmpresaEnfermedad.ToUpper().TrimEnd().TrimStart()
-
-                        && p.DetalleAccidenteEnfermedadOcupacional.ToUpper().TrimEnd().TrimStart() == FichaMedica.DetalleAccidenteEnfermedadOcupacional.ToUpper().TrimEnd().TrimStart()
+            //            && p.AccidenteTrabajo == FichaMedica.AccidenteTrabajo
+            //            && p.FechaAccidente == FichaMedica.FechaAccidente
+            //            && p.EmpresaAccidente.ToUpper().TrimEnd().TrimStart() == FichaMedica.EmpresaAccidente.ToUpper().TrimEnd().TrimStart()
 
 
-                        && p.HabitosObservaciones.ToUpper().TrimEnd().TrimStart() == FichaMedica.HabitosObservaciones.ToUpper().TrimEnd().TrimStart()
+            //            && p.EnfermedadProfesional == FichaMedica.EnfermedadProfesional
+            //            && p.FechaDiagnostico == FichaMedica.FechaDiagnostico
+            //            && p.EmpresaEnfermedad.ToUpper().TrimEnd().TrimStart() == FichaMedica.EmpresaEnfermedad.ToUpper().TrimEnd().TrimStart()
+
+            //            && p.DetalleAccidenteEnfermedadOcupacional.ToUpper().TrimEnd().TrimStart() == FichaMedica.DetalleAccidenteEnfermedadOcupacional.ToUpper().TrimEnd().TrimStart()
 
 
-                        && p.CabezaHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.CabezaHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.OjosHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.OjosHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.OidosHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.OidosHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.NarizHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.NarizHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.BocaHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.BocaHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.FaringeAmigdalasHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.FaringeAmigdalasHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.CuelloHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.CuelloHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.CorazonHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.CorazonHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.PulmonesHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.PulmonesHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.AbdomenHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.AbdomenHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.HerniasHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.HerniasHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.GenitalesHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.GenitalesHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.ExtremidadesSuperioresHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.ExtremidadesSuperioresHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.ExtremidadesInferioresHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.ExtremidadesInferioresHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.VaricesHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.VaricesHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.SistemaNerviosoHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.SistemaNerviosoHallazgos.ToUpper().TrimEnd().TrimStart()
-                        && p.PielHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.PielHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.HabitosObservaciones.ToUpper().TrimEnd().TrimStart() == FichaMedica.HabitosObservaciones.ToUpper().TrimEnd().TrimStart()
+
+
+            //            && p.CabezaHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.CabezaHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.OjosHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.OjosHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.OidosHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.OidosHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.NarizHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.NarizHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.BocaHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.BocaHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.FaringeAmigdalasHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.FaringeAmigdalasHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.CuelloHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.CuelloHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.CorazonHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.CorazonHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.PulmonesHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.PulmonesHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.AbdomenHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.AbdomenHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.HerniasHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.HerniasHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.GenitalesHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.GenitalesHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.ExtremidadesSuperioresHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.ExtremidadesSuperioresHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.ExtremidadesInferioresHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.ExtremidadesInferioresHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.VaricesHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.VaricesHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.SistemaNerviosoHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.SistemaNerviosoHallazgos.ToUpper().TrimEnd().TrimStart()
+            //            && p.PielHallazgos.ToUpper().TrimEnd().TrimStart() == FichaMedica.PielHallazgos.ToUpper().TrimEnd().TrimStart()
 
     
-                    ).FirstOrDefault();
+            //        ).FirstOrDefault();
 
-            */
+            
 
             if (Respuesta != null)
             {
@@ -996,15 +996,15 @@ namespace bd.swth.web.Controllers.API
                 }
             }
 
-            /*
-            for (int i = 0; i < fichaSinRepeticiones.Count(); i++)
-            {
-                ficha = fichaSinRepeticiones.ElementAt(i);
+            
+            //for (int i = 0; i < fichaSinRepeticiones.Count(); i++)
+            //{
+            //    ficha = fichaSinRepeticiones.ElementAt(i);
 
                 
-                personasLista.Add(new Persona { IdPersona = ficha.IdPersona });
-            }
-            */
+            //    personasLista.Add(new Persona { IdPersona = ficha.IdPersona });
+            //}
+            
 
 
             return personasLista;
@@ -1038,5 +1038,7 @@ namespace bd.swth.web.Controllers.API
 
         }
 
+
+        */
     }
 }

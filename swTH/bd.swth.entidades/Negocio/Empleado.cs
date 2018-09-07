@@ -81,7 +81,7 @@ namespace bd.swth.entidades.Negocio
         
         public virtual ICollection<RolPagos> RolPagos { get; set; }
 
-        public virtual ICollection<AccionPersonal> AccionPersonal { get; set; }
+        
 
         public virtual ICollection<AdministracionTalentoHumano> AdministracionTalentoHumano { get; set; }
 
@@ -145,7 +145,7 @@ namespace bd.swth.entidades.Negocio
 
         public virtual ICollection<EmpleadoNepotismo> EmpleadoNepotismoFamiliar { get; set; }
 
-        public virtual ICollection<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
+        //public virtual ICollection<IndiceOcupacionalModalidadPartida> IndiceOcupacionalModalidadPartida { get; set; }
 
         public virtual ICollection<EmpleadoFamiliar> EmpleadoFamiliar { get; set; }
 
@@ -210,6 +210,15 @@ namespace bd.swth.entidades.Negocio
 
         /////Empleado gastos personales por año
         public virtual ICollection<GastoPersonal> GastoPersonal { get; set; }
+
+
+        public virtual ICollection<AccionPersonal> AccionPersonalIdEmpleadoAfectado { get; set; }
+        public virtual ICollection<AccionPersonal> AccionPersonalIdEmpleadoResponsableIngreso { get; set; }
+        
+        public virtual ICollection<DistributivoHistorico> DistributivoHistorico { get; set; }
+        public virtual ICollection<DistributivoSituacionActual> DistributivoSituacionActual { get; set; }
+        
+
 
     }
 }

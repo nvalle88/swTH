@@ -29,6 +29,8 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        /*
+
         [HttpGet]
         [Route("ListarIndicesOcupaciones")]
         public async Task<List<IndiceOcupacionalViewModel>> ListarIndicesOcupaciones()
@@ -1067,124 +1069,126 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        /*
-        [HttpPost]
-        [Route("ActualizarModalidadPartida")]
-        public async Task<Response> PutModalidadPartidaIndiceOcupacion([FromBody] IndiceOcupacional indiceOcupacional)
-        { 
-            try
-            {
+        
+        //[HttpPost]
+        //[Route("ActualizarModalidadPartida")]
+        //public async Task<Response> PutModalidadPartidaIndiceOcupacion([FromBody] IndiceOcupacional indiceOcupacional)
+        //{ 
+        //    try
+        //    {
 
 
-                var indiceOcupacionalActualizar = await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional).FirstOrDefaultAsync();
+        //        var indiceOcupacionalActualizar = await db.IndiceOcupacional.Where(x => x.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional).FirstOrDefaultAsync();
 
-                if (indiceOcupacionalActualizar != null)
-                {
-                    try
-                    {
-                        indiceOcupacionalActualizar.IdModalidadPartida = indiceOcupacional.IdModalidadPartida;
-                        await db.SaveChangesAsync();
+        //        if (indiceOcupacionalActualizar != null)
+        //        {
+        //            try
+        //            {
+        //                indiceOcupacionalActualizar.IdModalidadPartida = indiceOcupacional.IdModalidadPartida;
+        //                await db.SaveChangesAsync();
 
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
+        //                return new Response
+        //                {
+        //                    IsSuccess = true,
+        //                    Message = Mensaje.Satisfactorio,
+        //                };
 
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+        //                {
+        //                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
+        //                    ExceptionTrace = ex.Message,
+        //                    Message = Mensaje.Excepcion,
+        //                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+        //                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+        //                    UserName = "",
 
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
+        //                });
+        //                return new Response
+        //                {
+        //                    IsSuccess = false,
+        //                    Message = Mensaje.Error,
+        //                };
+        //            }
+        //        }
 
 
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
-                };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Excepcion
-                };
-            }
-        }
-        */
-
-        /*
-        [HttpPost]
-        [Route("ObtenerPrimerIndicePorDatos")]
-        public async Task<IndiceOcupacional> ObtenerPrimerIndicePorDatos([FromBody] IdFiltrosViewModel filtro)
-        {
-            try
-            {
-
-                var lista = await db.IndiceOcupacional
-                    .Include(i => i.ModalidadPartida)
-                    .Where(w =>
-                        w.IdDependencia == filtro.IdDependencia
-                        && w.IdManualPuesto == filtro.IdManualPuesto
-                        && w.IdRolPuesto == filtro.IdRolPuesto
-                        && w.IdEscalaGrados == filtro.IdEscalaGrados
-                    )
-                    .ToListAsync();
 
 
-                var relacionLaboral = await db.RelacionLaboral
-                    .Where(w =>
-                       w.IdRelacionLaboral == filtro.IdTipoRelacion
-                    ).FirstOrDefaultAsync();
+        //        return new Response
+        //        {
+        //            IsSuccess = false,
+        //            Message = Mensaje.ExisteRegistro
+        //        };
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return new Response
+        //        {
+        //            IsSuccess = false,
+        //            Message = Mensaje.Excepcion
+        //        };
+        //    }
+        //}
+        
 
-                var enviar = new IndiceOcupacional();
+        
+        //[HttpPost]
+        //[Route("ObtenerPrimerIndicePorDatos")]
+        //public async Task<IndiceOcupacional> ObtenerPrimerIndicePorDatos([FromBody] IdFiltrosViewModel filtro)
+        //{
+        //    try
+        //    {
 
-                // Cuando es un contrato
-                if (relacionLaboral.Nombre.ToUpper() == ConstantesTipoRelacion.Contrato.ToUpper())
-                {
-                    enviar = lista.Where(w => w.NumeroPartidaIndividual == null).FirstOrDefault();
-                }
-
-                // Cuando es un nombramiento
-                else if (relacionLaboral.Nombre.ToUpper() == ConstantesTipoRelacion.Nombramiento.ToUpper())
-                {
-                    enviar = lista
-                        .Where(w =>
-                            w.NumeroPartidaIndividual != null
-                            && w.ModalidadPartida.Nombre.ToUpper() == Constantes.PartidaVacante.ToUpper()
-                        )
-                        .FirstOrDefault();
-                }
+        //        var lista = await db.IndiceOcupacional
+        //            .Include(i => i.ModalidadPartida)
+        //            .Where(w =>
+        //                w.IdDependencia == filtro.IdDependencia
+        //                && w.IdManualPuesto == filtro.IdManualPuesto
+        //                && w.IdRolPuesto == filtro.IdRolPuesto
+        //                && w.IdEscalaGrados == filtro.IdEscalaGrados
+        //            )
+        //            .ToListAsync();
 
 
-                return enviar;
+        //        var relacionLaboral = await db.RelacionLaboral
+        //            .Where(w =>
+        //               w.IdRelacionLaboral == filtro.IdTipoRelacion
+        //            ).FirstOrDefaultAsync();
 
-            }
-            catch (Exception ex)
-            {
-                return new IndiceOcupacional();
-            }
-        }
-        */
+        //        var enviar = new IndiceOcupacional();
+
+        //        // Cuando es un contrato
+        //        if (relacionLaboral.Nombre.ToUpper() == ConstantesTipoRelacion.Contrato.ToUpper())
+        //        {
+        //            enviar = lista.Where(w => w.NumeroPartidaIndividual == null).FirstOrDefault();
+        //        }
+
+        //        // Cuando es un nombramiento
+        //        else if (relacionLaboral.Nombre.ToUpper() == ConstantesTipoRelacion.Nombramiento.ToUpper())
+        //        {
+        //            enviar = lista
+        //                .Where(w =>
+        //                    w.NumeroPartidaIndividual != null
+        //                    && w.ModalidadPartida.Nombre.ToUpper() == Constantes.PartidaVacante.ToUpper()
+        //                )
+        //                .FirstOrDefault();
+        //        }
+
+
+        //        return enviar;
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new IndiceOcupacional();
+        //    }
+        //}
+        
+
+    */
 
 
     }

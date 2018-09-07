@@ -37,6 +37,8 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        /*
+
 
         [HttpPost]
         [Route("InsertarCandidato")]
@@ -467,6 +469,8 @@ namespace bd.swth.web.Controllers.API
             }
             return fecha;
         }
+
+    */
 
     }
 }

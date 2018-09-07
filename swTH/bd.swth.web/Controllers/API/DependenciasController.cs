@@ -131,7 +131,7 @@ namespace bd.swth.web.Controllers.API
                 var listaDependencias = await db.Dependencia
                     .Include(i => i.DependenciaPadre)
                     .Include(i => i.DependenciaPadre.Sucursal)
-                    .Include(i => i.Dependencia1)
+                    .Include(i => i.DependenciasHijas)
                     .Where(x => x.IdSucursal == sucursal.IdSucursal)
                     .OrderBy(x => x.Nombre).ToListAsync();
 
@@ -154,7 +154,7 @@ namespace bd.swth.web.Controllers.API
                             IdProceso = s.IdProceso,
                             Nombre = s.Nombre,
 
-                            Dependencia1 = s.Dependencia1
+                            DependenciasHijas = s.DependenciasHijas
                             
                         })
                         .ToList();
@@ -172,12 +172,12 @@ namespace bd.swth.web.Controllers.API
                                 Nombre = Constantes.NombreDesconcentrados.ToString().ToUpper(),
                                 IdDependenciaPadre = padre.IdDependencia,
 
-                                Dependencia1 = new List<Dependencia>()
+                                DependenciasHijas = new List<Dependencia>()
                             };
 
 
 
-                            dependenciaDesconcentrado.Dependencia1 = new List<Dependencia>(hijosDesconcentrado);
+                            dependenciaDesconcentrado.DependenciasHijas = new List<Dependencia>(hijosDesconcentrado);
 
                             listaDependencias.Add(dependenciaDesconcentrado);
                         }
@@ -202,19 +202,19 @@ namespace bd.swth.web.Controllers.API
                                 IdProceso = s.IdProceso,
                                 Nombre = s.Nombre,
 
-                                Dependencia1 = s.Dependencia1
+                                DependenciasHijas = s.DependenciasHijas
                             })
                             .ToList();
 
                             if (listaHijos.Count > 0) {
-                                item.Dependencia1 = new List<Dependencia>(listaHijos);
+                                item.DependenciasHijas = new List<Dependencia>(listaHijos);
                             }
 
                             
                         }
                         else {
                             
-                            item.Dependencia1 = new List<Dependencia>(hijosDesconcentrado);
+                            item.DependenciasHijas = new List<Dependencia>(hijosDesconcentrado);
                         }
                         
                     }
@@ -257,7 +257,7 @@ namespace bd.swth.web.Controllers.API
                                 Nombre = item.Nombre,
                                 IdDependenciaPadre = 0,
                                 
-                                Dependencia1 = item.Dependencia1
+                                DependenciasHijas = item.DependenciasHijas
 
                             });
 
@@ -277,18 +277,18 @@ namespace bd.swth.web.Controllers.API
                                 IdDependenciaPadre = s.IdDependenciaPadre,
                                 IdProceso = s.IdProceso,
                                 Nombre = s.Nombre,
-                                Dependencia1 = s.Dependencia1
+                                DependenciasHijas = s.DependenciasHijas
                             })
                             .ToList();
                             
-                            item.Dependencia1 = new List<Dependencia>(listaHijos);
+                            item.DependenciasHijas = new List<Dependencia>(listaHijos);
                             
                         }
                         
                         
                     }
 
-                    padre.Dependencia1 = new List<Dependencia>(listaConcentrados);
+                    padre.DependenciasHijas = new List<Dependencia>(listaConcentrados);
                 }
 
                 

@@ -26,6 +26,8 @@ namespace bd.swth.web.Controllers.API
         {
             this.db = db;
         }
+        
+        /*
 
         // GET: api/RolesPuesto
         [HttpGet]
@@ -341,6 +343,8 @@ namespace bd.swth.web.Controllers.API
                 return new List<RolPuesto>();
             }
         }
+
+    */
 
 
     }

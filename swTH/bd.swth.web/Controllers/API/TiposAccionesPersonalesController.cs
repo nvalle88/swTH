@@ -27,31 +27,32 @@ namespace bd.swth.web.Controllers.API
         }
 
         /*
-        [HttpPost]
-        [Route("ListarTiposAccionesPersonalesPorEstado")]
-        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEstado([FromBody] EstadoTipoAccionPersonal estadoTipoAccionPersonal)
-        {
-            try
-            {
-                return await db.TipoAccionPersonal.Where(x => x.IdEstadoTipoAccionPersonal == estadoTipoAccionPersonal.IdEstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
+        
+        //[HttpPost]
+        //[Route("ListarTiposAccionesPersonalesPorEstado")]
+        //public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEstado([FromBody] EstadoTipoAccionPersonal estadoTipoAccionPersonal)
+        //{
+        //    try
+        //    {
+        //        return await db.TipoAccionPersonal.Where(x => x.IdEstadoTipoAccionPersonal == estadoTipoAccionPersonal.IdEstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+        //        {
+        //            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+        //            ExceptionTrace = ex.Message,
+        //            Message = Mensaje.Excepcion,
+        //            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+        //            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+        //            UserName = "",
 
-                });
-                return new List<TipoAccionPersonal>();
-            }
-        }
+        //        });
+        //        return new List<TipoAccionPersonal>();
+        //    }
+        //}
 
-    */
+    
 
         // [HttpPost] api/TiposAccionesPersonales
         [HttpPost]
@@ -83,6 +84,8 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        */
+
 
         // GET: api/TiposAccionesPersonales
         [HttpGet]
@@ -99,6 +102,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
           
+        
 
         // GET: api/TipoAccionPersonal/5
         [HttpGet("{id}")]
@@ -145,6 +149,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        
         // PUT: api/TipoAccionPersonal/5
         [HttpPut("{id}")]
         public async Task<Response> PutTipoAccionPersonal([FromRoute] int id, [FromBody] TipoAccionPersonal tipoAccionPersonal)
@@ -160,7 +165,10 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (tipoAccionPersonal.NHorasMinimo > tipoAccionPersonal.NHorasMaximo && tipoAccionPersonal.NDiasMinimo > tipoAccionPersonal.NDiasMaximo)
+                if (
+                    tipoAccionPersonal.NhorasMinimo > tipoAccionPersonal.NhorasMaximo 
+                    && tipoAccionPersonal.NdiasMinimo > tipoAccionPersonal.NdiasMaximo
+                    )
                 {
                     return new Response
                     {
@@ -191,33 +199,36 @@ namespace bd.swth.web.Controllers.API
                 }
 
                 TipoAccionPersonalActualizar.Nombre = tipoAccionPersonal.Nombre.ToString().ToUpper();
+                TipoAccionPersonalActualizar.Definitivo = tipoAccionPersonal.Definitivo;
+                TipoAccionPersonalActualizar.Dias = tipoAccionPersonal.Dias;
 
-                TipoAccionPersonalActualizar.NDiasMaximo = tipoAccionPersonal.NDiasMaximo;
-                TipoAccionPersonalActualizar.NDiasMinimo = tipoAccionPersonal.NDiasMinimo;
-                TipoAccionPersonalActualizar.NHorasMaximo = tipoAccionPersonal.NHorasMaximo;
-                TipoAccionPersonalActualizar.NHorasMinimo = tipoAccionPersonal.NHorasMinimo;
+                TipoAccionPersonalActualizar.YearsMaximo = tipoAccionPersonal.YearsMaximo;
+                TipoAccionPersonalActualizar.MesesMaximo = tipoAccionPersonal.MesesMaximo;
+
+                TipoAccionPersonalActualizar.NdiasMinimo = tipoAccionPersonal.NdiasMinimo;
+                TipoAccionPersonalActualizar.NdiasMaximo = tipoAccionPersonal.NdiasMaximo;
+
+                
+                TipoAccionPersonalActualizar.Horas = tipoAccionPersonal.Horas;
+                TipoAccionPersonalActualizar.NhorasMinimo = tipoAccionPersonal.NhorasMinimo;
+                TipoAccionPersonalActualizar.NhorasMaximo = tipoAccionPersonal.NhorasMaximo;
+                
 
                 TipoAccionPersonalActualizar.DiasHabiles = tipoAccionPersonal.DiasHabiles;
                 TipoAccionPersonalActualizar.ImputableVacaciones = tipoAccionPersonal.ImputableVacaciones;
                 TipoAccionPersonalActualizar.ProcesoNomina = tipoAccionPersonal.ProcesoNomina;
-                TipoAccionPersonalActualizar.EsResponsableTH = tipoAccionPersonal.EsResponsableTH;
+                TipoAccionPersonalActualizar.EsResponsableTh = tipoAccionPersonal.EsResponsableTh;
 
                 TipoAccionPersonalActualizar.Matriz = tipoAccionPersonal.Matriz.ToString().ToUpper();
                 TipoAccionPersonalActualizar.Descripcion = (tipoAccionPersonal.Descripcion != null)?
                     tipoAccionPersonal.Descripcion.ToString().ToUpper():"";
 
                 TipoAccionPersonalActualizar.GeneraAccionPersonal = tipoAccionPersonal.GeneraAccionPersonal;
-                TipoAccionPersonalActualizar.ModificaDistributivo = tipoAccionPersonal.ModificaDistributivo;
-
-                TipoAccionPersonalActualizar.MesesMaximo = tipoAccionPersonal.MesesMaximo;
-                TipoAccionPersonalActualizar.YearsMaximo = tipoAccionPersonal.YearsMaximo;
-
+                TipoAccionPersonalActualizar.GenerarMovimientoPersonal = tipoAccionPersonal.GenerarMovimientoPersonal;
+                TipoAccionPersonalActualizar.ModificarDistributivo = tipoAccionPersonal.ModificarDistributivo;
                 TipoAccionPersonalActualizar.DesactivarCargo = tipoAccionPersonal.DesactivarCargo;
-                TipoAccionPersonalActualizar.Definitivo = tipoAccionPersonal.Definitivo;
-
                 TipoAccionPersonalActualizar.DesactivarEmpleado = tipoAccionPersonal.DesactivarEmpleado;
-                TipoAccionPersonalActualizar.ModalidadContratacion = tipoAccionPersonal.ModalidadContratacion;
-
+                
 
                 db.TipoAccionPersonal.Update(TipoAccionPersonalActualizar);
                 await db.SaveChangesAsync();
@@ -232,16 +243,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
 
                 return new Response
                 {
@@ -251,6 +253,8 @@ namespace bd.swth.web.Controllers.API
             }
 
         }
+
+        
 
         // POST: api/TipoAccionPersonal
         [HttpPost]
@@ -268,7 +272,7 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
-                if (TipoAccionPersonal.NHorasMinimo > TipoAccionPersonal.NHorasMaximo && TipoAccionPersonal.NDiasMinimo > TipoAccionPersonal.NDiasMaximo)
+                if (TipoAccionPersonal.NhorasMinimo > TipoAccionPersonal.NhorasMaximo && TipoAccionPersonal.NdiasMinimo > TipoAccionPersonal.NdiasMaximo)
                 {
                     return new Response
                     {
@@ -311,6 +315,9 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+
+
+        
 
         // DELETE: api/TipoAccionPersonal/5
         [HttpDelete("{id}")]
@@ -360,6 +367,8 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
+        
+
         private Response Existe(TipoAccionPersonal TipoAccionPersonal)
         {
             var nombre = TipoAccionPersonal.Nombre.ToUpper().TrimEnd().TrimStart();
@@ -384,8 +393,7 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        
-
+       
 
 
     }

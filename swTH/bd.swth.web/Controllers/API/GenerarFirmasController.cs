@@ -28,6 +28,8 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        /*
+
         // Post: api/GenerarFirmas
         [HttpPost]
         [Route("ObtenerDependenciasPorNumeroFirmas")]
@@ -76,6 +78,6 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
+        */
     }
 }
