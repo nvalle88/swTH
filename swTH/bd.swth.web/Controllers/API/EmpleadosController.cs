@@ -32,6 +32,31 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+
+        [HttpPost]
+        [Route("ObtenerEmpleadoLogueadoDistributivoFormal")]
+        public async Task<Empleado> ObtenerEmpleadoLogueadoDistributivoFormal([FromBody]Empleado empleado)
+        {
+            
+            try
+            {
+
+                DistributivosController ctrlDistributivo = new DistributivosController(db);
+                var distributivo = await ctrlDistributivo.ObtenerDistributivoFormal();
+
+                var modelo = distributivo
+                    .Where(w => w.Empleado.NombreUsuario == empleado.NombreUsuario)
+                    .FirstOrDefault();
+                
+                return modelo.Empleado;
+            }
+            catch (Exception ex)
+            {
+                return new Empleado();
+            }
+        }
+
+
         /*
 
         private IQueryable<DatosBasicosEmpleadoViewModel> ListaDatosBasicosEmpleado()
@@ -2314,26 +2339,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        [HttpPost]
-        [Route("ObtenerEmpleadoLogueado")]
-        public async Task<Empleado> ObtenerEmpleadoLogueado([FromBody]Empleado empleado)
-        {
-            //Persona persona = new Persona();
-            try
-            {
-
-                var Empleado = await db.Empleado
-                                   .Where(e => e.NombreUsuario == empleado.NombreUsuario).FirstOrDefaultAsync();
-                var empl = new Empleado { IdEmpleado = Empleado.IdEmpleado, IdPersona = Empleado.IdPersona };
-
-
-                return empl;
-            }
-            catch (Exception ex)
-            {
-                return new Empleado();
-            }
-        }
+        
 
 
 

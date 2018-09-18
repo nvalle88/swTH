@@ -34,7 +34,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        /*
+        
 
         // Get: api/Induccion
         [HttpPost]
@@ -50,51 +50,26 @@ namespace bd.swth.web.Controllers.API
                     .FirstOrDefault()
                 ;
 
-               
-                        
+                DistributivosController ctrlDistributivo = new DistributivosController(db);
+
+                var distributivo = await ctrlDistributivo.ObtenerDistributivoFormal();
                 
-                //lista = await db.Empleado.Include(ei=>ei.Dependencia)
-                //    .Where(w=>w.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal)
-                //    .Select(x => new InduccionViewModel
-                //        {
-                //            IdEmpleado = x.IdEmpleado,
-                //            Nombres = x.Persona.Nombres + " " + x.Persona.Apellidos,
-                //            FechaIngreso = x.FechaIngreso.Date,
-
-                //            EstadoInduccion = (db.Induccion.Any(w=>w.IdEmpleado == x.IdEmpleado))
-                //                ? ConstantesEstadoInduccion.InduccionFinalizada 
-                //                : ConstantesEstadoInduccion.InduccionNoFinalizada
-                //            ,
-
-                //            ValorCompletado = ConstantesEstadoInduccion.InduccionFinalizada,
-
-                //            NombreDependencia = x.Dependencia.Nombre,
-                //            NombreRol = (iomp)
-                //    } 
-                //    )
-                //    .ToListAsync();
-                
-                lista = await db.IndiceOcupacionalModalidadPartida
-                    .Where(w=>
-                        w.Empleado.Activo == true
-                        //&& w.IndiceOcupacional.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal
-                    )
-                    .Select(s=>new InduccionViewModel
+                lista = distributivo
+                    .Select(s => new InduccionViewModel
                     {
-                        IdEmpleado = (int)s.IdEmpleado,
+                        IdEmpleado = s.IdEmpleado,
                         Nombres = s.Empleado.Persona.Nombres + " " + s.Empleado.Persona.Apellidos,
-                        FechaIngreso = s.Fecha,
+                        FechaIngreso = s.FechaInicio,
                         EstadoInduccion = (db.Induccion.Any(w => w.IdEmpleado == s.IdEmpleado))
                                 ? ConstantesEstadoInduccion.InduccionFinalizada
                                 : ConstantesEstadoInduccion.InduccionNoFinalizada
                             ,
                         ValorCompletado = ConstantesEstadoInduccion.InduccionFinalizada,
-                        NombreDependencia = s.Empleado.Dependencia.Nombre,
-                        NombreRol = s.IndiceOcupacional.RolPuesto.Nombre
+                        NombreDependencia = s.IndiceOcupacionalModalidadPartida.Dependencia.Nombre,
+                        NombreRol = s.IndiceOcupacionalModalidadPartida.IndiceOcupacional.RolPuesto.Nombre
                     }
                     )
                     .OrderByDescending(o=>o.FechaIngreso)
-                    .DistinctBy(d=>d.IdEmpleado).ToAsyncEnumerable()
                     .ToList();
 
                 return lista;
@@ -106,7 +81,7 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        */
+        
 
 
     }

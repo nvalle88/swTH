@@ -27,248 +27,66 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/BasesDatos
+        // Controlador corregido nuevo sistema
+        // última actualización: 17/09/2018
+
+        #region Métodos para mantenimiento de DocumentosIngreso
+
+        // GET: api/DocumentosIngreso
         [HttpGet]
         [Route("ListarDocumentosIngreso")]
-        public async Task<List<DocumentosIngreso>> GetDocumentosIngreso()
+        public async Task<List<DocumentosIngreso>> ListarDocumentosIngreso()
         {
             try
             {
-                return await db.DocumentosIngreso.OrderBy(x => x.Descripcion).ToListAsync();
+                return await db.DocumentosIngreso
+                    .Select(s=>new DocumentosIngreso {
+                        IdDocumentosIngreso = s.IdDocumentosIngreso ,
+                        Descripcion = s.Descripcion
+                    })
+                    .OrderBy(x => x.Descripcion)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<DocumentosIngreso>();
             }
         }
 
-        // GET: api/BasesDatos
+
+        /// <summary>
+        ///  Obtiene una lista de los documentos ingresados,
+        ///  requiere IdEmpleado
+        /// </summary>
+        /// <param name="empleado"></param>
+        /// <returns></returns>
+        // POST: api/DocumentosIngreso
         [HttpPost]
         [Route("ListarDocumentosIngresoEmpleado")]
-        public async Task<List<DocumentosIngresoEmpleado>> GetDocumentosIngresoEmpleado([FromBody] Empleado empleado)
+        public async Task<List<DocumentosIngresoEmpleado>> ListarDocumentosIngresoEmpleado([FromBody] Empleado empleado)
         {
             try
             {
-                return await db.DocumentosIngresoEmpleado.Where(x=>x.IdEmpleado == empleado.IdEmpleado).ToListAsync();
+                return await db.DocumentosIngresoEmpleado
+                    .Where(x => x.IdEmpleado == empleado.IdEmpleado)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<DocumentosIngresoEmpleado>();
             }
         }
 
-        // GET: api/BasesDatos/5
-        [HttpGet("{id}")]
-        public async Task<Response> GetDocumentosIngreso([FromRoute] int id)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
 
-                var DocumentosIngreso = await db.DocumentosIngreso.SingleOrDefaultAsync(m => m.IdDocumentosIngreso == id);
-
-                if (DocumentosIngreso == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = DocumentosIngreso,
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
-
-        // POST: api/BasesDatos
-        [HttpPost]
-        [Route("GetDocumentoIngresoEmpleado")]
-        public async Task<Response> GetDocumentoIngresoEmpleado([FromBody] Empleado empleado)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
-
-                var DocumentosIngresoEmpleado = await db.DocumentosIngresoEmpleado.SingleOrDefaultAsync(m => m.IdEmpleado == empleado.IdEmpleado);
-
-                if (DocumentosIngresoEmpleado == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                    Resultado = DocumentosIngresoEmpleado,
-                };
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-        }
-
-        // PUT: api/BasesDatos/5
-        [HttpPut("{id}")]
-        public async Task<Response> PutDocumentosIngreso([FromRoute] int id, [FromBody] DocumentosIngreso documentosIngreso)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido
-                    };
-                }
-
-                var existe = Existe(documentosIngreso);
-                if (existe.IsSuccess)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ExisteRegistro,
-                    };
-                }
-
-                var documentosIngresoActualizar = await db.DocumentosIngreso.Where(x => x.IdDocumentosIngreso == id).FirstOrDefaultAsync();
-
-                if (documentosIngresoActualizar != null)
-                {
-                    try
-                    {
-                        documentosIngresoActualizar.Descripcion = documentosIngreso.Descripcion;
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
-                        return new Response
-                        {
-                            IsSuccess = false,
-                            Message = Mensaje.Error,
-                        };
-                    }
-                }
-
-
-
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
-                };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Excepcion
-                };
-            }
-        }
-
-        // POST: api/BasesDatos
+        /// <summary>
+        /// Permite guardar un nuevo registro de Documentos ingreso
+        /// </summary>
+        /// <param name="DocumentosIngreso"></param>
+        /// <returns></returns>
+        // POST: api/DocumentosIngreso
         [HttpPost]
         [Route("InsertarDocumentosIngreso")]
-        public async Task<Response> PostDocumentosIngreso([FromBody] DocumentosIngreso DocumentosIngreso)
+        public async Task<Response> InsertarDocumentosIngreso([FromBody] DocumentosIngreso DocumentosIngreso)
         {
             try
             {
@@ -284,8 +102,11 @@ namespace bd.swth.web.Controllers.API
                 var respuesta = Existe(DocumentosIngreso);
                 if (!respuesta.IsSuccess)
                 {
+                    DocumentosIngreso.Descripcion = DocumentosIngreso.Descripcion.ToString().ToUpper();
+
                     db.DocumentosIngreso.Add(DocumentosIngreso);
                     await db.SaveChangesAsync();
+
                     return new Response
                     {
                         IsSuccess = true,
@@ -302,16 +123,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -320,59 +131,63 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/BasesDatos
+
+        /// <summary>
+        /// Obtiene 1 registro de DocumentosIngreso,
+        /// según IdDocumentosIngreso
+        /// </summary>
+        /// <param name="documentosIngreso"></param>
+        /// <returns></returns>
+        // POST: api/DocumentosIngreso
         [HttpPost]
-        [Route("InsertarDocumentosIngresoEmpleado")]
-        public async Task<Response> PostDocumentosIngresoEmpleado([FromBody] ViewModelDocumentoIngresoEmpleado viewModelDocumentoIngresoEmpleado)
+        [Route("ObtenerDocumentosIngresoPorId")]
+        public async Task<Response> ObtenerDocumentosIngresoPorId([FromBody] DocumentosIngreso DocumentosIngreso)
         {
-            try
+
+            try 
             {
-                foreach (var item in viewModelDocumentoIngresoEmpleado.DocumentosSeleccionados)
+
+                var modelo = await db.DocumentosIngreso
+                    .Where(m => m.IdDocumentosIngreso == DocumentosIngreso.IdDocumentosIngreso)
+                    .FirstOrDefaultAsync();
+
+                if (DocumentosIngreso == null)
                 {
-
-
-                    var documentosIngresoEmpleado = new DocumentosIngresoEmpleado
+                    return new Response
                     {
-                        IdEmpleado = viewModelDocumentoIngresoEmpleado.empleadoViewModel.IdEmpleado,
-                        IdDocumentosIngreso = Convert.ToInt32(item),
-                        Entregado = true
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
                     };
-                    db.DocumentosIngresoEmpleado.Add(documentosIngresoEmpleado);
                 }
-
-                await db.SaveChangesAsync();
 
                 return new Response
                 {
                     IsSuccess = true,
                     Message = Mensaje.Satisfactorio,
+                    Resultado = modelo,
                 };
-
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
 
-        // PUT: api/BasesDatos/5
+
+        /// <summary>
+        /// Permite la edición de 1 registro de DocumentosIngreso,
+        /// Necesario: IdDocumentosIngreso a editar
+        /// </summary>
+        /// <param name="documentosIngreso"></param>
+        /// <returns></returns>
+        // POST: api/DocumentosIngreso
         [HttpPost]
-        [Route("EditarCheckListDocumentos")]
-        public async Task<Response> PutCheckListDocumentosIngreso([FromBody] ViewModelDocumentoIngresoEmpleado viewModelDocumentoIngresoEmpleado)
+        [Route("EditarDocumentosIngreso")]
+        public async Task<Response> EditarDocumentosIngreso([FromBody] DocumentosIngreso documentosIngreso)
         {
             try
             {
@@ -385,143 +200,69 @@ namespace bd.swth.web.Controllers.API
                     };
                 }
 
+                var existe = await db.DocumentosIngreso
+                    .Where(w => w.IdDocumentosIngreso == documentosIngreso.IdDocumentosIngreso)
+                    .FirstOrDefaultAsync();
 
-                var documentosIngresoActualizar = await db.DocumentosIngresoEmpleado.Where(x => x.IdEmpleado == viewModelDocumentoIngresoEmpleado.empleadoViewModel.IdEmpleado).ToListAsync();
-
-                if (documentosIngresoActualizar != null)
+                if (existe != null)
                 {
-                    try
+
+                    var existeRegistroDiferente = await db.DocumentosIngreso
+                        .Where(
+                            w => w.Descripcion.ToString().ToUpper() == documentosIngreso.Descripcion.ToString().ToUpper()
+                            && w.IdDocumentosIngreso != existe.IdDocumentosIngreso
+                         )
+                        .FirstOrDefaultAsync();
+
+                    if (existeRegistroDiferente != null)
                     {
-                        foreach(var item1 in viewModelDocumentoIngresoEmpleado.DocumentosSeleccionados)
-                          {
-                            var bandera = true;
-                              foreach(var item2 in documentosIngresoActualizar )
-                           {
 
-                                if(Convert.ToInt32(item1) == item2.IdDocumentosIngreso)
-                                {                                            
-                                  bandera = false;
-                                }
-                           }
-                                if (bandera)
-                                    {
-                                var documentoIngresoEmpleado = new DocumentosIngresoEmpleado
-                                {
-                                    IdDocumentosIngreso = Convert.ToInt32(item1),
-                                    IdEmpleado = viewModelDocumentoIngresoEmpleado.empleadoViewModel.IdEmpleado,
-                                    Entregado = true
-                                };
-                                db.DocumentosIngresoEmpleado.Add(documentoIngresoEmpleado);
-                                }
-                            }
-
-                        await db.SaveChangesAsync();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio,
-                        };
-
-                    }
-                    catch (Exception ex)
-                    {
-                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                        {
-                            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                            ExceptionTrace = ex.Message,
-                            Message = Mensaje.Excepcion,
-                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                            UserName = "",
-
-                        });
                         return new Response
                         {
                             IsSuccess = false,
-                            Message = Mensaje.Error,
+                            Message = Mensaje.ExisteRegistro,
                         };
                     }
+
+                    existe.Descripcion = documentosIngreso.Descripcion.ToString().ToUpper();
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.Satisfactorio,
+                    };
                 }
-
-
-
 
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
+                    Message = Mensaje.RegistroNoEncontrado,
                 };
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Excepcion
-                };
-            }
-        }
 
-        // DELETE: api/BasesDatos/5
-        [HttpDelete("{id}")]
-        public async Task<Response> DeleteDocumentosIngreso([FromRoute] int id)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
 
-                var respuesta = await db.DocumentosIngreso.SingleOrDefaultAsync(m => m.IdDocumentosIngreso == id);
-                if (respuesta == null)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.RegistroNoEncontrado,
-                    };
-                }
-                db.DocumentosIngreso.Remove(respuesta);
-                await db.SaveChangesAsync();
 
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = Mensaje.Satisfactorio,
-                };
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = Mensaje.Error,
+                    Message = Mensaje.Excepcion,
                 };
             }
         }
-
 
 
         private Response Existe(DocumentosIngreso DocumentosIngreso)
         {
-            var bdd = DocumentosIngreso.Descripcion.ToUpper().TrimEnd().TrimStart();
-            var documentoingresorespuesta = db.DocumentosIngreso.Where(p => p.Descripcion.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+
+            var documentoingresorespuesta = db.DocumentosIngreso
+                .Where(p =>
+                    p.Descripcion.ToUpper().TrimStart().TrimEnd() == DocumentosIngreso.Descripcion.ToUpper().TrimEnd().TrimStart()
+                 )
+                .FirstOrDefault();
+
             if (documentoingresorespuesta != null)
             {
                 return new Response
@@ -539,5 +280,164 @@ namespace bd.swth.web.Controllers.API
                 Resultado = documentoingresorespuesta,
             };
         }
+
+
+        /// <summary>
+        /// Elimina 1 registro de documentosIngreso
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        // POST: api/DocumentosIngreso
+        [HttpPost]
+        [Route("EliminarDocumentosIngreso")]
+        public async Task<Response> EliminarDocumentosIngreso([FromBody] DocumentosIngreso documentosIngreso)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var modelo = await db.DocumentosIngreso
+                    .Where(m => m.IdDocumentosIngreso == documentosIngreso.IdDocumentosIngreso)
+                    .FirstOrDefaultAsync();
+
+                if (modelo == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+
+                db.DocumentosIngreso.Remove(modelo);
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
+        #endregion
+
+
+        #region Métodos usados para mantenimiento de los documentos que ha ingresado el empleado
+
+        // PUT: api/BasesDatos/5
+        [HttpPost]
+        [Route("ActualizarDocumentosEntregados")]
+        public async Task<Response> ActualizarDocumentosEntregados([FromBody] ViewModelDocumentoIngresoEmpleado 
+            viewModelDocumentoIngresoEmpleado)
+        {
+
+            
+            try
+            {
+
+                var listaDocumentosExistentesEmpleado = await db.DocumentosIngresoEmpleado
+                    .Where(w => w.IdEmpleado == viewModelDocumentoIngresoEmpleado.Distributivo.IdEmpleado)
+                    .ToListAsync();
+
+                var documentosSeleccionados = viewModelDocumentoIngresoEmpleado.DocumentosSeleccionados;
+
+                var listaDocumentos = await db.DocumentosIngreso.ToListAsync();
+
+                foreach (var item in listaDocumentos) {
+
+                    var documento = listaDocumentosExistentesEmpleado
+                        .Where(w => w.IdDocumentosIngreso == item.IdDocumentosIngreso)
+                        .FirstOrDefault();
+
+                    if (documento == null)
+                    {
+                        // se debe agregar el documento al empleado
+
+                        var modelo = new DocumentosIngresoEmpleado
+                        {
+                            IdDocumentosIngreso = item.IdDocumentosIngreso,
+                            Entregado = false,
+                            IdEmpleado = viewModelDocumentoIngresoEmpleado.Distributivo.IdEmpleado
+                        };
+
+                        // se revisa si el documento fue seleccionado
+
+                        var seleccionado = documentosSeleccionados
+                            .Where(w=>w.ToString()== item.IdDocumentosIngreso.ToString())
+                            .FirstOrDefault();
+
+                        if (seleccionado != null) {
+                            modelo.Entregado = true;
+                        }
+
+                        await db.DocumentosIngresoEmpleado.AddAsync(modelo);
+
+                    }
+                    else {
+                        // se debe editar el estado del documento
+
+                        documento.Entregado = false;
+
+                        if (documentosSeleccionados != null) {
+
+                            var seleccionado = documentosSeleccionados
+                            .Where(w => w.ToString() == item.IdDocumentosIngreso.ToString())
+                            .FirstOrDefault();
+
+                            if (seleccionado != null)
+                            {
+                                documento.Entregado = true;
+                            }
+                        }
+
+                        
+
+                        db.Update(documento);
+                    }
+
+                    
+                }
+
+                await db.SaveChangesAsync();
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+
+            
+        }
+
+
+        #endregion
+
+        
     }
 }

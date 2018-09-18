@@ -34,6 +34,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        
         /// <summary>
         /// Necesita NombreUsuario, devuelve datos para crear el formulario
         /// </summary>
@@ -163,6 +164,7 @@ namespace bd.swth.web.Controllers.API
 
         }
 
+
         public async Task<Response> Existe(LavadoActivoEmpleado lavadoActivoEmpleado) {
 
             try
@@ -197,7 +199,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
+        
 
         /// <summary>
         /// Solo requiere el IdEmpleado

@@ -33,20 +33,12 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.TipoNombramiento.Where(x => x.IdRelacionLaboral==relacionLaboral.IdRelacionLaboral).OrderBy(x => x.Nombre).ToListAsync();
+                return await db.TipoNombramiento
+                    .Where(x => x.IdRelacionLaboral==relacionLaboral.IdRelacionLaboral)
+                    .OrderBy(x => x.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<TipoNombramiento>();
             }
         }

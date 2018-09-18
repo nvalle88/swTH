@@ -28,8 +28,794 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        // GET: api/AccionesPersonal
+        /// <summary>
+        /// Devuelve una lista de estados del proceso de acción de personal
+        /// </summary>
+        [HttpGet]
+        [Route("ListarEstadosProcesoAccionPersonal")]
+        public List<AprobacionMovimientoInternoViewModel> ListarEstadosProcesoAccionPersonal()
+        {
+            var lista = new List<AprobacionMovimientoInternoViewModel>();
+
+            try
+            {
+
+                lista.Add(new AprobacionMovimientoInternoViewModel
+                {
+                    NombreEstado = ConstantesAccionPersonal.EstadoRegistrarNombre,
+                    ValorEstado = Convert.ToInt32(ConstantesAccionPersonal.EstadoRegistrarValor)
+                });
+
+                lista.Add(new AprobacionMovimientoInternoViewModel
+                {
+                    NombreEstado = ConstantesAccionPersonal.EstadoEjecutarNombre,
+                    ValorEstado = Convert.ToInt32(ConstantesAccionPersonal.EstadoEjecutarValor)
+                });
+
+                lista.Add(new AprobacionMovimientoInternoViewModel
+                {
+                    NombreEstado = ConstantesAccionPersonal.EstadoCancelarNombre,
+                    ValorEstado = Convert.ToInt32(ConstantesAccionPersonal.EstadoCancelarValor)
+                });
+
+                lista.Add(new AprobacionMovimientoInternoViewModel
+                {
+                    NombreEstado = ConstantesAccionPersonal.EstadoDeshacerNombre,
+                    ValorEstado = Convert.ToInt32(ConstantesAccionPersonal.EstadoDeshacerValor)
+                });
+
+
+                return lista;
+
+            }
+            catch (Exception ex)
+            {
+
+                return lista;
+            }
+        }
         
+
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("ListarAccionesPersonalPorEmpleado")]
+        public async Task<AccionesPersonalPorEmpleadoViewModel> ListarAccionesPersonalPorEmpleado([FromBody] AccionesPersonalPorEmpleadoViewModel accionesPersonalPorEmpleadoViewModel)
+        {
+
+            try
+            {
+
+                var modelo = new AccionesPersonalPorEmpleadoViewModel();
+
+                var recibido = accionesPersonalPorEmpleadoViewModel;
+
+                var datosEmpleado = await db.Empleado
+                    .Include(i => i.Persona)
+                    .Include(i => i.Dependencia)
+                    .Where(w => w.IdEmpleado == recibido.DatosBasicosEmpleadoViewModel.IdEmpleado)
+                    .Select(s => new DatosBasicosEmpleadoViewModel
+                    {
+                        IdEmpleado = s.IdEmpleado,
+                        Nombres = s.Persona.Nombres + " " + s.Persona.Apellidos,
+
+                    }
+                    ).FirstOrDefaultAsync();
+
+                var listaEstadosAccionesPersonal = ListarEstadosProcesoAccionPersonal();
+
+                var listaAccionesPersonal = await db.AccionPersonal
+                    .Where(w => w.IdEmpleadoAfectado == recibido.DatosBasicosEmpleadoViewModel.IdEmpleado)
+                    .Select(s => new AccionPersonalViewModel {
+
+                        IdAccionPersonal = s.IdAccionPersonal,
+                        IdEmpleadoAfectado = s.IdEmpleadoAfectado,
+                        IdEmpleadoResponsableIngreso = s.IdEmpleadoResponsableIngreso,
+                        IdTipoAccionPersonal = s.IdTipoAccionPersonal,
+                        FechaSolicitud = s.FechaSolicitud,
+                        Solicitud = s.Solicitud,
+                        Explicacion = s.Explicacion,
+                        FechaRige = s.FechaRige,
+                        FechaRigeHasta = s.FechaRigeHasta,
+                        TotalDias = s.TotalDias,
+                        DiasRestantes = s.DiasRestantes,
+                        Estado = s.Estado,
+                        Bloquear = s.Bloquear,
+                        Ejecutado = s.Ejecutado,
+
+                        NombreEstado = listaEstadosAccionesPersonal
+                        .Where(w => w.ValorEstado == s.Estado)
+                        .FirstOrDefault().NombreEstado
+                        ,
+
+                        TipoAccionPersonalViewModel = new TipoAccionesPersonalViewModel
+                        {
+                            IdTipoAccionPersonal = s.TipoAccionPersonal.IdTipoAccionPersonal,
+                            Nombre = s.TipoAccionPersonal.Nombre,
+                            Definitivo = s.TipoAccionPersonal.Definitivo,
+                            Dias = s.TipoAccionPersonal.Dias,
+                            YearsMaximo = s.TipoAccionPersonal.YearsMaximo,
+                            MesesMaximo = s.TipoAccionPersonal.MesesMaximo,
+                            NdiasMinimo = s.TipoAccionPersonal.NdiasMinimo,
+                            NdiasMaximo = s.TipoAccionPersonal.NdiasMinimo,
+                            Horas = s.TipoAccionPersonal.Horas,
+                            NhorasMinimo = s.TipoAccionPersonal.NhorasMinimo,
+                            NhorasMaximo = s.TipoAccionPersonal.NhorasMaximo,
+                            DiasHabiles = s.TipoAccionPersonal.DiasHabiles,
+                            ImputableVacaciones = s.TipoAccionPersonal.ImputableVacaciones,
+                            ProcesoNomina = s.TipoAccionPersonal.ProcesoNomina,
+                            EsResponsableTh = s.TipoAccionPersonal.EsResponsableTh,
+                            Matriz = s.TipoAccionPersonal.Matriz,
+                            Descripcion = s.TipoAccionPersonal.Descripcion,
+                            GeneraAccionPersonal = s.TipoAccionPersonal.GeneraAccionPersonal,
+                            GenerarMovimientoPersonal = s.TipoAccionPersonal.GenerarMovimientoPersonal,
+                            ModificarDistributivo = s.TipoAccionPersonal.ModificarDistributivo,
+                            DesactivarCargo = s.TipoAccionPersonal.DesactivarCargo,
+                            DesactivarEmpleado = s.TipoAccionPersonal.DesactivarEmpleado,
+                            FinalizaTipoAccionPersonal = s.TipoAccionPersonal.FinalizaTipoAccionPersonal,
+                            IdTipoAccionPersonalFin = s.TipoAccionPersonal.IdTipoAccionPersonalFin
+                        }
+
+                    })
+                    .ToListAsync();
+
+
+                modelo.DatosBasicosEmpleadoViewModel = datosEmpleado;
+                modelo.ListaAccionPersonal = listaAccionesPersonal;
+
+
+                return modelo;
+
+            } catch (Exception ex)
+            {
+                return new AccionesPersonalPorEmpleadoViewModel();
+            }
+            
+        }
+
+
+
+        /// <summary>
+        /// Este método es usado para enviar valores básicos necesarios para la creación de una acción de personal
+        /// </summary>
+        /// <param name="IdEmpleado"></param>
+        /// <returns>Retorna en forma de response.Respuesta el modelo(AccionPersonalViewModel)/returns>
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("ObtenerNuevaAccionPersonalViewModel")]
+        public async Task<Response> ObtenerNuevaAccionPersonalViewModel([FromBody] int IdEmpleado)
+        {
+            var hoy = DateTime.Now;
+
+            try {
+                var modelo = new AccionPersonalViewModel();
+
+
+                // Distributivo real
+                DistributivosController ctrlDis = new DistributivosController(db);
+                var listaDistributivoReal = await ctrlDis.ObtenerDistributivoReal();
+
+                modelo.DistributivoSituacionActual = listaDistributivoReal
+                    .Where(w => w.IdEmpleado == IdEmpleado)
+                    .FirstOrDefault();
+
+
+                modelo.ListaDistributivoSeleccion = listaDistributivoReal;
+
+                modelo.IdEmpleadoAfectado = IdEmpleado;
+                modelo.FechaSolicitud = hoy;
+                modelo.FechaRige = hoy;
+                //modelo.FechaRigeHasta = hoy;
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Resultado = modelo
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Response {
+                    IsSuccess = false,
+                    Message = Mensaje.Error
+                };
+            }
+        }
         
+
+        /// <summary>
+        /// Registra en la base de datos la acción de personal con el movimiento del empleado correspondiente
+        /// </summary>
+        /// <param name="accionPersonalViewModel"></param>
+        /// <returns>Retorna el Id del empleado a quien se le realizó la acción de personal</returns>
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("InsertarAccionPersonal")]
+        public async Task<Response> InsertarAccionPersonal([FromBody] AccionPersonalViewModel accionPersonalViewModel)
+        {
+            try
+            {
+
+                #region creación de variables para usarlos posteriormente
+
+                DistributivosController ctrl_dis = new DistributivosController(db);
+
+                var m = accionPersonalViewModel;
+                var distributivoFormal = await ctrl_dis.ObtenerDistributivoFormal();
+
+
+                var empleadoResponsableIngreso = await db.Empleado
+                    .Where(w => w.NombreUsuario == m.NombreUsuario)
+                    .FirstOrDefaultAsync();
+
+                var tipoAccionPersonal = await db.TipoAccionPersonal
+                    .Where(w => w.IdTipoAccionPersonal == m.TipoAccionPersonalViewModel.IdTipoAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+                var listaEstados = ListarEstadosProcesoAccionPersonal();
+
+
+                var AccionPersonalModelo = new AccionPersonal
+                {
+                    IdAccionPersonal = m.IdAccionPersonal,
+                    IdEmpleadoAfectado = m.IdEmpleadoAfectado,
+                    IdEmpleadoResponsableIngreso = empleadoResponsableIngreso.IdEmpleado,
+
+                    IdTipoAccionPersonal = m.TipoAccionPersonalViewModel.IdTipoAccionPersonal,
+                    FechaSolicitud = DateTime.Now,
+                    Solicitud = m.Solicitud,
+                    Explicacion = m.Explicacion,
+                    FechaRige = m.FechaRige,
+                    FechaRigeHasta = m.FechaRigeHasta,
+                    TotalDias = m.TotalDias,
+                    DiasRestantes = m.DiasRestantes,
+                    Estado = m.Estado,
+                    Bloquear = false,
+                    Ejecutado = false
+                };
+
+                #endregion
+
+                #region guardado de datos
+                using (var transaction = await db.Database.BeginTransactionAsync())
+                {
+                    db.AccionPersonal.Add(AccionPersonalModelo);
+                    await db.SaveChangesAsync();
+
+
+                    if (tipoAccionPersonal.GenerarMovimientoPersonal)
+                    {
+
+                        var distributivoEmpleadoAfectado = distributivoFormal
+                            .Where(w => w.IdEmpleado == AccionPersonalModelo.IdEmpleadoAfectado)
+                            .FirstOrDefault();
+
+                        var tipoNombramientoHasta = await db.TipoNombramiento
+                            .Include(i=>i.RelacionLaboral)
+                            .Where(w=>w.IdTipoNombramiento == m.IdTipoNombramientoHasta)
+                            .FirstOrDefaultAsync();
+
+                        var empleadoMovimientoModelo = new EmpleadoMovimiento
+                        {
+                            IdEmpleado = AccionPersonalModelo.IdEmpleadoAfectado,
+                            IdIompDesde = distributivoEmpleadoAfectado.IdIndiceOcupacionalModalidadPartida,
+                            IdIompHasta = m.IdSeleccionado,
+                            IdAccionPersonal = AccionPersonalModelo.IdAccionPersonal
+                        };
+
+                        if (
+                            tipoAccionPersonal.BuscarPuestosOcupados == true 
+                            && tipoAccionPersonal.BuscarPuestosVacantes == false
+                            )
+                        {
+                            
+                            empleadoMovimientoModelo.IdFondoFinanciamiento = null;
+                            empleadoMovimientoModelo.IdTipoNombramiento = null;
+                            empleadoMovimientoModelo.IdModalidadPartida = null;
+
+                        }else if (
+                            tipoAccionPersonal.BuscarPuestosOcupados == false
+                            && tipoAccionPersonal.BuscarPuestosVacantes == true
+                            )
+                        {
+                            
+                            empleadoMovimientoModelo.IdFondoFinanciamiento = m.IdFondoFinanciamientoHasta;
+                            empleadoMovimientoModelo.IdTipoNombramiento = m.IdTipoNombramientoHasta;
+
+                            if (
+                                tipoNombramientoHasta.RelacionLaboral.Nombre.ToString().ToUpper() ==
+                                ConstantesTipoRelacion.Contrato.ToString().ToUpper()
+                                )
+                            {
+                                empleadoMovimientoModelo.IdModalidadPartida = null;
+                            }
+                            else {
+                                
+                                empleadoMovimientoModelo.IdModalidadPartida = m.IdModalidadPartidaHasta;
+                            }
+
+                            
+                        }
+                        else if (
+                           tipoAccionPersonal.BuscarPuestosOcupados == true
+                           && tipoAccionPersonal.BuscarPuestosVacantes == true
+                           )
+                        {
+                            if (
+                                m.IdPartidaVacante == null
+                                || m.IdPartidaVacante < 1
+                               )
+                            {
+                                // Cuando se ha seleccionado de la tabla
+                                // ** Se mantienen los datos del empleado
+
+                                empleadoMovimientoModelo.IdFondoFinanciamiento = null;
+                                empleadoMovimientoModelo.IdTipoNombramiento = null;
+                                empleadoMovimientoModelo.IdModalidadPartida = null;
+                                
+                            }
+                            else {
+
+
+                                // Cuando se ha seleccionado un codigo vacante
+                                // ** Se toman los datos que configura el usuario
+
+                                empleadoMovimientoModelo.IdFondoFinanciamiento = m.IdFondoFinanciamientoHasta;
+                                empleadoMovimientoModelo.IdTipoNombramiento = m.IdTipoNombramientoHasta;
+
+                                if (
+
+                                    tipoNombramientoHasta.RelacionLaboral.Nombre.ToString().ToUpper() ==
+                                    ConstantesTipoRelacion.Contrato.ToString().ToUpper()
+                                )
+                                {
+                                    empleadoMovimientoModelo.IdModalidadPartida = null;
+                                }
+                                else
+                                {
+                                    empleadoMovimientoModelo.IdModalidadPartida = m.IdModalidadPartidaHasta;
+                                    
+                                }
+
+                                
+                            }
+                            
+                        }
+
+                        db.EmpleadoMovimiento.Add(empleadoMovimientoModelo);
+                        await db.SaveChangesAsync();
+                    }
+
+                    transaction.Commit();
+                }
+                #endregion
+
+                #region ejecución de las acciones de personal
+                // si hasta aquí todo se guardó bien, se debe ejecutar un método que ejecute
+                // las acciones de personal aprobadas
+                #endregion
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio,
+                    Resultado = m.IdEmpleadoAfectado
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion,
+                    Resultado = accionPersonalViewModel.IdEmpleadoAfectado
+                };
+            }
+
+        }
+
+
+        // POST: api/AccionesPersonal
+        [HttpPost]
+        [Route("ObtenerAccionPersonalViewModelRegistrada")]
+        public async Task<Response> ObtenerAccionPersonalViewModelRegistrada([FromBody] int IdAccionPersonal)
+        {
+
+            try
+            {
+
+                // Distributivo real
+                DistributivosController ctrlDis = new DistributivosController(db);
+                var listaDistributivoReal = await ctrlDis.ObtenerDistributivoReal();
+
+                var modeloEmpleadoMovimiento = await db.EmpleadoMovimiento
+                    .Include(i => i.IompHasta)
+                    .Where(w => w.IdAccionPersonal == IdAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+
+                var modelo = await db.AccionPersonal
+                    .Where(w => w.IdAccionPersonal == IdAccionPersonal)
+                    .Select(s => new AccionPersonalViewModel
+                    {
+                        IdAccionPersonal = s.IdAccionPersonal,
+                        IdEmpleadoAfectado = s.IdEmpleadoAfectado,
+                        IdEmpleadoResponsableIngreso = s.IdEmpleadoResponsableIngreso,
+                        IdTipoAccionPersonal = s.IdTipoAccionPersonal,
+                        FechaSolicitud = s.FechaSolicitud,
+                        Solicitud = s.Solicitud,
+                        Explicacion = s.Explicacion,
+                        FechaRige = s.FechaRige,
+                        FechaRigeHasta = s.FechaRigeHasta,
+                        TotalDias = s.TotalDias,
+                        DiasRestantes = s.DiasRestantes,
+                        Estado = s.Estado,
+                        Bloquear = s.Bloquear,
+                        Ejecutado = s.Ejecutado,
+
+                        TipoAccionPersonalViewModel = new TipoAccionesPersonalViewModel
+                        {
+                            IdTipoAccionPersonal = s.TipoAccionPersonal.IdTipoAccionPersonal
+                        },
+
+                        DistributivoSituacionActual = listaDistributivoReal
+                            .Where(w => w.IdEmpleado == s.IdEmpleadoAfectado)
+                            .FirstOrDefault(),
+
+
+                        ListaDistributivoSeleccion = listaDistributivoReal,
+
+
+                        IdSeleccionado = (modeloEmpleadoMovimiento != null)
+                        ? modeloEmpleadoMovimiento.IdIompHasta
+                        : 0
+                        ,
+
+                        IdTipoNombramientoHasta = (modeloEmpleadoMovimiento != null)
+                        ? modeloEmpleadoMovimiento.IdTipoNombramiento
+                        : null
+                        ,
+
+                        IdFondoFinanciamientoHasta = (modeloEmpleadoMovimiento != null)
+                        ? modeloEmpleadoMovimiento.IdFondoFinanciamiento
+                        : null
+                        ,
+
+                        IdModalidadPartidaHasta = (modeloEmpleadoMovimiento != null)
+                        ? modeloEmpleadoMovimiento.IdModalidadPartida
+                        : (int?) null
+                        ,
+
+                        IdPartidaVacante = (
+                        modeloEmpleadoMovimiento.IdTipoNombramiento.HasValue
+                        )
+                        ? modeloEmpleadoMovimiento.IdIompHasta
+                        : (int?) null
+                        ,
+                        
+                        IdRelacionLaboralHasta = (
+                            modeloEmpleadoMovimiento.IdTipoNombramiento.HasValue
+                        )
+                        ? modeloEmpleadoMovimiento.IompHasta.IdRelacionLaboral
+                        : (int?)null
+                        ,
+                        
+                    })
+                    .FirstOrDefaultAsync();
+                
+
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Resultado = modelo
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error
+                };
+            }
+        }
+
+
+
+        [HttpPost]
+        [Route("EditarAccionPersonal")]
+        public async Task<Response> EditarAccionPersonal([FromBody] AccionPersonalViewModel accionPersonalViewModel)
+        {
+            try
+            {
+
+                #region creación de variables para usarlos posteriormente
+
+                DistributivosController ctrl_dis = new DistributivosController(db);
+
+                var m = accionPersonalViewModel;
+                var distributivoFormal = await ctrl_dis.ObtenerDistributivoFormal();
+
+
+                var empleadoResponsableIngreso = await db.Empleado
+                    .Where(w => w.NombreUsuario == m.NombreUsuario)
+                    .FirstOrDefaultAsync();
+
+                var tipoAccionPersonal = await db.TipoAccionPersonal
+                    .Where(w => w.IdTipoAccionPersonal == m.TipoAccionPersonalViewModel.IdTipoAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+                var listaEstados = ListarEstadosProcesoAccionPersonal();
+
+
+                var modeloObtenido = await db.AccionPersonal
+                    .Where(w => w.IdAccionPersonal == m.IdAccionPersonal)
+                    .FirstOrDefaultAsync();
+
+
+                modeloObtenido.IdEmpleadoAfectado = m.IdEmpleadoAfectado;
+                modeloObtenido.IdEmpleadoResponsableIngreso = empleadoResponsableIngreso.IdEmpleado;
+
+                modeloObtenido.IdTipoAccionPersonal = m.TipoAccionPersonalViewModel.IdTipoAccionPersonal;
+                modeloObtenido.FechaSolicitud = DateTime.Now;
+                modeloObtenido.Solicitud = m.Solicitud;
+                modeloObtenido.Explicacion = m.Explicacion;
+                modeloObtenido.FechaRige = m.FechaRige;
+                modeloObtenido.FechaRigeHasta = m.FechaRigeHasta;
+                modeloObtenido.TotalDias = m.TotalDias;
+                modeloObtenido.DiasRestantes = m.DiasRestantes;
+                modeloObtenido.Estado = m.Estado;
+                
+
+                #endregion
+
+                #region guardado de datos
+                using (var transaction = await db.Database.BeginTransactionAsync())
+                {
+
+                    
+                    db.AccionPersonal.Update(modeloObtenido);
+                    await db.SaveChangesAsync();
+
+
+                    if (tipoAccionPersonal.GenerarMovimientoPersonal)
+                    {
+                        var tipoNombramientoHasta = await db.TipoNombramiento
+                            .Include(i => i.RelacionLaboral)
+                            .Where(w => w.IdTipoNombramiento == m.IdTipoNombramientoHasta)
+                            .FirstOrDefaultAsync();
+
+                        var distributivoEmpleadoAfectado = distributivoFormal
+                            .Where(w => w.IdEmpleado == modeloObtenido.IdEmpleadoAfectado)
+                            .FirstOrDefault();
+
+                        var modeloEmpleadoMovimientoObtenido = await db.EmpleadoMovimiento
+                            .Where(w => w.IdAccionPersonal == modeloObtenido.IdAccionPersonal)
+                            .FirstOrDefaultAsync();
+
+                        if (modeloEmpleadoMovimientoObtenido != null)
+                        {
+                            // Si existe un empleado Movimiento se lo edita
+
+                            modeloEmpleadoMovimientoObtenido.IdEmpleado = modeloObtenido.IdEmpleadoAfectado;
+                            modeloEmpleadoMovimientoObtenido.IdIompDesde = distributivoEmpleadoAfectado.IdIndiceOcupacionalModalidadPartida;
+                            modeloEmpleadoMovimientoObtenido.IdIompHasta = m.IdSeleccionado;
+                            modeloEmpleadoMovimientoObtenido.IdAccionPersonal = modeloObtenido.IdAccionPersonal;
+                            
+
+                            if (
+                                tipoAccionPersonal.BuscarPuestosOcupados == true
+                                && tipoAccionPersonal.BuscarPuestosVacantes == false
+                                )
+                            {
+
+                                modeloEmpleadoMovimientoObtenido.IdTipoNombramiento = null;
+                                modeloEmpleadoMovimientoObtenido.IdModalidadPartida = null;
+                                modeloEmpleadoMovimientoObtenido.IdFondoFinanciamiento = null;
+
+                            }
+                            else if (
+                                tipoAccionPersonal.BuscarPuestosOcupados == false
+                                && tipoAccionPersonal.BuscarPuestosVacantes == true
+                               )
+                            {   
+
+                                modeloEmpleadoMovimientoObtenido.IdFondoFinanciamiento = m.IdFondoFinanciamientoHasta;
+                                modeloEmpleadoMovimientoObtenido.IdTipoNombramiento = m.IdTipoNombramientoHasta;
+                                
+
+                                if (
+                                    tipoNombramientoHasta.RelacionLaboral.Nombre.ToString().ToUpper() ==
+                                    ConstantesTipoRelacion.Contrato.ToString().ToUpper()
+                                    )
+                                {
+                                    modeloEmpleadoMovimientoObtenido.IdModalidadPartida = null;
+                                }
+                                else
+                                {
+                                    modeloEmpleadoMovimientoObtenido.IdModalidadPartida = m.IdModalidadPartidaHasta;
+                                }
+
+                            }
+                            else if (
+                               tipoAccionPersonal.BuscarPuestosOcupados == true
+                               && tipoAccionPersonal.BuscarPuestosVacantes == true
+                               )
+                            {
+                                
+                                if (
+                                    m.IdPartidaVacante == null
+                                    || m.IdPartidaVacante < 1
+                                )
+                                {
+                                    // Cuando se ha seleccionado de la tabla
+                                    // ** Se mantienen los datos del empleado
+
+                                    modeloEmpleadoMovimientoObtenido.IdFondoFinanciamiento = null;
+                                    modeloEmpleadoMovimientoObtenido.IdTipoNombramiento = null;
+                                    modeloEmpleadoMovimientoObtenido.IdModalidadPartida = null;
+
+                                }
+                                else
+                                {
+                                    // Cuando se ha seleccionado un codigo vacante
+                                    // ** Se toman los datos que configura el usuario
+
+                                    modeloEmpleadoMovimientoObtenido.IdFondoFinanciamiento = m.IdFondoFinanciamientoHasta;
+                                    modeloEmpleadoMovimientoObtenido.IdTipoNombramiento = m.IdTipoNombramientoHasta;
+
+                                    if (
+                                    tipoNombramientoHasta.RelacionLaboral.Nombre.ToString().ToUpper() ==
+                                    ConstantesTipoRelacion.Contrato.ToString().ToUpper()
+                                    )
+                                    {
+                                        
+                                        modeloEmpleadoMovimientoObtenido.IdModalidadPartida = null;
+                                    }
+                                    else
+                                    {
+                                        modeloEmpleadoMovimientoObtenido.IdModalidadPartida = m.IdModalidadPartidaHasta;
+                                    }
+
+                                }
+
+                            }
+
+                            db.EmpleadoMovimiento.Update(modeloEmpleadoMovimientoObtenido);
+                            await db.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            // Si no existe un empleado Movimiento se crea uno nuevo
+
+                            var empleadoMovimientoModelo = new EmpleadoMovimiento
+                            {
+                                IdEmpleado = modeloObtenido.IdEmpleadoAfectado,
+                                IdIompDesde = distributivoEmpleadoAfectado.IdIndiceOcupacionalModalidadPartida,
+                                IdIompHasta = m.IdSeleccionado,
+                                IdAccionPersonal = modeloObtenido.IdAccionPersonal
+                            };
+
+                            if (
+                                tipoAccionPersonal.BuscarPuestosOcupados == true
+                                && tipoAccionPersonal.BuscarPuestosVacantes == false
+                                )
+                            {
+
+                                empleadoMovimientoModelo.IdFondoFinanciamiento = null;
+                                empleadoMovimientoModelo.IdTipoNombramiento = null;
+                                empleadoMovimientoModelo.IdModalidadPartida = null;
+
+                            }
+                            else if (
+                               tipoAccionPersonal.BuscarPuestosOcupados == false
+                               && tipoAccionPersonal.BuscarPuestosVacantes == true
+                               )
+                            {
+
+                                empleadoMovimientoModelo.IdFondoFinanciamiento = m.IdFondoFinanciamientoHasta;
+                                empleadoMovimientoModelo.IdTipoNombramiento = m.IdTipoNombramientoHasta;
+
+                                if (
+                                    tipoNombramientoHasta.RelacionLaboral.Nombre.ToString().ToUpper() ==
+                                    ConstantesTipoRelacion.Contrato.ToString().ToUpper()
+                                    )
+                                {
+                                    modeloEmpleadoMovimientoObtenido.IdModalidadPartida = null;
+                                }
+                                else
+                                {
+                                    modeloEmpleadoMovimientoObtenido.IdModalidadPartida = m.IdModalidadPartidaHasta;
+                                }
+
+
+                            }
+                            else if (
+                               tipoAccionPersonal.BuscarPuestosOcupados == true
+                               && tipoAccionPersonal.BuscarPuestosVacantes == true
+                               )
+                            {
+                                if (m.IdTipoNombramientoHasta < 1)
+                                {
+                                    // Cuando se ha seleccionado de la tabla
+                                    // ** Se mantienen los datos del empleado
+
+                                    empleadoMovimientoModelo.IdFondoFinanciamiento = null;
+                                    empleadoMovimientoModelo.IdTipoNombramiento = null;
+                                    empleadoMovimientoModelo.IdModalidadPartida = null;
+                                    
+                                }
+                                else
+                                {
+                                    // Cuando se ha seleccionado un codigo vacante
+                                    // ** Se toman los datos que configura el usuario
+
+                                    empleadoMovimientoModelo.IdFondoFinanciamiento = m.IdFondoFinanciamientoHasta;
+                                    empleadoMovimientoModelo.IdTipoNombramiento = m.IdTipoNombramientoHasta;
+
+                                    if (
+                                    tipoNombramientoHasta.RelacionLaboral.Nombre.ToString().ToUpper() ==
+                                    ConstantesTipoRelacion.Contrato.ToString().ToUpper()
+                                    )
+                                    {
+                                        modeloEmpleadoMovimientoObtenido.IdModalidadPartida = null;
+                                    }
+                                    else
+                                    {
+                                        modeloEmpleadoMovimientoObtenido.IdModalidadPartida = m.IdModalidadPartidaHasta;
+                                    }
+
+                                }
+
+                            }
+
+                            db.EmpleadoMovimiento.Add(empleadoMovimientoModelo);
+                            await db.SaveChangesAsync();
+
+                        }
+
+
+                        
+                    }
+
+                    transaction.Commit();
+                }
+                #endregion
+
+                #region ejecución de las acciones de personal
+                // si hasta aquí todo se guardó bien, se debe ejecutar un método que ejecute
+                // las acciones de personal aprobadas
+                #endregion
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.GuardadoSatisfactorio,
+                    Resultado = m.IdEmpleadoAfectado
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion,
+                    Resultado = accionPersonalViewModel.IdEmpleadoAfectado
+                };
+            }
+
+        }
+
+
         /*
         /// <summary>
         /// Este método es usado en el timer para actualizar los días restantes en cada movimiento de personal
@@ -78,240 +864,9 @@ namespace bd.swth.web.Controllers.API
             {
             }
 
-        }incredulidad falta de fe
+        }
         */
 
-        // POST: api/AccionesPersonal
-        [HttpPost]
-        [Route("ListarAccionesPersonalPorEmpleado")]
-        public async Task<AccionesPersonalPorEmpleadoViewModel> ListarAccionesPersonalPorEmpleado([FromBody] AccionesPersonalPorEmpleadoViewModel accionesPersonalPorEmpleadoViewModel)
-        {
-
-            try
-            {
-
-                var modelo = new AccionesPersonalPorEmpleadoViewModel();
-
-                var recibido = accionesPersonalPorEmpleadoViewModel;
-
-                var datosEmpleado = await db.Empleado
-                    .Include(i => i.Persona)
-                    .Include(i => i.Dependencia)
-                    .Where(w => w.IdEmpleado == recibido.DatosBasicosEmpleadoViewModel.IdEmpleado)
-                    .Select(s => new DatosBasicosEmpleadoViewModel
-                    {
-                        IdEmpleado = s.IdEmpleado,
-                        Nombres = s.Persona.Nombres + " " + s.Persona.Apellidos,
-
-                    }
-                    ).FirstOrDefaultAsync();
-                
-
-                var listaAccionesPersonal = await db.AccionPersonal
-                    .Where(w => w.IdEmpleadoAfectado == recibido.DatosBasicosEmpleadoViewModel.IdEmpleado)
-                    .Select(s=>new AccionPersonalViewModel {
-
-                        IdAccionPersonal = s.IdAccionPersonal,
-                        IdEmpleadoAfectado = s.IdEmpleadoAfectado,
-                        IdEmpleadoResponsableIngreso = s.IdEmpleadoResponsableIngreso,
-                        IdTipoAccionPersonal = s.IdTipoAccionPersonal,
-                        FechaSolicitud = s.FechaSolicitud,
-                        Solicitud = s.Solicitud,
-                        Explicacion = s.Explicacion,
-                        FechaRige = s.FechaRige,
-                        FechaRigeHasta = s.FechaRigeHasta,
-                        TotalDias = s.TotalDias,
-                        DiasRestantes = s.DiasRestantes,
-                        Estado = s.Estado,
-                        Bloquear = s.Bloquear,
-                        Ejecutado = s.Ejecutado,
-
-                        TipoAccionPersonalViewModel = new TipoAccionesPersonalViewModel
-                        {
-                            IdTipoAccionPersonal = s.TipoAccionPersonal.IdTipoAccionPersonal,
-                            Nombre = s.TipoAccionPersonal.Nombre,
-                            Definitivo = s.TipoAccionPersonal.Definitivo,
-                            Dias = s.TipoAccionPersonal.Dias,
-                            YearsMaximo = s.TipoAccionPersonal.YearsMaximo,
-                            MesesMaximo = s.TipoAccionPersonal.MesesMaximo,
-                            NdiasMinimo = s.TipoAccionPersonal.NdiasMinimo,
-                            NdiasMaximo = s.TipoAccionPersonal.NdiasMinimo,
-                            Horas = s.TipoAccionPersonal.Horas,
-                            NhorasMinimo = s.TipoAccionPersonal.NhorasMinimo,
-                            NhorasMaximo = s.TipoAccionPersonal.NhorasMaximo,
-                            DiasHabiles = s.TipoAccionPersonal.DiasHabiles,
-                            ImputableVacaciones = s.TipoAccionPersonal.ImputableVacaciones,
-                            ProcesoNomina = s.TipoAccionPersonal.ProcesoNomina,
-                            EsResponsableTh = s.TipoAccionPersonal.EsResponsableTh,
-                            Matriz = s.TipoAccionPersonal.Matriz,
-                            Descripcion = s.TipoAccionPersonal.Descripcion,
-                            GeneraAccionPersonal = s.TipoAccionPersonal.GeneraAccionPersonal,
-                            GenerarMovimientoPersonal = s.TipoAccionPersonal.GenerarMovimientoPersonal,
-                            ModificarDistributivo = s.TipoAccionPersonal.ModificarDistributivo,
-                            DesactivarCargo = s.TipoAccionPersonal.DesactivarCargo,
-                            DesactivarEmpleado = s.TipoAccionPersonal.DesactivarEmpleado,
-                            FinalizaTipoAccionPersonal = s.TipoAccionPersonal.FinalizaTipoAccionPersonal,
-                            IdTipoAccionPersonalFin = s.TipoAccionPersonal.IdTipoAccionPersonalFin
-                        }
-
-                    })
-                    .ToListAsync();
-
-
-                modelo.DatosBasicosEmpleadoViewModel = datosEmpleado;
-                modelo.ListaAccionPersonal = listaAccionesPersonal;
-
-
-                return modelo;
-
-            } catch (Exception ex)
-            {
-                return new AccionesPersonalPorEmpleadoViewModel();
-            }
-
-
-            /*
-            var modelo = new AccionesPersonalPorEmpleadoViewModel
-            {
-                ListaAccionPersonal = new List<AccionPersonalViewModel>(),
-                DatosBasicosEmpleadoViewModel = new DatosBasicosEmpleadoViewModel()
-            };
-
-            try
-            {
-
-                var empleadoActual = db.Empleado.Include(d => d.Dependencia)
-                    .Where(x => x.NombreUsuario == accionesPersonalPorEmpleadoViewModel.NombreUsuarioActual)
-                    .FirstOrDefault()
-                ;
-
-                var datosEmpleado = db.Empleado
-                    .Include(me => me.Persona)
-                    .Include(md => md.Dependencia)
-                        .Where(we =>
-                            we.Persona.Identificacion
-                            == accionesPersonalPorEmpleadoViewModel.DatosBasicosEmpleadoViewModel.Identificacion
-                            && we.Dependencia.IdSucursal == empleadoActual.Dependencia.IdSucursal
-                            && we.Activo == true
-                            )
-                            .Select(se => new DatosBasicosEmpleadoViewModel
-                            {
-                                IdEmpleado = se.IdEmpleado,
-                                Nombres = se.Persona.Nombres + " " + se.Persona.Apellidos,
-
-                            }
-                        ).FirstOrDefault();
-
-                var ListaEstados = ConstantesEstadosAprobacionMovimientoInterno.ListaEstadosAprobacionMovimientoInterno;
-
-
-                var lista = await db.AccionPersonal.Include(map => map.TipoAccionPersonal)
-                    .Where(w => w.IdEmpleado == datosEmpleado.IdEmpleado)
-                    .Select(s => new AccionPersonalViewModel
-                    {
-                        IdAccionPersonal = s.IdAccionPersonal,
-                        Fecha = (DateTime)s.Fecha,
-                        Numero = s.Numero,
-                        Solicitud = s.Solicitud,
-                        Explicacion = s.Explicacion,
-                        FechaRige = (DateTime)s.FechaRige,
-                        FechaRigeHasta = s.FechaRigeHasta,
-                        NoDias = (int)s.NoDias,
-                        Estado = s.Estado,
-                        EstadoDirector = (ListaEstados.Count > 0)
-                            ?
-                                ListaEstados.Where(wle =>
-                                    (wle.GrupoAprobacion == 0 || wle.GrupoAprobacion == 2)
-                                    && wle.ValorEstado == s.Estado
-                                ).FirstOrDefault().NombreEstado
-                            : "",
-                        EstadoValidacionTTHH = (ListaEstados.Count > 0)
-                            ?
-                                ListaEstados.Where(wle =>
-                                    wle.GrupoAprobacion == 1
-                                    && wle.ValorEstado == s.Estado
-                                ).FirstOrDefault().NombreEstado
-                            : "",
-
-
-                        TipoAccionPersonalViewModel = db.TipoAccionPersonal
-                            .Where(tapw => tapw.IdTipoAccionPersonal == s.IdTipoAccionPersonal)
-                            .Select(st => new TipoAccionesPersonalViewModel
-                            {
-                                IdTipoAccionPersonal = st.IdTipoAccionPersonal,
-                                Nombre = st.Nombre,
-                                NDiasMinimo = st.NDiasMinimo,
-                                NDiasMaximo = st.NDiasMaximo,
-                                NHorasMinimo = st.NHorasMinimo,
-                                NHorasMaximo = st.NHorasMaximo,
-                                DiasHabiles = st.DiasHabiles,
-                                ImputableVacaciones = st.ImputableVacaciones,
-                                ProcesoNomina = st.ProcesoNomina,
-                                EsResponsableTH = st.EsResponsableTH,
-                                Matriz = st.Matriz,
-                                Descripcion = st.Descripcion,
-                                GeneraAccionPersonal = st.GeneraAccionPersonal,
-                                ModificaDistributivo = st.ModificaDistributivo
-
-                            }
-                            )
-                            .FirstOrDefault()
-                    }
-
-                    ).ToListAsync();
-
-                modelo.DatosBasicosEmpleadoViewModel = datosEmpleado;
-                modelo.ListaAccionPersonal = lista;
-
-                return modelo;
-
-
-            }
-            catch (Exception ex)
-            {
-                return modelo;
-            }
-
-            */
-        }
-
-
-        
-
-        // POST: api/AccionesPersonal
-        [HttpPost]
-        [Route("ObtenerNuevaAccionPersonalViewModel")]
-        public async Task<Response> ObtenerNuevaAccionPersonalViewModel([FromBody] int IdEmpleado)
-        {
-            try {
-                var modelo = new AccionPersonalViewModel();
-
-                DistributivosController ctrlDis = new DistributivosController(db);
-                var listaDistributivoReal = await ctrlDis.ObtenerDistributivoReal();
-
-                modelo.DistributivoSituacionActual = listaDistributivoReal
-                    .Where(w => w.IdEmpleado == IdEmpleado)
-                    .FirstOrDefault();
-
-                return new Response
-                {
-                    IsSuccess = true,
-                    Resultado = modelo
-                };
-
-
-            }
-            catch (Exception ex)
-            {
-                return new Response {
-                    IsSuccess = false,
-                    Message = Mensaje.Error
-                };
-            }
-        }
-        
-        
-        
         /*
 
         // POST: api/AccionesPersonal

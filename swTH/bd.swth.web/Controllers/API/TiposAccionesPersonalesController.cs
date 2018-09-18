@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using bd.log.guardar.ObjectTranfer;
 using bd.swth.entidades.Enumeradores;
 using bd.swth.entidades.Utils;
+using bd.swth.entidades.ViewModels;
+using bd.swth.entidades.Constantes;
 
 namespace bd.swth.web.Controllers.API
 {
@@ -26,42 +28,18 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        /*
-        
-        //[HttpPost]
-        //[Route("ListarTiposAccionesPersonalesPorEstado")]
-        //public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEstado([FromBody] EstadoTipoAccionPersonal estadoTipoAccionPersonal)
-        //{
-        //    try
-        //    {
-        //        return await db.TipoAccionPersonal.Where(x => x.IdEstadoTipoAccionPersonal == estadoTipoAccionPersonal.IdEstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-        //        {
-        //            ApplicationName = Convert.ToString(Aplicacion.SwTH),
-        //            ExceptionTrace = ex.Message,
-        //            Message = Mensaje.Excepcion,
-        //            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-        //            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-        //            UserName = "",
 
-        //        });
-        //        return new List<TipoAccionPersonal>();
-        //    }
-        //}
 
-    
-
-        // [HttpPost] api/TiposAccionesPersonales
+        //[HttpPost] api/TiposAccionesPersonales
         [HttpPost]
         [Route("ObtenerTipoAccionPersonal")]
         public async Task<TipoAccionPersonal> ObtenerTipoAccionPersonal([FromBody] TipoAccionPersonal tipoAccionPersonal)
         {
             try
             {
-                return await db.TipoAccionPersonal.Where(x => x.IdTipoAccionPersonal == tipoAccionPersonal.IdTipoAccionPersonal).FirstOrDefaultAsync();
+                return await db.TipoAccionPersonal
+                    .Where(x => x.IdTipoAccionPersonal == tipoAccionPersonal.IdTipoAccionPersonal)
+                    .FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
@@ -69,23 +47,7 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-
-        [HttpPost]
-        [Route("ListarTiposAccionesPersonalesPorEsTalentoHumano")]
-        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEsTalentoHumano([FromBody] TipoAccionPersonal tipoAccionPersonal)
-        {
-            try
-            {
-              return await db.TipoAccionPersonal.Where(x=>x.EsResponsableTH==tipoAccionPersonal.EsResponsableTH).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-              return new List<TipoAccionPersonal>();
-            }
-        }
-
-        */
-
+        
 
         // GET: api/TiposAccionesPersonales
         [HttpGet]
@@ -393,7 +355,56 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-       
+
+
+
+
+        /*
+        
+        //[HttpPost]
+        //[Route("ListarTiposAccionesPersonalesPorEstado")]
+        //public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEstado([FromBody] EstadoTipoAccionPersonal estadoTipoAccionPersonal)
+        //{
+        //    try
+        //    {
+        //        return await db.TipoAccionPersonal.Where(x => x.IdEstadoTipoAccionPersonal == estadoTipoAccionPersonal.IdEstadoTipoAccionPersonal).OrderBy(x => x.Nombre).ToListAsync();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+        //        {
+        //            ApplicationName = Convert.ToString(Aplicacion.SwTH),
+        //            ExceptionTrace = ex.Message,
+        //            Message = Mensaje.Excepcion,
+        //            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+        //            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+        //            UserName = "",
+
+        //        });
+        //        return new List<TipoAccionPersonal>();
+        //    }
+        //}
+
+    
+
+        
+
+
+        [HttpPost]
+        [Route("ListarTiposAccionesPersonalesPorEsTalentoHumano")]
+        public async Task<List<TipoAccionPersonal>> ListarTiposAccionesPersonalesPorEsTalentoHumano([FromBody] TipoAccionPersonal tipoAccionPersonal)
+        {
+            try
+            {
+              return await db.TipoAccionPersonal.Where(x=>x.EsResponsableTH==tipoAccionPersonal.EsResponsableTH).OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+              return new List<TipoAccionPersonal>();
+            }
+        }
+
+        */
 
 
     }

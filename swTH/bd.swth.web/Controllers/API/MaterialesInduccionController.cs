@@ -53,7 +53,7 @@ namespace bd.swth.web.Controllers.API
 
 
 
-        // Post: api/BasesDatos
+        // Post: api/MaterialesInduccion
         [HttpPost]
         [Route("ListarMaterialesInduccion")]
         public async Task<Response> ListarMaterialesInduccion([FromBody] Induccion induccion)
@@ -161,17 +161,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -182,7 +172,8 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/BasesDatos
+
+        // POST: api/MaterialesInduccion
         private async Task<MaterialInduccion> InsertarMaterialInduccion(MaterialInduccion MaterialInduccion)
         {
             MaterialInduccion.Descripcion.ToString().ToUpper();
@@ -194,7 +185,7 @@ namespace bd.swth.web.Controllers.API
 
         }
 
-        // POST: api/BasesDatos
+        // POST: api/MaterialesInduccion
         [HttpPost]
         [Route("IngresarInduccionEmpleado")]
         public async Task<Response> IngresarInduccionEmpleado([FromBody] Induccion induccion)

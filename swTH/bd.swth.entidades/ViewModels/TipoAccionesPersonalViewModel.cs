@@ -30,5 +30,10 @@ namespace bd.swth.entidades.ViewModels
         public bool DesactivarEmpleado { get; set; }
         public bool FinalizaTipoAccionPersonal { get; set; }
         public int? IdTipoAccionPersonalFin { get; set; }
+
+        public bool? BuscarPuestosVacantes { get; set; }
+        public bool? BuscarPuestosOcupados { get; set; }
+        public bool? BuscarNivelOperativo { get; set; }
+        public bool? BuscarJerarquicoSuperior { get; set; }
     }
 }

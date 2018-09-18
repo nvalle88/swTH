@@ -120,6 +120,20 @@ namespace bd.swth.entidades.Constantes
 
         public static string Encargo;
         public static string Subrogacion;
+
+        // Estados de registro accionPersonal
+        public static string EstadoRegistrarValor;
+        public static string EstadoRegistrarNombre;
+
+        public static string EstadoEjecutarValor;
+        public static string EstadoEjecutarNombre;
+
+        public static string EstadoCancelarValor;
+        public static string EstadoCancelarNombre;
+
+        public static string EstadoDeshacerValor;
+        public static string EstadoDeshacerNombre;
+
     }
 
 }

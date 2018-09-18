@@ -28,6 +28,26 @@ namespace bd.swth.entidades.ViewModels
 
         public DistributivoSituacionActual DistributivoSituacionActual { get; set; }
 
+        public List<DistributivoSituacionActual> ListaDistributivoSeleccion { get; set; }
+
+        public int IdSeleccionado { get; set; }
+
+        public int? IdTipoNombramientoHasta { get; set; }
+        public int? IdFondoFinanciamientoHasta { get; set; }
+
+        public int? IdModalidadPartidaHasta { get; set; }
+
+
+        // DATOS SOLO PARA CARGAR CUANDO SE EDITA
+        public int? IdPartidaVacante { get; set; }
+        public int? IdRelacionLaboralHasta { get; set; }
+        public int? IdRegimenLaboralHasta { get; set; }
+        
+
+        // Otros
+        public string NombreUsuario { get; set; }
+        public string NombreEstado { get; set; }
+
         /*
         // campos estados validación
         public string EstadoDirector { get; set; }

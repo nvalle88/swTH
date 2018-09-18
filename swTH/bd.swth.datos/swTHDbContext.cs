@@ -2014,6 +2014,11 @@ namespace bd.swth.datos
                     .HasForeignKey(d => d.IdIompHasta)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_EmpleadoMovimiento_IndiceOcupacionalModalidadPartida1");
+
+                entity.HasOne(d => d.ModalidadPartida)
+                    .WithMany(p => p.EmpleadoMovimiento)
+                    .HasForeignKey(d => d.IdModalidadPartida)
+                    .HasConstraintName("FK_EmpleadoMovimiento_ModalidadPartida");
             });
 
             modelBuilder.Entity<EmpleadoNepotismo>(entity =>

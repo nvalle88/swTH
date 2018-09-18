@@ -180,6 +180,21 @@ namespace bd.swth.web
             ConstantesAccionPersonal.Encargo = Configuration.GetSection("Encargo").Value;
             ConstantesAccionPersonal.Subrogacion = Configuration.GetSection("Subrogacion").Value;
 
+
+            // ConstantesEstadosProcesoAccionPersonal
+            ConstantesAccionPersonal.EstadoRegistrarValor = Configuration.GetSection("EstadoRegistrarValor").Value;
+            ConstantesAccionPersonal.EstadoRegistrarNombre = Configuration.GetSection("EstadoRegistrarNombre").Value;
+
+            ConstantesAccionPersonal.EstadoEjecutarValor = Configuration.GetSection("EstadoEjecutarValor").Value;
+            ConstantesAccionPersonal.EstadoEjecutarNombre = Configuration.GetSection("EstadoEjecutarNombre").Value;
+
+            ConstantesAccionPersonal.EstadoCancelarValor = Configuration.GetSection("EstadoCancelarValor").Value;
+            ConstantesAccionPersonal.EstadoCancelarNombre = Configuration.GetSection("EstadoCancelarNombre").Value;
+
+            ConstantesAccionPersonal.EstadoDeshacerValor = Configuration.GetSection("EstadoDeshacerValor").Value;
+            ConstantesAccionPersonal.EstadoDeshacerNombre = Configuration.GetSection("EstadoDeshacerNombre").Value;
+
+
             // constante nivel jerárquico superior
             Constantes.NombreNivelJerarquicoSuperior = Configuration.GetSection("NombreNivelJerarquicoSuperior").Value;
 
