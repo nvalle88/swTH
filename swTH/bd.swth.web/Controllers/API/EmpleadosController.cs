@@ -65,6 +65,9 @@ namespace bd.swth.web.Controllers.API
 
 
         #endregion
+        
+        
+        
         /*
 
         private IQueryable<DatosBasicosEmpleadoViewModel> ListaDatosBasicosEmpleado()
