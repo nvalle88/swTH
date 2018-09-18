@@ -32,7 +32,14 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+        #region Métoods usados para consultas varias no eliminar
 
+        /// <summary>
+        /// Obtiene el empleado del DISTRIBUTIVO FORMAL, a partir del NombreUsuario
+        /// </summary>
+        /// <param name="empleado"></param>
+        /// <returns></returns>
+        // Post: api/Empleados
         [HttpPost]
         [Route("ObtenerEmpleadoLogueadoDistributivoFormal")]
         public async Task<Empleado> ObtenerEmpleadoLogueadoDistributivoFormal([FromBody]Empleado empleado)
@@ -57,6 +64,7 @@ namespace bd.swth.web.Controllers.API
         }
 
 
+        #endregion
         /*
 
         private IQueryable<DatosBasicosEmpleadoViewModel> ListaDatosBasicosEmpleado()
