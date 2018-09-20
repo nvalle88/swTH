@@ -36,7 +36,7 @@ namespace bd.swth.web.Controllers.API
 
 
         /// <summary>
-        /// Obtiene el distributivo real, (escala de grados, grupo ocupacional y remuneración) están 
+        /// Obtiene el distributivo real (situación actual), (escala de grados, grupo ocupacional y remuneración) están 
         /// validados si es sobrevalorado
         /// </summary>
         /// <returns></returns>
@@ -71,6 +71,8 @@ namespace bd.swth.web.Controllers.API
                             FechaIngreso = s.Empleado.FechaIngreso,
                             FechaIngresoSectorPublico = s.Empleado.FechaIngresoSectorPublico,
                             NombreUsuario = s.Empleado.NombreUsuario,
+                            EsJefe = s.Empleado.EsJefe,
+                            Activo = s.Empleado.Activo,
 
                             Persona = new Persona {
                                 IdPersona = s.Empleado.Persona.IdPersona,
@@ -83,6 +85,7 @@ namespace bd.swth.web.Controllers.API
                                 Apellidos = s.Empleado.Persona.Apellidos,
                                 TelefonoCasa = s.Empleado.Persona.TelefonoCasa,
                                 TelefonoPrivado = s.Empleado.Persona.TelefonoPrivado,
+                                CorreoPrivado = s.Empleado.Persona.CorreoPrivado
                             },
 
                         },
@@ -286,6 +289,8 @@ namespace bd.swth.web.Controllers.API
                         FechaIngreso = s.Empleado.FechaIngreso,
                         FechaIngresoSectorPublico = s.Empleado.FechaIngresoSectorPublico,
                         NombreUsuario = s.Empleado.NombreUsuario,
+                        EsJefe = s.Empleado.EsJefe,
+                        Activo = s.Empleado.Activo,
 
                         Persona = new Persona
                         {
@@ -299,6 +304,7 @@ namespace bd.swth.web.Controllers.API
                             Apellidos = s.Empleado.Persona.Apellidos,
                             TelefonoCasa = s.Empleado.Persona.TelefonoCasa,
                             TelefonoPrivado = s.Empleado.Persona.TelefonoPrivado,
+                            CorreoPrivado = s.Empleado.Persona.CorreoPrivado
                         },
 
                     },
@@ -481,7 +487,7 @@ namespace bd.swth.web.Controllers.API
         /// <summary>
         /// Devuelve 1 registro del DISTRIBUTIVO FORMAL  que concuerde con el Id del empleado ingresado
         /// </summary>
-        /// <param name="IdEmpleado"></param>
+        /// <param name="empleado"></param>
         /// <returns>Response: respuesta->DistributivoHistorico</returns>
         // Post: api/Distributivos
         [HttpPost]
@@ -519,5 +525,50 @@ namespace bd.swth.web.Controllers.API
                 };
             }
         }
+
+        /// <summary>
+        /// Devuelve 1 registro del DISTRIBUTIVO REAL (SITUACIÓN ACTUAL)  que concuerde con el Id del empleado ingresado 
+        /// </summary>
+        /// <param name="empleado"></param>
+        /// <returns></returns>
+        // Post: api/Distributivos
+        [HttpPost]
+        [Route("ObtenerDistributivoRealPorIdEmpleado")]
+        public async Task<Response> ObtenerDistributivoRealPorIdEmpleado([FromBody] Empleado empleado) {
+
+            try
+            {
+                var distributivo = await ObtenerDistributivoReal();
+
+                var modelo = distributivo.
+                    Where(w => w.IdEmpleado == empleado.IdEmpleado)
+                    .FirstOrDefault();
+
+                if (modelo == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Resultado = modelo
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+        }
+
     }
 }
