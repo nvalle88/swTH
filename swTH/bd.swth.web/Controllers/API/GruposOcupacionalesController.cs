@@ -33,23 +33,16 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.GrupoOcupacional.OrderBy(x => x.TipoEscala).ToListAsync();
+                return await db.GrupoOcupacional
+                    .OrderBy(x => x.TipoEscala)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new List<GrupoOcupacional>();
             }
         }
+
 
         // GET: api/BasesDatos/5
         [HttpGet("{id}")]

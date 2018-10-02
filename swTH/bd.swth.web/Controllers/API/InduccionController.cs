@@ -36,7 +36,7 @@ namespace bd.swth.web.Controllers.API
 
         
 
-        // Get: api/Induccion
+        // Post: api/Induccion
         [HttpPost]
         [Route("ListarEstadoInduccionEmpleados")]
         public async Task<List<InduccionViewModel>> ListarEstadoInduccionEmpleados(UsuarioViewModel usuario)
@@ -45,9 +45,10 @@ namespace bd.swth.web.Controllers.API
             
             try
             {
-                var empleadoActual = db.Empleado.Include(d => d.Dependencia)
+                var empleadoActual = await db.Empleado
+                    .Include(d => d.Dependencia)
                     .Where(x => x.NombreUsuario == usuario.NombreUsuarioActual)
-                    .FirstOrDefault()
+                    .FirstOrDefaultAsync()
                 ;
 
                 DistributivosController ctrlDistributivo = new DistributivosController(db);

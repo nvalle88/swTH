@@ -29,6 +29,414 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
+
+
+        #region Métodos mantenimiento IndicesOcupacionales
+
+        /// <summary>
+        /// Devuelve la lista de IndicesOcupacionales en modelo: IndiceOcupacionalViewModel
+        /// </summary>
+        /// <returns></returns>
+        // api/IndicesOcupacionales
+        [HttpGet]
+        [Route("ListarIndicesOcupacionesViewModel")]
+        public async Task<List<IndiceOcupacionalViewModel>> ListarIndicesOcupacionesViewModel()
+        {
+            try
+            {
+                var lista = await db.IndiceOcupacional
+                    .Select(s => new IndiceOcupacionalViewModel
+                    {
+                        IdIndiceOcupacional = s.IdIndiceOcupacional,
+                        DenominacionPuesto = s.DenominacionPuesto, 
+                        UnidadAdministrativa = s.UnidadAdministrativa,
+                        IdRolPuesto = s.IdRolPuesto,
+                        IdEscalaGrados = s.IdEscalaGrados, 
+                        IdPartidaGeneral = s.IdPartidaGeneral,
+                        IdAmbito = s.IdAmbito,
+                        Nivel = s.Nivel,
+                        Mision = s.Mision,
+                        RelacionesInternasExternas = s.RelacionesInternasExternas,
+                        SinClasificar = s.SinClasificar,
+                        RmusinClasificar = s.RmusinClasificar,
+                        Activo = s.Activo,
+
+                        NombreRolPuesto = s.RolPuesto.Nombre,
+                        NombreEscalaGrados = s.EscalaGrados.Nombre,
+                        Remuneracion = s.EscalaGrados.Remuneracion,
+                        Grado = s.EscalaGrados.Grado,
+
+                        NombreAmbito = s.Ambito.Nombre
+
+                    })
+                    .ToListAsync();
+
+                return lista;
+            }
+            catch (Exception ex)
+            {
+                return new List<IndiceOcupacionalViewModel>();
+            }
+        }
+
+
+        // POST: api/IndicesOcupacionales
+        [HttpPost]
+        [Route("InsertarIndiceOcupacional")]
+        public async Task<Response> InsertarIndiceOcupacional([FromBody] IndiceOcupacional indiceOcupacional)
+        {
+            
+
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var existe = await db.IndiceOcupacional
+                    .Where(w =>
+                        w.DenominacionPuesto.ToString().Trim().ToUpper()
+                        == indiceOcupacional.DenominacionPuesto.ToString().Trim().ToUpper()
+                    )
+                    .FirstOrDefaultAsync();
+
+
+                if (existe == null)
+                {
+                    using (var transaction = await db.Database.BeginTransactionAsync())
+                    {
+                        // Se crea el índice ocupacional
+
+                        indiceOcupacional.DenominacionPuesto = indiceOcupacional.DenominacionPuesto.ToString().ToUpper();
+                        indiceOcupacional.UnidadAdministrativa = indiceOcupacional.UnidadAdministrativa.ToString().ToUpper();
+                        indiceOcupacional.Mision = indiceOcupacional.Mision.ToString().ToUpper();
+                        indiceOcupacional.RelacionesInternasExternas = indiceOcupacional.RelacionesInternasExternas.ToString().ToUpper();
+                        indiceOcupacional.Activo = true;
+                        indiceOcupacional.SinClasificar = false;
+
+                        db.IndiceOcupacional.Add(indiceOcupacional);
+                        
+                        await db.SaveChangesAsync();
+                        transaction.Commit();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = Mensaje.GuardadoSatisfactorio
+                        };
+
+
+                    } // end transaction
+
+
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.ExisteRegistro
+                };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion,
+                };
+            }
+
+            
+        }
+
+
+        // DELETE: api/IndicesOcupacionales/5
+        [HttpDelete("{id}")]
+        public async Task<Response> DeleteIndiceOcupacional([FromRoute] int id)
+        {
+            var desactivar = false;
+            var eliminar = false;
+
+            try {
+
+                var modelo = await db.IndiceOcupacional
+                    .Where(w => w.IdIndiceOcupacional == id)
+                    .FirstOrDefaultAsync();
+
+                if (modelo == null) {
+
+                    return new Response {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado
+                    };
+                }
+
+
+
+                // si hay registros de modalidad partida no debe permitir borrar
+                var iomp = await db.IndiceOcupacionalModalidadPartida
+                    .Where(w => w.IdIndiceOcupacional == id)
+                    .FirstOrDefaultAsync();
+
+                // si no hay registros que usen este índice ocupacional, se permite eliminar
+                if (iomp == null)
+                {
+                    eliminar = true;
+                }
+                else {
+
+                    // Se debe buscar si hay partidas activas  que usen este Indice ocupacional
+
+                    var iompActivos = await db.IndiceOcupacionalModalidadPartida
+                    .Where(w => 
+                        w.IdIndiceOcupacional == id
+                        && w.Activo == true
+                    )
+                    .ToListAsync();
+
+                    // Si no hay partidas activas que usen este índice ocupacional, se permite desactivarlo
+                    if (iompActivos.Count < 1) {
+                        desactivar = true;  
+                    }
+
+                }
+
+
+                if (eliminar == true)
+                {
+
+                    db.IndiceOcupacional.Remove(modelo);
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.BorradoSatisfactorio
+                    };
+                }
+
+                else if (desactivar == true)
+                {
+
+                    modelo.Activo = false;
+
+                    db.IndiceOcupacional.Update(modelo);
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.BorradoSatisfactorio
+                    };
+                }
+
+                else {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.BorradoNoSatisfactorio
+                    };
+
+                }
+                
+
+
+            } catch (Exception ex) {
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+
+            }
+            
+        }
+
+
+        /// <summary>
+        /// Necesario IdIndiceOcupacional
+        /// </summary>
+        /// <param name="indiceOcupacional"></param>
+        /// <returns></returns>
+        // POST: api/IndicesOcupacionales
+        [HttpPost]
+        [Route("ObtenerIndiceOcupacional")]
+        public async Task<IndiceOcupacional> ObtenerIndiceOcupacional([FromBody] IndiceOcupacional indiceOcupacional) {
+
+            try {
+
+                var modelo = await db.IndiceOcupacional
+                    .Select(s=>new IndiceOcupacional {
+
+                        IdIndiceOcupacional = s.IdIndiceOcupacional,
+                        DenominacionPuesto = s.DenominacionPuesto,
+                        UnidadAdministrativa = s.UnidadAdministrativa,
+                        IdRolPuesto = s.IdRolPuesto,
+                        IdEscalaGrados = s.IdEscalaGrados,
+                        IdPartidaGeneral = s.IdPartidaGeneral,
+                        IdAmbito = s.IdAmbito,
+                        Nivel = s.Nivel,
+                        Mision = s.Mision,
+                        RelacionesInternasExternas = s.RelacionesInternasExternas,
+                        SinClasificar = s.SinClasificar,
+                        RmusinClasificar = s.RmusinClasificar,
+                        Activo = s.Activo,
+                   
+
+                        EscalaGrados = new EscalaGrados {
+
+                            IdEscalaGrados = s.EscalaGrados.IdEscalaGrados,
+                            IdGrupoOcupacional = s.EscalaGrados.IdGrupoOcupacional,
+                            Grado = s.EscalaGrados.Grado,
+                            Remuneracion = s.EscalaGrados.Remuneracion,
+                            Nombre = s.EscalaGrados.Nombre
+                        },
+
+                    })
+                    .Where(w => w.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                    .FirstOrDefaultAsync();
+
+                return modelo;
+
+            } catch (Exception ex) {
+
+                return new IndiceOcupacional();
+            }
+        }
+
+
+
+        // POST: api/IndicesOcupacionales
+        [HttpPost]
+        [Route("EditarIndiceOcupacional")]
+        public async Task<Response> EditarIndiceOcupacional([FromBody] IndiceOcupacional indiceOcupacional)
+        {
+            try
+            {
+
+                var modelo = await db.IndiceOcupacional
+                    .Where(w => w.IdIndiceOcupacional == indiceOcupacional.IdIndiceOcupacional)
+                    .FirstOrDefaultAsync();
+
+                if (modelo == null)
+                {
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado
+                    };
+                }
+
+
+                //var distributivoHistorico = await db.DistributivoHistorico
+                //  aqui se debe validar el editar y la re-estructuración de puestos
+
+                
+                var distributivoFormal = await db.DistributivoHistorico
+                    .Include(i=>i.IndiceOcupacionalModalidadPartida)
+                    .Include(i=>i.IndiceOcupacionalModalidadPartida.IndiceOcupacional)
+                    .ToListAsync()
+                    ;
+
+                var distributivosDependientes = distributivoFormal
+                    .Where(w => 
+                        w.IndiceOcupacionalModalidadPartida.IdIndiceOcupacional == modelo.IdIndiceOcupacional
+                    )
+                    .ToList();
+
+                var distributivosDependientesActivos = distributivosDependientes
+                    .Where(w => w.Activo == true)
+                    .ToList();
+
+                var distributivosDependientesInactivos = distributivosDependientes
+                    .Where(w => w.Activo == false)
+                    .ToList();
+
+
+
+
+                if (distributivosDependientes.Count > 0)
+                {
+
+                    // Si hay distributivos dependientes, ya no se debe editar porque afecta al histórico, se debe: 
+                    // 1) Crear un nuevo perfil con las nuevas características configuradas, y adquiriendo los valores de las
+                    //    CARACTERÍSTICAS DEL PERFIL ANTERIOR
+                    // 2) agregar los activos al nuevo perfil
+                    // 3) mantener los inactivos en el perfil anterior
+
+                    #region 1) Crear un nuevo perfil
+
+
+
+                    #endregion
+
+                    return new Response
+                    {
+
+                        IsSuccess = true,
+                        Message = "Revisa la edición de indicesOcupacionales en swth, !!!!!"
+                    };
+
+                }
+
+                else if (distributivosDependientes.Count == 0)
+                {
+                    // Si no hay registros que dependen de este, puede ser editado sin problemas
+
+                    modelo.DenominacionPuesto = indiceOcupacional.DenominacionPuesto.Trim().ToString().ToUpper();
+                    modelo.UnidadAdministrativa = indiceOcupacional.UnidadAdministrativa.Trim().ToString().ToUpper();
+                    modelo.IdRolPuesto = indiceOcupacional.IdRolPuesto;
+                    modelo.IdEscalaGrados = indiceOcupacional.IdEscalaGrados;
+                    modelo.IdAmbito = indiceOcupacional.IdAmbito;
+                    modelo.Nivel = indiceOcupacional.Nivel;
+                    modelo.Mision = indiceOcupacional.Mision;
+                    modelo.RelacionesInternasExternas = indiceOcupacional.RelacionesInternasExternas.ToString().ToUpper();
+
+                    db.IndiceOcupacional.Update(modelo);
+                    await db.SaveChangesAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = Mensaje.GuardadoSatisfactorio
+                    };
+
+                }
+                else {
+
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.Error
+                    };
+
+                }
+
+
+            } catch (Exception ex)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+
+            }
+        }
+
+        #endregion
+
+
         /*
 
         [HttpGet]
@@ -63,72 +471,7 @@ namespace bd.swth.web.Controllers.API
         }
 
 
-        /// <summary>
-        /// Devuelve la lista de IndicesOcupacionalesViewModel
-        /// </summary>
-        /// <returns></returns>
-        // api/IndicesOcupacionales
-        [HttpGet]
-        [Route("ListarIndicesOcupacionesViewModel")]
-        public async Task<List<IndiceOcupacionalViewModel>> ListarIndicesOcupacionesViewModel()
-        {
-            try
-            {
-                var lista = await db.IndiceOcupacional.Select(
-                    s => new IndiceOcupacionalViewModel
-                    {
-
-                        IdIndiceOcupacional = s.IdIndiceOcupacional,
-                        IdDependencia = s.IdDependencia,
-                        IdManualPuesto = s.IdManualPuesto,
-                        IdRolPuesto = s.IdRolPuesto,
-                        IdEscalaGrados = s.IdEscalaGrados,
-                        IdPartidaGeneral = s.IdPartidaGeneral,
-                        IdAmbito = s.IdAmbito,
-                        Nivel = s.Nivel,
-
-
-                        NombreDependencia = s.Dependencia.Nombre,
-                        CodigoDependencia = s.Dependencia.Codigo,
-
-                        IdSucursal = s.Dependencia.Sucursal.IdSucursal,
-                        NombreSucursal = s.Dependencia.Sucursal.Nombre,
-
-                        NombreManualPuesto = s.ManualPuesto.Nombre,
-                        DescripcionManualPuesto = s.ManualPuesto.Descripcion,
-                        MisionManualPuesto = s.ManualPuesto.Mision,
-
-                        IdRelacionesInternasExternas =
-                                    s.ManualPuesto.RelacionesInternasExternas.IdRelacionesInternasExternas,
-                        NombreRelacionesInternasExternas =
-                                    s.ManualPuesto.RelacionesInternasExternas.Nombre,
-                        DescripcionRelacionesInternasExternas =
-                                    s.ManualPuesto.RelacionesInternasExternas.Descripcion,
-
-
-                        NombreRolPuesto = s.RolPuesto.Nombre,
-
-
-                        NombreEscalaGrados = s.EscalaGrados.Nombre,
-                        Remuneracion = s.EscalaGrados.Remuneracion,
-                        Grado = s.EscalaGrados.Grado,
-
-                        NumeroPartidaGeneral =
-                                (s.PartidaGeneral == null)
-                                ? ""
-                                : s.PartidaGeneral.NumeroPartida,
-
-                        NombreAmbito = s.Ambito.Nombre
-
-                    }).ToListAsync();
-
-                return lista;
-            }
-            catch (Exception ex)
-            {
-                return new List<IndiceOcupacionalViewModel>();
-            }
-        }
+        
 
 
 
@@ -849,131 +1192,11 @@ namespace bd.swth.web.Controllers.API
             }
         }
 
-        // POST: api/IndicesOcupacionales
-        [HttpPost]
-        [Route("InsertarIndiceOcupacional")]
-        public async Task<Response> InsertarIndiceOcupacional([FromBody] IndiceOcupacional indiceOcupacional)
-        {
-            try
-            {
-                
-                if (!ModelState.IsValid)
-                {
-                    return new Response
-                    {
-                        IsSuccess = false,
-                        Message = Mensaje.ModeloInvalido,
-                    };
-                }
-
-                var respuesta = Existe(indiceOcupacional);
-
-                if (!respuesta.IsSuccess)
-                {
-                    using (var transaction = await db.Database.BeginTransactionAsync())
-                    {
-                        // Se crea el índice ocupacional
-                        db.IndiceOcupacional.Add(indiceOcupacional);
-
-
-                        // Se crea un indice ocupacional modalidad partida vacío
-                        // para el historial
-                        var modelo = new IndiceOcupacionalModalidadPartida
-                        { 
-                            IdIndiceOcupacional = indiceOcupacional.IdIndiceOcupacional,
-                            IdEmpleado = null,
-                            IdFondoFinanciamiento = null,
-                            IdTipoNombramiento = null,
-                            Fecha = DateTime.Now,
-                            SalarioReal = null,
-                            CodigoContrato = null,
-                            NumeroPartidaIndividual = null,
-                            IdModalidadPartida = null
-                        };
-                        
-                        db.IndiceOcupacionalModalidadPartida.Add(modelo);
-
-                        await db.SaveChangesAsync();
-                        transaction.Commit();
-
-                        return new Response
-                        {
-                            IsSuccess = true,
-                            Message = Mensaje.Satisfactorio
-                        };
-
-
-                    } // end transaction
-
-
-                }
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.ExisteRegistro
-                };
-
-            }
-            catch (Exception ex)
-            {
-
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.Error,
-                };
-            }
-            
-        }
+        
 
 
 
-        // DELETE: api/IndicesOcupacionales/5
-        [HttpDelete("{id}")]
-        public async Task<Response> DeleteIndiceOcupacional([FromRoute] int id)
-        {
-
-            try
-            {
-                using (var transaction = await db.Database.BeginTransactionAsync())
-                {
-                    var iomp = await db.IndiceOcupacionalModalidadPartida
-                    .Where(w => w.IdIndiceOcupacional == id)
-                    .FirstOrDefaultAsync();
-
-                    var indiceOcupacional = await db.IndiceOcupacional
-                            .Where(w => w.IdIndiceOcupacional == id)
-                            .FirstOrDefaultAsync();
-
-                    db.IndiceOcupacionalModalidadPartida.Remove(iomp);
-                    db.IndiceOcupacional.Remove(indiceOcupacional);
-                    await db.SaveChangesAsync();
-
-                    transaction.Commit();
-
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = Mensaje.BorradoSatisfactorio
-
-                    };
-
-
-                } // end transaction
-
-            }
-            catch (Exception)
-            {
-                return new Response
-                {
-                    IsSuccess = false,
-                    Message = Mensaje.BorradoNoSatisfactorio
-
-                };
-            }
-            
-        }
+        
 
 
 

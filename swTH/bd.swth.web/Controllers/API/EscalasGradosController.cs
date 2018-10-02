@@ -28,9 +28,22 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
 
-        /*
 
+        [HttpPost]
+        [Route("ListarEscalasGradosPorGrupoOcupacional")]
+        public async Task<List<EscalaGrados>> GetSucursalbyCity([FromBody] GrupoOcupacional grupoocupacional)
+        {
+            try
+            {
+                return await db.EscalaGrados.Include(c => c.GrupoOcupacional).Where(x => x.IdGrupoOcupacional == grupoocupacional.IdGrupoOcupacional).OrderBy(x => x.Nombre).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return new List<EscalaGrados>();
+            }
+        }
 
+        
         // GET: api/BasesDatos
         [HttpGet]
         [Route("ListarEscalasGrados")]
@@ -43,16 +56,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                                       Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<EscalaGrados>();
             }
         }
@@ -92,16 +96,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                                       Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -218,16 +212,7 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                                       Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new Response
                 {
                     IsSuccess = false,
@@ -271,16 +256,6 @@ namespace bd.swth.web.Controllers.API
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                                       Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
                 return new Response
                 {
                     IsSuccess = false,
@@ -315,31 +290,9 @@ namespace bd.swth.web.Controllers.API
             };
         }
 
-        [HttpPost]
-        [Route("ListarEscalasGradosPorGrupoOcupacional")]
-        public async Task<List<EscalaGrados>> GetSucursalbyCity([FromBody] GrupoOcupacional grupoocupacional)
-        {
-            try
-            {
-                return await db.EscalaGrados.Include(c => c.GrupoOcupacional).Where(x => x.IdGrupoOcupacional == grupoocupacional.IdGrupoOcupacional).OrderBy(x => x.Nombre).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                    Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
-                return new List<EscalaGrados>();
-            }
-        }
 
 
+        /*
 
         // POST: api/EscalasGrados
         [HttpPost]
@@ -373,5 +326,45 @@ namespace bd.swth.web.Controllers.API
         }
 
     */
+
+        // POST: api/EscalasGrados
+        [HttpPost]
+        [Route("ObtenerEscalaGradosPorId")]
+        public async Task<Response> ObtenerEscalaGradosPorId([FromBody] EscalaGrados EscalaGrados)
+        {
+
+            try {
+
+                var modelo = await db.EscalaGrados
+                    .Where(w => w.IdEscalaGrados == EscalaGrados.IdEscalaGrados)
+                    .FirstOrDefaultAsync();
+
+                if (modelo != null) {
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Resultado = modelo
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Resultado = Mensaje.RegistroNoEncontrado
+                };
+
+            } catch (Exception ex) {
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Excepcion
+                };
+            }
+        }
+
+
+
     }
 }

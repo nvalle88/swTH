@@ -2706,7 +2706,7 @@ namespace bd.swth.datos
                 entity.HasKey(e => e.IdIndiceOcupacional)
                     .HasName("PK69");
 
-                entity.Property(e => e.Activo).HasDefaultValueSql("1");
+                entity.Property(e => e.Activo);
 
                 entity.Property(e => e.DenominacionPuesto)
                     .IsRequired()
@@ -2722,7 +2722,7 @@ namespace bd.swth.datos
                     .HasColumnName("RMUSinClasificar")
                     .HasColumnType("decimal");
 
-                entity.Property(e => e.SinClasificar).HasDefaultValueSql("0");
+                entity.Property(e => e.SinClasificar);
 
                 entity.Property(e => e.UnidadAdministrativa).HasColumnType("varchar(250)");
 

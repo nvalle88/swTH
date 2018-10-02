@@ -27,7 +27,7 @@ namespace bd.swth.web.Controllers.API
             this.db = db;
         }
         
-        /*
+        
 
         // GET: api/RolesPuesto
         [HttpGet]
@@ -36,23 +36,22 @@ namespace bd.swth.web.Controllers.API
         {
             try
             {
-                return await db.RolPuesto.OrderBy(x => x.Nombre).ToListAsync();
+                return await db.RolPuesto
+                    .Select(s=>new RolPuesto {
+                        IdRolPuesto = s.IdRolPuesto,
+                        Nombre = s.Nombre
+                    })
+                    .OrderBy(x => x.Nombre)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
-                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
-                {
-                    ApplicationName = Convert.ToString(Aplicacion.SwTH),
-                    ExceptionTrace = ex.Message,
-                                       Message = Mensaje.Excepcion,
-                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
-                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
-                    UserName = "",
-
-                });
+                
                 return new List<RolPuesto>();
             }
         }
+
+        /*
 
         // GET: api/RolPuesto/5
         [HttpGet("{id}")]
